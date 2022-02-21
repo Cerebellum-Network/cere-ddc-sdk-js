@@ -18,6 +18,6 @@ jobs:
       - name: Install
         run: npm install
       - name: Compile
-        run: npm run compile  -ws
+        run: npm run compile -ws
       - name: Publish
         run: npm publish --workspaces --access public
