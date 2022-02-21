@@ -11,8 +11,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "format": "prettier --write \"packages/**/*.ts\"",
-    "lint": "tslint -p tsconfig.json",
-    "compile": "rm -rf dist/* && tsc -p tsconfig.build.json"
+    "lint": "tslint -p tsconfig.json"
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",
