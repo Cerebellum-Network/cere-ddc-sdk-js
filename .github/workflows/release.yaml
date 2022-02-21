@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v1
       - name: Install
-        run: npm install
+        run: npm install -ws
       - name: Compile
         run: npm run compile -ws
       - name: Publish
