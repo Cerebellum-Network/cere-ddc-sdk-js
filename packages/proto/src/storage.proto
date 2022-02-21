@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option java_package = "network.cere.ddc.proto";
+option java_outer_classname = "Storage";
+
+package pb;
+
+option go_package = "/pb";
+
+message Piece {
+  bytes        data     = 1;
+  uint64       bucketId = 2;
+  repeated Tag tags     = 3;
+}
+
+message Signature {
+  string value  = 1;
+  string signer = 2;
+  string scheme = 3;
+}
+
+message SignedPiece {
+  Piece     piece     = 1;
+  Signature signature = 2;
+}
+
+message Tag {
+  string key  = 1;
+  string value = 2;
+}
+
+message Query {
+  uint64       bucketId = 1;
+  repeated Tag tags     = 2;
+}
+
+message SearchResult {
+  repeated SignedPiece signedPieces = 1;
+}

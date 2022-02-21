@@ -1,0 +1,20 @@
+{
+  "name": "@cere-ddc-sdk/proto",
+  "description": "Storage protocol buffer models",
+  "version": "1.0.7",
+  "repository": {
+    "type": "git",
+    "directory": "packages/proto",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "main": "dist/index.js",
+  "author": "",
+  "license": "Apache-2.0",
+  "scripts": {
+    "compile": "npx protoc --ts_out ./src --proto_path src src/storage.proto && rm -rf dist/* && tsc -p tsconfig.build.json"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "@protobuf-ts/plugin": "^2.2.2"
+  }
+}

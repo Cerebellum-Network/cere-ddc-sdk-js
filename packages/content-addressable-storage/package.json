@@ -1,0 +1,22 @@
+{
+  "name": "@cere-ddc-sdk/content-addressable-storage",
+  "description": "Content-addressable storage client",
+  "version": "1.0.7",
+  "repository": {
+    "type": "git",
+    "directory": "packages/content-addressable-storage",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "main": "dist/index.js",
+  "author": "",
+  "license": "Apache-2.0",
+  "scripts": {
+    "compile": "rm -rf dist/* && tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@polkadot/keyring": "5.2.3",
+    "cids": "^1.1.9",
+    "multiformats": "^3.0.3",
+    "multihashing": "^0.3.4"
+  }
+}
