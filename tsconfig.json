@@ -1,9 +1,24 @@
 {
-  "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "composite": true,
+    "target": "es2020",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "allowJs": true,
+    "paths": {
+      "@cere-ddc-sdk/*": ["./packages/*/src/"]
+    }
   },
-  "include": [
-    "./packages/*/**.ts"
+  "include": ["packages/"],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.stub.ts",
+    "node_modules",
+    "dist"
   ]
 }

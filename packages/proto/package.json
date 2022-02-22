@@ -13,8 +13,11 @@
   "scripts": {
     "compile": "npx protoc --ts_out ./src --proto_path src src/storage.proto && rm -rf dist/* && tsc -p tsconfig.build.json"
   },
-  "devDependencies": {},
   "dependencies": {
+    "@types/node": "^16.0.0",
     "@protobuf-ts/plugin": "^2.2.2"
+  },
+  "devDependencies": {
+    "typescript": "4.5.4"
   }
 }

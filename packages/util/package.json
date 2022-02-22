@@ -13,6 +13,10 @@
   "scripts": {
     "compile": "rm -rf dist/* && tsc -p tsconfig.build.json"
   },
-  "devDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "@types/node": "^16.0.0"
+  },
+  "devDependencies": {
+    "typescript": "4.5.4"
+  }
 }

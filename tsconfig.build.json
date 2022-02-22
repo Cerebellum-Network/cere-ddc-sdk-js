@@ -1,23 +1,9 @@
 {
-  "compilerOptions": {
-    "composite": true,
-    "target": "es2020",
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "moduleResolution": "node",
-    "skipLibCheck": true,
-    "allowJs": true,
-    "paths": {
-      "@cere-ddc-sdk/*": ["./packages/*/src/"]
-    }
-  },
-  "include": ["packages/"],
-  "exclude": [
-    "**/*.test.ts",
-    "**/*.stub.ts",
-    "node_modules",
-    "dist"
+  "files": [],
+  "references": [
+    { "path": "packages/proto/tsconfig.build.json" },
+    { "path": "packages/util/tsconfig.build.json" },
+    { "path": "packages/content-addressable-storage/tsconfig.build.json" },
+    { "path": "packages/key-value-storage/tsconfig.build.json" },
   ]
 }

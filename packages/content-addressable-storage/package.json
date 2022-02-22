@@ -17,8 +17,12 @@
     "@cere-ddc-sdk/proto": "1.0.7",
     "@cere-ddc-sdk/util": "1.0.7",
     "@polkadot/keyring": "5.2.3",
+    "@types/node": "^16.0.0",
     "cids": "^1.1.9",
     "multiformats": "^3.0.3",
     "multihashing": "^0.3.4"
+  },
+  "devDependencies": {
+    "typescript": "4.5.4"
   }
 }
