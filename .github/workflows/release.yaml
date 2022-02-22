@@ -17,5 +17,5 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
       - run: npm install
-      - run: npm run compile -ws
+      - run: npm run compile
       - run: npm publish --workspaces --access public
