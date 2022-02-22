@@ -32,7 +32,7 @@ export class ContentAddressableStorage {
 
   async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
     let pbPiece: PbPiece = {
-      bucketId: bucketId,
+      bucketId: bucketId.toString(),
       data: piece.data,
       tags: piece.tags,
     };
@@ -86,9 +86,14 @@ export class ContentAddressableStorage {
   }
 
   async search(query: Query): Promise<SearchResult> {
+    let pbQuery: PbQuery = {
+      bucketId: query.bucketId.toString(),
+      tags: query.tags,
+    }
+
     let response = await fetch(this.gatewayNodeUrl + BASE_PATH, {
       method: "GET",
-      body: PbQuery.toBinary(query as PbQuery),
+      body: PbQuery.toBinary(pbQuery),
     });
 
     if (200 != response.status) {

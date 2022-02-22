@@ -14,7 +14,7 @@
     "compile": "rm -rf dist/* && tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@cere-ddc-sdk/content-addressable-storage": "1.0.7",
+    "@cere-ddc-sdk/content-addressable-storage": "1.0.10",
     "@types/node": "^16.0.0"
   },
   "devDependencies": {
