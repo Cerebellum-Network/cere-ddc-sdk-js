@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/content-addressable-storage",
   "description": "Content-addressable storage client",
-  "version": "1.0.12",
+  "version": "1.0.14",
   "repository": {
     "type": "git",
     "directory": "packages/content-addressable-storage",
@@ -14,10 +14,9 @@
     "compile": "rm -rf dist/* && tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@cere-ddc-sdk/proto": "1.0.12",
-    "@cere-ddc-sdk/util": "1.0.12",
+    "@cere-ddc-sdk/proto": "1.0.14",
+    "@cere-ddc-sdk/util": "1.0.14",
     "@types/node": "^16.0.0",
-    "axios": "^0.26.0",
     "cids": "^1.1.9",
     "multiformats": "^3.0.3",
     "multihashing": "^0.3.4"
