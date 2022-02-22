@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/content-addressable-storage",
   "description": "Content-addressable storage client",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "repository": {
     "type": "git",
     "directory": "packages/content-addressable-storage",
