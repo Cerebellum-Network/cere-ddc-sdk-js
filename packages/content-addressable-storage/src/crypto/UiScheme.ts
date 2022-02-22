@@ -27,7 +27,7 @@ export class UiScheme implements SchemeInterface {
         await waitReady()
 
         let injector = await web3FromAddress(account.address);
-        let signRaw = injector?.signer?.signRaw;
+        let signRaw = injector.signer.signRaw;
 
         if (!signRaw) {
             throw Error("Failed to initialise scheme")
