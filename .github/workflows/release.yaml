@@ -5,7 +5,7 @@ on:
       - publish
 
 env:
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN_PUBLISH }}
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 jobs:
   continuous-deployment:
