@@ -1,6 +1,7 @@
 import {Keyring} from "@polkadot/keyring";
 import {KeyringPair} from "@polkadot/keyring/types";
 import {hexToU8a, u8aToHex} from "@cere-ddc-sdk/util";
+import {cryptoWaitReady} from "@polkadot/util-crypto";
 
 export class Scheme {
     keyRing: KeyringPair;
@@ -16,6 +17,12 @@ export class Scheme {
         this.keyRing = keyring.addFromSeed(hexToU8a(privateKeyHex));
         this.name = scheme;
         this.publicKeyHex = u8aToHex(keyring.publicKeys[0]);
+    }
+
+    async createScheme(scheme: string, privateKeyHex: string): Promise<Scheme> {
+        await cryptoWaitReady();
+
+        return new Scheme(scheme, privateKeyHex)
     }
 
     sign(data: Uint8Array): string {
