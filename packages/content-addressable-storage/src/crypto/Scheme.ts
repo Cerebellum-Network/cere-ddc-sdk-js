@@ -1,31 +1,34 @@
 import {Keyring} from "@polkadot/keyring";
 import {KeyringPair} from "@polkadot/keyring/types";
-import {hexToU8a, u8aToHex} from "@cere-ddc-sdk/util";
-import {cryptoWaitReady} from "@polkadot/util-crypto";
+import {hexToU8a, u8aToHex} from "@polkadot/util";
+import {waitReady} from "@polkadot/wasm-crypto";
+import {SchemeInterface} from "./Scheme.interface";
 
-export class Scheme {
-    keyRing: KeyringPair;
+export class Scheme implements SchemeInterface{
+    keyringPair: KeyringPair;
     name: string;
     publicKeyHex: string;
 
-    constructor(scheme: string, privateKeyHex: string) {
+    constructor(keyringPair: KeyringPair, name: string, publicKeyHex: string) {
+        this.keyringPair = keyringPair;
+        this.name = name;
+        this.publicKeyHex = publicKeyHex;
+    }
+
+    static async createScheme(scheme: string, privateKeyHex: string): Promise<Scheme> {
         if (scheme != "sr25519" && scheme != "ed25519") {
             throw new Error("Unsupported scheme");
         }
 
-        let keyring = new Keyring({type: scheme});
-        this.keyRing = keyring.addFromSeed(hexToU8a(privateKeyHex));
-        this.name = scheme;
-        this.publicKeyHex = u8aToHex(keyring.publicKeys[0]);
+        await waitReady()
+
+        let keyring = new Keyring({type: scheme})
+        let keyringPair = keyring.addFromSeed(hexToU8a(privateKeyHex))
+
+        return new Scheme(keyringPair, scheme, u8aToHex(keyring.publicKeys[0]))
     }
 
-    static async createScheme(scheme: string, privateKeyHex: string): Promise<Scheme> {
-        await cryptoWaitReady();
-
-        return new Scheme(scheme, privateKeyHex)
-    }
-
-    sign(data: Uint8Array): string {
-        return u8aToHex(this.keyRing.sign(data));
+    async sign(data: Uint8Array): Promise<string> {
+        return Promise.resolve(u8aToHex(this.keyringPair.sign(data)));
     }
 }

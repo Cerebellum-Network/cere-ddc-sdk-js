@@ -5,23 +5,23 @@ import {
   SearchResult as PbSearchResult,
 } from "@cere-ddc-sdk/proto";
 import { CidBuilder } from "./cid/CidBuilder";
-import { Scheme } from "./crypto/Scheme";
 import {stringToU8a} from "@cere-ddc-sdk/util";
 import {Piece} from "./models/Piece";
 import {PieceUri} from "./models/PieceUri";
 import {Query} from "./models/Query";
 import {SearchResult} from "./models/SearchResult";
+import {SchemeInterface} from "./crypto/Scheme.interface";
 
 const BASE_PATH = "/api/rest/pieces";
 
 export class ContentAddressableStorage {
-  scheme: Scheme;
+  scheme: SchemeInterface;
   gatewayNodeUrl: string;
 
   cidBuilder: CidBuilder;
 
   constructor(
-    scheme: Scheme,
+    scheme: SchemeInterface,
     gatewayNodeUrl: string,
     cidBuilder: CidBuilder = new CidBuilder()
   ) {
@@ -38,7 +38,7 @@ export class ContentAddressableStorage {
     };
     let pieceAsBytes = PbPiece.toBinary(pbPiece);
     let cid = this.cidBuilder.build(pieceAsBytes);
-    let signature = this.scheme.sign(stringToU8a(cid));
+    let signature = await this.scheme.sign(stringToU8a(cid));
 
     let pbSignedPiece: PbSignedPiece = {
       piece: pbPiece,

@@ -1,6 +1,6 @@
 import {
     ContentAddressableStorage,
-    Scheme,
+    SchemeInterface,
     Piece,
     PieceUri,
 } from "@cere-ddc-sdk/content-addressable-storage";
@@ -8,13 +8,13 @@ import {
 const keyTag = "Key"
 
 export class KeyValueStorage {
-    scheme: Scheme;
+    scheme: SchemeInterface;
     gatewayNodeUrl: string;
 
     caStorage: ContentAddressableStorage;
 
     constructor(
-        scheme: Scheme,
+        scheme: SchemeInterface,
         gatewayNodeUrl: string,
     ) {
         this.scheme = scheme;
