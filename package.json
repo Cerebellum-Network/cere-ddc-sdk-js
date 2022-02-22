@@ -1,7 +1,7 @@
 {
   "name": "cere-ddc-sdk",
   "description": "Cere DDC SDK for JavaScript",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "private": true,
   "repository": {
     "type": "git",

@@ -19,7 +19,7 @@ export class Scheme {
         this.publicKeyHex = u8aToHex(keyring.publicKeys[0]);
     }
 
-    async createScheme(scheme: string, privateKeyHex: string): Promise<Scheme> {
+    static async createScheme(scheme: string, privateKeyHex: string): Promise<Scheme> {
         await cryptoWaitReady();
 
         return new Scheme(scheme, privateKeyHex)
