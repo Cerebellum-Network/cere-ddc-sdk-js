@@ -1,5 +1,5 @@
 import {CidBuilder} from "./CidBuilder";
-import {stringToU8a} from "@cere-ddc-sdk/util";
+import {stringToU8a} from "@polkadot/util";
 
 describe("CID Builder", () => {
     let testSubject = new CidBuilder();

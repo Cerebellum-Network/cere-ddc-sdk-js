@@ -5,12 +5,13 @@ import {
     SearchResult as PbSearchResult,
 } from "@cere-ddc-sdk/proto";
 import {CidBuilder} from "./cid/CidBuilder";
-import {stringToU8a} from "@cere-ddc-sdk/util";
 import {Piece} from "./models/Piece";
 import {PieceUri} from "./models/PieceUri";
 import {Query} from "./models/Query";
 import {SearchResult} from "./models/SearchResult";
 import {SchemeInterface} from "./crypto/Scheme.interface";
+import {base58Encode} from "@polkadot/util-crypto";
+import {stringToU8a} from "@polkadot/util";
 
 const BASE_PATH = "/api/rest/pieces";
 
@@ -91,9 +92,9 @@ export class ContentAddressableStorage {
             tags: query.tags,
         }
         let queryAsBytes = PbQuery.toBinary(pbQuery)
-        let queryBase64 = Buffer.from(queryAsBytes).toString("base64")
+        let queryBase58 = base58Encode(queryAsBytes)
 
-        let response = await fetch(this.gatewayNodeUrl + BASE_PATH + "?query=" + queryBase64, {
+        let response = await fetch(this.gatewayNodeUrl + BASE_PATH + "?query=" + queryBase58, {
             method: "GET",
         });
 

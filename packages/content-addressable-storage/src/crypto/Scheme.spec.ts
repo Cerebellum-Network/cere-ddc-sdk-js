@@ -1,5 +1,5 @@
 import { Scheme } from "./Scheme";
-import {stringToU8a} from "@cere-ddc-sdk/util";
+import {stringToU8a} from "@polkadot/util";
 
 describe("Scheme", () => {
 
