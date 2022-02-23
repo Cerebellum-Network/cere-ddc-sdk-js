@@ -4,26 +4,25 @@ import {SchemeInterface} from "./Scheme.interface";
 import {u8aToHex} from "@polkadot/util";
 import {InjectedAccount} from "@polkadot/extension-inject/types";
 import {waitReady} from "@polkadot/wasm-crypto";
+import {decodeAddress} from "@polkadot/util-crypto";
 
-export class UiScheme implements SchemeInterface {
-    name: string
+export class PolkadotDappScheme implements SchemeInterface {
+    name: string = "sr25519"
     publicKeyHex: string
     address: string
     signRaw: (raw: SignerPayloadRaw) => Promise<SignerResult>;
 
     private constructor(
-        name: string,
         publicKeyHex: string,
         address: string,
         signRaw: (raw: SignerPayloadRaw) => Promise<SignerResult>,
     ) {
-        this.name = name;
         this.publicKeyHex = publicKeyHex;
-        this.signRaw = signRaw;
         this.address = address;
+        this.signRaw = signRaw;
     }
 
-    static async createScheme(account: InjectedAccount): Promise<UiScheme> {
+    static async createScheme(account: InjectedAccount): Promise<PolkadotDappScheme> {
         await waitReady()
 
         let injector = await web3FromAddress(account.address);
@@ -33,7 +32,8 @@ export class UiScheme implements SchemeInterface {
             throw Error("Failed to initialise scheme")
         }
 
-        return new UiScheme(account.type!!, account.address, account.address, signRaw)
+        let publicKeyHex = u8aToHex(decodeAddress(account.address))
+        return new PolkadotDappScheme(publicKeyHex, account.address, signRaw)
     }
 
     async sign(data: Uint8Array): Promise<string> {
