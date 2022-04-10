@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import {PathLike} from "fs";
-import {ContentAddressableStorage, Link, Piece, PieceUri, Scheme} from "@cere-ddc-sdk/content-addressable-storage/src";
+import {ContentAddressableStorage, Link, Piece, PieceUri, Scheme} from "@cere-ddc-sdk/content-addressable-storage";
 import {FileStorageConfig} from "./FileStorageConfig";
 import {IndexedLink} from "./model/IndexedLink";
 import * as stream from "stream";
