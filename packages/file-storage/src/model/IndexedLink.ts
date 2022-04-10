@@ -6,6 +6,6 @@ export class IndexedLink {
 
     constructor(index: number, link: Link) {
         this.index = index;
-        this.index = index;
+        this.link = link;
     }
 }
