@@ -30,8 +30,7 @@ export class KeyValueStorage {
 
         piece.tags.push({key: keyTag, value: key})
 
-        return this.caStorage.store(
-            bucketId, piece)
+        return this.caStorage.store(bucketId, piece)
     }
 
     async read(bucketId: bigint, cid: string): Promise<Piece[]> {
@@ -44,7 +43,8 @@ export class KeyValueStorage {
 
         return searchResult.pieces.map(p => ({
             data: p.data,
-            tags: p.tags.filter(t => t.key != keyTag)
+            tags: p.tags.filter(t => t.key != keyTag),
+            links: p.links
         }))
     }
 }

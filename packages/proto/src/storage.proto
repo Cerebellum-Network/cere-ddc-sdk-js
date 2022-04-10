@@ -8,9 +8,10 @@ package pb;
 option go_package = "/pb";
 
 message Piece {
-  bytes        data     = 1;
-  uint64       bucketId = 2 [jstype = JS_STRING];
-  repeated Tag tags     = 3;
+  bytes         data     = 1;
+  uint64        bucketId = 2 [jstype = JS_STRING];
+  repeated Tag  tags     = 3;
+  repeated Link links    = 4;
 }
 
 message Signature {
@@ -30,10 +31,16 @@ message Tag {
 }
 
 message Query {
-  uint64       bucketId = 1 [jstype = JS_STRING];
+  uint64       bucketId = 1;
   repeated Tag tags     = 2;
 }
 
 message SearchResult {
   repeated SignedPiece signedPieces = 1;
+}
+
+message Link {
+  string          cid  = 1;
+  uint64          size = 2;
+  string          name = 3;
 }
