@@ -1,0 +1,21 @@
+{
+  "name": "@cere-ddc-sdk/file-storage",
+  "description": "File storage client",
+  "version": "1.0.18",
+  "repository": {
+    "type": "git",
+    "directory": "packages/file-storage",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "main": "dist/index.js",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@cere-ddc-sdk/content-addressable-storage": "1.0.18",
+    "@types/parallel-transform": "1.1.1",
+    "@types/node": "^16.0.0"
+  },
+  "devDependencies": {
+    "typescript": "4.5.4"
+  }
+}
