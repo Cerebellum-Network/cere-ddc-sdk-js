@@ -148,7 +148,6 @@ export class FileStorage {
         return new ParallelTransform(this.config.parallel,
             {objectMode: true, ordered: false},
             (chunkData: ChunkData, callback: TransformCallback) => {
-                console.log(JSON.stringify(chunkData.data))
                 this.caStorage.store(bucketId, new Piece(chunkData.data))
                     .then(pieceUri => {
                         const link = new Link(pieceUri.cid, BigInt(chunkData.data.length));
