@@ -7,7 +7,8 @@ import * as stream from "stream";
 import {Readable, Transform, TransformCallback} from "stream";
 import {ChunkData} from "./model/ChunkData";
 
-let ParallelTransform = require('parallel-transform');
+const ParallelTransform = require('parallel-transform');
+const encode = new TextEncoder().encode;
 
 export class FileStorage {
 
@@ -20,7 +21,7 @@ export class FileStorage {
     }
 
     async upload(bucketId: bigint, file: PathLike): Promise<PieceUri> {
-        const stream = fs.createReadStream(file)
+        const stream = fs.createReadStream(file, {highWaterMark: this.config.chunkSizeInBytes})
             .pipe(this.indexedDataStream())
             .pipe(this.uploadStream(bucketId))
             .on("error", (err) => {
@@ -33,7 +34,7 @@ export class FileStorage {
             .sort((prev, next) => prev.position - next.position)
             .map(e => e.link);
 
-        return this.caStorage.store(bucketId, new Piece(new TextEncoder().encode("metadata"), [], links));
+        return this.caStorage.store(bucketId, new Piece(encode("metadata"), [], links));
     }
 
     async read(bucketId: bigint, cid: string): Promise<Uint8Array> {
@@ -134,7 +135,7 @@ export class FileStorage {
             {
                 readableObjectMode: true,
                 writableObjectMode: false,
-                transform(data: Uint8Array, encoding: BufferEncoding, callback: TransformCallback) {
+                transform(data: Buffer, encoding: BufferEncoding, callback: TransformCallback) {
                     const chunkData = new ChunkData(position, data);
                     position += data.length;
                     callback(null, chunkData);
@@ -147,6 +148,7 @@ export class FileStorage {
         return new ParallelTransform(this.config.parallel,
             {objectMode: true, ordered: false},
             (chunkData: ChunkData, callback: TransformCallback) => {
+                console.log(JSON.stringify(chunkData.data))
                 this.caStorage.store(bucketId, new Piece(chunkData.data))
                     .then(pieceUri => {
                         const link = new Link(pieceUri.cid, BigInt(chunkData.data.length));

@@ -12,6 +12,7 @@ import {SearchResult} from "./models/SearchResult";
 import {SchemeInterface} from "./crypto/Scheme.interface";
 import {base58Encode} from "@polkadot/util-crypto";
 import {stringToU8a} from "@polkadot/util";
+import {fetch} from 'cross-fetch';
 
 const BASE_PATH = "/api/rest/pieces";
 
