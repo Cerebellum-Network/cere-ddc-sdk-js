@@ -8,7 +8,7 @@ import {Readable, Transform, TransformCallback} from "stream";
 import {ChunkData} from "./model/ChunkData";
 
 const ParallelTransform = require('parallel-transform');
-const encode = new TextEncoder().encode;
+const encoder = new TextEncoder();
 
 export class FileStorage {
 
@@ -34,7 +34,7 @@ export class FileStorage {
             .sort((prev, next) => prev.position - next.position)
             .map(e => e.link);
 
-        return this.caStorage.store(bucketId, new Piece(encode("metadata"), [], links));
+        return this.caStorage.store(bucketId, new Piece(encoder.encode("metadata"), [], links));
     }
 
     async read(bucketId: bigint, cid: string): Promise<Uint8Array> {
@@ -42,7 +42,7 @@ export class FileStorage {
         const chunks = await this.collect<ChunkData>(stream);
 
         let size = 0;
-        chunks.forEach(e => size += e.position);
+        chunks.forEach(e => size += e.data.length);
 
         let result = new Uint8Array(size);
         chunks.forEach(e => result.set(e.data, e.position))
