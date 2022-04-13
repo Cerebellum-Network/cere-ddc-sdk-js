@@ -1,6 +1,7 @@
 import {ContentAddressableStorage, Link, Piece, PieceUri, Scheme} from "@cere-ddc-sdk/content-addressable-storage";
 import {FileStorageConfig} from "./FileStorageConfig";
 import * as webStream from "node:stream/web";
+import {IndexedLink} from "./model/IndexedLink";
 
 const encoder = new TextEncoder();
 
@@ -15,17 +16,51 @@ export class FileStorage {
     }
 
     async upload(bucketId: bigint, stream: webStream.ReadableStream): Promise<PieceUri> {
-        const reader = stream.pipeThrough(this.chunkedStream()).getReader();
+        const indexedLinks: Array<IndexedLink> = []
+        await stream.pipeThrough(this.chunkedStream()).pipeTo(this.uploadStream(bucketId, indexedLinks));
+        //const indexedLinks = await this.uploadPieces(bucketId, reader)
 
-        let result;
-        const links = new Array<Link>();
-        while (!(result = await reader.read()).done) {
-            const chunk: Uint8Array = result.value;
-            const pieceUri = await this.caStorage.store(bucketId, new Piece(chunk));
-            links.push(new Link(pieceUri.cid, BigInt(chunk.length)));
+        if (indexedLinks.length === 0) {
+            throw new Error("ReadableStream is empty");
         }
 
+        const links = indexedLinks
+            .sort((a, b) => a.position - b.position)
+            .map(e => e.link);
         return await this.caStorage.store(bucketId, new Piece(encoder.encode("metadata"), [], links));
+    }
+
+    private uploadStream(bucketId: bigint, indexedLinks: Array<IndexedLink>): webStream.WritableStream {
+        const storage = this.caStorage;
+        const parallel = this.config.parallel
+
+        const savePiece = (chunk: Uint8Array) => {
+            return storage.store(bucketId, new Piece(chunk))
+                .then(uri => {
+                    indexedLinks.push(new IndexedLink(index++, new Link(uri.cid, BigInt(chunk.length))));
+                })
+        }
+
+        let index = 0;
+        const tasks = new Array<Promise<void>>()
+        return new webStream.WritableStream<Uint8Array>({
+                async write(chunk) {
+                    if (tasks.length >= parallel) {
+                        let i = 0;
+                        const index = await Promise.race(tasks.map(e => e.then(() => i++)));
+                        tasks.splice(index, 1);
+                    }
+
+                    tasks.push(savePiece(chunk));
+
+                    return;
+                },
+                async close() {
+                    await Promise.all(tasks)
+                }
+            },
+            new webStream.CountQueuingStrategy({highWaterMark: this.config.parallel})
+        );
     }
 
     read(bucketId: bigint, cid: string): webStream.ReadableStream {
@@ -51,7 +86,7 @@ export class FileStorage {
                     controller.close()
                 }
             }
-        }, new webStream.CountQueuingStrategy({ highWaterMark: this.config.chunkSizeInBytes }))
+        }, new webStream.CountQueuingStrategy({highWaterMark: this.config.parallel}))
     }
 
     private chunkedStream(): webStream.TransformStream<Uint8Array, Uint8Array> {
@@ -81,7 +116,6 @@ export class FileStorage {
                         }
                         offset = newOffset;
                     }
-
                 },
                 flush(controller) {
                     if (prefix.length !== 0) {
