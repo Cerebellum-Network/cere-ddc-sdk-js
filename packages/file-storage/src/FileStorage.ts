@@ -16,9 +16,8 @@ export class FileStorage {
     }
 
     async upload(bucketId: bigint, stream: webStream.ReadableStream): Promise<PieceUri> {
-        const indexedLinks: Array<IndexedLink> = []
-        await stream.pipeThrough(this.chunkedStream()).pipeTo(this.uploadStream(bucketId, indexedLinks));
-        //const indexedLinks = await this.uploadPieces(bucketId, reader)
+        const reader = stream.pipeThrough(this.chunkedStream()).getReader();
+        const indexedLinks = await this.storeChunks(bucketId, reader)
 
         if (indexedLinks.length === 0) {
             throw new Error("ReadableStream is empty");
@@ -30,60 +29,59 @@ export class FileStorage {
         return await this.caStorage.store(bucketId, new Piece(encoder.encode("metadata"), [], links));
     }
 
-    private uploadStream(bucketId: bigint, indexedLinks: Array<IndexedLink>): webStream.WritableStream {
-        const storage = this.caStorage;
-        const parallel = this.config.parallel
+    private async storeChunks(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>): Promise<Array<IndexedLink>> {
+        const indexedLinks: Array<IndexedLink> = [];
+        const tasks = new Array<Promise<void>>()
+        let index = 0;
+        for (let i = 0; i < this.config.parallel; i++) {
+            tasks.push(new Promise(async (resolve) => {
+                let result
+                while (!(result = await reader.read()).done) {
+                    const current = index;
+                    index++;
+                    const pieceUri = await this.caStorage.store(bucketId, new Piece(result.value));
 
-        const savePiece = (chunk: Uint8Array) => {
-            return storage.store(bucketId, new Piece(chunk))
-                .then(uri => {
-                    indexedLinks.push(new IndexedLink(index++, new Link(uri.cid, BigInt(chunk.length))));
-                })
+                    indexedLinks.push(new IndexedLink(current, new Link(pieceUri.cid, BigInt(result.value.length))));
+                }
+                resolve()
+            }));
         }
 
-        let index = 0;
-        const tasks = new Array<Promise<void>>()
-        return new webStream.WritableStream<Uint8Array>({
-                async write(chunk) {
-                    if (tasks.length >= parallel) {
-                        let i = 0;
-                        const index = await Promise.race(tasks.map(e => e.then(() => i++)));
-                        tasks.splice(index, 1);
-                    }
+        await Promise.all(tasks)
 
-                    tasks.push(savePiece(chunk));
-
-                    return;
-                },
-                async close() {
-                    await Promise.all(tasks)
-                }
-            },
-            new webStream.CountQueuingStrategy({highWaterMark: this.config.parallel})
-        );
+        return indexedLinks;
     }
 
-    read(bucketId: bigint, cid: string): webStream.ReadableStream {
-        const storage = this.caStorage;
-        let linksPromise = storage.read(bucketId, cid).then(value => value.links);
+    read(bucketId: bigint, cid: string): webStream.ReadableStream<Uint8Array> {
+        let linksPromise = this.caStorage.read(bucketId, cid).then(value => value.links);
+
         let index = 0;
+        const runReadPieceTask = () => new Promise<Uint8Array>(async (resolve, reject) => {
+            const current = index++;
+            const link = (await linksPromise)[current];
+
+            this.caStorage.read(bucketId, link.cid).then(piece => {
+                if (BigInt(piece.data.length) !== link.size) {
+                    reject(new Error("Invalid piece size"))
+                }
+
+                resolve(piece.data)
+            })
+        });
+
+        const tasksPromise = linksPromise
+            .then(e => Array(Math.min(e.length, this.config.parallel)).fill(0).map(() => runReadPieceTask()));
         return new webStream.ReadableStream<Uint8Array>({
             start(controller) {
                 linksPromise.catch(controller.error);
             },
             async pull(controller) {
-                const links = await linksPromise;
-                if (index < links.length) {
-                    const link = links[index];
-                    const piece = await storage.read(bucketId, link.cid);
-                    if (BigInt(piece.data.length) !== link.size) {
-                        controller.error(new Error("Invalid piece size"));
-                    }
-
-                    controller.enqueue(piece.data);
-                    index++;
+                const tasks = await tasksPromise;
+                controller.enqueue(await tasks.shift());
+                if (index < (await linksPromise).length) {
+                    tasks.push(runReadPieceTask())
                 } else {
-                    controller.close()
+                    controller.close();
                 }
             }
         }, new webStream.CountQueuingStrategy({highWaterMark: this.config.parallel}))
