@@ -80,7 +80,9 @@ export class FileStorage {
                 controller.enqueue(await tasks.shift());
                 if (index < (await linksPromise).length) {
                     tasks.push(runReadPieceTask())
-                } else {
+                }
+
+                if (tasks.length === 0) {
                     controller.close();
                 }
             }
