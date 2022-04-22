@@ -9,6 +9,7 @@
   },
   "main": "dist/node.js",
   "browser": "dist/browser.js",
+  "types": "dist/type.d.ts",
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {

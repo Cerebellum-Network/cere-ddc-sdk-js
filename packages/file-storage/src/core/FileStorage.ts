@@ -1,22 +1,28 @@
-import {ContentAddressableStorage, Link, Piece, PieceUri, Scheme} from "@cere-ddc-sdk/content-addressable-storage";
+import {
+    ContentAddressableStorage,
+    Link,
+    Piece,
+    PieceUri,
+    SchemeInterface
+} from "@cere-ddc-sdk/content-addressable-storage";
 import {FileStorageConfig} from "./FileStorageConfig";
 import {IndexedLink} from "./model/IndexedLink";
 import {ReadableStreamDefaultReader, Transformer, UnderlyingSource} from "./stream"
 
 const encoder = new TextEncoder();
 
-export class FileStorage {
+export class CoreFileStorage {
 
     readonly config: FileStorageConfig;
     readonly caStorage: ContentAddressableStorage;
 
-    constructor(scheme: Scheme, gatewayNodeUrl: string, config: FileStorageConfig = new FileStorageConfig()) {
+    constructor(scheme: SchemeInterface, gatewayNodeUrl: string, config: FileStorageConfig = new FileStorageConfig()) {
         this.config = config;
         this.caStorage = new ContentAddressableStorage(scheme, gatewayNodeUrl);
     }
 
     async uploadFromStreamReader(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>): Promise<PieceUri> {
-        const indexedLinks = await this.storeChunks(bucketId, reader)
+        const indexedLinks = await this.storeChunks(bucketId, reader);
 
         if (indexedLinks.length === 0) {
             throw new Error("ReadableStream is empty");
@@ -38,10 +44,10 @@ export class FileStorage {
 
             this.caStorage.read(bucketId, link.cid).then(piece => {
                 if (BigInt(piece.data.length) !== link.size) {
-                    reject(new Error("Invalid piece size"))
+                    reject(new Error("Invalid piece size"));
                 }
 
-                resolve(piece.data)
+                resolve(piece.data);
             })
         });
 
@@ -56,7 +62,7 @@ export class FileStorage {
                 const tasks = await tasksPromise;
                 controller.enqueue(await tasks.shift());
                 if (index < (await linksPromise).length) {
-                    tasks.push(runReadPieceTask())
+                    tasks.push(runReadPieceTask());
                 }
 
                 if (tasks.length === 0) {
@@ -76,12 +82,12 @@ export class FileStorage {
                 if (chunk.length === 0) {
                     return;
                 } else if (chunk.length + prefix.length < chunkSize) {
-                    prefix = FileStorage.concat([prefix, chunk]);
+                    prefix = CoreFileStorage.concat([prefix, chunk]);
                     return;
                 }
 
                 let offset = chunkSize - prefix.length;
-                controller.enqueue(FileStorage.concat([prefix, chunk.subarray(0, offset)]));
+                controller.enqueue(CoreFileStorage.concat([prefix, chunk.subarray(0, offset)]));
                 prefix = new Uint8Array();
 
                 while (offset < chunk.length) {
@@ -96,7 +102,7 @@ export class FileStorage {
             },
             flush(controller) {
                 if (prefix.length !== 0) {
-                    controller.enqueue(prefix)
+                    controller.enqueue(prefix);
                 }
             }
         }
@@ -104,11 +110,11 @@ export class FileStorage {
 
     private async storeChunks(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>): Promise<Array<IndexedLink>> {
         const indexedLinks: Array<IndexedLink> = [];
-        const tasks = new Array<Promise<void>>()
+        const tasks = new Array<Promise<void>>();
         let index = 0;
         for (let i = 0; i < this.config.parallel; i++) {
             tasks.push(new Promise(async (resolve) => {
-                let result
+                let result;
                 while (!(result = await reader.read()).done) {
                     const current = index;
                     index++;
@@ -116,11 +122,11 @@ export class FileStorage {
 
                     indexedLinks.push(new IndexedLink(current, new Link(pieceUri.cid, BigInt(result.value.length))));
                 }
-                resolve()
+                resolve();
             }));
         }
 
-        await Promise.all(tasks)
+        await Promise.all(tasks);
 
         return indexedLinks;
     }

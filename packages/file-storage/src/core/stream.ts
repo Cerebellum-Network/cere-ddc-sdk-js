@@ -220,7 +220,6 @@ export interface CountQueuingStrategy extends QueuingStrategy {
 
 
 export interface TextEncoderStream {
-    /** Returns "utf-8". */
     readonly encoding: 'utf-8';
     readonly readable: ReadableStream<Uint8Array>;
     readonly writable: WritableStream<string>;
