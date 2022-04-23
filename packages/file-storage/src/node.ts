@@ -3,7 +3,7 @@ export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig";
 import {PieceUri, SchemeInterface} from "@cere-ddc-sdk/content-addressable-storage";
 import {FileStorageConfig} from "./core/FileStorageConfig";
 import {CoreFileStorage} from "./core/CoreFileStorage";
-import {FileStorageInterface} from "./core/FileStorage.interface";
+import {FileStorage as FileStorageInterface} from "./core/FileStorage";
 import * as streamWeb from "stream/web";
 
 export class FileStorage implements FileStorageInterface {
