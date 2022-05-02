@@ -1,8 +1,8 @@
 import {
     Piece as PbPiece,
-    SignedPiece as PbSignedPiece,
     Query as PbQuery,
     SearchResult as PbSearchResult,
+    SignedPiece as PbSignedPiece,
 } from "@cere-ddc-sdk/proto";
 import {CidBuilder} from "./cid/CidBuilder";
 import {Piece} from "./models/Piece";
@@ -12,6 +12,7 @@ import {SearchResult} from "./models/SearchResult";
 import {SchemeInterface} from "./crypto/Scheme.interface";
 import {base58Encode} from "@polkadot/util-crypto";
 import {stringToU8a} from "@polkadot/util";
+import {fetch} from 'cross-fetch';
 
 const BASE_PATH = "/api/rest/pieces";
 
@@ -36,6 +37,9 @@ export class ContentAddressableStorage {
             bucketId: bucketId.toString(),
             data: piece.data,
             tags: piece.tags,
+            links: piece.links.map(e => {
+                return {cid: e.cid, size: e.size.toString(), name: e.name}
+            })
         };
         let pieceAsBytes = PbPiece.toBinary(pbPiece);
         let cid = this.cidBuilder.build(pieceAsBytes);
@@ -64,7 +68,7 @@ export class ContentAddressableStorage {
     }
 
     async read(bucketId: bigint, cid: string): Promise<Piece> {
-        let response = await fetch(this.gatewayNodeUrl + BASE_PATH + "/" + cid, {
+        let response = await fetch(`${this.gatewayNodeUrl}${BASE_PATH}/${cid}?bucketId=${bucketId}`, {
             method: "GET",
         });
 
@@ -83,7 +87,7 @@ export class ContentAddressableStorage {
             );
         }
 
-        return new Piece(pbSignedPiece.piece.data, pbSignedPiece.piece.tags);
+        return this.toPiece(pbSignedPiece.piece);
     }
 
     async search(query: Query): Promise<SearchResult> {
@@ -110,9 +114,17 @@ export class ContentAddressableStorage {
 
         const isPiece = (val: PbPiece | undefined): val is PbPiece => val !== null;
         let pieces: Piece[] = pbSearchResult.signedPieces
-            .map((p) => p.piece)
-            .filter(isPiece);
+            .map((p: PbSignedPiece) => p.piece)
+            .filter(isPiece)
+            .map(this.toPiece)
 
         return new SearchResult(pieces);
+    }
+
+    private toPiece(piece: PbPiece): Piece {
+        return new Piece(piece.data, piece.tags, piece.links.map(e => {
+            return {cid: e.cid, size: BigInt(e.size), name: e.name}
+        }))
+
     }
 }
