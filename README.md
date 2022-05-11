@@ -1,5 +1,13 @@
 # Cere DDC SDK for JavaScript
 
+## Packages
+
+- [Content addressable Storage](packages/content-addressable-storage/README.md)
+- [Key value Storage](packages/key-value-storage/README.md)
+- [File Storage](packages/file-storage/README.md)
+- [Proto](packages/proto/README.md)
+
+
 ## Compilation
 
 To compile the code in bulk:
