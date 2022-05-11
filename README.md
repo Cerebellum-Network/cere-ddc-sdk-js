@@ -7,6 +7,9 @@
 - [File Storage](packages/file-storage/README.md)
 - [Proto](packages/proto/README.md)
 
+## Dependencies
+
+Require protobuf compiler (`protoc`) for compiling *.proto model files.
 
 ## Compilation
 

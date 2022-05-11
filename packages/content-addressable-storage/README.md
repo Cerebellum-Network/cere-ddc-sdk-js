@@ -7,7 +7,7 @@
 ```typescript
 import {Scheme, ContentAddressableStorage} from "@cere-ddc-sdk/content-addressable-storage"
 
-//Create Scheme for sign requests
+//Create Scheme for signing requests
 const signatureAlgorithm = "ed25519";
 const privateKey = "0x9gh7...";
 const scheme = await Scheme.createScheme(signatureAlgorithm, privateKey);
@@ -28,8 +28,6 @@ const tags = [new Tag("key", "test")]; // some tag for search
 const piece = new Piece(data, tags);
 
 const pieceUri: PieceUri = await storage.store(bucketId, piece);
-
-const cid = pieceUri.cid;
 ```
 
 ### Read
@@ -40,4 +38,17 @@ const bucketId = 1n;
 const cid = "b89mndf..."; // CID can get from pieceUri (pieceUri.cid)
 
 const piece: Piece = await storage.read(bucketId, cid);
+```
+
+### Search
+
+```typescript
+import {Piece, Query, SearchResult, Tag} from "@cere-ddc-sdk/content-addressable-storage"
+
+const bucketId = 1n;
+const tags = [new Tag("key", "test")];
+const query = new Query(bucketId, tags);
+
+const searchResult: SearchResult = await storage.search(query);
+const pieces: Array<Piece> = searchResult.pieces;
 ```

@@ -8,7 +8,7 @@
 import {KeyValueStorage} from "@cere-ddc-sdk/key-value-storage"
 import {Scheme} from "@cere-ddc-sdk/content-addressable-storage"
 
-//Create Scheme for sign requests
+//Create Scheme for signing requests
 const signatureAlgorithm = "ed25519";
 const privateKey = "0x9gh7...";
 const scheme = await Scheme.createScheme(signatureAlgorithm, privateKey);
