@@ -7,6 +7,12 @@
 - [File Storage](packages/file-storage/README.md)
 - [Proto](packages/proto/README.md)
 
+## Definitions
+
+- `DDC` - decentralized data cloud, product of cerebellum network for storing data
+- `piece` - abstraction which represents a unit of data stored in the DDC.
+Doesn't have fixed size and can represent fully logically completed data or part of it.
+
 ## Dependencies
 
 Require protobuf compiler (`protoc`) for compiling *.proto model files.
