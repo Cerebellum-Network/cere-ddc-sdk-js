@@ -7,7 +7,7 @@ describe("CID Builder", () => {
     it("build", async () => {
         //given
         let expectedCid =
-            "bafkreigaknpexyvxt76zgkitavbwx6ejgfheup5oybpm77f3pxzrvwpfdi";
+            "bafk2bzacea73ycjnxe2qov7cvnhx52lzfp6nf5jcblnfus6gqreh6ygganbws";
 
         //when
         let cid = testSubject.build(stringToU8a("Hello world!"));

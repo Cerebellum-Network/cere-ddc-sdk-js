@@ -12,7 +12,8 @@
   "scripts": {
     "format": "prettier --write \"packages/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
-    "compile": "npm run protoc -w ./packages/proto && tsc -b tsconfig.build.json"
+    "compile": "npm run protoc -w ./packages/proto && tsc -b tsconfig.build.json",
+    "test": "jest ./"
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",
