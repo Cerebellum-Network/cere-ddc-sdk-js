@@ -1,5 +1,12 @@
 # @cere-ddc-sdk/content-addressable-storage
 
+Basic package for working with data in DDC.
+
+Support commands:
+- `store` - store data in DDC
+- `read` - download piece with data from DDC
+- `search` - search pieces by tags and download from DDC
+
 ## Example
 
 ### Setup

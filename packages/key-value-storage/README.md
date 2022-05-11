@@ -1,5 +1,11 @@
 # @cere-ddc-sdk/key-value-storage
 
+Package for working with DDC data as Key-Value storage.
+
+Support commands:
+- `store` - store piece data with required key value
+- `read` - read values (pieces) by key
+
 ## Example
 
 ### Setup

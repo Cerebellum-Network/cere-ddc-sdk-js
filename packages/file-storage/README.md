@@ -1,5 +1,11 @@
 # @cere-ddc-sdk/file-storage
 
+Package for working with large data by splitting it to small pieces fixed size.
+
+Support commands:
+- `read` - read file as `Uint8Array` stream
+- `upload` - upload `Uint8Array` stream to DDC
+
 ## Example
 
 ### Setup
@@ -23,6 +29,9 @@ const fileStream: ReadableStream<Uint8Array> = fileStorage.read(bucketId, cid);
 ```
 
 ### Upload
+
+JS doesn't have basic byte stream abstraction, so upload command for browser or server side(NodeJs) may differ.
+NodeJS has implementation in package `stream/web` and browser `dom` implementation.
 
 #### Generic upload
 
