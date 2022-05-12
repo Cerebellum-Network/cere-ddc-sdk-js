@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/core",
-  "description": "Content-addressable storage client",
+  "description": "Core with common logic",
   "version": "1.1.0",
   "repository": {
     "type": "git",
