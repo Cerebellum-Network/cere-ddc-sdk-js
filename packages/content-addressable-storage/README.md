@@ -12,7 +12,8 @@ Support commands:
 ### Setup
 
 ```typescript
-import {Scheme, ContentAddressableStorage} from "@cere-ddc-sdk/content-addressable-storage"
+import {Scheme} from "@cere-ddc-sdk/core"
+import {ContentAddressableStorage} from "@cere-ddc-sdk/content-addressable-storage"
 
 //Create Scheme for signing requests
 const signatureAlgorithm = "ed25519";

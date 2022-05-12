@@ -6,6 +6,7 @@
 - [key-value-storage](packages/key-value-storage/README.md)
 - [file-storage](packages/file-storage/README.md)
 - [proto](packages/proto/README.md)
+- [core](packages/core/README.md)
 
 ## Use case
 

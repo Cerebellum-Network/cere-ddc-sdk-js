@@ -12,7 +12,7 @@ Support commands:
 
 ```typescript
 import {KeyValueStorage} from "@cere-ddc-sdk/key-value-storage"
-import {Scheme} from "@cere-ddc-sdk/content-addressable-storage"
+import {Scheme} from "@cere-ddc-sdk/core"
 
 //Create Scheme for signing requests
 const signatureAlgorithm = "ed25519";

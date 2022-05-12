@@ -14,8 +14,8 @@ NodeJS can use implementation `ReadableStream` in package `stream/web` and brows
 ### Setup
 
 ```typescript
+import {Scheme} from "@cere-ddc-sdk/core"
 import {FileStorage} from "@cere-ddc-sdk/file-storage";
-import {Scheme} from "@cere-ddc-sdk/content-addressable-storage"
 
 //Create Scheme for signing requests
 const signatureAlgorithm = "sr25519";
