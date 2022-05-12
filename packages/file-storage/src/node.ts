@@ -1,6 +1,7 @@
 export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig";
 
-import {PieceUri, SchemeInterface} from "@cere-ddc-sdk/content-addressable-storage";
+import {PieceUri} from "@cere-ddc-sdk/content-addressable-storage";
+import {SchemeInterface} from "@cere-ddc-sdk/core";
 import {FileStorageConfig} from "./core/FileStorageConfig";
 import {CoreFileStorage} from "./core/CoreFileStorage";
 import {FileStorage as FileStorageInterface} from "./core/FileStorage";

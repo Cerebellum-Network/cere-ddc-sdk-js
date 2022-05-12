@@ -1,9 +1,9 @@
 import {
     ContentAddressableStorage,
-    SchemeInterface,
     Piece,
     PieceUri,
 } from "@cere-ddc-sdk/content-addressable-storage";
+import {SchemeInterface} from "@cere-ddc-sdk/core";
 
 const keyTag = "Key"
 

@@ -1,4 +1,5 @@
-import {PieceUri, SchemeInterface} from "@cere-ddc-sdk/content-addressable-storage";
+import {PieceUri} from "@cere-ddc-sdk/content-addressable-storage";
+import {SchemeInterface} from "@cere-ddc-sdk/core";
 import {ReadableStream} from "./stream"
 import {FileStorageConfig} from "./FileStorageConfig";
 
