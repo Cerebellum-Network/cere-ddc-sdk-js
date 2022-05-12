@@ -8,18 +8,27 @@ Support commands:
 
 ## Example
 
+JS doesn't have stream standard, so we decided to follow [WHATWG Streams Standard](https://streams.spec.whatwg.org/).
+NodeJS can use implementation `ReadableStream` in package `stream/web` and browser can use from `dom` implementation.
+
 ### Setup
 
 ```typescript
 import {FileStorage} from "@cere-ddc-sdk/file-storage";
+import {Scheme} from "@cere-ddc-sdk/content-addressable-storage"
 
-const scheme = await Scheme.createScheme("sr25519", "0x93e0153dc...");
+//Create Scheme for signing requests
+const signatureAlgorithm = "sr25519";
+const privateKey = "0x93e0153dc...";
+const scheme = await Scheme.createScheme(signatureAlgorithm, privateKey);
+
 const gatewayUlrl = "https://node-0.gateway.devnet.cere.network";
-
 const fileStorage = new FileStorage(scheme, gatewayUlrl);
 ```
 
 ### Read
+
+### Browser read
 
 ```typescript
 const bucketId = 1n;
@@ -28,19 +37,18 @@ const cid = "QmbWqxBE...";
 const fileStream: ReadableStream<Uint8Array> = fileStorage.read(bucketId, cid);
 ```
 
-### Upload
-
-JS doesn't have basic byte stream abstraction, so upload command for browser or server side(NodeJs) may differ.
-NodeJS has implementation in package `stream/web` and browser `dom` implementation.
-
-#### Generic upload
+### NodeJs read
 
 ```typescript
-let stream: ReadableStream<Uint8Array>;
-const bucketId = 1n;
+import * as streamWeb from "stream/web";
 
-const headPieceUri: Promise<PieceUri> = fileStream.upload(bucketId, stream);
+const bucketId = 1n;
+const cid = "QmbWqxBE...";
+
+const fileStream: streamWeb.ReadableStream<Uint8Array> = fileStorage.read(bucketId, cid);
 ```
+
+### Upload
 
 #### Browser upload
 
@@ -48,5 +56,56 @@ const headPieceUri: Promise<PieceUri> = fileStream.upload(bucketId, stream);
 let blob: Blob;
 const bucketId = 1n;
 
-const headPieceUri: Promise<PieceUri> = fileStream.upload(bucketId, blob.stream());
+const headPieceUri: Promise<PieceUri> = fileStorage.upload(bucketId, blob.stream());
+```
+
+#### NodeJS upload
+
+NodeJs can't read file to `ReadableStream` from `stream/web`, so we need some `Source` class.
+
+```typescript
+import * as streamWeb from "stream/web";
+import {open, FileHandle} from 'node:fs/promises';
+import {PathLike} from "node:fs";
+
+class Source implements streamWeb.UnderlyingByteSource {
+
+    private file!: FileHandle;
+    private readonly filePath: PathLike;
+    readonly type = "bytes";
+
+    constructor(filePath: PathLike) {
+        this.filePath = filePath;
+    }
+
+    async start(controller: streamWeb.ReadableByteStreamController) {
+        this.file = await open(this.filePath, "r");
+    }
+
+    async pull(controller: streamWeb.ReadableByteStreamController) {
+        const {bytesRead, buffer} = await this.file.read();
+
+        if (bytesRead === 0) {
+            await this.file.close();
+            controller.close();
+        }
+
+        controller.enqueue(buffer)
+    }
+
+    async cancel() {
+        await this.file.close()
+    }
+}
+```
+
+Upload from file to DDC
+
+```typescript
+import * as streamWeb from "stream/web";
+
+let filePath: PathLike
+const stream = new streamWeb.ReadableStream(new Source(filePath));
+
+const headPieceUri: Promise<PieceUri> = fileStorage.upload(bucketId, stream);
 ```
