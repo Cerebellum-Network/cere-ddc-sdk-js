@@ -90,7 +90,7 @@ class Source implements streamWeb.UnderlyingByteSource {
             controller.close();
         }
 
-        controller.enqueue(buffer)
+        controller.enqueue(buffer.slice(buffer.byteOffset, bytesRead))
     }
 
     async cancel() {
