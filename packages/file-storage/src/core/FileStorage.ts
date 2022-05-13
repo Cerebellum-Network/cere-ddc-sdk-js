@@ -10,5 +10,5 @@ export interface FileStorage {
 
 export declare const FileStorage: {
     prototype: FileStorage;
-    new(scheme: SchemeInterface, gatewayNodeUrl: string, config?: FileStorageConfig): FileStorage;
+    new(scheme: SchemeInterface, cdnNodeUrl: string, config?: FileStorageConfig): FileStorage;
 };

@@ -8,9 +8,9 @@
 import {FileStorage} from "@cere-ddc-sdk/file-storage";
 
 const scheme = await Scheme.createScheme("sr25519", "0x93e0153dc...");
-const gatewayUlrl = "https://node-0.gateway.devnet.cere.network";
+const cdnUlrl = "https://node-0.cdn.devnet.cere.network";
 
-const fileStorage = new FileStorage(scheme, gatewayUlrl);
+const fileStorage = new FileStorage(scheme, cdnUlrl);
 ```
 
 ### Read

@@ -10,8 +10,8 @@ export class FileStorage implements FileStorageInterface {
 
     private readonly fs: CoreFileStorage;
 
-    constructor(scheme: SchemeInterface, gatewayNodeUrl: string, config: FileStorageConfig = new FileStorageConfig()) {
-        this.fs = new CoreFileStorage(scheme, gatewayNodeUrl, config);
+    constructor(scheme: SchemeInterface, cdnNodeUrl: string, config: FileStorageConfig = new FileStorageConfig()) {
+        this.fs = new CoreFileStorage(scheme, cdnNodeUrl, config);
     }
 
     async upload(bucketId: bigint, stream: streamWeb.ReadableStream<Uint8Array>): Promise<PieceUri> {

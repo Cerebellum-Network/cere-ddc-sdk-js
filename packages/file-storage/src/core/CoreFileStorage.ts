@@ -16,9 +16,9 @@ export class CoreFileStorage {
     readonly config: FileStorageConfig;
     readonly caStorage: ContentAddressableStorage;
 
-    constructor(scheme: SchemeInterface, gatewayNodeUrl: string, config: FileStorageConfig = new FileStorageConfig()) {
+    constructor(scheme: SchemeInterface, cdnNodeUrl: string, config: FileStorageConfig = new FileStorageConfig()) {
         this.config = config;
-        this.caStorage = new ContentAddressableStorage(scheme, gatewayNodeUrl);
+        this.caStorage = new ContentAddressableStorage(scheme, cdnNodeUrl);
     }
 
     async uploadFromStreamReader(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>): Promise<PieceUri> {

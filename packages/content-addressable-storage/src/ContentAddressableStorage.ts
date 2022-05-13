@@ -18,17 +18,17 @@ const BASE_PATH = "/api/rest/pieces";
 
 export class ContentAddressableStorage {
     scheme: SchemeInterface;
-    gatewayNodeUrl: string;
+    cdnNodeUrl: string;
 
     cidBuilder: CidBuilder;
 
     constructor(
         scheme: SchemeInterface,
-        gatewayNodeUrl: string,
+        cdnNodeUrl: string,
         cidBuilder: CidBuilder = new CidBuilder()
     ) {
         this.scheme = scheme;
-        this.gatewayNodeUrl = gatewayNodeUrl;
+        this.cdnNodeUrl = cdnNodeUrl;
         this.cidBuilder = cidBuilder;
     }
 
@@ -53,7 +53,7 @@ export class ContentAddressableStorage {
                 signer: this.scheme.publicKeyHex,
             },
         };
-        let response = await fetch(this.gatewayNodeUrl + BASE_PATH, {
+        let response = await fetch(this.cdnNodeUrl + BASE_PATH, {
             method: "PUT",
             body: PbSignedPiece.toBinary(pbSignedPiece),
         });
@@ -68,7 +68,7 @@ export class ContentAddressableStorage {
     }
 
     async read(bucketId: bigint, cid: string): Promise<Piece> {
-        let response = await fetch(`${this.gatewayNodeUrl}${BASE_PATH}/${cid}?bucketId=${bucketId}`, {
+        let response = await fetch(`${this.cdnNodeUrl}${BASE_PATH}/${cid}?bucketId=${bucketId}`, {
             method: "GET",
         });
 
@@ -98,7 +98,7 @@ export class ContentAddressableStorage {
         let queryAsBytes = PbQuery.toBinary(pbQuery)
         let queryBase58 = base58Encode(queryAsBytes)
 
-        let response = await fetch(this.gatewayNodeUrl + BASE_PATH + "?query=" + queryBase58, {
+        let response = await fetch(this.cdnNodeUrl + BASE_PATH + "?query=" + queryBase58, {
             method: "GET",
         });
 

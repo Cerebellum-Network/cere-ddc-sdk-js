@@ -9,18 +9,18 @@ const keyTag = "Key"
 
 export class KeyValueStorage {
     scheme: SchemeInterface;
-    gatewayNodeUrl: string;
+    cdnNodeUrl: string;
 
     caStorage: ContentAddressableStorage;
 
     constructor(
         scheme: SchemeInterface,
-        gatewayNodeUrl: string,
+        cdnNodeUrl: string,
     ) {
         this.scheme = scheme;
-        this.gatewayNodeUrl = gatewayNodeUrl;
+        this.cdnNodeUrl = cdnNodeUrl;
 
-        this.caStorage = new ContentAddressableStorage(scheme, gatewayNodeUrl)
+        this.caStorage = new ContentAddressableStorage(scheme, cdnNodeUrl)
     }
 
     async store(bucketId: bigint, key: string, piece: Piece): Promise<PieceUri> {
