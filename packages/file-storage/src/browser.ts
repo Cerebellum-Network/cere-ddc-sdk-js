@@ -17,7 +17,7 @@ export class FileStorage implements FileStorageInterface {
     }
 
     async upload(bucketId: bigint, data: Data): Promise<PieceUri> {
-        const stream = await this.transformDataToStream(data);
+        const stream = await transformDataToStream(data);
         const reader = stream.pipeThrough(new TransformStream(this.fs.chunkTransformer())).getReader();
         return await this.fs.uploadFromStreamReader(bucketId, reader);
     }
@@ -27,26 +27,29 @@ export class FileStorage implements FileStorageInterface {
             new CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }
 
-    private async transformDataToStream(data: Data): Promise<ReadableStream<Uint8Array>> {
-        if (data instanceof ReadableStream) {
-            return data;
-        } else if (data instanceof Blob) {
-            const stream: () => ReadableStream<Uint8Array> = data.stream
-            return stream();
-        } else if (data instanceof Uint8Array) {
-            return new ReadableStream<Uint8Array>({
-                pull(controller) {
-                    controller.enqueue(data)
-                }
-            });
-        } else {
-            const response = await fetch(data);
-            const emptyStream = () => new ReadableStream<Uint8Array>({
-                start(controller) {
-                    controller.close();
-                }
-            });
-            return response.body || emptyStream();
-        }
+}
+
+async function transformDataToStream(data: Data): Promise<ReadableStream<Uint8Array>> {
+    if (data instanceof ReadableStream) {
+        return data;
+    } else if (data instanceof Blob) {
+        // @ts-ignore lint thinks it's Blob of NodeJS
+        return data.stream();
+    } else if (data instanceof Uint8Array) {
+        return new ReadableStream<Uint8Array>({
+            pull(controller) {
+                controller.enqueue(data as Uint8Array);
+                controller.close();
+            }
+        });
+    } else {
+        const response = await fetch(data);
+        const emptyStream = () => new ReadableStream<Uint8Array>({
+            start(controller) {
+                controller.close();
+            }
+        });
+
+        return response.body || emptyStream();
     }
 }

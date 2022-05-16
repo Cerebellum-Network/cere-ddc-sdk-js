@@ -3,13 +3,11 @@
 Package for working with large data by splitting it to small pieces fixed size.
 
 Support commands:
+
 - `read` - read file as `Uint8Array` stream
 - `upload` - upload `Uint8Array` stream to DDC
 
 ## Example
-
-JS doesn't have stream standard, so we decided to follow [WHATWG Streams Standard](https://streams.spec.whatwg.org/).
-NodeJS can use implementation `ReadableStream` in package `stream/web` and browser can use from `dom` implementation.
 
 ### Setup
 
@@ -50,62 +48,37 @@ const fileStream: streamWeb.ReadableStream<Uint8Array> = fileStorage.read(bucket
 
 ### Upload
 
+Upload command support many types of data:
+
+- Browser:
+    - `ReadableStream<Uint8Array>`
+    - `Blob`
+    - `string`
+    - `Uint8Array`
+- NodeJS:
+    - `ReadableStream<Uint8Array>` from `node:stream/web`
+    - `Readable` from `node:stream`
+    - `PathLike` from `fs`
+    - `Uint8Array`
+
 #### Browser upload
 
 ```typescript
-let blob: Blob;
+let data: ReadableStream<Uint8Array> | Blob | string | Uint8Array;
 const bucketId = 1n;
 
-const headPieceUri: Promise<PieceUri> = fileStorage.upload(bucketId, blob.stream());
+const headPieceUri: Promise<PieceUri> = fileStorage.upload(bucketId, data);
 ```
 
 #### NodeJS upload
 
-NodeJs can't read file to `ReadableStream` from `stream/web`, so we need some `Source` class.
-
 ```typescript
-import * as streamWeb from "stream/web";
-import {open, FileHandle} from 'node:fs/promises';
-import {PathLike} from "node:fs";
+import * as streamWeb from "node:stream/web";
+import {Readable} from "node:stream";
+import {PathLike} from "fs";
 
-class Source implements streamWeb.UnderlyingByteSource {
+let data: streamWeb.ReadableStream<Uint8Array> | Readable | PathLike | Uint8Array;
+const bucketId = 1n;
 
-    private file!: FileHandle;
-    private readonly filePath: PathLike;
-    readonly type = "bytes";
-
-    constructor(filePath: PathLike) {
-        this.filePath = filePath;
-    }
-
-    async start(controller: streamWeb.ReadableByteStreamController) {
-        this.file = await open(this.filePath, "r");
-    }
-
-    async pull(controller: streamWeb.ReadableByteStreamController) {
-        const {bytesRead, buffer} = await this.file.read();
-
-        if (bytesRead === 0) {
-            await this.file.close();
-            controller.close();
-        }
-
-        controller.enqueue(buffer.slice(buffer.byteOffset, bytesRead))
-    }
-
-    async cancel() {
-        await this.file.close()
-    }
-}
-```
-
-Upload from file to DDC
-
-```typescript
-import * as streamWeb from "stream/web";
-
-let filePath: PathLike
-const stream = new streamWeb.ReadableStream(new Source(filePath));
-
-const headPieceUri: Promise<PieceUri> = fileStorage.upload(bucketId, stream);
+const headPieceUri: Promise<PieceUri> = fileStorage.upload(bucketId, data);
 ```
