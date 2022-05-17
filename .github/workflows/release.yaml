@@ -20,6 +20,6 @@ jobs:
       - name: Compile
         run: npm run compile
       - name: Run tests
-        run: npm test
+        run: npm run test
       - name: Publish package
         run: npm publish --workspaces --access public
