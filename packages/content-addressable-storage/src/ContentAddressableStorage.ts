@@ -124,6 +124,5 @@ export class ContentAddressableStorage {
         return new Piece(piece.data, piece.tags, piece.links.map(e => {
             return {cid: e.cid, size: BigInt(e.size), name: e.name}
         }))
-
     }
 }

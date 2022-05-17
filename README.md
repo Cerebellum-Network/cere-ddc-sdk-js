@@ -31,7 +31,7 @@ To compile the code in bulk:
 
 - clone repository
 - download required modules ```npm install```
-- compile files ```npm run compile -ws```
+- compile files ```npm run compile```
 
 ## Testing
 

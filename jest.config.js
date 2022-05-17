@@ -13,5 +13,7 @@ module.exports = {
   ],
   moduleNameMapper: {
     '^@cere-ddc-sdk/(.*)$': '<rootDir>/packages/$1/'
-  }
+  },
+  globalSetup: "./jest.setup.js",
+  globalTeardown: "./jest.teardown.js",
 };

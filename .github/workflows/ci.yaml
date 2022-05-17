@@ -1,13 +1,16 @@
-name: 'CD release'
+name: 'CI'
 on:
-  release:
-    types: [prereleased, released]
-
-env:
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - edited
+  workflow_call:
 
 jobs:
-  continuous-deployment:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -21,5 +24,3 @@ jobs:
         run: npm run compile
       - name: Run tests
         run: npm test
-      - name: Publish package
-        run: npm publish --workspaces --access public
