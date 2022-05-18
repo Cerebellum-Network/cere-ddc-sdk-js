@@ -1,9 +1,9 @@
 import {
     ContentAddressableStorage,
-    SchemeInterface,
     Piece,
     PieceUri,
 } from "@cere-ddc-sdk/content-addressable-storage";
+import {SchemeInterface} from "@cere-ddc-sdk/core";
 
 const keyTag = "Key"
 
@@ -33,11 +33,11 @@ export class KeyValueStorage {
         return this.caStorage.store(bucketId, piece)
     }
 
-    async read(bucketId: bigint, cid: string): Promise<Piece[]> {
+    async read(bucketId: bigint, key: string): Promise<Piece[]> {
         const searchResult = await this.caStorage.search(
             {
                 bucketId: bucketId,
-                tags: Array.of({key: keyTag, value: cid})
+                tags: Array.of({key: keyTag, value: key})
             }
         )
 

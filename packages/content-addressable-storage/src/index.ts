@@ -6,6 +6,3 @@ export {Tag} from "./models/Tag";
 export {Link} from "./models/Link";
 
 export {ContentAddressableStorage} from "./ContentAddressableStorage";
-export {SchemeInterface} from "./crypto/Scheme.interface";
-export {Scheme} from "./crypto/Scheme";
-export {PolkadotDappScheme} from "./crypto/PolkadotDappScheme";

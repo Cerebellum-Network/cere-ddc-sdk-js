@@ -2,9 +2,9 @@ import {
     ContentAddressableStorage,
     Link,
     Piece,
-    PieceUri,
-    SchemeInterface
+    PieceUri
 } from "@cere-ddc-sdk/content-addressable-storage";
+import {SchemeInterface} from "@cere-ddc-sdk/core";
 import {FileStorageConfig} from "./FileStorageConfig";
 import {IndexedLink} from "./model/IndexedLink";
 import {ReadableStreamDefaultReader, Transformer, UnderlyingSource} from "./stream"

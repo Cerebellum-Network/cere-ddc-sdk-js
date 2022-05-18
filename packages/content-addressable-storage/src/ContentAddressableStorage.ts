@@ -4,12 +4,11 @@ import {
     SearchResult as PbSearchResult,
     SignedPiece as PbSignedPiece,
 } from "@cere-ddc-sdk/proto";
-import {CidBuilder} from "./cid/CidBuilder";
 import {Piece} from "./models/Piece";
 import {PieceUri} from "./models/PieceUri";
 import {Query} from "./models/Query";
 import {SearchResult} from "./models/SearchResult";
-import {SchemeInterface} from "./crypto/Scheme.interface";
+import {CidBuilder, SchemeInterface} from "@cere-ddc-sdk/core";
 import {base58Encode} from "@polkadot/util-crypto";
 import {stringToU8a} from "@polkadot/util";
 import {fetch} from 'cross-fetch';
@@ -125,6 +124,5 @@ export class ContentAddressableStorage {
         return new Piece(piece.data, piece.tags, piece.links.map(e => {
             return {cid: e.cid, size: BigInt(e.size), name: e.name}
         }))
-
     }
 }

@@ -1,0 +1,31 @@
+{
+  "name": "@cere-ddc-sdk/core",
+  "description": "Core with common logic",
+  "version": "1.1.0",
+  "repository": {
+    "type": "git",
+    "directory": "packages/core",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "main": "dist/node.js",
+  "browser": "dist/browser.js",
+  "types": "dist/type.d.ts",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@types/node": "^16.0.0",
+    "cids": "^1.1.9",
+    "multiformats": "^3.0.3",
+    "multihashing": "^0.3.4"
+  },
+  "devDependencies": {
+    "typescript": "4.5.4"
+  },
+  "peerDependencies": {
+    "@polkadot/extension-dapp": "0.37.2",
+    "@polkadot/keyring": "5.9.2",
+    "@polkadot/util": "5.9.2",
+    "@polkadot/util-crypto": "5.9.2",
+    "@polkadot/wasm-crypto": "3.2.4"
+  }
+}
