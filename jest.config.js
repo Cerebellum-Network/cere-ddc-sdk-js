@@ -10,6 +10,12 @@ module.exports = {
     "jest.config.js",
     "/node_modules/",
     "/build/",
+    "/dist/"
+  ],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/build/",
+    "/dist/"
   ],
   moduleNameMapper: {
     '^@cere-ddc-sdk/(.*)$': '<rootDir>/packages/$1/'
