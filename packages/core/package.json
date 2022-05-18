@@ -25,6 +25,7 @@
     "@polkadot/extension-dapp": "0.37.2",
     "@polkadot/keyring": "5.9.2",
     "@polkadot/util": "5.9.2",
+    "@polkadot/util-crypto": "5.9.2",
     "@polkadot/wasm-crypto": "3.2.4"
   }
 }
