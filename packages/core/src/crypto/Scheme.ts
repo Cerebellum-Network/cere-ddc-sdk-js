@@ -15,7 +15,7 @@ export class Scheme implements SchemeInterface{
         this.publicKeyHex = publicKeyHex;
     }
 
-    static async createScheme(scheme: string, privateKeyHex: string): Promise<Scheme> {
+    static async createScheme(scheme: "sr25519" | "ed25519", seedHex: string): Promise<Scheme> {
         if (scheme != "sr25519" && scheme != "ed25519") {
             throw new Error("Unsupported scheme");
         }
@@ -23,7 +23,7 @@ export class Scheme implements SchemeInterface{
         await waitReady()
 
         let keyring = new Keyring({type: scheme})
-        let keyringPair = keyring.addFromSeed(hexToU8a(privateKeyHex))
+        let keyringPair = keyring.addFromSeed(hexToU8a(seedHex))
 
         return new Scheme(keyringPair, scheme, u8aToHex(keyring.publicKeys[0]))
     }
