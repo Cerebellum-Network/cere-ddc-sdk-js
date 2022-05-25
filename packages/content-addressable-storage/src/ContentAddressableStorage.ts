@@ -14,6 +14,8 @@ import {stringToU8a} from "@polkadot/util";
 import {fetch} from 'cross-fetch';
 
 const BASE_PATH = "/api/rest/pieces";
+const decoder = new TextDecoder();
+const decodeResponseBody = async (response: Response) => decoder.decode(await response.arrayBuffer());
 
 export class ContentAddressableStorage {
     scheme: SchemeInterface;
@@ -32,7 +34,7 @@ export class ContentAddressableStorage {
     }
 
     async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
-        let pbPiece: PbPiece = {
+        const pbPiece: PbPiece = {
             bucketId: bucketId.toString(),
             data: piece.data,
             tags: piece.tags,
@@ -40,11 +42,11 @@ export class ContentAddressableStorage {
                 return {cid: e.cid, size: e.size.toString(), name: e.name}
             })
         };
-        let pieceAsBytes = PbPiece.toBinary(pbPiece);
-        let cid = this.cidBuilder.build(pieceAsBytes);
-        let signature = await this.scheme.sign(stringToU8a(cid));
+        const pieceAsBytes = PbPiece.toBinary(pbPiece);
+        const cid = this.cidBuilder.build(pieceAsBytes);
+        const signature = await this.scheme.sign(stringToU8a(cid));
 
-        let pbSignedPiece: PbSignedPiece = {
+        const pbSignedPiece: PbSignedPiece = {
             piece: pbPiece,
             signature: {
                 value: signature,
@@ -52,70 +54,64 @@ export class ContentAddressableStorage {
                 signer: this.scheme.publicKeyHex,
             },
         };
-        let response = await fetch(this.gatewayNodeUrl + BASE_PATH, {
+
+        const response = await this.sendRequest(BASE_PATH, {
             method: "PUT",
             body: PbSignedPiece.toBinary(pbSignedPiece),
         });
 
         if (201 != response.status) {
-            throw Error(
-                `Failed to store. Response: status='${response.status}' body='${response.body}'`
-            );
+            throw Error(`Failed to store. Response: status='${response.status}' body=${await decodeResponseBody(response)}`);
         }
 
         return new PieceUri(bucketId, cid);
     }
 
     async read(bucketId: bigint, cid: string): Promise<Piece> {
-        let response = await fetch(`${this.gatewayNodeUrl}${BASE_PATH}/${cid}?bucketId=${bucketId}`, {
-            method: "GET",
-        });
+        const response = await this.sendRequest(`${BASE_PATH}/${cid}?bucketId=${bucketId}`);
 
         if (200 != response.status) {
-            throw Error(
-                `Failed to read. Response: status='${response.status}' body='${response.body}'`
-            );
+            throw Error(`Failed to read piece. Response: status='${response.status}' body=${await decodeResponseBody(response)}`);
         }
 
-        let pbSignedPiece = PbSignedPiece.fromBinary(
-            new Uint8Array(await response.arrayBuffer())
-        );
+        const pbSignedPiece = await response.arrayBuffer().then(value => PbSignedPiece.fromBinary(new Uint8Array(value)))
+            .catch(() => {
+                throw new Error("Can't parse search response bytes to SignedPiece.");
+            });
+
+
         if (!pbSignedPiece.piece) {
-            throw new Error(
-                `Failed to parse signed piece. Response: status='${response.status}' body='${response.body}'`
-            );
+            throw new Error(`Failed to parse signed piece. Response: status='${response.status}' body=${await decodeResponseBody(response)}`);
         }
 
         return this.toPiece(pbSignedPiece.piece);
     }
 
     async search(query: Query): Promise<SearchResult> {
-        let pbQuery: PbQuery = {
+        const pbQuery: PbQuery = {
             bucketId: query.bucketId.toString(),
             tags: query.tags,
-        }
-        let queryAsBytes = PbQuery.toBinary(pbQuery)
-        let queryBase58 = base58Encode(queryAsBytes)
+        };
+        const queryAsBytes = PbQuery.toBinary(pbQuery);
+        const queryBase58 = base58Encode(queryAsBytes);
 
-        let response = await fetch(this.gatewayNodeUrl + BASE_PATH + "?query=" + queryBase58, {
-            method: "GET",
-        });
+        const response = await this.sendRequest(`${BASE_PATH}?query=${queryBase58}`);
 
         if (200 != response.status) {
-            throw Error(
-                `Failed to search. Response: status='${response.status}' body='${response.body}'`
-            );
+            throw Error(`Failed to search. Response: status='${response.status}' body=${await decodeResponseBody(response)}`);
         }
 
-        let pbSearchResult = PbSearchResult.fromBinary(
-            new Uint8Array(await response.arrayBuffer())
-        );
+        const pbSearchResult = await response.arrayBuffer()
+            .then(value => PbSearchResult.fromBinary(new Uint8Array(value)))
+            .catch(() => {
+                throw new Error("Can't parse search response bytes to SearchResult.");
+            })
 
         const isPiece = (val: PbPiece | undefined): val is PbPiece => val !== null;
-        let pieces: Piece[] = pbSearchResult.signedPieces
+        const pieces: Piece[] = pbSearchResult.signedPieces
             .map((p: PbSignedPiece) => p.piece)
             .filter(isPiece)
-            .map(this.toPiece)
+            .map(this.toPiece);
 
         return new SearchResult(pieces);
     }
@@ -123,6 +119,13 @@ export class ContentAddressableStorage {
     private toPiece(piece: PbPiece): Piece {
         return new Piece(piece.data, piece.tags, piece.links.map(e => {
             return {cid: e.cid, size: BigInt(e.size), name: e.name}
-        }))
+        }));
+    }
+
+    private sendRequest(path: String, init?: RequestInit): Promise<Response> {
+        let url = `${this.gatewayNodeUrl}${path}`
+        return fetch(url, init).catch((error) => {
+            throw new Error(`Can't send request url='${url}', method='${init?.method || "GET"}', error='${error}'`);
+        });
     }
 }

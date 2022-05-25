@@ -4,7 +4,7 @@ import {hexToU8a, u8aToHex} from "@polkadot/util";
 import {waitReady} from "@polkadot/wasm-crypto";
 import {SchemeInterface} from "./Scheme.interface";
 
-export class Scheme implements SchemeInterface{
+export class Scheme implements SchemeInterface {
     keyringPair: KeyringPair;
     name: string;
     publicKeyHex: string;
@@ -19,13 +19,24 @@ export class Scheme implements SchemeInterface{
         if (scheme != "sr25519" && scheme != "ed25519") {
             throw new Error("Unsupported scheme");
         }
+        let seed;
+        try {
+            seed = hexToU8a(seedHex);
+        } catch (err) {
+            throw new Error("Couldn't parse to bytes seed hex");
+        }
 
         await waitReady()
 
-        let keyring = new Keyring({type: scheme})
-        let keyringPair = keyring.addFromSeed(hexToU8a(seedHex))
+        const keyring = new Keyring({type: scheme});
+        let keyringPair;
+        try {
+            keyringPair = keyring.addFromSeed(seed);
+        } catch (err) {
+            throw new Error(`Couldn't create scheme. Seed size should be 32 bytes`)
+        }
 
-        return new Scheme(keyringPair, scheme, u8aToHex(keyring.publicKeys[0]))
+        return new Scheme(keyringPair, scheme, u8aToHex(keyring.publicKeys[0]));
     }
 
     async sign(data: Uint8Array): Promise<string> {
