@@ -76,7 +76,7 @@ export class ContentAddressableStorage {
 
         const pbSignedPiece = await response.arrayBuffer().then(value => PbSignedPiece.fromBinary(new Uint8Array(value)))
             .catch(() => {
-                throw new Error("Can't parse read response bytes to SignedPiece.");
+                throw new Error("Can't parse read response body to SignedPiece.");
             });
 
 
@@ -104,7 +104,7 @@ export class ContentAddressableStorage {
         const pbSearchResult = await response.arrayBuffer()
             .then(value => PbSearchResult.fromBinary(new Uint8Array(value)))
             .catch(() => {
-                throw new Error("Can't parse search response bytes to SearchResult.");
+                throw new Error("Can't parse search response body to SearchResult.");
             })
 
         const isPiece = (val: PbPiece | undefined): val is PbPiece => val !== null;
