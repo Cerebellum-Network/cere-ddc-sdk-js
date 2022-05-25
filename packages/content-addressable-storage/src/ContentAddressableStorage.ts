@@ -76,7 +76,7 @@ export class ContentAddressableStorage {
 
         const pbSignedPiece = await response.arrayBuffer().then(value => PbSignedPiece.fromBinary(new Uint8Array(value)))
             .catch(() => {
-                throw new Error("Can't parse search response bytes to SignedPiece.");
+                throw new Error("Can't parse read response bytes to SignedPiece.");
             });
 
 
