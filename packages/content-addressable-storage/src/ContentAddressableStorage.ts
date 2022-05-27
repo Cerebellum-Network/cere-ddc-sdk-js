@@ -8,7 +8,7 @@ import {Piece} from "./models/Piece";
 import {PieceUri} from "./models/PieceUri";
 import {Query} from "./models/Query";
 import {SearchResult} from "./models/SearchResult";
-import {CidBuilder, SchemeInterface} from "@cere-ddc-sdk/core";
+import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
 import {base58Encode} from "@polkadot/util-crypto";
 import {stringToU8a} from "@polkadot/util";
 import {fetch} from 'cross-fetch';
@@ -19,7 +19,10 @@ export class ContentAddressableStorage {
     scheme: SchemeInterface;
     gatewayNodeUrl: string;
 
+    cipher: CipherInterface;
     cidBuilder: CidBuilder;
+
+    //smartContract:
 
     constructor(
         scheme: SchemeInterface,
@@ -32,9 +35,11 @@ export class ContentAddressableStorage {
     }
 
     async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
+        const dataAsBytes = await piece.dataAsBytes()
+
         let pbPiece: PbPiece = {
             bucketId: bucketId.toString(),
-            data: piece.data,
+            data: dataAsBytes,
             tags: piece.tags,
             links: piece.links.map(e => {
                 return {cid: e.cid, size: e.size.toString(), name: e.name}
@@ -66,6 +71,12 @@ export class ContentAddressableStorage {
         return new PieceUri(bucketId, cid);
     }
 
+    async storeEncrypted(bucketId: bigint, piece: Piece, dekHex: string): Promise<PieceUri> {
+        piece.data = this.cipher.encrypt(await piece.dataAsBytes(), dekHex)
+        return this.store(bucketId, piece)
+    }
+
+    // return data as Uint8Array
     async read(bucketId: bigint, cid: string): Promise<Piece> {
         let response = await fetch(`${this.gatewayNodeUrl}${BASE_PATH}/${cid}?bucketId=${bucketId}`, {
             method: "GET",

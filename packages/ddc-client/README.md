@@ -3,7 +3,7 @@
 ## Short introduction
 
 DEK is a data encryption key used to encrypt the data.
-EDEK is a encrypted data encryption key that is stored on DDC and used to share data (re-encrypt DEK per partner).
+EDEK is an encrypted data encryption key that is stored in DDC and used to share data (re-encrypt DEK per partner).
 
 DEK path is a hierarchical encryption path (e.g. /photos/friends) that is used to generate DEK recursively and share data on any level. Similar to directory based access.  
 
@@ -13,7 +13,7 @@ DEK path is a hierarchical encryption path (e.g. /photos/friends) that is used t
 
 ```typescript
 export interface DdcClient {
-    // Creates bucket in smart contract
+    // Create bucket in smart contract
     createBucket(balance: bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent>
 
     // Grant bucket permission in smart contract

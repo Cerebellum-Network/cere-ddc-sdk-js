@@ -41,10 +41,9 @@ export class KeyValueStorage {
             }
         )
 
-        return searchResult.pieces.map(p => ({
-            data: p.data,
-            tags: p.tags.filter(t => t.key != keyTag),
-            links: p.links
-        }))
+        return searchResult.pieces.map(p => new Piece(
+            p.data,
+            p.tags.filter(t => t.key != keyTag)
+        ))
     }
 }

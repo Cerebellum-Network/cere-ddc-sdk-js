@@ -27,6 +27,7 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
+    "@cere-ddc-sdk/file-storage": "file:packages/file-storage",
     "eslint-plugin-jest": "^26.1.1",
     "ts-loader": "^8.0.18"
   },
