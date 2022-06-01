@@ -1,13 +1,8 @@
-import {
-    ContentAddressableStorage,
-    Link,
-    Piece,
-    PieceUri
-} from "@cere-ddc-sdk/content-addressable-storage";
-import {SchemeInterface} from "@cere-ddc-sdk/core";
+import {ContentAddressableStorage, Link, Piece, PieceUri, Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
 import {FileStorageConfig} from "./FileStorageConfig";
 import {IndexedLink} from "./model/IndexedLink";
-import {ReadableStreamDefaultReader, Transformer, UnderlyingSource} from "./stream"
+import {EncryptionOptions} from "@cere-ddc-sdk/core/src/crypto/encryption/EncryptionOptions";
 
 const encoder = new TextEncoder();
 
@@ -16,13 +11,13 @@ export class CoreFileStorage {
     readonly config: FileStorageConfig;
     readonly caStorage: ContentAddressableStorage;
 
-    constructor(scheme: SchemeInterface, gatewayNodeUrl: string, config: FileStorageConfig = new FileStorageConfig()) {
+    constructor(scheme: SchemeInterface, gatewayNodeUrl: string, config: FileStorageConfig = new FileStorageConfig(), cipher?: CipherInterface, cidBuilder?: CidBuilder) {
         this.config = config;
-        this.caStorage = new ContentAddressableStorage(scheme, gatewayNodeUrl);
+        this.caStorage = new ContentAddressableStorage(scheme, gatewayNodeUrl, cipher, cidBuilder);
     }
 
-    async uploadFromStreamReader(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>): Promise<PieceUri> {
-        const indexedLinks = await this.storeChunks(bucketId, reader);
+    async uploadFromStreamReader(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>, encryptionOptions?: EncryptionOptions): Promise<PieceUri> {
+        const indexedLinks = await this.storeChunks(bucketId, reader, encryptionOptions);
 
         if (indexedLinks.length === 0) {
             throw new Error("ReadableStream is empty");
@@ -34,15 +29,16 @@ export class CoreFileStorage {
         return await this.caStorage.store(bucketId, new Piece(encoder.encode("metadata"), [], links));
     }
 
-    createReadUnderlyingSource(bucketId: bigint, cid: string): UnderlyingSource<Uint8Array> {
-        let linksPromise = this.caStorage.read(bucketId, cid).then(value => value.links);
+    createReadUnderlyingSource(bucketId: bigint, address?: string | Array<Link>, dek?: string): UnderlyingSource<Uint8Array> {
+        let linksPromise = address instanceof Array<Link> ? Promise.resolve(address) : this.caStorage.read(bucketId, address as string).then(value => value.links);
 
         let index = 0;
         const runReadPieceTask = () => new Promise<Uint8Array>(async (resolve, reject) => {
             const current = index++;
             const link = (await linksPromise)[current];
 
-            this.caStorage.read(bucketId, link.cid).then(piece => {
+            const promisePiece: Promise<Piece> = dek ? this.caStorage.readDecrypted(bucketId, link.cid, dek) : this.caStorage.read(bucketId, link.cid)
+            promisePiece.then(piece => {
                 if (BigInt(piece.data.length) !== link.size) {
                     reject(new Error("Invalid piece size"));
                 }
@@ -108,7 +104,7 @@ export class CoreFileStorage {
         }
     }
 
-    private async storeChunks(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>): Promise<Array<IndexedLink>> {
+    private async storeChunks(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>, encryptionOptions?: EncryptionOptions): Promise<Array<IndexedLink>> {
         const indexedLinks: Array<IndexedLink> = [];
         const tasks = new Array<Promise<void>>();
         let index = 0;
@@ -116,9 +112,12 @@ export class CoreFileStorage {
             tasks.push(new Promise(async (resolve) => {
                 let result;
                 while (!(result = await reader.read()).done) {
-                    const current = index;
-                    index++;
-                    const pieceUri = await this.caStorage.store(bucketId, new Piece(result.value));
+                    const current = index++;
+
+                    const piece = new Piece(result.value)
+                    piece.tags.push(new Tag("multipart", "true"))
+                    const pieceUri = encryptionOptions ? await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions)
+                        : await this.caStorage.store(bucketId, piece)
 
                     indexedLinks.push(new IndexedLink(current, new Link(pieceUri.cid, BigInt(result.value.length))));
                 }

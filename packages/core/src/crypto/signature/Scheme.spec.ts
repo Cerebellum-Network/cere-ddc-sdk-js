@@ -1,6 +1,7 @@
 import { Scheme } from "./Scheme";
 import {hexToU8a, stringToU8a} from "@polkadot/util";
 import {sr25519Verify} from "@polkadot/wasm-crypto";
+import {naclEncrypt, randomAsU8a} from "@polkadot/util-crypto";
 
 describe("Scheme", () => {
 

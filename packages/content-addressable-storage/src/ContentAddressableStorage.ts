@@ -12,34 +12,36 @@ import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
 import {base58Encode} from "@polkadot/util-crypto";
 import {stringToU8a} from "@polkadot/util";
 import {fetch} from 'cross-fetch';
+import {Tag} from "./models/Tag";
+import {EncryptionOptions} from "@cere-ddc-sdk/core/src/crypto/encryption/EncryptionOptions";
 
 const BASE_PATH = "/api/rest/pieces";
 
 export class ContentAddressableStorage {
-    scheme: SchemeInterface;
-    gatewayNodeUrl: string;
+    readonly scheme: SchemeInterface;
+    readonly gatewayNodeUrl: string;
 
-    cipher: CipherInterface;
-    cidBuilder: CidBuilder;
+    readonly cipher?: CipherInterface;
+    readonly cidBuilder: CidBuilder;
 
     //smartContract:
 
     constructor(
         scheme: SchemeInterface,
         gatewayNodeUrl: string,
+        cipher?: CipherInterface,
         cidBuilder: CidBuilder = new CidBuilder()
     ) {
         this.scheme = scheme;
         this.gatewayNodeUrl = gatewayNodeUrl;
         this.cidBuilder = cidBuilder;
+        this.cipher = cipher;
     }
 
     async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
-        const dataAsBytes = await piece.dataAsBytes()
-
         let pbPiece: PbPiece = {
             bucketId: bucketId.toString(),
-            data: dataAsBytes,
+            data: piece.data,
             tags: piece.tags,
             links: piece.links.map(e => {
                 return {cid: e.cid, size: e.size.toString(), name: e.name}
@@ -71,11 +73,6 @@ export class ContentAddressableStorage {
         return new PieceUri(bucketId, cid);
     }
 
-    async storeEncrypted(bucketId: bigint, piece: Piece, dekHex: string): Promise<PieceUri> {
-        piece.data = this.cipher.encrypt(await piece.dataAsBytes(), dekHex)
-        return this.store(bucketId, piece)
-    }
-
     // return data as Uint8Array
     async read(bucketId: bigint, cid: string): Promise<Piece> {
         let response = await fetch(`${this.gatewayNodeUrl}${BASE_PATH}/${cid}?bucketId=${bucketId}`, {
@@ -97,7 +94,7 @@ export class ContentAddressableStorage {
             );
         }
 
-        return this.toPiece(pbSignedPiece.piece);
+        return this.toPiece(pbSignedPiece.piece, cid);
     }
 
     async search(query: Query): Promise<SearchResult> {
@@ -126,14 +123,31 @@ export class ContentAddressableStorage {
         let pieces: Piece[] = pbSearchResult.signedPieces
             .map((p: PbSignedPiece) => p.piece)
             .filter(isPiece)
-            .map(this.toPiece)
+            .map(e => this.toPiece(e))
 
         return new SearchResult(pieces);
     }
 
-    private toPiece(piece: PbPiece): Piece {
+    async storeEncrypted(bucketId: bigint, piece: Piece, encryptionOptions: EncryptionOptions): Promise<PieceUri> {
+        const encryptedPiece = piece.clone();
+        encryptedPiece.tags.push(new Tag("encrypted", "true"));
+        encryptedPiece.tags.push(new Tag("dekPath", encryptionOptions.dekPath));
+        encryptedPiece.data = this.cipher!.encrypt(piece.data, encryptionOptions.dek)
+        return this.store(bucketId, encryptedPiece)
+    }
+
+    async readDecrypted(bucketId: bigint, cid: string, dek: string): Promise<Piece> {
+        const piece = await this.read(bucketId, cid);
+        if (piece.links.length !== 0) {
+            piece.data = this.cipher!.decrypt(piece.data, dek)
+        }
+
+        return piece;
+    }
+
+    private toPiece(piece: PbPiece, cid?: string): Piece {
         return new Piece(piece.data, piece.tags, piece.links.map(e => {
             return {cid: e.cid, size: BigInt(e.size), name: e.name}
-        }))
+        }), cid)
     }
 }
