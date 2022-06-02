@@ -3,7 +3,7 @@ import {EncryptionOptions} from "@cere-ddc-sdk/core/src/crypto/encryption/Encryp
 export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig";
 
 import {PathLike} from "fs";
-import {ContentAddressableStorage, Link, PieceUri} from "@cere-ddc-sdk/content-addressable-storage";
+import {ContentAddressableStorage, Link, PieceUri, Tag} from "@cere-ddc-sdk/content-addressable-storage";
 import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
 import {FileStorageConfig} from "./core/FileStorageConfig";
 import {CoreFileStorage} from "./core/CoreFileStorage";
@@ -27,10 +27,10 @@ export class FileStorage implements FileStorageInterface {
         this.config = this.fs.config;
     }
 
-    async upload(bucketId: bigint, data: Data): Promise<PieceUri> {
+    async upload(bucketId: bigint, data: Data, tags: Array<Tag> = []): Promise<PieceUri> {
         const stream = await transformDataToStream(data);
         const reader = stream.pipeThrough(new streamWeb.TransformStream(this.fs.chunkTransformer())).getReader();
-        return await this.fs.uploadFromStreamReader(bucketId, reader);
+        return await this.fs.uploadFromStreamReader(bucketId, reader, tags);
     }
 
     read(bucketId: bigint, cid: string): streamWeb.ReadableStream<Uint8Array> {
@@ -43,10 +43,10 @@ export class FileStorage implements FileStorageInterface {
             new streamWeb.CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }
 
-    async uploadEncrypted(bucketId: bigint, data: Data, encryptionOptions: EncryptionOptions): Promise<PieceUri> {
+    async uploadEncrypted(bucketId: bigint, data: Data, tags: Array<Tag> = [], encryptionOptions: EncryptionOptions): Promise<PieceUri> {
         const stream = await transformDataToStream(data);
         const reader = stream.pipeThrough(new streamWeb.TransformStream(this.fs.chunkTransformer())).getReader();
-        return await this.fs.uploadFromStreamReader(bucketId, reader, encryptionOptions);
+        return await this.fs.uploadFromStreamReader(bucketId, reader, tags, encryptionOptions);
     }
 
     readLinks(bucketId: bigint, links: Array<Link>): ReadableStream<Uint8Array> {

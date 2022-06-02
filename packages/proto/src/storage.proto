@@ -33,6 +33,7 @@ message Tag {
 message Query {
   uint64       bucketId = 1 [jstype = JS_STRING];
   repeated Tag tags     = 2;
+  bool         loadData = 3;
 }
 
 message SearchResult {

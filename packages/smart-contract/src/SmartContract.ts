@@ -12,6 +12,7 @@ import {SubmittableExtrinsic} from "@polkadot/api/submittable/types";
 import {ISubmittableResult} from "@polkadot/types/types";
 import {cryptoWaitReady} from '@polkadot/util-crypto';
 import _ from "lodash";
+import {NodeStatus} from "./model/NodeStatus";
 
 const cereTypes = require("./types/cere_types.json");
 
@@ -96,6 +97,13 @@ export class SmartContract {
         if (!result.isOk) throw result.asErr;
         // @ts-ignore
         return output.toJSON().ok as ClusterStatus
+    }
+
+    async nodeGet(nodeId: number): Promise<NodeStatus> {
+        let {result, output} = await this.contract.query.nodeGet(this.account.address, txOptions, nodeId)
+        if (!result.isOk) throw result.asErr;
+        // @ts-ignore
+        return output.toJSON().ok as NodeStatus
     }
 
     async sendTx(account: KeyringPair, tx: SubmittableExtrinsic<any>): Promise<ISubmittableResult> {

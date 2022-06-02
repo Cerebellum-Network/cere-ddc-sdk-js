@@ -1,6 +1,6 @@
 import {Keyring} from "@polkadot/keyring";
 import {KeyringPair} from "@polkadot/keyring/types";
-import {hexToU8a, u8aToHex} from "@polkadot/util";
+import {u8aToHex} from "@polkadot/util";
 import {waitReady} from "@polkadot/wasm-crypto";
 import {SchemeInterface} from "./Scheme.interface";
 
@@ -25,7 +25,7 @@ export class Scheme implements SchemeInterface{
         await waitReady()
 
         let keyring = new Keyring({type: scheme})
-        let keyringPair = keyring.addFromSeed(hexToU8a(seedHex))
+        let keyringPair = keyring.addFromMnemonic(seedHex)
 
         return new Scheme(keyringPair, scheme, u8aToHex(keyring.publicKeys[0]))
     }

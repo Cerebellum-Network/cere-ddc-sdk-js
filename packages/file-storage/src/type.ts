@@ -1,4 +1,4 @@
-import {ContentAddressableStorage, Link, PieceUri} from "@cere-ddc-sdk/content-addressable-storage";
+import {ContentAddressableStorage, Link, PieceUri, Tag} from "@cere-ddc-sdk/content-addressable-storage";
 import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
 import {FileStorageConfig} from "./core/FileStorageConfig";
 import {Readable} from "node:stream";
@@ -14,6 +14,7 @@ export interface FileStorage {
     readonly config: FileStorageConfig;
     readonly caStorage: ContentAddressableStorage;
 
+    upload(bucketId: bigint, data: Data, tags: Array<Tag>): Promise<PieceUri>;
     upload(bucketId: bigint, data: Data): Promise<PieceUri>;
     read(bucketId: bigint, cid: string): ReadableStream<Uint8Array>;
 
@@ -21,7 +22,7 @@ export interface FileStorage {
     readDecryptedLinks(bucketId: bigint, links: Array<Link>, dek: string): ReadableStream<Uint8Array>;
 
     readDecrypted(bucketId: bigint, cid: string, dek: string): ReadableStream<Uint8Array>;
-    uploadEncrypted(bucketId: bigint, data: Data, encryptionOptions: EncryptionOptions): Promise<PieceUri>;
+    uploadEncrypted(bucketId: bigint, data: Data, tags: Array<Tag>, encryptionOptions: EncryptionOptions): Promise<PieceUri>;
 }
 
 export declare const FileStorage: {

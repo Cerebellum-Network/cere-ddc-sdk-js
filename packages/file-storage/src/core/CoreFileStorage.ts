@@ -16,7 +16,7 @@ export class CoreFileStorage {
         this.caStorage = new ContentAddressableStorage(scheme, gatewayNodeUrl, cipher, cidBuilder);
     }
 
-    async uploadFromStreamReader(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>, encryptionOptions?: EncryptionOptions): Promise<PieceUri> {
+    async uploadFromStreamReader(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>, tags: Array<Tag> = [], encryptionOptions?: EncryptionOptions): Promise<PieceUri> {
         const indexedLinks = await this.storeChunks(bucketId, reader, encryptionOptions);
 
         if (indexedLinks.length === 0) {
@@ -26,7 +26,7 @@ export class CoreFileStorage {
         const links = indexedLinks
             .sort((a, b) => a.position - b.position)
             .map(e => e.link);
-        return await this.caStorage.store(bucketId, new Piece(encoder.encode("metadata"), [], links));
+        return await this.caStorage.store(bucketId, new Piece(encoder.encode("metadata"), tags, links));
     }
 
     createReadUnderlyingSource(bucketId: bigint, address?: string | Array<Link>, dek?: string): UnderlyingSource<Uint8Array> {

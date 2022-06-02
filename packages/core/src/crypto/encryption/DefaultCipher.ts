@@ -1,10 +1,10 @@
 import {CipherInterface} from "./Cipher.interface";
 
 export class DefaultCipher implements CipherInterface {
-    mnemonic: string;
+    private readonly secretPhrase: string;
 
-    constructor(mnemonic: string) {
-        this.mnemonic = mnemonic;
+    constructor(secretPhrase: string) {
+        this.secretPhrase = secretPhrase;
     }
 
     encrypt(data: Uint8Array, dek: string): Uint8Array {

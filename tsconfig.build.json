@@ -6,5 +6,7 @@
     { "path": "packages/content-addressable-storage/tsconfig.build.json" },
     { "path": "packages/key-value-storage/tsconfig.build.json" },
     { "path": "packages/file-storage/tsconfig.build.json" },
+    { "path": "packages/smart-contract/tsconfig.build.json" },
+    { "path": "packages/ddc-client/tsconfig.build.json" },
   ]
 }

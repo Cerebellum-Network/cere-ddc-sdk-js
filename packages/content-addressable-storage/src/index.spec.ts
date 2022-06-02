@@ -20,6 +20,7 @@ describe("content-addressable-storage integration tests", () => {
         const storedPiece = await storage.read(bucketId, uri.cid);
 
         //then
+        piece.cid = "bafk2bzacecapv4eqjea5eznq5rksnltctqp5iff6scxejhhhlypqoo24fokyi"
         expect(storedPiece).toStrictEqual(piece);
     });
 

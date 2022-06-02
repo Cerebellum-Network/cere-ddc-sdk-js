@@ -11,62 +11,81 @@ import {
 import {blake2AsHex, naclBoxKeypairFromSecret, naclKeypairFromString} from "@polkadot/util-crypto";
 import {KeyValueStorage} from "@cere-ddc-sdk/key-value-storage/src";
 import {DdcClientInterface} from "./DdcClient.interface";
-import {ClientOptions} from "./options/ClientOptions";
+import {ClientOptions, initDefaultOptions} from "./options/ClientOptions";
 import {StoreOptions} from "./options/StoreOptions";
-import {SearchOptions} from "./options/SearchOptions";
 import {ReadOptions} from "./options/ReadOptions";
 import {BoxKeyPair} from "tweetnacl";
 import {u8aToHex} from "@polkadot/util";
-import {SchemeType} from "packages/core/src/crypto/signature/Scheme";
-import {Object} from "./model/Object";
+import {SchemeType} from "@cere-ddc-sdk/core";
+import {PieceArray} from "./model/PieceArray";
 
 const nacl = require("tweetnacl");
 const emptyNonce = new Uint8Array(nacl.box.nonceLength)
 
 export class DdcClient implements DdcClientInterface {
-    mnemonic: string;
-    smartContract: SmartContract
-    scheme: SchemeInterface;
-    cipher: CipherInterface;
-    options: ClientOptions;
-    cidBuilder: CidBuilder;
+    readonly smartContract: SmartContract
+    readonly scheme: SchemeInterface;
+    readonly cipher: CipherInterface;
+    readonly options: ClientOptions;
+    readonly cidBuilder: CidBuilder;
 
-    caStorage: ContentAddressableStorage;
-    kvStorage: KeyValueStorage;
-    fileStorage: FileStorage;
+    readonly caStorage: ContentAddressableStorage;
+    readonly kvStorage: KeyValueStorage;
+    readonly fileStorage: FileStorage;
 
-    masterDek: string;
-    boxKeypair: BoxKeyPair
+    readonly masterDek: string;
+    readonly boxKeypair: BoxKeyPair
 
     private constructor(
-        mnemonic: string,
+        secretPhrase: string,
         smartContract: SmartContract,
         scheme: SchemeInterface,
-        cipher: CipherInterface,
-        options: ClientOptions = {},
+        gateway: string,
+        options: ClientOptions,
     ) {
-        this.mnemonic = mnemonic;
         this.smartContract = smartContract;
         this.scheme = scheme;
-        this.cipher = cipher;
+        this.cipher = options.cipher || new DefaultCipher(secretPhrase);
         this.options = options;
         this.cidBuilder = options.cidBuilder || new CidBuilder();
 
         //ToDO gateway discovery
-        this.caStorage = new ContentAddressableStorage(scheme, "", cipher, this.cidBuilder)
-        this.kvStorage = new KeyValueStorage(scheme, "")
-        this.fileStorage = new FileStorage(scheme, "", new FileStorageConfig(options.pieceConcurrency, options.chunkSizeInBytes), options.cipher, this.cidBuilder)
+        this.caStorage = new ContentAddressableStorage(scheme, gateway, this.cipher, this.cidBuilder);
+        this.kvStorage = new KeyValueStorage(scheme, gateway);
+        this.fileStorage = new FileStorage(scheme, gateway, new FileStorageConfig(options.pieceConcurrency, options.chunkSizeInBytes), this.cipher, this.cidBuilder);
 
-        this.masterDek = blake2AsHex(mnemonic)
-        this.boxKeypair = naclBoxKeypairFromSecret(naclKeypairFromString(mnemonic).secretKey)
+        this.masterDek = blake2AsHex(secretPhrase);
+        this.boxKeypair = naclBoxKeypairFromSecret(naclKeypairFromString(secretPhrase).secretKey);
     }
 
-    static async buildAndConnect(mnemonic: string, options: ClientOptions = {}): Promise<DdcClient> {
-        const smartContract = await SmartContract.buildAndConnect(mnemonic, options.smartContract)
-        const scheme = (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme as SchemeType, mnemonic) : options.scheme!
-        const cipher = options.cipher || new DefaultCipher(mnemonic)
 
-        return new DdcClient(mnemonic, smartContract, scheme, cipher, options)
+    static async buildAndConnect(secretPhrase: string, options: ClientOptions): Promise<DdcClient> {
+        options = initDefaultOptions(options)
+        const smartContract = await SmartContract.buildAndConnect(secretPhrase, options.smartContract)
+        const scheme = (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme as SchemeType, secretPhrase) : options.scheme!
+        const gateway = await DdcClient.getGatewayAddress(options, smartContract);
+
+        return new DdcClient(secretPhrase, smartContract, scheme, gateway, options)
+    }
+
+    //TODO implement balancer
+    private static async getGatewayAddress(options: ClientOptions, smartContract: SmartContract): Promise<string> {
+        if (typeof options.clusterAddress === "string") {
+            return options.clusterAddress;
+        } else {
+            const cluster = await smartContract.clusterGet(options.clusterAddress as number);
+            const vNodes = new Set<bigint>(cluster.cluster.vnodes);
+            for (const vNode of vNodes) {
+                const node = await smartContract.nodeGet(Number(vNode));
+                const parameters = JSON.parse(node.params);
+
+                if (parameters.type === "gateway") {
+                    return parameters.url;
+                }
+            }
+        }
+
+        throw new Error(`unable to find gateway nodes in cluster='${options.clusterAddress}'`)
     }
 
     async createBucket(balance: bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent> {
@@ -81,49 +100,49 @@ export class DdcClient implements DdcClientInterface {
         return this.smartContract.bucketRevokePermission(bucketId, grantee, permission)
     }
 
-    async store(bucketId: bigint, record: Object, options: StoreOptions = {}): Promise<PieceUri> {
+    async store(bucketId: bigint, pieceArray: PieceArray, options: StoreOptions = {}): Promise<PieceUri> {
         if (options.encrypt) {
-            return this.storeEncrypted(bucketId, record, options)
+            return this.storeEncrypted(bucketId, pieceArray, options)
         } else {
-            return this.storeUnencrypted(bucketId, record)
+            return this.storeUnencrypted(bucketId, pieceArray)
         }
     }
 
-    private async storeEncrypted(bucketId: bigint, record: Object, options: StoreOptions) {
+    private async storeEncrypted(bucketId: bigint, pieceArray: PieceArray, options: StoreOptions) {
         let dek = DdcClient.buildHierarchicalDekHex(this.masterDek, options.dekPath)
         let edek = nacl.box(dek, emptyNonce, this.boxKeypair.publicKey, this.boxKeypair.secretKey)
         await this.kvStorage.store(bucketId, `${bucketId}/${options.dekPath}/${u8aToHex(this.boxKeypair.publicKey)}`, new Piece(edek))
 
         const encryptionOptions = {dekPath: options.dekPath || "", dek: dek};
-        if (record.isPiece(this.options.chunkSizeInBytes!)) {
-            const piece = new Piece(record.data as Uint8Array, record.tags);
+        if (pieceArray.isPiece(this.options.chunkSizeInBytes!)) {
+            const piece = new Piece(pieceArray.data as Uint8Array, pieceArray.tags);
             return await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions);
         } else {
-            return await this.fileStorage.uploadEncrypted(bucketId, record.data, encryptionOptions)
+            return await this.fileStorage.uploadEncrypted(bucketId, pieceArray.data, pieceArray.tags, encryptionOptions)
         }
     }
 
-    private async storeUnencrypted(bucketId: bigint, record: Object) {
-        if (record.isPiece(this.options.chunkSizeInBytes!)) {
-            const piece = new Piece(record.data as Uint8Array, record.tags);
+    private async storeUnencrypted(bucketId: bigint, pieceArray: PieceArray) {
+        if (pieceArray.isPiece(this.options.chunkSizeInBytes!)) {
+            const piece = new Piece(pieceArray.data as Uint8Array, pieceArray.tags);
             return await this.caStorage.store(bucketId, piece)
         } else {
-            return await this.fileStorage.upload(bucketId, record.data)
+            return await this.fileStorage.upload(bucketId, pieceArray.data)
         }
     }
 
-    async read(pieceUri: PieceUri, options: ReadOptions = {}): Promise<Object> {
+    async read(pieceUri: PieceUri, options: ReadOptions = {}): Promise<PieceArray> {
         const headPiece = await this.caStorage.read(pieceUri.bucketId, pieceUri.cid);
         const isMultipart = headPiece.tags.filter(t => t.key == "multipart" && t.value == "true").length > 0;
         const isEncrypted = headPiece.tags.filter(t => t.key == "encrypted" && t.value == "true").length > 0;
 
-        //TODO 4. Decrypt EDEK using client private key and put into DEK cache
+        //TODO 4. put into DEK cache
         let objectDek = "";
         if (options.decrypt) {
             const dekPath = headPiece.tags.find(t => t.key == "dekPath")?.value;
             if (dekPath == null) {
                 throw new Error(`Piece=${pieceUri} doesn't have dekPath`);
-            } else if (!dekPath.startsWith(dekPath)) {
+            } else if (!dekPath.startsWith(options.dekPath!)) {
                 throw new Error(`Provided dekPath='${options.dekPath}' doesn't correct for piece with dekPath='${dekPath}'`);
             }
 
@@ -137,9 +156,9 @@ export class DdcClient implements DdcClientInterface {
                 ? this.fileStorage.readDecryptedLinks(pieceUri.bucketId, headPiece.links, objectDek)
                 : this.fileStorage.readLinks(pieceUri.bucketId, headPiece.links)
 
-            return new Object(data, headPiece.tags, pieceUri.cid)
+            return new PieceArray(data, headPiece.tags, pieceUri.cid)
         } else {
-            const record = new Object(headPiece.data, headPiece.tags, pieceUri.cid)
+            const record = new PieceArray(headPiece.data, headPiece.tags, pieceUri.cid)
             if (isEncrypted) {
                 record.data = this.cipher!.decrypt(headPiece.data, objectDek)
             }
@@ -148,9 +167,9 @@ export class DdcClient implements DdcClientInterface {
         }
     }
 
-    async search(query: Query, options: SearchOptions = {}): Promise<Array<Object>> {
-        //TODO
-        return Promise.resolve(Array())
+    async search(query: Query): Promise<Array<PieceArray>> {
+        const pieces = await this.caStorage.search(query).then(s => s.pieces);
+        return pieces.map(p => new PieceArray(p.data, p.tags, p.cid))
     }
 
     async shareData(bucketId: bigint, dekPath: string, partnerBoxPublicKey: string): Promise<PieceUri> {

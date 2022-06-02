@@ -33,11 +33,12 @@ export class KeyValueStorage {
         return this.caStorage.store(bucketId, piece)
     }
 
-    async read(bucketId: bigint, key: string): Promise<Piece[]> {
+    async read(bucketId: bigint, key: string, loadData: boolean = true): Promise<Piece[]> {
         const searchResult = await this.caStorage.search(
             {
                 bucketId: bucketId,
-                tags: Array.of({key: keyTag, value: key})
+                tags: Array.of({key: keyTag, value: key}),
+                loadData: loadData
             }
         )
 

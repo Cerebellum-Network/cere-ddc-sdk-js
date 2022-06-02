@@ -24,8 +24,6 @@ export class ContentAddressableStorage {
     readonly cipher?: CipherInterface;
     readonly cidBuilder: CidBuilder;
 
-    //smartContract:
-
     constructor(
         scheme: SchemeInterface,
         gatewayNodeUrl: string,
@@ -73,7 +71,6 @@ export class ContentAddressableStorage {
         return new PieceUri(bucketId, cid);
     }
 
-    // return data as Uint8Array
     async read(bucketId: bigint, cid: string): Promise<Piece> {
         let response = await fetch(`${this.gatewayNodeUrl}${BASE_PATH}/${cid}?bucketId=${bucketId}`, {
             method: "GET",
@@ -98,9 +95,11 @@ export class ContentAddressableStorage {
     }
 
     async search(query: Query): Promise<SearchResult> {
+        //ToDo add piece CID to result
         let pbQuery: PbQuery = {
             bucketId: query.bucketId.toString(),
             tags: query.tags,
+            loadData: query.loadData
         }
         let queryAsBytes = PbQuery.toBinary(pbQuery)
         let queryBase58 = base58Encode(queryAsBytes)

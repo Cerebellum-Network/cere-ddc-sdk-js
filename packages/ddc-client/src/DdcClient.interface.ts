@@ -1,4 +1,4 @@
-import {Piece, PieceUri, Query} from "@cere-ddc-sdk/content-addressable-storage";
+import {PieceUri, Query} from "@cere-ddc-sdk/content-addressable-storage";
 import {
     BucketCreatedEvent,
     BucketPermissionGrantedEvent,
@@ -6,8 +6,7 @@ import {
 } from "@cere-ddc-sdk/smart-contract";
 import {StoreOptions} from "./options/StoreOptions";
 import {ReadOptions} from "./options/ReadOptions";
-import {SearchOptions} from "./options/SearchOptions";
-import {Object} from "./model/Object";
+import {PieceArray} from "./model/PieceArray";
 
 export interface DdcClientInterface {
     createBucket(balance: bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent>
@@ -25,7 +24,7 @@ export interface DdcClientInterface {
     // Unencrypted flow:
     // 1. upload piece
     // return piece uri (encrypted piece CID + bucketId)
-    store(bucketId: bigint, record: Object, options: StoreOptions): Promise<PieceUri>
+    store(bucketId: bigint, pieceArray: PieceArray, options: StoreOptions): Promise<PieceUri>
 
     // 1. Read piece by uri
     // Encrypted flow:
@@ -37,9 +36,9 @@ export interface DdcClientInterface {
     // Decrypted flow:
     // 2. Nothing
     // return piece
-    read(pieceUri: PieceUri, options: ReadOptions): Promise<Object>
+    read(pieceUri: PieceUri, options: ReadOptions): Promise<PieceArray>
 
-    search(query: Query, options: SearchOptions): Promise<Array<Object>>
+    search(query: Query): Promise<Array<PieceArray>>
 
     // 1. Read EDEK by 'bucketId + dekPath + client box public key', decrypt and put into DEK cache
     // 2. Decrypt EDEK using client private key and put into DEK cache
