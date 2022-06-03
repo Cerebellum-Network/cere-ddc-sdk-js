@@ -29,7 +29,7 @@ export class CoreFileStorage {
         return await this.caStorage.store(bucketId, new Piece(encoder.encode("metadata"), tags, links));
     }
 
-    createReadUnderlyingSource(bucketId: bigint, address?: string | Array<Link>, dek?: string): UnderlyingSource<Uint8Array> {
+    createReadUnderlyingSource(bucketId: bigint, address?: string | Array<Link>, dek?: Uint8Array): UnderlyingSource<Uint8Array> {
         let linksPromise = address instanceof Array<Link> ? Promise.resolve(address) : this.caStorage.read(bucketId, address as string).then(value => value.links);
 
         let index = 0;

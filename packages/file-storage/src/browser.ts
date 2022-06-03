@@ -34,7 +34,7 @@ export class FileStorage implements FileStorageInterface {
             new CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }
 
-    readDecrypted(bucketId: bigint, cid: string, dek: string): ReadableStream<Uint8Array> {
+    readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array): ReadableStream<Uint8Array> {
         return new ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, cid, dek),
             new CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }
@@ -50,7 +50,7 @@ export class FileStorage implements FileStorageInterface {
             new CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }
 
-    readDecryptedLinks(bucketId: bigint, links: Array<Link>, dek: string): ReadableStream<Uint8Array> {
+    readDecryptedLinks(bucketId: bigint, links: Array<Link>, dek: Uint8Array): ReadableStream<Uint8Array> {
         return new ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, links, dek),
             new CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }

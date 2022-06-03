@@ -135,7 +135,7 @@ export class ContentAddressableStorage {
         return this.store(bucketId, encryptedPiece)
     }
 
-    async readDecrypted(bucketId: bigint, cid: string, dek: string): Promise<Piece> {
+    async readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array): Promise<Piece> {
         const piece = await this.read(bucketId, cid);
         if (piece.links.length !== 0) {
             piece.data = this.cipher!.decrypt(piece.data, dek)

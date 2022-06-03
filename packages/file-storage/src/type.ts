@@ -19,9 +19,9 @@ export interface FileStorage {
     read(bucketId: bigint, cid: string): ReadableStream<Uint8Array>;
 
     readLinks(bucketId: bigint, links: Array<Link>): ReadableStream<Uint8Array>;
-    readDecryptedLinks(bucketId: bigint, links: Array<Link>, dek: string): ReadableStream<Uint8Array>;
+    readDecryptedLinks(bucketId: bigint, links: Array<Link>, dek: Uint8Array): ReadableStream<Uint8Array>;
 
-    readDecrypted(bucketId: bigint, cid: string, dek: string): ReadableStream<Uint8Array>;
+    readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array): ReadableStream<Uint8Array>;
     uploadEncrypted(bucketId: bigint, data: Data, tags: Array<Tag>, encryptionOptions: EncryptionOptions): Promise<PieceUri>;
 }
 

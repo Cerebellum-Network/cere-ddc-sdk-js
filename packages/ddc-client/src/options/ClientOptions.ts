@@ -1,9 +1,7 @@
 //TODO put comments
 import {CidBuilder, CipherInterface, SchemeInterface, SchemeType} from "@cere-ddc-sdk/core";
 import {Options as SmartContractOptions, TESTNET} from "@cere-ddc-sdk/smart-contract";
-
-export const KB = 1024
-export const MB = 1024 * KB
+import {MB} from "@cere-ddc-sdk/file-storage";
 
 export class ClientOptions {
      clusterAddress: string | number; // Cluster ID or Gateway URL

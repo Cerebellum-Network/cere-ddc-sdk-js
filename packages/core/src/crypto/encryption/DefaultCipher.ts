@@ -7,11 +7,11 @@ export class DefaultCipher implements CipherInterface {
         this.secretPhrase = secretPhrase;
     }
 
-    encrypt(data: Uint8Array, dek: string): Uint8Array {
+    encrypt(data: Uint8Array, dek: string | Uint8Array): Uint8Array {
         return data
     }
 
-    decrypt(data: Uint8Array, dek: string): Uint8Array {
+    decrypt(data: Uint8Array, dek: string | Uint8Array): Uint8Array {
         return data
     }
 }

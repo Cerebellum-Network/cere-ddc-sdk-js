@@ -8,7 +8,7 @@ import {
     Permission,
     SmartContract,
 } from "@cere-ddc-sdk/smart-contract";
-import {blake2AsHex, naclBoxKeypairFromSecret, naclKeypairFromString} from "@polkadot/util-crypto";
+import {blake2AsU8a, naclBoxKeypairFromSecret, naclKeypairFromString} from "@polkadot/util-crypto";
 import {KeyValueStorage} from "@cere-ddc-sdk/key-value-storage/src";
 import {DdcClientInterface} from "./DdcClient.interface";
 import {ClientOptions, initDefaultOptions} from "./options/ClientOptions";
@@ -20,7 +20,8 @@ import {SchemeType} from "@cere-ddc-sdk/core";
 import {PieceArray} from "./model/PieceArray";
 
 const nacl = require("tweetnacl");
-const emptyNonce = new Uint8Array(nacl.box.nonceLength)
+const emptyNonce = new Uint8Array(nacl.box.nonceLength);
+const encoder = new TextEncoder();
 
 export class DdcClient implements DdcClientInterface {
     readonly smartContract: SmartContract
@@ -33,7 +34,7 @@ export class DdcClient implements DdcClientInterface {
     readonly kvStorage: KeyValueStorage;
     readonly fileStorage: FileStorage;
 
-    readonly masterDek: string;
+    readonly masterDek: Uint8Array;
     readonly boxKeypair: BoxKeyPair
 
     private constructor(
@@ -54,7 +55,7 @@ export class DdcClient implements DdcClientInterface {
         this.kvStorage = new KeyValueStorage(scheme, gateway);
         this.fileStorage = new FileStorage(scheme, gateway, new FileStorageConfig(options.pieceConcurrency, options.chunkSizeInBytes), this.cipher, this.cidBuilder);
 
-        this.masterDek = blake2AsHex(secretPhrase);
+        this.masterDek = blake2AsU8a(secretPhrase);
         this.boxKeypair = naclBoxKeypairFromSecret(naclKeypairFromString(secretPhrase).secretKey);
     }
 
@@ -137,7 +138,7 @@ export class DdcClient implements DdcClientInterface {
         const isEncrypted = headPiece.tags.filter(t => t.key == "encrypted" && t.value == "true").length > 0;
 
         //TODO 4. put into DEK cache
-        let objectDek = "";
+        let objectDek = new Uint8Array();
         if (options.decrypt) {
             const dekPath = headPiece.tags.find(t => t.key == "dekPath")?.value;
             if (dekPath == null) {
@@ -148,7 +149,7 @@ export class DdcClient implements DdcClientInterface {
 
             const clientDek = await this.readDek(pieceUri.bucketId, options.dekPath!);
 
-            objectDek = DdcClient.buildHierarchicalDekHex(u8aToHex(clientDek), dekPath.replace(options.dekPath!, ""))
+            objectDek = DdcClient.buildHierarchicalDekHex(clientDek, dekPath.replace(options.dekPath!, ""))
         }
 
         if (headPiece.tags.length > 0 && isMultipart) {
@@ -188,17 +189,23 @@ export class DdcClient implements DdcClientInterface {
         return nacl.box.open(values[0].data, emptyNonce, this.boxKeypair.publicKey, this.boxKeypair.secretKey)
     }
 
-    private static buildHierarchicalDekHex(dekHex: string, dekPath?: string): string {
+    private static buildHierarchicalDekHex(dek: Uint8Array, dekPath?: string): Uint8Array {
         if (!dekPath) {
-            return dekHex
+            return dek
         }
 
         const pathParts = dekPath.split("/")
 
         for (const part in pathParts) {
-            dekHex = blake2AsHex(dekHex + part)
+            const postfix = encoder.encode(part);
+
+            const data = new Uint8Array(dek.length + postfix.length);
+            data.set(dek);
+            data.set(postfix, dek.length);
+
+            dek = blake2AsU8a(data)
         }
 
-        return dekHex
+        return dek
     }
 }
