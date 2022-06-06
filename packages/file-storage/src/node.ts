@@ -21,8 +21,8 @@ export class FileStorage implements FileStorageInterface {
 
     private readonly fs: CoreFileStorage;
 
-    constructor(scheme: SchemeInterface, gatewayNodeUrl: string, config?: FileStorageConfig, cipher?: CipherInterface, cidBuilder?: CidBuilder) {
-        this.fs = new CoreFileStorage(scheme, gatewayNodeUrl, config, cipher, cidBuilder);
+    constructor(scheme: SchemeInterface, cdnNodeUrl: string, config?: FileStorageConfig, cipher?: CipherInterface, cidBuilder?: CidBuilder) {
+        this.fs = new CoreFileStorage(scheme, cdnNodeUrl, config, cipher, cidBuilder);
         this.caStorage = this.fs.caStorage;
         this.config = this.fs.config;
     }

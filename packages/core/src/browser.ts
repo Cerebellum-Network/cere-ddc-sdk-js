@@ -3,4 +3,4 @@ export {Scheme, SchemeType} from "./crypto/signature/Scheme";
 export {PolkadotDappScheme} from "./crypto/signature/PolkadotDappScheme";
 export {CidBuilder} from "./cid/CidBuilder";
 export {CipherInterface} from "./crypto/encryption/Cipher.interface";
-export {DefaultCipher} from "./crypto/encryption/DefaultCipher";
+export {NaclCipher} from "./crypto/encryption/NaclCipher";

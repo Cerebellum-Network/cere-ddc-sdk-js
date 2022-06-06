@@ -4,7 +4,7 @@ import {Options as SmartContractOptions, TESTNET} from "@cere-ddc-sdk/smart-cont
 import {MB} from "@cere-ddc-sdk/file-storage";
 
 export class ClientOptions {
-     clusterAddress: string | number; // Cluster ID or Gateway URL
+     clusterAddress: string | number; // Cluster ID or CDN URL
      pieceConcurrency?: number = 4;
      chunkSizeInBytes?: number = 5 * MB;
      smartContract?: SmartContractOptions = TESTNET;

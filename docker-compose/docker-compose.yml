@@ -3,7 +3,7 @@ version: "3"
 services:
   ddc-cdn-node:
     container_name: "ddc-cdn-node"
-    image: 'cerebellumnetwork/ddc-gateway-node:dev-latest'
+    image: 'cerebellumnetwork/ddc-cdn-node:dev-latest'
     environment:
       - 'HTTP_PORT=8080'
       - 'HTTP_ADDRESS=http://localhost:8080'

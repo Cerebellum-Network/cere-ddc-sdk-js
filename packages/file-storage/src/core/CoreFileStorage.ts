@@ -11,9 +11,9 @@ export class CoreFileStorage {
     readonly config: FileStorageConfig;
     readonly caStorage: ContentAddressableStorage;
 
-    constructor(scheme: SchemeInterface, gatewayNodeUrl: string, config: FileStorageConfig = new FileStorageConfig(), cipher?: CipherInterface, cidBuilder?: CidBuilder) {
+    constructor(scheme: SchemeInterface, cdnNodeUrl: string, config: FileStorageConfig = new FileStorageConfig(), cipher?: CipherInterface, cidBuilder?: CidBuilder) {
         this.config = config;
-        this.caStorage = new ContentAddressableStorage(scheme, gatewayNodeUrl, cipher, cidBuilder);
+        this.caStorage = new ContentAddressableStorage(scheme, cdnNodeUrl, cipher, cidBuilder);
     }
 
     async uploadFromStreamReader(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>, tags: Array<Tag> = [], encryptionOptions?: EncryptionOptions): Promise<PieceUri> {
@@ -26,7 +26,13 @@ export class CoreFileStorage {
         const links = indexedLinks
             .sort((a, b) => a.position - b.position)
             .map(e => e.link);
-        return await this.caStorage.store(bucketId, new Piece(encoder.encode("metadata"), tags, links));
+
+        const piece = new Piece(encoder.encode("metadata"), tags, links);
+        if (encryptionOptions) {
+            return await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions);
+        } else {
+            return await this.caStorage.store(bucketId, piece);
+        }
     }
 
     createReadUnderlyingSource(bucketId: bigint, address?: string | Array<Link>, dek?: Uint8Array): UnderlyingSource<Uint8Array> {
@@ -38,13 +44,7 @@ export class CoreFileStorage {
             const link = (await linksPromise)[current];
 
             const promisePiece: Promise<Piece> = dek ? this.caStorage.readDecrypted(bucketId, link.cid, dek) : this.caStorage.read(bucketId, link.cid)
-            promisePiece.then(piece => {
-                if (BigInt(piece.data.length) !== link.size) {
-                    reject(new Error("Invalid piece size"));
-                }
-
-                resolve(piece.data);
-            })
+            promisePiece.then(piece => resolve(piece.data));
         });
 
         const tasksPromise = linksPromise
@@ -115,7 +115,7 @@ export class CoreFileStorage {
                     const current = index++;
 
                     const piece = new Piece(result.value)
-                    piece.tags.push(new Tag("multipart", "true"))
+                    piece.tags.push(new Tag("multipart", "true"));
                     const pieceUri = encryptionOptions ? await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions)
                         : await this.caStorage.store(bucketId, piece)
 

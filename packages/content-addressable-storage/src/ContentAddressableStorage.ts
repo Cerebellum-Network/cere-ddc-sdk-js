@@ -19,19 +19,19 @@ const BASE_PATH = "/api/rest/pieces";
 
 export class ContentAddressableStorage {
     readonly scheme: SchemeInterface;
-    readonly gatewayNodeUrl: string;
+    readonly cdnNodeUrl: string;
 
     readonly cipher?: CipherInterface;
     readonly cidBuilder: CidBuilder;
 
     constructor(
         scheme: SchemeInterface,
-        gatewayNodeUrl: string,
+        cdnNodeUrl: string,
         cipher?: CipherInterface,
         cidBuilder: CidBuilder = new CidBuilder()
     ) {
         this.scheme = scheme;
-        this.gatewayNodeUrl = gatewayNodeUrl;
+        this.cdnNodeUrl = cdnNodeUrl;
         this.cidBuilder = cidBuilder;
         this.cipher = cipher;
     }
@@ -57,7 +57,7 @@ export class ContentAddressableStorage {
                 signer: this.scheme.publicKeyHex,
             },
         };
-        let response = await fetch(this.gatewayNodeUrl + BASE_PATH, {
+        let response = await fetch(this.cdnNodeUrl + BASE_PATH, {
             method: "PUT",
             body: PbSignedPiece.toBinary(pbSignedPiece),
         });
@@ -72,7 +72,7 @@ export class ContentAddressableStorage {
     }
 
     async read(bucketId: bigint, cid: string): Promise<Piece> {
-        let response = await fetch(`${this.gatewayNodeUrl}${BASE_PATH}/${cid}?bucketId=${bucketId}`, {
+        let response = await fetch(`${this.cdnNodeUrl}${BASE_PATH}/${cid}?bucketId=${bucketId}`, {
             method: "GET",
         });
 
@@ -104,7 +104,7 @@ export class ContentAddressableStorage {
         let queryAsBytes = PbQuery.toBinary(pbQuery)
         let queryBase58 = base58Encode(queryAsBytes)
 
-        let response = await fetch(this.gatewayNodeUrl + BASE_PATH + "?query=" + queryBase58, {
+        let response = await fetch(this.cdnNodeUrl + BASE_PATH + "?query=" + queryBase58, {
             method: "GET",
         });
 
@@ -131,15 +131,13 @@ export class ContentAddressableStorage {
         const encryptedPiece = piece.clone();
         encryptedPiece.tags.push(new Tag("encrypted", "true"));
         encryptedPiece.tags.push(new Tag("dekPath", encryptionOptions.dekPath));
-        encryptedPiece.data = this.cipher!.encrypt(piece.data, encryptionOptions.dek)
+        encryptedPiece.data = this.cipher!.encrypt(piece.data, encryptionOptions.dek);
         return this.store(bucketId, encryptedPiece)
     }
 
     async readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array): Promise<Piece> {
         const piece = await this.read(bucketId, cid);
-        if (piece.links.length !== 0) {
-            piece.data = this.cipher!.decrypt(piece.data, dek)
-        }
+        piece.data = this.cipher!.decrypt(piece.data, dek)
 
         return piece;
     }

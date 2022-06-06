@@ -14,12 +14,12 @@ export const MAINNET: Options = {
 
 export const TESTNET: Options = {
     rpcUrl: "wss://rpc.v2.testnet.cere.network/ws",
-    contractAddress: "5DAx9cTNXYKbbMTQUWzh1cZ46Mj14pnyKvshkVWm8fkfh36X",
+    contractAddress: "5DTZfAcmZctJodfa4W88BW5QXVBxT4v7UEax91HZCArTih6U",
     abi: ddcBucketAbi
 }
 
 export const DEVNET: Options = {
-    rpcUrl: "",
-    contractAddress: "",
+    rpcUrl: "wss://rpc.v2.devnet.cere.network/ws",
+    contractAddress: "5GqwX528CHg1jAGuRsiwDwBVXruUvnPeLkEcki4YFbigfKsC",
     abi: ddcBucketAbi
 }
