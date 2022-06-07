@@ -1,0 +1,21 @@
+{
+  "name": "@cere-ddc-sdk/nft-registry",
+  "description": "NFT registry client",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "directory": "packages/nft-registry",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "main": "dist/index.js",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@cere-ddc-sdk/proto": "1.1.1",
+    "@cere-ddc-sdk/core": "1.1.1",
+    "@types/node": "^16.0.0"
+  },
+  "devDependencies": {
+    "typescript": "4.5.4"
+  }
+}

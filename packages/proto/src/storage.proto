@@ -44,3 +44,9 @@ message Link {
   uint64          size = 2 [jstype = JS_STRING];
   string          name = 3;
 }
+
+message NftAttach {
+  string          globalNftId   = 1;
+  string          assetCid      = 2;
+  string          proof         = 3;
+}

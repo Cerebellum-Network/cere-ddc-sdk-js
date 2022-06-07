@@ -5,6 +5,7 @@
 - [content-addressable-storage](packages/content-addressable-storage/README.md)
 - [key-value-storage](packages/key-value-storage/README.md)
 - [file-storage](packages/file-storage/README.md)
+- [nft-registry](packages/nft-registry/README.md)
 - [proto](packages/proto/README.md)
 - [core](packages/core/README.md)
 
@@ -13,6 +14,7 @@
 - `content-addressable-storage` use when need simple upload data to DDC as 1 unit
 - `key-value-storage` use when need store data by key
 - `file-storage` use when need to upload large data by chunks
+- `nft-registry` use when we uploaded asset and want to attach to your NFT
 
 ## Definitions
 
