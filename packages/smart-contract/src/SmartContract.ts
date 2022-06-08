@@ -63,7 +63,7 @@ export class SmartContract {
         return this
     }
 
-    async bucketCreate(bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent> {
+    async bucketCreate(balance: bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent> {
         const tx = await this.contract.tx.bucketCreate(txOptionsPay, bucketParams, clusterId);
         const result = await this.sendTx(this.account, tx);
         // @ts-ignore

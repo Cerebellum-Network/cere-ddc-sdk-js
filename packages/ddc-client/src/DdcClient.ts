@@ -91,8 +91,8 @@ export class DdcClient implements DdcClientInterface {
         throw new Error(`unable to find cdn nodes in cluster='${options.clusterAddress}'`)
     }
 
-    async createBucket(bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent> {
-        return this.smartContract.bucketCreate(bucketParams, clusterId)
+    async createBucket(balance: bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent> {
+        return this.smartContract.bucketCreate(balance, bucketParams, clusterId)
     }
 
     async grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
