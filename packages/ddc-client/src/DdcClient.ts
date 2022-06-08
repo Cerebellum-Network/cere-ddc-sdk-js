@@ -15,7 +15,7 @@ import {ClientOptions, initDefaultOptions} from "./options/ClientOptions";
 import {StoreOptions} from "./options/StoreOptions";
 import {ReadOptions} from "./options/ReadOptions";
 import {BoxKeyPair} from "tweetnacl";
-import {hexToU8a, u8aToHex} from "@polkadot/util";
+import {hexToU8a, stringToU8a, u8aToHex} from "@polkadot/util";
 import {PieceArray} from "./model/PieceArray";
 
 const nacl = require("tweetnacl");

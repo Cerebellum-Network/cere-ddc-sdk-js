@@ -9,6 +9,7 @@ DEK path is a hierarchical encryption path (e.g. /photos/friends) that is used t
 
 ## DdcClient API description
 
+
 ### Client interface and methods description
 
 ```typescript
@@ -28,7 +29,7 @@ export interface DdcClient {
     // 4. upload EDEK as a separate piece using key (bucketId + dekPath + client public key)
     // 5. upload encrypted piece
     // return piece uri (encrypted piece CID + bucketId)
-    store(bucketId: bigint, piece: Piece, options: StoreOptions): Promise<PieceUri>
+    store(bucketId: bigint, pieceArray: PieceArray, options: StoreOptions): Promise<PieceUri>
 
     // 1. Read EDEK by 'bucketId + dekPath + client public key'
     // 2. Read piece by uri
@@ -37,9 +38,9 @@ export interface DdcClient {
     // 5. Calculate final DEK using the rest of the path
     // 6. Decrypt piece using final DEK
     // return piece
-    read(pieceUri: PieceUri, options: ReadOptions): Promise<Piece>
+    read(pieceUri: PieceUri, options: ReadOptions): Promise<PieceArray>
 
-    search(query: Query, options: SearchOptions): Promise<Array<Piece>>
+    search(query: Query): Promise<Array<PieceArray>>
 
     // 1. Read EDEK by 'bucketId + dekPath + client public key', decrypt and put into DEK cache
     // 2. Decrypt EDEK using client private key and put into DEK cache
@@ -50,13 +51,16 @@ export interface DdcClient {
 ```
 
 ### Data model
-```typescript
-type Data = ReadableStream<Uint8Array> | Blob | string | Uint8Array
 
-export class Piece {
+`PieceArray` - model presents group of pieces which has general logical link (pieces of 1 file, big data splitted to many pieces).
+
+
+```typescript
+type Data = ReadableStream<Uint8Array> | string | Uint8Array
+
+export class PieceArray {
     data: Data;
     tags: Array<Tag>;
-    links: Array<Link>;
     cid?: string;
 }
 ```
@@ -65,8 +69,13 @@ export class Piece {
 
 ```typescript
 export class ClientOptions {
+    clusterAddress: string | number; // Cluster ID or CDN URL
     pieceConcurrency?: number = 4;
     chunkSizeInBytes?: number = 5 * MB;
+    smartContract?: SmartContractOptions = TESTNET;
+    scheme?: SchemeType | SchemeInterface = "sr25519";
+    cipher?: CipherInterface;
+    cidBuilder?: CidBuilder = new CidBuilder();
 }
 
 export class StoreOptions {
@@ -82,11 +91,6 @@ export class ReadOptions {
     dekPath?: string;
     // decrypt - If not passed, check 'cipher' parameter (decrypt if cipher configured)
     decrypt?: boolean;
-}
-
-export class SearchOptions {
-    // loadData - If not passed, only metadata will be loaded. Set 'true' to load whole piece including data.
-    loadData?: boolean;
 }
 ```
 
@@ -139,8 +143,8 @@ const revokeBucketPermission = async () => {
 const bucketId = BigInt(1);
 
 const storeUnencryptedData = async () => {
-    const piece = new Piece("Hello world!", [new Tag("some-key", "some-value")]);
-    const pieceUri = await ddcClient.store(bucketId, piece, {encrypt: false});
+    const pieceArray = new PieceArray(new Uint8Array([1,2,3,4,5]), [new Tag("some-key", "some-value")]);
+    const pieceUri = await ddcClient.store(bucketId, pieceArray, {encrypt: false});
     console.log("Successfully uploaded unencrypted piece. CID: " + pieceUri.cid);
 }
 ```
@@ -150,9 +154,9 @@ const storeUnencryptedData = async () => {
 ```typescript
 const bucketId = BigInt(1);
 
-const storeEncryptedData = async () => {
-    const piece = new Piece("Hello world!", [new Tag("some-key", "some-value")]);
-    const pieceUri = await ddcClient.store(bucketId, piece);
+const storeUnencryptedData = async () => {
+    const pieceArray = new PieceArray(new Uint8Array([1,2,3,4,5]), [new Tag("some-key", "some-value")]);
+    const pieceUri = await ddcClient.store(bucketId, pieceArray, {encrypt: true});
     console.log("Successfully uploaded encrypted piece. CID: " + pieceUri.cid);
 }
 ```
@@ -176,7 +180,7 @@ const shareData = async () => {
 const readData = async () => {
     const pieceUri = new PieceUri(bucketId, "0xdaf3a8as2109kl...")
 
-    const piece = await ddcClient.read(pieceUri);
+    const pieceArray = await ddcClient.read(pieceUri);
     console.log("Successfully read data.");
 }
 ```
@@ -185,7 +189,8 @@ const readData = async () => {
 
 ```typescript
 const searchDataMetadataOnly = async () => {
-    const pieces = await ddcClient.search(new Query(bucketId, [new Tag("some-key", "some-value")]));
+    const skipData = true;
+    const pieceArrays = await ddcClient.search(new Query(bucketId, [new Tag("some-key", "some-value")], skipData));
     console.log("Successfully executed search.");
 }
 ```
@@ -194,7 +199,8 @@ const searchDataMetadataOnly = async () => {
 
 ```typescript
 const searchDataLoadData = async () => {
-    const pieces = await ddcClient.search(new Query(bucketId, [new Tag("some-key", "some-value")]), {loadData: true});
+    const skipData = false;
+    const pieceArrays = await ddcClient.search(new Query(bucketId, [new Tag("some-key", "some-value")]), false);
     console.log("Successfully executed search.");
 }
 ```
@@ -205,72 +211,66 @@ const searchDataLoadData = async () => {
 
 const fileSharingPlatform = async () => {
     const mnemonicBob = mnemonicGenerate();
-    const bob = await createDdcClient(mnemonicBob)
+    const bob = await createDdcClient(mnemonicBob);
 
-    const clusterId = BigInt(1)
+    const clusterId = BigInt(1);
 
     /* Create Bob bucket */
-    const bucketCreatedEvent = await bob.createBucket(BigInt(100), `{"replication": 3}`, clusterId);
-    const bucketId = bucketCreatedEvent.bucketId
+    const bucketCreatedEvent = await bob.createBucket(BigInt(100 * CERE), `{"replication": 3}`, clusterId);
+    const bucketId = bucketCreatedEvent.bucketId;
 
     /* Create photos folder */
-    const photosFolder: Piece = {
-        data: `{"description":"My photos"}`,
-        tags: [{key: "Type", value: "Folder"}, {key: "Path", value: "/"}, {key: "Name", value: "Photos"}],
-        links: []
+    const photosFolder: PieceArray = {
+        data: stringToU8a(`{"description":"My photos"}`),
+        tags: [{key: "Type", value: "Folder"}, {key: "Path", value: "/"}, {key: "Name", value: "Photos"}]
     };
-    const photosFolderUri = await bob.store(bucketId, photosFolder, {dekPath: "/Photos"})
+    const photosFolderUri = await bob.store(bucketId, photosFolder, {encrypt: true, dekPath: "/Photos"});
     console.log("Successfully created photos folder. CID: " + photosFolderUri.cid);
 
     /* Create friends folder */
-    const friendsFolder: Piece = {
-        data: `{"description":"Photos that I want to share with my friends"}`,
-        tags: [{key: "Type", value: "Folder"}, {key: "Path", value: "/Photos"}, {key: "Name", value: "Friends"}],
-        links: []
+    const friendsFolder: PieceArray = {
+        data: stringToU8a(`{"description":"Photos that I want to share with my friends"}`),
+        tags: [{key: "Type", value: "Folder"}, {key: "Path", value: "/Photos"}, {key: "Name", value: "Friends"}]
     };
-    const friendsFolderUri = await bob.store(bucketId, friendsFolder, {dekPath: "/Photos/Friends"})
+    const friendsFolderUri = await bob.store(bucketId, friendsFolder, {encode: true, dekPath: "/Photos/Friends"});
     console.log("Successfully created friends folder. CID: " + friendsFolderUri.cid);
 
     /* Create Peter's folder */
-    const peterFolder: Piece = {
-        data: `{"description":"Photos of my friend Peter"}`,
-        tags: [{key: "Type", value: "Folder"}, {key: "Path", value: "/Photos/Friends"}, {key: "Name", value: "Peter"}],
-        links: []
+    const peterFolder: PieceArray = {
+        data: stringToU8a(`{"description":"Photos of my friend Peter"}`),
+        tags: [{key: "Type", value: "Folder"}, {key: "Path", value: "/Photos/Friends"}, {key: "Name", value: "Peter"}]
     };
-    const peterFolderUri = await bob.store(bucketId, peterFolder, {dekPath: "/Photos/Friends/Peter"})
+    const peterFolderUri = await bob.store(bucketId, peterFolder, {dekPath: "/Photos/Friends/Peter"});
     console.log("Successfully created Peter's folder. CID: " + peterFolderUri.cid);
 
     /* Upload Peter's Photo from his birthday */
-    const peterPhoto: Piece = {
+    const peterPhoto: PieceArray = {
         data: stringToU8a("PHOTO AS BYTE ARRAY"),
         tags: [{key: "Type", value: "Folder"}, {key: "Path", value: "/Photos/Friends/Peter"}, {
             key: "Name",
             value: "photo.png"
-        }],
-        links: []
+        }]
     };
-    const peterPhotoUri = await bob.store(bucketId, peterPhoto, {dekPath: "/Photos/Friends/Peter/photo.png"})
+    const peterPhotoUri = await bob.store(bucketId, peterPhoto, {encode: true, dekPath: "/Photos/Friends/Peter/photo.png"});
     console.log("Successfully stored Peter's photo. CID: " + peterPhotoUri.cid);
 
     /* Create Jack's folder */
-    const jackFolder: Piece = {
-        data: `{"description":"Photos of my friend Jack"}`,
-        tags: [{key: "Type", value: "Folder"}, {key: "Path", value: "/Photos/Friends"}, {key: "Name", value: "Jack"}],
-        links: []
+    const jackFolder: PieceArray = {
+        data: stringToU8a(`{"description":"Photos of my friend Jack"}`),
+        tags: [{key: "Type", value: "Folder"}, {key: "Path", value: "/Photos/Friends"}, {key: "Name", value: "Jack"}]
     };
-    const jackFolderUri = await bob.store(bucketId, jackFolder, {dekPath: "/Photos/Friends/Jack"})
+    const jackFolderUri = await bob.store(bucketId, jackFolder, {dekPath: "/Photos/Friends/Jack"});
     console.log("Successfully created Jack's folder. CID: " + jackFolderUri.cid);
 
     /* Upload Peter's Photo from his birthday */
-    const jackPhoto: Piece = {
+    const jackPhoto: PieceArray = {
         data: stringToU8a("PHOTO AS BYTE ARRAY"),
         tags: [{key: "Type", value: "Folder"}, {key: "Path", value: "/Photos/Friends/Jack"}, {
             key: "Name",
             value: "photo.png"
-        }],
-        links: []
+        }]
     };
-    const jackPhotoUri = await bob.store(bucketId, jackPhoto, {dekPath: "/Photos/Friends/Jack/photo.png"})
+    const jackPhotoUri = await bob.store(bucketId, jackPhoto, {dekPath: "/Photos/Friends/Jack/photo.png"});
     console.log("Successfully stored Jack's photo. CID: " + jackPhotoUri.cid);
 
     /* Grant Peter read permission to the bucket */
@@ -291,15 +291,15 @@ const fileSharingPlatform = async () => {
 
     /* Jack reads Peter's photo */
     const mnemonicJack = mnemonicGenerate();
-    const jack = await createDdcClient(mnemonicJack)
+    const jack = await createDdcClient(mnemonicJack);
 
-    const peterPhotoReadByJack = await jack.read(peterPhotoUri, {dekPath: "/Photos/Friends"})
-    const jackPhotoReadByJack = await jack.read(jackPhotoUri, {dekPath: "/Photos/Friends"})
+    const peterPhotoReadByJack = await jack.read(peterPhotoUri, {decode: true, dekPath: "/Photos/Friends"});
+    const jackPhotoReadByJack = await jack.read(jackPhotoUri, {decode: true, dekPath: "/Photos/Friends"});
 
     /* Peter reads Peter's photo */
     const mnemonicPeter = mnemonicGenerate();
-    const peter = await createDdcClient(mnemonicPeter)
+    const peter = await createDdcClient(mnemonicPeter);
 
-    const peterPhotoReadByPeter = await peter.read(peterPhotoUri, {dekPath: "/Photos/Friends/Peter"})
+    const peterPhotoReadByPeter = await peter.read(peterPhotoUri, {decode: true, dekPath: "/Photos/Friends/Peter"});
 }
 ```
