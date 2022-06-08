@@ -9,7 +9,7 @@ import {ReadOptions} from "./options/ReadOptions";
 import {PieceArray} from "./model/PieceArray";
 
 export interface DdcClientInterface {
-    createBucket(balance: bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent>
+    createBucket(bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent>
 
     grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent>
 

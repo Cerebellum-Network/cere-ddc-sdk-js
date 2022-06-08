@@ -3,6 +3,7 @@ import {
     Query as PbQuery,
     SearchResult as PbSearchResult,
     SignedPiece as PbSignedPiece,
+    SearchedPiece as PbSearchedPiece,
 } from "@cere-ddc-sdk/proto";
 import {Piece} from "./models/Piece";
 import {PieceUri} from "./models/PieceUri";
@@ -99,7 +100,7 @@ export class ContentAddressableStorage {
         let pbQuery: PbQuery = {
             bucketId: query.bucketId.toString(),
             tags: query.tags,
-            loadData: query.loadData
+            skipData: query.skipData
         }
         let queryAsBytes = PbQuery.toBinary(pbQuery)
         let queryBase58 = base58Encode(queryAsBytes)
@@ -119,10 +120,9 @@ export class ContentAddressableStorage {
         );
 
         const isPiece = (val: PbPiece | undefined): val is PbPiece => val !== null;
-        let pieces: Piece[] = pbSearchResult.signedPieces
-            .map((p: PbSignedPiece) => p.piece)
-            .filter(isPiece)
-            .map(e => this.toPiece(e))
+        let pieces: Piece[] = pbSearchResult.searchedPieces
+            .filter(p => isPiece(p.signedPiece?.piece))
+            .map(e => this.toPiece(e.signedPiece!.piece!, e.cid))
 
         return new SearchResult(pieces);
     }
@@ -142,7 +142,7 @@ export class ContentAddressableStorage {
         return piece;
     }
 
-    private toPiece(piece: PbPiece, cid?: string): Piece {
+    private toPiece(piece: PbPiece, cid: string): Piece {
         return new Piece(piece.data, piece.tags, piece.links.map(e => {
             return {cid: e.cid, size: BigInt(e.size), name: e.name}
         }), cid)

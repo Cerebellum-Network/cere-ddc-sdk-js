@@ -5,34 +5,6 @@ import {randomBytes} from "tweetnacl";
 import {randomUUID} from "crypto";
 import {u8aToHex} from "@polkadot/util";
 
-//TODO add loadData flag to search method
-describe.skip("Skipped", () => {
-    const secretPhrase = "thought lizard above company tape post nice rack depth appear equal equip";
-    const bucketId = 1n;
-    const options = {clusterAddress: "http://localhost:8080", chunkSizeInBytes: 30};
-    const testSubject = DdcClient.buildAndConnect(secretPhrase, options);
-
-    it("search metadata", async () => {
-        //given
-        const data = randomBytes(20);
-        const key = randomUUID();
-        const value = randomUUID();
-        const tags = [new Tag(key, value)];
-        const pieceArray = new PieceArray(data, tags);
-        const uri = await (await testSubject).store(bucketId, pieceArray, {encrypt: false});
-
-        //when
-        const result = await (await testSubject).search(new Query(bucketId, tags, false));
-
-        //then
-        result.forEach(p => p.cid = undefined);
-
-        pieceArray.data = new Uint8Array();
-        expect(result).toEqual([pieceArray]);
-        expect(result[0].cid).toEqual(uri.cid)
-    });
-});
-
 describe("DDC client integration tests", () => {
     const secretPhrase = "thought lizard above company tape post nice rack depth appear equal equip";
     const bucketId = 1n;
@@ -128,7 +100,7 @@ describe("DDC client integration tests", () => {
         await (await testSubject).store(bucketId, pieceArray, {encrypt: true});
 
         //when
-        const result = await (await testSubject).search(new Query(bucketId, [new Tag(key, value)], true));
+        const result = await (await testSubject).search(new Query(bucketId, [new Tag(key, value)], false));
 
         //then
         result.forEach(p => p.cid = undefined);
@@ -173,5 +145,23 @@ describe("DDC client integration tests", () => {
         pieceArray.cid = pieceUri.cid;
         pieceArray.tags = [new Tag("encrypted", "true"), new Tag("dekPath", fullDekPath)]
         expect(result).toEqual(pieceArray);
+    });
+
+    it("search metadata", async () => {
+        //given
+        const data = randomBytes(20);
+        const key = randomUUID();
+        const value = randomUUID();
+        const tags = [new Tag(key, value)];
+        const pieceArray = new PieceArray(data, tags);
+        const uri = await (await testSubject).store(bucketId, pieceArray, {encrypt: false});
+
+        //when
+        const result = await (await testSubject).search(new Query(bucketId, tags, true));
+
+        //then
+        pieceArray.cid = uri.cid;
+        pieceArray.data = new Uint8Array();
+        expect(result).toEqual([pieceArray]);
     });
 })

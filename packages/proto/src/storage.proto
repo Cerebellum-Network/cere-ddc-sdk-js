@@ -33,11 +33,16 @@ message Tag {
 message Query {
   uint64       bucketId = 1 [jstype = JS_STRING];
   repeated Tag tags     = 2;
-  bool         loadData = 3;
+  bool         skipData = 3;
 }
 
 message SearchResult {
-  repeated SignedPiece signedPieces = 1;
+  repeated SearchedPiece searchedPieces = 1;
+}
+
+message SearchedPiece {
+  SignedPiece signedPiece = 1;
+  string cid = 2;
 }
 
 message Link {
