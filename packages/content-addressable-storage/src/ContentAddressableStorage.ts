@@ -17,6 +17,8 @@ import {Tag} from "./models/Tag";
 import {EncryptionOptions} from "@cere-ddc-sdk/core/src/crypto/encryption/EncryptionOptions";
 
 const BASE_PATH = "/api/rest/pieces";
+export const ENCRYPTED_KEY = "encrypted";
+export const DEK_PATH_KEY = "dekPath";
 
 export class ContentAddressableStorage {
     readonly scheme: SchemeInterface;
@@ -129,8 +131,8 @@ export class ContentAddressableStorage {
 
     async storeEncrypted(bucketId: bigint, piece: Piece, encryptionOptions: EncryptionOptions): Promise<PieceUri> {
         const encryptedPiece = piece.clone();
-        encryptedPiece.tags.push(new Tag("encrypted", "true"));
-        encryptedPiece.tags.push(new Tag("dekPath", encryptionOptions.dekPath));
+        encryptedPiece.tags.push(new Tag(ENCRYPTED_KEY, "true"));
+        encryptedPiece.tags.push(new Tag(DEK_PATH_KEY, encryptionOptions.dekPath));
         encryptedPiece.data = this.cipher!.encrypt(piece.data, encryptionOptions.dek);
         return this.store(bucketId, encryptedPiece)
     }

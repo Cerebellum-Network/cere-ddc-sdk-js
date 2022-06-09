@@ -1,5 +1,12 @@
 import {CidBuilder, CipherInterface, NaclCipher, Scheme, SchemeInterface, SchemeType} from "@cere-ddc-sdk/core";
-import {ContentAddressableStorage, Piece, PieceUri, Query, Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import {
+    ContentAddressableStorage,
+    DEK_PATH_KEY, ENCRYPTED_KEY,
+    Piece,
+    PieceUri,
+    Query,
+    Tag
+} from "@cere-ddc-sdk/content-addressable-storage";
 import {FileStorage, FileStorageConfig} from "@cere-ddc-sdk/file-storage";
 import {
     BucketCreatedEvent,
@@ -21,7 +28,6 @@ import {PieceArray} from "./model/PieceArray";
 const nacl = require("tweetnacl");
 //ToDo generate from random for security
 const emptyNonce = new Uint8Array(nacl.box.nonceLength);
-const encoder = new TextEncoder();
 
 const encryptorTag = "encryptor";
 
@@ -139,12 +145,12 @@ export class DdcClient implements DdcClientInterface {
 
     async read(pieceUri: PieceUri, options: ReadOptions = {}): Promise<PieceArray> {
         const headPiece = await this.caStorage.read(pieceUri.bucketId, pieceUri.cid);
-        const isEncrypted = headPiece.tags.filter(t => t.key == "encrypted" && t.value == "true").length > 0;
+        const isEncrypted = headPiece.tags.filter(t => t.key == ENCRYPTED_KEY && t.value == "true").length > 0;
 
         //TODO 4. put into DEK cache
         let objectDek = new Uint8Array();
         if (options.decrypt) {
-            const dekPath = headPiece.tags.find(t => t.key == "dekPath")?.value;
+            const dekPath = headPiece.tags.find(t => t.key == DEK_PATH_KEY)?.value;
             if (dekPath == null) {
                 throw new Error(`Piece=${pieceUri} doesn't have dekPath`);
             } else if (!dekPath.startsWith(options.dekPath! + "/") && dekPath !== options.dekPath!) {
@@ -178,7 +184,6 @@ export class DdcClient implements DdcClientInterface {
     }
 
     async shareData(bucketId: bigint, dekPath: string, partnerBoxPublicKey: string): Promise<PieceUri> {
-        //ToDo add random generation masterDek for more security
         const dek = DdcClient.buildHierarchicalDekHex(this.masterDek, dekPath);
         const partnerEdek = nacl.box(dek, emptyNonce, hexToU8a(partnerBoxPublicKey), this.boxKeypair.secretKey);
 
@@ -211,7 +216,7 @@ export class DdcClient implements DdcClientInterface {
         const pathParts = dekPath.split("/")
 
         for (const part of pathParts) {
-            const postfix = encoder.encode(part);
+            const postfix = stringToU8a(part);
 
             const data = new Uint8Array(dek.length + postfix.length);
             data.set(dek);

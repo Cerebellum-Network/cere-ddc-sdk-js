@@ -5,4 +5,4 @@ export {SearchResult} from "./models/SearchResult";
 export {Tag} from "./models/Tag";
 export {Link} from "./models/Link";
 
-export {ContentAddressableStorage} from "./ContentAddressableStorage";
+export {ContentAddressableStorage, DEK_PATH_KEY, ENCRYPTED_KEY} from "./ContentAddressableStorage";
