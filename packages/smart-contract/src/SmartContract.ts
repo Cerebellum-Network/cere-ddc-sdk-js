@@ -63,6 +63,10 @@ export class SmartContract {
         return this
     }
 
+    async disconnect() {
+        return await this.contract.api.disconnect();
+    }
+
     async bucketCreate(balance: bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent> {
         const tx = await this.contract.tx.bucketCreate(txOptionsPay, bucketParams, clusterId);
         const result = await this.sendTx(this.account, tx);

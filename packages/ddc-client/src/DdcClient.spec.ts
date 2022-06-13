@@ -11,6 +11,11 @@ describe("DDC client integration tests", () => {
     const options = {clusterAddress: "http://localhost:8080", chunkSizeInBytes: 30};
     const testSubject = DdcClient.buildAndConnect(secretPhrase, options);
 
+    afterAll(async () => {
+        const client = await testSubject;
+        await client.diconnect();
+    });
+
     it("store and read unencrypted small data", async () => {
         //given
         const data = randomBytes(20);
