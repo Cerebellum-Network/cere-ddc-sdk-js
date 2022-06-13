@@ -28,7 +28,7 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).read(uri, {decrypt: false});
 
         //then
-        pieceArray.cid = uri.cid;
+        pieceArray.headCid = uri.cid;
         expect(result).toEqual(pieceArray);
     });
 
@@ -44,7 +44,7 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).read(uri, {decrypt: true, dekPath: dekPath});
 
         //then
-        pieceArray.cid = uri.cid;
+        pieceArray.headCid = uri.cid;
         expect(result).toEqual(pieceArray);
     });
 
@@ -68,7 +68,7 @@ describe("DDC client integration tests", () => {
         }
 
         result.data = expectedData;
-        pieceArray.cid = uri.cid;
+        pieceArray.headCid = uri.cid;
         expect(result).toEqual(pieceArray);
     });
 
@@ -92,7 +92,7 @@ describe("DDC client integration tests", () => {
         }
 
         result.data = expectedData;
-        pieceArray.cid = uri.cid;
+        pieceArray.headCid = uri.cid;
         expect(result).toEqual(pieceArray);
     });
 
@@ -109,7 +109,7 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).search(new Query(bucketId, [new Tag(key, value)], false));
 
         //then
-        result.forEach(p => p.cid = undefined);
+        result.forEach(p => p.headCid = undefined);
 
         pieceArray.data = (await testSubject).cipher.encrypt(data, (await testSubject).masterDek);
         pieceArray.tags = [new Tag(key, value), new Tag("encrypted", "true"), new Tag("dekPath", "")]
@@ -128,7 +128,7 @@ describe("DDC client integration tests", () => {
         const result = await (await otherClient).read(pieceUri, {decrypt: true, dekPath: dekPath});
 
         //then
-        pieceArray.cid = pieceUri.cid;
+        pieceArray.headCid = pieceUri.cid;
         pieceArray.tags = [new Tag("encrypted", "true"), new Tag("dekPath", dekPath)];
         expect(result).toEqual(pieceArray);
     });
@@ -146,7 +146,7 @@ describe("DDC client integration tests", () => {
         const result = await (await otherClient).read(pieceUri, {decrypt: true, dekPath: highDekPath});
 
         //then
-        pieceArray.cid = pieceUri.cid;
+        pieceArray.headCid = pieceUri.cid;
         pieceArray.tags = [new Tag("encrypted", "true"), new Tag("dekPath", fullDekPath)]
         expect(result).toEqual(pieceArray);
     });
@@ -164,7 +164,7 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).search(new Query(bucketId, tags, true));
 
         //then
-        pieceArray.cid = uri.cid;
+        pieceArray.headCid = uri.cid;
         pieceArray.data = new Uint8Array();
         expect(result).toEqual([pieceArray]);
     });

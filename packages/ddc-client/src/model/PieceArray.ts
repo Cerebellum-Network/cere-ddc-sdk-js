@@ -5,12 +5,12 @@ type Data = ReadableStream<Uint8Array> | string | Uint8Array
 export class PieceArray {
     data: Data;
     tags: Array<Tag>;
-    cid?: string;
+    headCid?: string;
 
-    constructor(data: Data, tags: Array<Tag> = new Array<Tag>(), cid?: string) {
+    constructor(data: Data, tags: Array<Tag> = new Array<Tag>(), headCid?: string) {
         this.data = data;
         this.tags = tags;
-        this.cid = cid
+        this.headCid = headCid
     }
 
     isPiece(chunkSize: number): boolean {
