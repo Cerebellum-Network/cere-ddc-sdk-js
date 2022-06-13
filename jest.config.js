@@ -22,5 +22,6 @@ module.exports = {
     '^@cere-ddc-sdk/(.*)$': '<rootDir>/packages/$1/'
   },
   globalTeardown: "./jest.teardown.js",
-  globalSetup: "./jest.setup.js"
+  globalSetup: "./jest.setup.js",
+  testTimeout: 10000
 };
