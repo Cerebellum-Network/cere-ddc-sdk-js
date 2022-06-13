@@ -19,7 +19,7 @@ export const TESTNET: Options = {
 }
 
 export const DEVNET: Options = {
-    rpcUrl: "wss://rpc.v2.devnet.cere.network/ws",
+    rpcUrl: "wss://rpc.devnet.cere.network:9945",
     contractAddress: "5GqwX528CHg1jAGuRsiwDwBVXruUvnPeLkEcki4YFbigfKsC",
     abi: ddcBucketAbi
 }

@@ -29,29 +29,29 @@ const txOptionsPay = {
 }
 
 export class SmartContract {
-    mnemonic: string;
+    secretPhrase: string;
     options: Options;
 
     account!: KeyringPair;
     contract!: ContractPromise;
 
     private constructor(
-        mnemonic: string,
+        secretPhrase: string,
         options: Options,
     ) {
-        this.mnemonic = mnemonic;
+        this.secretPhrase = secretPhrase;
         this.options = options;
     }
 
-    static async buildAndConnect(mnemonic: string, options: Options = TESTNET): Promise<SmartContract> {
-        return new SmartContract(mnemonic, options).connect()
+    static async buildAndConnect(secretPhrase: string, options: Options = TESTNET): Promise<SmartContract> {
+        return new SmartContract(secretPhrase, options).connect()
     }
 
     async connect(): Promise<SmartContract> {
         await cryptoWaitReady();
 
         const keyring = new Keyring({type: 'sr25519'});
-        this.account = keyring.createFromUri(this.mnemonic, {name: 'sr25519'});
+        this.account = keyring.createFromUri(this.secretPhrase, {name: 'sr25519'});
 
         const wsProvider = new WsProvider(this.options.rpcUrl);
         const api = await ApiPromise.create({

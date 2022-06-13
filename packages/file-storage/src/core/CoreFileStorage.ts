@@ -1,8 +1,7 @@
-import {ContentAddressableStorage, Link, Piece, PieceUri, Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import {ContentAddressableStorage, Link, Piece, PieceUri, Tag, EncryptionOptions} from "@cere-ddc-sdk/content-addressable-storage";
 import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
 import {FileStorageConfig} from "./FileStorageConfig";
 import {IndexedLink} from "./model/IndexedLink";
-import {EncryptionOptions} from "@cere-ddc-sdk/core/src/crypto/encryption/EncryptionOptions";
 
 const encoder = new TextEncoder();
 

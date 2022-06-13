@@ -1,4 +1,4 @@
-import {Tag} from "@cere-ddc-sdk/content-addressable-storage/src";
+import {Tag} from "@cere-ddc-sdk/content-addressable-storage";
 
 type Data = ReadableStream<Uint8Array> | string | Uint8Array
 

@@ -1,9 +1,7 @@
-import {EncryptionOptions} from "@cere-ddc-sdk/core/src/crypto/encryption/EncryptionOptions";
-
 export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig";
 
 import {PathLike} from "fs";
-import {ContentAddressableStorage, Link, PieceUri, Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import {ContentAddressableStorage, Link, PieceUri, Tag, EncryptionOptions} from "@cere-ddc-sdk/content-addressable-storage";
 import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
 import {FileStorageConfig} from "./core/FileStorageConfig";
 import {CoreFileStorage} from "./core/CoreFileStorage";

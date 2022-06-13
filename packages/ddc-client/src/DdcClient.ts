@@ -16,7 +16,7 @@ import {
     SmartContract,
 } from "@cere-ddc-sdk/smart-contract";
 import {blake2AsU8a, naclBoxKeypairFromSecret, naclKeypairFromString} from "@polkadot/util-crypto";
-import {KeyValueStorage} from "@cere-ddc-sdk/key-value-storage/src";
+import {KeyValueStorage} from "@cere-ddc-sdk/key-value-storage";
 import {DdcClientInterface} from "./DdcClient.interface";
 import {ClientOptions, initDefaultOptions} from "./options/ClientOptions";
 import {StoreOptions} from "./options/StoreOptions";
@@ -163,14 +163,14 @@ export class DdcClient implements DdcClientInterface {
         }
 
         if (headPiece.links.length > 0) {
-            const data = isEncrypted
+            const data = isEncrypted && options.decrypt
                 ? this.fileStorage.readDecryptedLinks(pieceUri.bucketId, headPiece.links, objectDek)
                 : this.fileStorage.readLinks(pieceUri.bucketId, headPiece.links)
 
             return new PieceArray(data, headPiece.tags, pieceUri.cid)
         } else {
             const record = new PieceArray(headPiece.data, headPiece.tags, pieceUri.cid)
-            if (isEncrypted) {
+            if (isEncrypted && options.decrypt) {
                 record.data = this.cipher!.decrypt(headPiece.data, objectDek)
             }
 

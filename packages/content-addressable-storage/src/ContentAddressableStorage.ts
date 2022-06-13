@@ -3,7 +3,6 @@ import {
     Query as PbQuery,
     SearchResult as PbSearchResult,
     SignedPiece as PbSignedPiece,
-    SearchedPiece as PbSearchedPiece,
 } from "@cere-ddc-sdk/proto";
 import {Piece} from "./models/Piece";
 import {PieceUri} from "./models/PieceUri";
@@ -14,7 +13,7 @@ import {base58Encode} from "@polkadot/util-crypto";
 import {stringToU8a} from "@polkadot/util";
 import {fetch} from 'cross-fetch';
 import {Tag} from "./models/Tag";
-import {EncryptionOptions} from "@cere-ddc-sdk/core/src/crypto/encryption/EncryptionOptions";
+import {EncryptionOptions} from "./EncryptionOptions";
 
 const BASE_PATH = "/api/rest/pieces";
 export const ENCRYPTED_KEY = "encrypted";

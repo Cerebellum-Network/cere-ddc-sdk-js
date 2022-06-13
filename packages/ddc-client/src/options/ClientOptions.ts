@@ -1,5 +1,5 @@
 //TODO put comments
-import {CidBuilder, CipherInterface, SchemeInterface, SchemeType} from "@cere-ddc-sdk/core";
+import {CidBuilder, CipherInterface, NaclCipher, SchemeInterface, SchemeType} from "@cere-ddc-sdk/core";
 import {Options as SmartContractOptions, TESTNET} from "@cere-ddc-sdk/smart-contract";
 import {MB} from "@cere-ddc-sdk/file-storage";
 
@@ -9,7 +9,7 @@ export class ClientOptions {
      chunkSizeInBytes?: number = 5 * MB;
      smartContract?: SmartContractOptions = TESTNET;
      scheme?: SchemeType | SchemeInterface = "sr25519";
-     cipher?: CipherInterface;
+     cipher?: CipherInterface = new NaclCipher();
      cidBuilder?: CidBuilder = new CidBuilder();
 
      constructor(clusterAddress: string | number = "") {
