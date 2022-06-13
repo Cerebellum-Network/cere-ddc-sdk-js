@@ -36,6 +36,7 @@ describe("content-addressable-storage integration tests", () => {
         const searchResult = await storage.search(new Query(bucketId, tags));
 
         //then
+        piece.cid = "bafk2bzacechpzp7rzthbhnjyxmkt3qlcyc24ruzormtvmnvdp5dsvjubh7vcc"
         expect(searchResult.pieces).toStrictEqual([piece]);
     });
 });
