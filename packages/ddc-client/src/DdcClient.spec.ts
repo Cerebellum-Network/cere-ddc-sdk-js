@@ -10,10 +10,11 @@ describe("DDC client integration tests", () => {
     const bucketId = 1n;
     const options = {clusterAddress: "http://localhost:8080", chunkSizeInBytes: 30};
     const testSubject = DdcClient.buildAndConnect(secretPhrase, options);
+    const otherClient = DdcClient.buildAndConnect("wheat wise addict group walk park desk yard render scare false measure", options);
 
     afterAll(async () => {
-        const client = await testSubject;
-        await client.diconnect();
+        await (await testSubject).diconnect();
+        await (await otherClient).diconnect();
     });
 
     it("store and read unencrypted small data", async () => {
@@ -121,15 +122,14 @@ describe("DDC client integration tests", () => {
         const pieceArray = new PieceArray(data);
         const dekPath = randomUUID();
         const pieceUri = await (await testSubject).store(bucketId, pieceArray, {encrypt: true, dekPath: dekPath});
-        const otherClient = await DdcClient.buildAndConnect("wheat wise addict group walk park desk yard render scare false measure", options);
 
         //when
-        await (await testSubject).shareData(bucketId, dekPath, u8aToHex(otherClient.boxKeypair.publicKey));
-        const result = await otherClient.read(pieceUri, {decrypt: true, dekPath: dekPath});
+        await (await testSubject).shareData(bucketId, dekPath, u8aToHex((await otherClient).boxKeypair.publicKey));
+        const result = await (await otherClient).read(pieceUri, {decrypt: true, dekPath: dekPath});
 
         //then
         pieceArray.cid = pieceUri.cid;
-        pieceArray.tags = [new Tag("encrypted", "true"), new Tag("dekPath", dekPath)]
+        pieceArray.tags = [new Tag("encrypted", "true"), new Tag("dekPath", dekPath)];
         expect(result).toEqual(pieceArray);
     });
 
@@ -140,11 +140,10 @@ describe("DDC client integration tests", () => {
         const highDekPath = "some";
         const fullDekPath = highDekPath + "/test/sub/path"
         const pieceUri = await (await testSubject).store(bucketId, pieceArray, {encrypt: true, dekPath: fullDekPath});
-        const otherClient = await DdcClient.buildAndConnect("wheat wise addict group walk park desk yard render scare false measure", options);
 
         //when
-        await (await testSubject).shareData(bucketId, highDekPath, u8aToHex(otherClient.boxKeypair.publicKey));
-        const result = await otherClient.read(pieceUri, {decrypt: true, dekPath: highDekPath});
+        await (await testSubject).shareData(bucketId, highDekPath, u8aToHex((await otherClient).boxKeypair.publicKey));
+        const result = await (await otherClient).read(pieceUri, {decrypt: true, dekPath: highDekPath});
 
         //then
         pieceArray.cid = pieceUri.cid;
