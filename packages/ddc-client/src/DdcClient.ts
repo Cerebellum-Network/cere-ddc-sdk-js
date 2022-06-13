@@ -130,20 +130,21 @@ export class DdcClient implements DdcClientInterface {
         await this.caStorage.store(bucketId, new Piece(edek, [new Tag(encryptorTag, u8aToHex(this.boxKeypair.publicKey)), new Tag("Key", `${bucketId}/${options.dekPath || ""}/${u8aToHex(this.boxKeypair.publicKey)}`)]))
 
         const encryptionOptions = {dekPath: options.dekPath || "", dek: dek};
-        if (pieceArray.isPiece(this.options.chunkSizeInBytes!)) {
+        if (pieceArray.isMultipart(this.options.chunkSizeInBytes!)) {
+            return await this.fileStorage.uploadEncrypted(bucketId, pieceArray.data, pieceArray.tags, encryptionOptions);
+        } else {
             const piece = new Piece(pieceArray.data as Uint8Array, pieceArray.tags);
             return await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions);
-        } else {
-            return await this.fileStorage.uploadEncrypted(bucketId, pieceArray.data, pieceArray.tags, encryptionOptions)
         }
     }
 
     private async storeUnencrypted(bucketId: bigint, pieceArray: PieceArray) {
-        if (pieceArray.isPiece(this.options.chunkSizeInBytes!)) {
-            const piece = new Piece(pieceArray.data as Uint8Array, pieceArray.tags);
-            return await this.caStorage.store(bucketId, piece)
+        if (pieceArray.isMultipart(this.options.chunkSizeInBytes!)) {
+            return await this.fileStorage.upload(bucketId, pieceArray.data, pieceArray.tags);
         } else {
-            return await this.fileStorage.upload(bucketId, pieceArray.data, pieceArray.tags)
+            const piece = new Piece(pieceArray.data as Uint8Array, pieceArray.tags);
+            return await this.caStorage.store(bucketId, piece);
+
         }
     }
 

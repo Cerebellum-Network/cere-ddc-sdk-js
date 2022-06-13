@@ -13,8 +13,8 @@ export class PieceArray {
         this.headCid = headCid
     }
 
-    isPiece(chunkSize: number): boolean {
-        return this.data instanceof Uint8Array && this.data.length <= chunkSize;
+    isMultipart(chunkSize: number): boolean {
+        return !(this.data instanceof Uint8Array && this.data.length <= chunkSize);
     }
 
     async* dataReader() {
