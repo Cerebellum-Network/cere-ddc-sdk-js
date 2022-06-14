@@ -3,6 +3,8 @@ import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
 import {FileStorageConfig} from "./FileStorageConfig";
 import {IndexedLink} from "./model/IndexedLink";
 
+const multipartTag = "multipart"
+
 export class CoreFileStorage {
 
     readonly config: FileStorageConfig;
@@ -112,7 +114,7 @@ export class CoreFileStorage {
                     const current = index++;
 
                     const piece = new Piece(result.value)
-                    piece.tags.push(new Tag("multipart", "true"));
+                    piece.tags.push(new Tag(multipartTag, "true"));
                     const pieceUri = encryptionOptions ? await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions)
                         : await this.caStorage.store(bucketId, piece)
 
