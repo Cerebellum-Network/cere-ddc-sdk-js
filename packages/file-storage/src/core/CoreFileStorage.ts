@@ -3,8 +3,6 @@ import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
 import {FileStorageConfig} from "./FileStorageConfig";
 import {IndexedLink} from "./model/IndexedLink";
 
-const encoder = new TextEncoder();
-
 export class CoreFileStorage {
 
     readonly config: FileStorageConfig;
@@ -26,7 +24,7 @@ export class CoreFileStorage {
             .sort((a, b) => a.position - b.position)
             .map(e => e.link);
 
-        const piece = new Piece(encoder.encode("metadata"), tags, links);
+        const piece = new Piece(new Uint8Array(), tags, links);
         if (encryptionOptions) {
             return await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions);
         } else {

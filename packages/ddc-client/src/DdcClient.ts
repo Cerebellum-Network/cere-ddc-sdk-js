@@ -1,7 +1,7 @@
 import {CidBuilder, CipherInterface, NaclCipher, Scheme, SchemeInterface, SchemeType} from "@cere-ddc-sdk/core";
 import {
     ContentAddressableStorage,
-    DEK_PATH_KEY, ENCRYPTED_KEY,
+    DEK_PATH_TAG,
     Piece,
     PieceUri,
     Query,
@@ -150,12 +150,12 @@ export class DdcClient implements DdcClientInterface {
 
     async read(pieceUri: PieceUri, options: ReadOptions = {}): Promise<PieceArray> {
         const headPiece = await this.caStorage.read(pieceUri.bucketId, pieceUri.cid);
-        const isEncrypted = headPiece.tags.filter(t => t.key == ENCRYPTED_KEY && t.value == "true").length > 0;
+        const isEncrypted = headPiece.tags.filter(t => t.key == DEK_PATH_TAG).length > 0;
 
         //TODO 4. put into DEK cache
         let objectDek = new Uint8Array();
         if (options.decrypt) {
-            const dekPath = headPiece.tags.find(t => t.key == DEK_PATH_KEY)?.value;
+            const dekPath = headPiece.tags.find(t => t.key == DEK_PATH_TAG)?.value;
             if (dekPath == null) {
                 throw new Error(`Piece=${pieceUri} doesn't have dekPath`);
             } else if (!dekPath.startsWith(options.dekPath! + "/") && dekPath !== options.dekPath!) {

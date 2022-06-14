@@ -16,8 +16,7 @@ import {Tag} from "./models/Tag";
 import {EncryptionOptions} from "./EncryptionOptions";
 
 const BASE_PATH = "/api/rest/pieces";
-export const ENCRYPTED_KEY = "encrypted";
-export const DEK_PATH_KEY = "dekPath";
+export const DEK_PATH_TAG = "dekPath";
 
 export class ContentAddressableStorage {
     readonly scheme: SchemeInterface;
@@ -97,7 +96,6 @@ export class ContentAddressableStorage {
     }
 
     async search(query: Query): Promise<SearchResult> {
-        //ToDo add piece CID to result
         let pbQuery: PbQuery = {
             bucketId: query.bucketId.toString(),
             tags: query.tags,
@@ -130,8 +128,7 @@ export class ContentAddressableStorage {
 
     async storeEncrypted(bucketId: bigint, piece: Piece, encryptionOptions: EncryptionOptions): Promise<PieceUri> {
         const encryptedPiece = piece.clone();
-        encryptedPiece.tags.push(new Tag(ENCRYPTED_KEY, "true"));
-        encryptedPiece.tags.push(new Tag(DEK_PATH_KEY, encryptionOptions.dekPath));
+        encryptedPiece.tags.push(new Tag(DEK_PATH_TAG, encryptionOptions.dekPath));
         encryptedPiece.data = this.cipher!.encrypt(piece.data, encryptionOptions.dek);
         return this.store(bucketId, encryptedPiece)
     }
