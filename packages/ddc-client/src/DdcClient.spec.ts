@@ -112,7 +112,7 @@ describe("DDC client integration tests", () => {
         result.forEach(p => p.headCid = undefined);
 
         pieceArray.data = (await testSubject).cipher.encrypt(data, (await testSubject).masterDek);
-        pieceArray.tags = [new Tag(key, value), new Tag("encrypted", "true"), new Tag("dekPath", "")]
+        pieceArray.tags = [new Tag(key, value), new Tag("dekPath", "")]
         expect(result).toEqual([pieceArray]);
     });
 
@@ -129,7 +129,7 @@ describe("DDC client integration tests", () => {
 
         //then
         pieceArray.headCid = pieceUri.cid;
-        pieceArray.tags = [new Tag("encrypted", "true"), new Tag("dekPath", dekPath)];
+        pieceArray.tags = [new Tag("dekPath", dekPath)];
         expect(result).toEqual(pieceArray);
     });
 
@@ -147,7 +147,7 @@ describe("DDC client integration tests", () => {
 
         //then
         pieceArray.headCid = pieceUri.cid;
-        pieceArray.tags = [new Tag("encrypted", "true"), new Tag("dekPath", fullDekPath)]
+        pieceArray.tags = [new Tag("dekPath", fullDekPath)]
         expect(result).toEqual(pieceArray);
     });
 
