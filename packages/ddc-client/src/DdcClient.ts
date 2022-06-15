@@ -1,4 +1,4 @@
-import {CidBuilder, CipherInterface, NaclCipher, Scheme, SchemeInterface, SchemeType} from "@cere-ddc-sdk/core";
+import {Scheme, SchemeType} from "@cere-ddc-sdk/core";
 import {
     ContentAddressableStorage,
     DEK_PATH_TAG,
@@ -33,10 +33,7 @@ const encryptorTag = "encryptor";
 
 export class DdcClient implements DdcClientInterface {
     readonly smartContract: SmartContract
-    readonly scheme: SchemeInterface;
-    readonly cipher: CipherInterface;
     readonly options: ClientOptions;
-    readonly cidBuilder: CidBuilder;
 
     readonly caStorage: ContentAddressableStorage;
     readonly kvStorage: KeyValueStorage;
@@ -46,55 +43,36 @@ export class DdcClient implements DdcClientInterface {
     readonly boxKeypair: BoxKeyPair
 
     private constructor(
-        secretPhrase: string,
+        caStorage: ContentAddressableStorage,
         smartContract: SmartContract,
-        scheme: SchemeInterface,
-        cdn: string,
+        secretPhrase: string,
         options: ClientOptions,
     ) {
         this.smartContract = smartContract;
-        this.scheme = scheme;
-        this.cipher = options.cipher || new NaclCipher();
         this.options = options;
-        this.cidBuilder = options.cidBuilder || new CidBuilder();
 
-        //ToDO cdn discovery
-        this.caStorage = new ContentAddressableStorage(scheme, cdn, this.cipher, this.cidBuilder);
-        this.kvStorage = new KeyValueStorage(scheme, cdn);
-        this.fileStorage = new FileStorage(scheme, cdn, new FileStorageConfig(options.pieceConcurrency, options.chunkSizeInBytes), this.cipher, this.cidBuilder);
+        this.caStorage = caStorage;
+        this.kvStorage = new KeyValueStorage(caStorage);
+        this.fileStorage = new FileStorage(caStorage, new FileStorageConfig(options.pieceConcurrency, options.chunkSizeInBytes));
 
         this.masterDek = blake2AsU8a(secretPhrase);
         this.boxKeypair = naclBoxKeypairFromSecret(naclKeypairFromString(secretPhrase).secretKey);
     }
 
-
     static async buildAndConnect(secretPhrase: string, options: ClientOptions): Promise<DdcClient> {
-        options = initDefaultOptions(options)
-        const smartContract = await SmartContract.buildAndConnect(secretPhrase, options.smartContract)
+        options = initDefaultOptions(options);
+        const smartContract = await SmartContract.buildAndConnect(secretPhrase, options.smartContract);
         const scheme = (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme as SchemeType, secretPhrase) : options.scheme!
-        const cdn = await DdcClient.getCdnAddress(options, smartContract);
 
-        return new DdcClient(secretPhrase, smartContract, scheme, cdn, options)
-    }
+        const caStorage = await ContentAddressableStorage.build(secretPhrase, {
+            clusterAddress: options.clusterAddress,
+            smartContract: options.smartContract,
+            scheme: scheme,
+            cipher: options.cipher,
+            cidBuilder: options.cidBuilder
+        });
 
-    //TODO implement balancer
-    private static async getCdnAddress(options: ClientOptions, smartContract: SmartContract): Promise<string> {
-        if (typeof options.clusterAddress === "string") {
-            return options.clusterAddress;
-        } else {
-            const cluster = await smartContract.clusterGet(options.clusterAddress as number);
-            const vNodes = new Set<bigint>(cluster.cluster.vnodes);
-            for (const vNode of vNodes) {
-                const node = await smartContract.nodeGet(Number(vNode));
-                const parameters = JSON.parse(node.params);
-
-                if (parameters.type === "cdn") {
-                    return parameters.url;
-                }
-            }
-        }
-
-        throw new Error(`unable to find cdn nodes in cluster='${options.clusterAddress}'`)
+        return new DdcClient(caStorage, smartContract, secretPhrase, options);
     }
 
     async diconnect() {
@@ -176,7 +154,7 @@ export class DdcClient implements DdcClientInterface {
         } else {
             const record = new PieceArray(headPiece.data, headPiece.tags, pieceUri.cid)
             if (isEncrypted && options.decrypt) {
-                record.data = this.cipher!.decrypt(headPiece.data, objectDek)
+                record.data = this.caStorage.cipher!.decrypt(headPiece.data, objectDek)
             }
 
             return record

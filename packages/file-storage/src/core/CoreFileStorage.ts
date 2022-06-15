@@ -1,5 +1,4 @@
 import {ContentAddressableStorage, Link, Piece, PieceUri, Tag, EncryptionOptions} from "@cere-ddc-sdk/content-addressable-storage";
-import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
 import {FileStorageConfig} from "./FileStorageConfig";
 import {IndexedLink} from "./model/IndexedLink";
 
@@ -10,9 +9,9 @@ export class CoreFileStorage {
     readonly config: FileStorageConfig;
     readonly caStorage: ContentAddressableStorage;
 
-    constructor(scheme: SchemeInterface, cdnNodeUrl: string, config: FileStorageConfig = new FileStorageConfig(), cipher?: CipherInterface, cidBuilder?: CidBuilder) {
+    constructor(caStorage: ContentAddressableStorage, config: FileStorageConfig) {
         this.config = config;
-        this.caStorage = new ContentAddressableStorage(scheme, cdnNodeUrl, cipher, cidBuilder);
+        this.caStorage = caStorage;
     }
 
     async uploadFromStreamReader(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>, tags: Array<Tag> = [], encryptionOptions?: EncryptionOptions): Promise<PieceUri> {

@@ -1,7 +1,13 @@
 export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig";
 
-import {ContentAddressableStorage, Link, PieceUri, Tag, EncryptionOptions} from "@cere-ddc-sdk/content-addressable-storage";
-import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
+import {
+    ContentAddressableStorage,
+    EncryptionOptions,
+    Link,
+    PieceUri,
+    StorageOptions,
+    Tag
+} from "@cere-ddc-sdk/content-addressable-storage";
 import {FileStorageConfig} from "./core/FileStorageConfig";
 import {CoreFileStorage} from "./core/CoreFileStorage";
 import {FileStorage as FileStorageInterface} from "./type";
@@ -15,10 +21,14 @@ export class FileStorage implements FileStorageInterface {
 
     private readonly fs: CoreFileStorage;
 
-    constructor(scheme: SchemeInterface, cdnNodeUrl: string, config?: FileStorageConfig, cipher?: CipherInterface, cidBuilder?: CidBuilder) {
-        this.fs = new CoreFileStorage(scheme, cdnNodeUrl, config, cipher, cidBuilder);
-        this.caStorage = this.fs.caStorage;
-        this.config = this.fs.config;
+    constructor(caStorage: ContentAddressableStorage, config: FileStorageConfig = new FileStorageConfig()) {
+        this.fs = new CoreFileStorage(caStorage, config);
+        this.caStorage = caStorage;
+        this.config = config;
+    }
+
+    static async build(secretPhrase: string, storageOptions: StorageOptions, config: FileStorageConfig = new FileStorageConfig()): Promise<FileStorage> {
+        return new FileStorage(await ContentAddressableStorage.build(secretPhrase, storageOptions), config);
     }
 
     async upload(bucketId: bigint, data: Data, tags: Array<Tag> = []): Promise<PieceUri> {
@@ -52,7 +62,6 @@ export class FileStorage implements FileStorageInterface {
         return new ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, links, dek),
             new CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }
-
 
 
 }

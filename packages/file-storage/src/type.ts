@@ -1,5 +1,11 @@
-import {ContentAddressableStorage, Link, PieceUri, Tag, EncryptionOptions} from "@cere-ddc-sdk/content-addressable-storage";
-import {CidBuilder, CipherInterface, SchemeInterface} from "@cere-ddc-sdk/core";
+import {
+    ContentAddressableStorage,
+    Link,
+    PieceUri,
+    Tag,
+    EncryptionOptions,
+    StorageOptions
+} from "@cere-ddc-sdk/content-addressable-storage";
 import {FileStorageConfig} from "./core/FileStorageConfig";
 import {Readable} from "node:stream";
 import * as streamWeb from "stream/web";
@@ -26,5 +32,6 @@ export interface FileStorage {
 
 export declare const FileStorage: {
     prototype: FileStorage;
-    new(scheme: SchemeInterface, cdnNodeUrl: string, config?: FileStorageConfig, cipher?: CipherInterface, cidBuilder?: CidBuilder): FileStorage;
+    new(caStorage: ContentAddressableStorage, config?: FileStorageConfig): FileStorage;
+    build(storageOptions: StorageOptions, config?: FileStorageConfig): Promise<FileStorage>;
 };

@@ -1,26 +1,16 @@
-import {
-    ContentAddressableStorage,
-    Piece,
-    PieceUri,
-} from "@cere-ddc-sdk/content-addressable-storage";
-import {SchemeInterface} from "@cere-ddc-sdk/core";
+import {ContentAddressableStorage, Piece, PieceUri, StorageOptions,} from "@cere-ddc-sdk/content-addressable-storage";
 
 const keyTag = "Key"
 
 export class KeyValueStorage {
-    scheme: SchemeInterface;
-    cdnNodeUrl: string;
-
     caStorage: ContentAddressableStorage;
 
-    constructor(
-        scheme: SchemeInterface,
-        cdnNodeUrl: string,
-    ) {
-        this.scheme = scheme;
-        this.cdnNodeUrl = cdnNodeUrl;
+    constructor(caStorage: ContentAddressableStorage) {
+        this.caStorage = caStorage;
+    }
 
-        this.caStorage = new ContentAddressableStorage(scheme, cdnNodeUrl)
+    static async build(secretPhrase: string, storageOptions: StorageOptions): Promise<KeyValueStorage> {
+        return new KeyValueStorage(await ContentAddressableStorage.build(secretPhrase, storageOptions))
     }
 
     async store(bucketId: bigint, key: string, piece: Piece): Promise<PieceUri> {
