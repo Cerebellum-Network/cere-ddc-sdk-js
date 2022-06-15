@@ -111,7 +111,7 @@ describe("DDC client integration tests", () => {
         //then
         result.forEach(p => p.headCid = undefined);
 
-        pieceArray.data = (await testSubject).cipher.encrypt(data, (await testSubject).masterDek);
+        pieceArray.data = (await testSubject).caStorage.cipher!.encrypt(data, (await testSubject).masterDek);
         pieceArray.tags = [new Tag(key, value), new Tag("dekPath", "")]
         expect(result).toEqual([pieceArray]);
     });
