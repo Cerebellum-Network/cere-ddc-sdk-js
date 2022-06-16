@@ -1,26 +1,16 @@
-import {
-    ContentAddressableStorage,
-    Piece,
-    PieceUri,
-} from "@cere-ddc-sdk/content-addressable-storage";
-import {SchemeInterface} from "@cere-ddc-sdk/core";
+import {ContentAddressableStorage, Piece, PieceUri, StorageOptions,} from "@cere-ddc-sdk/content-addressable-storage";
 
 const keyTag = "Key"
 
 export class KeyValueStorage {
-    scheme: SchemeInterface;
-    gatewayNodeUrl: string;
-
     caStorage: ContentAddressableStorage;
 
-    constructor(
-        scheme: SchemeInterface,
-        gatewayNodeUrl: string,
-    ) {
-        this.scheme = scheme;
-        this.gatewayNodeUrl = gatewayNodeUrl;
+    constructor(caStorage: ContentAddressableStorage) {
+        this.caStorage = caStorage;
+    }
 
-        this.caStorage = new ContentAddressableStorage(scheme, gatewayNodeUrl)
+    static async build(secretPhrase: string, storageOptions: StorageOptions): Promise<KeyValueStorage> {
+        return new KeyValueStorage(await ContentAddressableStorage.build(secretPhrase, storageOptions))
     }
 
     async store(bucketId: bigint, key: string, piece: Piece): Promise<PieceUri> {
@@ -33,18 +23,18 @@ export class KeyValueStorage {
         return this.caStorage.store(bucketId, piece)
     }
 
-    async read(bucketId: bigint, key: string): Promise<Piece[]> {
+    async read(bucketId: bigint, key: string, skipData: boolean = false): Promise<Piece[]> {
         const searchResult = await this.caStorage.search(
             {
                 bucketId: bucketId,
-                tags: Array.of({key: keyTag, value: key})
+                tags: Array.of({key: keyTag, value: key}),
+                skipData: skipData
             }
         )
 
-        return searchResult.pieces.map(p => ({
-            data: p.data,
-            tags: p.tags.filter(t => t.key != keyTag),
-            links: p.links
-        }))
+        return searchResult.pieces.map(p => new Piece(
+            p.data,
+            p.tags.filter(t => t.key != keyTag)
+        ))
     }
 }

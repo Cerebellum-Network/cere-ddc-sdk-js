@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/key-value-storage",
   "description": "Key-value storage client",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "repository": {
     "type": "git",
     "directory": "packages/key-value-storage",
@@ -11,7 +11,8 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@cere-ddc-sdk/content-addressable-storage": "1.1.0",
+    "@cere-ddc-sdk/content-addressable-storage": "1.2.0",
+    "@cere-ddc-sdk/core": "1.2.0",
     "@types/node": "^16.0.0"
   },
   "devDependencies": {

@@ -20,8 +20,8 @@ const signatureAlgorithm = "sr25519";
 const privateKey = "0x93e0153dc...";
 const scheme = await Scheme.createScheme(signatureAlgorithm, privateKey);
 
-const gatewayUlrl = "https://node-0.gateway.devnet.cere.network";
-const fileStorage = new FileStorage(scheme, gatewayUlrl);
+const cdnUlrl = "https://node-0.cdn.devnet.cere.network";
+const fileStorage = new FileStorage(scheme, cdnUlrl);
 ```
 
 ### Read

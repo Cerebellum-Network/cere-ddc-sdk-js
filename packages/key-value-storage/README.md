@@ -19,8 +19,8 @@ const signatureAlgorithm = "ed25519";
 const privateKey = "0x9gh7...";
 const scheme = await Scheme.createScheme(signatureAlgorithm, privateKey);
 
-const gatewayUrl = "https://node-0.gateway.devnet.cere.network/";
-const keyValueStorage = new KeyValueStorage(scheme, gatewayUrl);
+const cdnUrl = "https://node-0.cdn.devnet.cere.network/";
+const keyValueStorage = new KeyValueStorage(scheme, cdnUrl);
 ```
 
 ### Store

@@ -1,7 +1,7 @@
 const {DockerComposeEnvironment, Wait} = require("testcontainers");
 const {composeFilePath, composeFile} = require("./jest.variables");
 
-module.exports = async function (globalConfig) {
+module.exports = async function (globalConfig, projectConfig) {
     console.log(`Start ${composeFilePath}/${composeFile}`);
     globalThis.__DOCKER_COMPOSE__ = await new DockerComposeEnvironment(composeFilePath, composeFile)
         .withWaitStrategy("ddc-cdn-node", Wait.forHealthCheck())

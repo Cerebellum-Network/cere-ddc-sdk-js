@@ -1,10 +1,12 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/core/tsconfig.build.json" },
     { "path": "packages/proto/tsconfig.build.json" },
+    { "path": "packages/core/tsconfig.build.json" },
+    { "path": "packages/smart-contract/tsconfig.build.json" },
     { "path": "packages/content-addressable-storage/tsconfig.build.json" },
     { "path": "packages/key-value-storage/tsconfig.build.json" },
     { "path": "packages/file-storage/tsconfig.build.json" },
+    { "path": "packages/ddc-client/tsconfig.build.json" },
   ]
 }

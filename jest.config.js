@@ -1,4 +1,5 @@
 module.exports = {
+  verbose: true,
   preset: 'ts-jest',
   testEnvironment: 'node',
   collectCoverage: true,
@@ -20,6 +21,7 @@ module.exports = {
   moduleNameMapper: {
     '^@cere-ddc-sdk/(.*)$': '<rootDir>/packages/$1/'
   },
-  globalSetup: "./jest.setup.js",
   globalTeardown: "./jest.teardown.js",
+  globalSetup: "./jest.setup.js",
+  testTimeout: 10000
 };
