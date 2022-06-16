@@ -8,27 +8,68 @@ import {Piece} from "./models/Piece";
 import {PieceUri} from "./models/PieceUri";
 import {Query} from "./models/Query";
 import {SearchResult} from "./models/SearchResult";
-import {CidBuilder, SchemeInterface} from "@cere-ddc-sdk/core";
+import {CidBuilder, CipherInterface, Scheme, SchemeInterface, SchemeType} from "@cere-ddc-sdk/core";
 import {base58Encode} from "@polkadot/util-crypto";
 import {stringToU8a} from "@polkadot/util";
 import {fetch} from 'cross-fetch';
+import {Tag} from "./models/Tag";
+import {EncryptionOptions} from "./EncryptionOptions";
+import {Options as SmartContractOptions, SmartContract} from "@cere-ddc-sdk/smart-contract";
+import {initDefaultOptions, StorageOptions} from "./StorageOptions";
 
 const BASE_PATH = "/api/rest/pieces";
+export const DEK_PATH_TAG = "dekPath";
 
 export class ContentAddressableStorage {
-    scheme: SchemeInterface;
-    gatewayNodeUrl: string;
+    readonly scheme: SchemeInterface;
+    readonly cdnNodeUrl: string;
 
-    cidBuilder: CidBuilder;
+    readonly cipher?: CipherInterface;
+    readonly cidBuilder: CidBuilder;
 
     constructor(
         scheme: SchemeInterface,
-        gatewayNodeUrl: string,
+        cdnNodeUrl: string,
+        cipher?: CipherInterface,
         cidBuilder: CidBuilder = new CidBuilder()
     ) {
         this.scheme = scheme;
-        this.gatewayNodeUrl = gatewayNodeUrl;
+        this.cdnNodeUrl = cdnNodeUrl;
         this.cidBuilder = cidBuilder;
+        this.cipher = cipher;
+    }
+
+    static async build(secretPhrase: string, options: StorageOptions): Promise<ContentAddressableStorage> {
+        const caOptions = initDefaultOptions(options);
+        const cdn = await ContentAddressableStorage.getCdnAddress(secretPhrase, caOptions.smartContract!, caOptions.clusterAddress);
+        const scheme = (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme as SchemeType, secretPhrase) : options.scheme!
+
+        return new ContentAddressableStorage(scheme, cdn, caOptions.cipher, caOptions.cidBuilder);
+    }
+
+    //TODO implement balancer
+    private static async getCdnAddress(secretPhrase: string, smartContractOptions: SmartContractOptions, clusterAddress: string | number): Promise<string> {
+        if (typeof clusterAddress === "string") {
+            return clusterAddress;
+        }
+
+        const smartContract = await SmartContract.buildAndConnect(secretPhrase, smartContractOptions);
+        try {
+            const cluster = await smartContract.clusterGet(clusterAddress as number);
+            const vNodes = new Set<bigint>(cluster.cluster.vnodes);
+            for (const vNode of vNodes) {
+                const node = await smartContract.nodeGet(Number(vNode));
+                const parameters = JSON.parse(node.params);
+
+                if (parameters.type === "cdn") {
+                    return parameters.url;
+                }
+            }
+        } finally {
+            await smartContract.disconnect();
+        }
+
+        throw new Error(`unable to find cdn nodes in cluster='${clusterAddress}'`);
     }
 
     async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
@@ -52,7 +93,7 @@ export class ContentAddressableStorage {
                 signer: this.scheme.publicKeyHex,
             },
         };
-        let response = await fetch(this.gatewayNodeUrl + BASE_PATH, {
+        let response = await fetch(this.cdnNodeUrl + BASE_PATH, {
             method: "PUT",
             body: PbSignedPiece.toBinary(pbSignedPiece),
         });
@@ -67,7 +108,7 @@ export class ContentAddressableStorage {
     }
 
     async read(bucketId: bigint, cid: string): Promise<Piece> {
-        let response = await fetch(`${this.gatewayNodeUrl}${BASE_PATH}/${cid}?bucketId=${bucketId}`, {
+        let response = await fetch(`${this.cdnNodeUrl}${BASE_PATH}/${cid}?bucketId=${bucketId}`, {
             method: "GET",
         });
 
@@ -86,18 +127,19 @@ export class ContentAddressableStorage {
             );
         }
 
-        return this.toPiece(pbSignedPiece.piece);
+        return this.toPiece(pbSignedPiece.piece, cid);
     }
 
     async search(query: Query): Promise<SearchResult> {
         let pbQuery: PbQuery = {
             bucketId: query.bucketId.toString(),
             tags: query.tags,
+            skipData: query.skipData
         }
         let queryAsBytes = PbQuery.toBinary(pbQuery)
         let queryBase58 = base58Encode(queryAsBytes)
 
-        let response = await fetch(this.gatewayNodeUrl + BASE_PATH + "?query=" + queryBase58, {
+        let response = await fetch(this.cdnNodeUrl + BASE_PATH + "?query=" + queryBase58, {
             method: "GET",
         });
 
@@ -112,17 +154,30 @@ export class ContentAddressableStorage {
         );
 
         const isPiece = (val: PbPiece | undefined): val is PbPiece => val !== null;
-        let pieces: Piece[] = pbSearchResult.signedPieces
-            .map((p: PbSignedPiece) => p.piece)
-            .filter(isPiece)
-            .map(this.toPiece)
+        let pieces: Piece[] = pbSearchResult.searchedPieces
+            .filter(p => isPiece(p.signedPiece?.piece))
+            .map(e => this.toPiece(e.signedPiece!.piece!, e.cid))
 
         return new SearchResult(pieces);
     }
 
-    private toPiece(piece: PbPiece): Piece {
+    async storeEncrypted(bucketId: bigint, piece: Piece, encryptionOptions: EncryptionOptions): Promise<PieceUri> {
+        const encryptedPiece = piece.clone();
+        encryptedPiece.tags.push(new Tag(DEK_PATH_TAG, encryptionOptions.dekPath));
+        encryptedPiece.data = this.cipher!.encrypt(piece.data, encryptionOptions.dek);
+        return this.store(bucketId, encryptedPiece)
+    }
+
+    async readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array): Promise<Piece> {
+        const piece = await this.read(bucketId, cid);
+        piece.data = this.cipher!.decrypt(piece.data, dek)
+
+        return piece;
+    }
+
+    private toPiece(piece: PbPiece, cid: string): Piece {
         return new Piece(piece.data, piece.tags, piece.links.map(e => {
             return {cid: e.cid, size: BigInt(e.size), name: e.name}
-        }))
+        }), cid)
     }
 }
