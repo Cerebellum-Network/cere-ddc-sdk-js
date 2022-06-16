@@ -29,8 +29,6 @@ describe("Scheme", () => {
 
     //given
     const message = stringToU8a("hello");
-    const expectedSignature =
-        "0xe6383e3460eeea83a4b5c4f82eae69aa7ece8f6616a06f1694cb5061cd94b04e4302c210740b4d83710d2d3ec224c975754e6de6c81e46b7a88ee84858636882";
 
     //when
     const signature = await testSubject.sign(message);

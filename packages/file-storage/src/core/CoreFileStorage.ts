@@ -18,7 +18,7 @@ export class CoreFileStorage {
         const indexedLinks = await this.storeChunks(bucketId, reader, encryptionOptions);
 
         if (indexedLinks.length === 0) {
-            throw new Error("ReadableStream is empty");
+            throw new Error("Upload data is empty");
         }
 
         const links = indexedLinks

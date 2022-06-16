@@ -22,12 +22,17 @@ export class Scheme implements SchemeInterface{
             throw new Error("Unsupported scheme");
         }
 
-        await waitReady()
+        await waitReady();
 
-        let keyring = new Keyring({type: scheme})
-        let keyringPair = keyring.addFromMnemonic(secretPhrase)
+        const keyring = new Keyring({type: scheme});
+        let keyringPair;
+        try {
+            keyringPair = keyring.addFromMnemonic(secretPhrase);
+        } catch (err) {
+            throw new Error(`Couldn't create scheme with current secretPhrase`)
+        }
 
-        return new Scheme(keyringPair, scheme, u8aToHex(keyring.publicKeys[0]))
+        return new Scheme(keyringPair, scheme, u8aToHex(keyring.publicKeys[0]));
     }
 
     async sign(data: Uint8Array): Promise<string> {

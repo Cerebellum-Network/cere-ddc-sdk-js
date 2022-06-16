@@ -3,7 +3,7 @@ export class Link {
     size: bigint;
     name: string;
 
-    constructor(cid: string, size: bigint, name = "") {
+    constructor(cid: string, size: bigint, name: string = "") {
         this.cid = cid
         this.size = size
         this.name = name
