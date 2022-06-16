@@ -6,7 +6,7 @@ import {randomUUID} from "crypto";
 import {u8aToHex} from "@polkadot/util";
 
 describe("DDC client integration tests", () => {
-    const secretPhrase = "thought lizard above company tape post nice rack depth appear equal equip";
+    const secretPhrase = "0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03";
     const bucketId = 1n;
     const options = {clusterAddress: "http://localhost:8080", chunkSizeInBytes: 30};
     const testSubject = DdcClient.buildAndConnect(secretPhrase, options);
