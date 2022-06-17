@@ -22,5 +22,17 @@ jobs:
         run: npm install
       - name: Compile
         run: npm run compile
-      - name: Unpublish package
+      - name: Unpublish package content-addressable-storage
         run: npm unpublish @cere-ddc-sdk/content-addressable-storage@1.2.0
+      - name: Unpublish package core
+        run: npm unpublish @cere-ddc-sdk/core@1.2.0
+      - name: Unpublish package ddc-client
+        run: npm unpublish @cere-ddc-sdk/ddc-client@1.2.0
+      - name: Unpublish package file-storage
+        run: npm unpublish @cere-ddc-sdk/file-storage@1.2.0
+      - name: Unpublish package key-value-storage
+        run: npm unpublish @cere-ddc-sdk/key-value-storage@1.2.0
+      - name: Unpublish package proto
+        run: npm unpublish @cere-ddc-sdk/proto@1.2.0
+      - name: Unpublish package smart-contract
+        run: npm unpublish @cere-ddc-sdk/smart-contract@1.2.0
