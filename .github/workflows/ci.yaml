@@ -19,8 +19,4 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
       - name: Install packages
-        run: npm install
-      - name: Compile
-        run: npm run compile
-      - name: Run tests
-        run: npm run test
+        run: npm -v
