@@ -18,6 +18,8 @@ jobs:
         with:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
+      - name: Clean cache NPM
+        run: npm cache clean --force
       - name: Install packages
         run: npm install
       - name: Compile
