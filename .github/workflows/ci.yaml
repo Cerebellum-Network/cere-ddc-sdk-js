@@ -22,6 +22,8 @@ jobs:
         run: npm install
       - name: Compile
         run: npm run compile
+      - name: Unpublish package content-addressable-storage
+        run: npm unpublish @cere-ddc-sdk/content-addressable-storage@1.2.0 -f
       - name: Unpublish package core
         run: npm unpublish @cere-ddc-sdk/core@1.2.0
       - name: Unpublish package ddc-client
