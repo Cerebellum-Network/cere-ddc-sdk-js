@@ -19,4 +19,10 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
       - name: Install packages
-        run: npm -v
+        run: npm install
+      - name: Compile
+        run: npm run compile
+      - name: Run tests
+        run: npm run test
+      - name: Publish package
+        run: npm publish --workspaces --access public
