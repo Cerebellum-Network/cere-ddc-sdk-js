@@ -12,7 +12,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@cere-ddc-sdk/content-addressable-storage": "1.2.1",
-    "@cere-ddc-sdk/core": "1.2.1",
     "@types/node": "^16.0.0"
   },
   "devDependencies": {
