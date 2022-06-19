@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/core",
   "description": "Core with common logic",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "repository": {
     "type": "git",
     "directory": "packages/core",
@@ -16,13 +16,13 @@
     "@types/node": "^16.0.0",
     "cids": "^1.1.9",
     "multiformats": "^3.0.3",
-    "multihashing": "^0.3.4"
+    "multihashing": "^0.3.4",
+    "@polkadot/extension-dapp": "^0.44.1"
   },
   "devDependencies": {
     "typescript": "4.5.4"
   },
   "peerDependencies": {
-    "@polkadot/extension-dapp": "0.37.2",
     "@polkadot/keyring": "^6.0.5",
     "@polkadot/util": "^6.0.5",
     "@polkadot/util-crypto": "^6.0.5",
