@@ -2,8 +2,8 @@
   "compilerOptions": {
     "baseUrl": "./",
     "composite": true,
-    "target": "es2020",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "esnext",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,

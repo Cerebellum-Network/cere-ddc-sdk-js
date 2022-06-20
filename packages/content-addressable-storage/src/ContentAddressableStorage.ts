@@ -44,8 +44,8 @@ export class ContentAddressableStorage {
 
     static async build(secretPhrase: string, options: StorageOptions): Promise<ContentAddressableStorage> {
         const caOptions = initDefaultOptions(options);
-        const cdn = await ContentAddressableStorage.getCdnAddress(secretPhrase, caOptions.smartContract!, caOptions.clusterAddress);
         const scheme = (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme as SchemeType, secretPhrase) : options.scheme!
+        const cdn = await ContentAddressableStorage.getCdnAddress(secretPhrase, caOptions.smartContract!, caOptions.clusterAddress);
 
         return new ContentAddressableStorage(scheme, cdn, caOptions.cipher, caOptions.cidBuilder);
     }
