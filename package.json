@@ -1,7 +1,8 @@
 {
   "name": "cere-ddc-sdk",
   "description": "Cere DDC SDK for JavaScript",
-  "version": "1.2.3",
+  "version": "1.2.4",
+  "type": "module",
   "private": true,
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
+    "@polkadot/dev": "~0.67.5",
     "eslint-plugin-jest": "^26.1.1",
     "ts-loader": "^8.0.18"
   },

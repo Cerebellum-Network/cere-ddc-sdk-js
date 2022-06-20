@@ -10,7 +10,7 @@ describe("CID Builder", () => {
             "bafk2bzacea73ycjnxe2qov7cvnhx52lzfp6nf5jcblnfus6gqreh6ygganbws";
 
         //when
-        let cid = testSubject.build(stringToU8a("Hello world!"));
+        let cid = await testSubject.build(stringToU8a("Hello world!"));
 
         //then
         expect(cid).toBe(expectedCid);

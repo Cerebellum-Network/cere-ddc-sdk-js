@@ -61,8 +61,8 @@ export class DdcClient implements DdcClientInterface {
 
     static async buildAndConnect(secretPhrase: string, options: ClientOptions): Promise<DdcClient> {
         options = initDefaultOptions(options);
-        const smartContract = await SmartContract.buildAndConnect(secretPhrase, options.smartContract);
         const scheme = (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme as SchemeType, secretPhrase) : options.scheme!
+        const smartContract = await SmartContract.buildAndConnect(secretPhrase, options.smartContract);
 
         const caStorage = await ContentAddressableStorage.build(secretPhrase, {
             clusterAddress: options.clusterAddress,
