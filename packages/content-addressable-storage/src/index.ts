@@ -1,9 +1,9 @@
-export {Piece} from "./models/Piece";
-export {PieceUri} from "./models/PieceUri";
-export {Query} from "./models/Query";
-export {SearchResult} from "./models/SearchResult";
-export {Tag} from "./models/Tag";
-export {Link} from "./models/Link";
-export {EncryptionOptions} from "./EncryptionOptions";
-export {ContentAddressableStorage, DEK_PATH_TAG} from "./ContentAddressableStorage";
-export {StorageOptions} from "./StorageOptions"
+export {Piece} from "./models/Piece.js";
+export {PieceUri} from "./models/PieceUri.js";
+export {Query} from "./models/Query.js";
+export {SearchResult} from "./models/SearchResult.js";
+export {Tag} from "./models/Tag.js";
+export {Link} from "./models/Link.js";
+export {EncryptionOptions} from "./EncryptionOptions.js";
+export {ContentAddressableStorage, DEK_PATH_TAG} from "./ContentAddressableStorage.js";
+export {StorageOptions} from "./StorageOptions.js"

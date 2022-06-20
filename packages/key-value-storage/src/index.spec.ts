@@ -1,4 +1,4 @@
-import {KeyValueStorage} from "./index"
+import {KeyValueStorage} from "./index.js"
 import {Piece} from "@cere-ddc-sdk/content-addressable-storage";
 
 describe("key-value-storage integration tests", () => {

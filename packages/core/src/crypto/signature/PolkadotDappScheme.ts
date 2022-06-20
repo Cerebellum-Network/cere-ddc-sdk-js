@@ -1,5 +1,5 @@
 import {SignerPayloadRaw, SignerResult} from "@polkadot/types/types/extrinsic";
-import {SchemeInterface} from "./Scheme.interface";
+import {SchemeInterface} from "./Scheme.interface.js";
 import {u8aToHex} from "@polkadot/util";
 import {InjectedAccount} from "@polkadot/extension-inject/types";
 import {waitReady} from "@polkadot/wasm-crypto";

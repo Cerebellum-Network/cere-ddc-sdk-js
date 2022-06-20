@@ -1,4 +1,4 @@
-import {Piece} from "./Piece";
+import {Piece} from "./Piece.js";
 
 export class SearchResult {
   pieces: Array<Piece>;

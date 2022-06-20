@@ -1,4 +1,4 @@
-import {CipherInterface} from "./Cipher.interface";
+import {CipherInterface} from "./Cipher.interface.js";
 import nacl from "tweetnacl";
 import {naclDecrypt, naclEncrypt} from "@polkadot/util-crypto";
 import {hexToU8a} from "@polkadot/util";

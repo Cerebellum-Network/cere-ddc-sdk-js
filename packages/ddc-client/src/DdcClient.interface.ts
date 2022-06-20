@@ -4,9 +4,9 @@ import {
     BucketPermissionGrantedEvent,
     BucketPermissionRevokedEvent,
 } from "@cere-ddc-sdk/smart-contract";
-import {StoreOptions} from "./options/StoreOptions";
-import {ReadOptions} from "./options/ReadOptions";
-import {PieceArray} from "./model/PieceArray";
+import {StoreOptions} from "./options/StoreOptions.js";
+import {ReadOptions} from "./options/ReadOptions.js";
+import {PieceArray} from "./model/PieceArray.js";
 
 export interface DdcClientInterface {
     createBucket(balance:bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent>

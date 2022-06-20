@@ -1,4 +1,4 @@
-import {ContentAddressableStorage, Piece, Query} from "./index"
+import {ContentAddressableStorage, Piece, Query} from "./index.js"
 
 
 describe("content-addressable-storage integration tests", () => {

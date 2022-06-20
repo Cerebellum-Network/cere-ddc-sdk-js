@@ -1,5 +1,5 @@
-import {Tag} from "./Tag";
-import {Link} from "./Link";
+import {Tag} from "./Tag.js";
+import {Link} from "./Link.js";
 
 export class Piece {
     data: Uint8Array;

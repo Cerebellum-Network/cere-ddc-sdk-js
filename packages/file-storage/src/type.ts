@@ -6,12 +6,12 @@ import {
     EncryptionOptions,
     StorageOptions
 } from "@cere-ddc-sdk/content-addressable-storage";
-import {FileStorageConfig} from "./core/FileStorageConfig";
+import {FileStorageConfig} from "./core/FileStorageConfig.js";
 import {Readable} from "node:stream";
 import * as streamWeb from "stream/web";
 import {PathLike} from "fs";
 
-export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig";
+export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig.js";
 
 export type Data = ReadableStream<Uint8Array> | streamWeb.ReadableStream<Uint8Array> | Readable | Blob | Uint8Array | PathLike
 

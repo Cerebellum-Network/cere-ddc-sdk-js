@@ -1,9 +1,9 @@
-import {ClusterStatus} from "./model/ClusterStatus";
-import {BucketPermissionRevokedEvent} from "./event/BucketPermissionRevokedEvent";
-import {BucketCreatedEvent} from "./event/BucketCreatedEvent";
-import {Permission} from "./model/Permission";
-import {BucketPermissionGrantedEvent} from "./event/BucketPermissionGrantedEvent";
-import {Options, TESTNET} from "./Options";
+import {ClusterStatus} from "./model/ClusterStatus.js";
+import {BucketPermissionRevokedEvent} from "./event/BucketPermissionRevokedEvent.js";
+import {BucketCreatedEvent} from "./event/BucketCreatedEvent.js";
+import {Permission} from "./model/Permission.js";
+import {BucketPermissionGrantedEvent} from "./event/BucketPermissionGrantedEvent.js";
+import {Options, TESTNET} from "./Options.js";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import {ContractPromise} from "@polkadot/api-contract";
 import {Keyring} from '@polkadot/keyring';
@@ -12,7 +12,7 @@ import {SubmittableExtrinsic} from "@polkadot/api/submittable/types";
 import {ISubmittableResult} from "@polkadot/types/types";
 import {cryptoWaitReady} from '@polkadot/util-crypto';
 import _ from "lodash";
-import {NodeStatus} from "./model/NodeStatus";
+import {NodeStatus} from "./model/NodeStatus.js";
 
 const cereTypes = require("./types/cere_types.json");
 

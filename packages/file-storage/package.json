@@ -2,6 +2,7 @@
   "name": "@cere-ddc-sdk/file-storage",
   "description": "File storage client",
   "version": "1.2.4",
+  "type": "module",
   "repository": {
     "type": "git",
     "directory": "packages/file-storage",

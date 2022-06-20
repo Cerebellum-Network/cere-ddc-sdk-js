@@ -1,6 +1,6 @@
-export {Options, DEVNET, TESTNET, MAINNET} from "./Options"
-export {SmartContract} from "./SmartContract";
-export {BucketCreatedEvent} from "./event/BucketCreatedEvent"
-export {BucketPermissionGrantedEvent} from "./event/BucketPermissionGrantedEvent"
-export {BucketPermissionRevokedEvent} from "./event/BucketPermissionRevokedEvent"
-export {Permission} from "./model/Permission"
+export {Options, DEVNET, TESTNET, MAINNET} from "./Options.js"
+export {SmartContract} from "./SmartContract.js";
+export {BucketCreatedEvent} from "./event/BucketCreatedEvent.js"
+export {BucketPermissionGrantedEvent} from "./event/BucketPermissionGrantedEvent.js"
+export {BucketPermissionRevokedEvent} from "./event/BucketPermissionRevokedEvent.js"
+export {Permission} from "./model/Permission.js"

@@ -1,4 +1,4 @@
-import { Scheme } from "./Scheme";
+import { Scheme } from "./Scheme.js";
 import {hexToU8a, stringToU8a} from "@polkadot/util";
 import {sr25519Verify} from "@polkadot/wasm-crypto";
 

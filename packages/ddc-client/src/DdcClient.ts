@@ -17,13 +17,13 @@ import {
 } from "@cere-ddc-sdk/smart-contract";
 import {blake2AsU8a, naclBoxKeypairFromSecret, naclKeypairFromString} from "@polkadot/util-crypto";
 import {KeyValueStorage} from "@cere-ddc-sdk/key-value-storage";
-import {DdcClientInterface} from "./DdcClient.interface";
-import {ClientOptions, initDefaultOptions} from "./options/ClientOptions";
-import {StoreOptions} from "./options/StoreOptions";
-import {ReadOptions} from "./options/ReadOptions";
+import {DdcClientInterface} from "./DdcClient.interface.js";
+import {ClientOptions, initDefaultOptions} from "./options/ClientOptions.js";
+import {StoreOptions} from "./options/StoreOptions.js";
+import {ReadOptions} from "./options/ReadOptions.js";
 import {BoxKeyPair} from "tweetnacl";
 import {hexToU8a, stringToU8a, u8aToHex} from "@polkadot/util";
-import {PieceArray} from "./model/PieceArray";
+import {PieceArray} from "./model/PieceArray.js";
 
 const nacl = require("tweetnacl");
 //ToDo generate from random for security

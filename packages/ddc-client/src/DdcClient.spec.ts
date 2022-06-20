@@ -1,5 +1,5 @@
-import {DdcClient} from "./DdcClient";
-import {PieceArray} from "./model/PieceArray";
+import {DdcClient} from "./DdcClient.js";
+import {PieceArray} from "./model/PieceArray.js";
 import {Query, Tag} from "@cere-ddc-sdk/content-addressable-storage";
 import {randomBytes} from "tweetnacl";
 import {randomUUID} from "crypto";

@@ -1,4 +1,4 @@
-import {FileStorage, FileStorageConfig} from "./node"
+import {FileStorage, FileStorageConfig} from "./node.js"
 
 describe("key-value-storage integration tests", () => {
     const url = "http://localhost:8080";
