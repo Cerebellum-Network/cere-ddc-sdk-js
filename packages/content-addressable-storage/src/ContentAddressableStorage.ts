@@ -85,7 +85,7 @@ export class ContentAddressableStorage {
             })
         };
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
-        const cid = this.cidBuilder.build(pieceAsBytes);
+        const cid = await this.cidBuilder.build(pieceAsBytes);
         const signature = await this.scheme.sign(stringToU8a(cid));
 
         const pbSignedPiece: PbSignedPiece = {

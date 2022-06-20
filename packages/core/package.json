@@ -14,10 +14,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@types/node": "^16.0.0",
-    "cids": "^1.1.9",
-    "multiformats": "^3.0.3",
-    "multihashing": "^0.3.4",
-    "@polkadot/extension-dapp": "^0.44.1"
+    "multiformats": "^9.6.5",
+    "@multiformats/blake2": "^1.0.10",
+    "@polkadot/extension-dapp": "^0.37.3-11"
   },
   "devDependencies": {
     "typescript": "4.5.4"
