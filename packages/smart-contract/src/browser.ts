@@ -1,5 +1,5 @@
 import {SmartContract as CoreSmartContract} from "./SmartContract.js";
-import {Options, TESTNET} from "./Options";
+import {Options, TESTNET} from "./Options.js";
 import {InjectedAccountWithMeta} from "@polkadot/extension-inject/types";
 import {web3FromSource} from "@polkadot/extension-dapp"
 import {Signer as InjectedSigner} from "@polkadot/api/types";
