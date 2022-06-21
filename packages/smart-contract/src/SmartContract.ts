@@ -7,17 +7,18 @@ import {Options, TESTNET} from "./Options.js";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import {ContractPromise} from "@polkadot/api-contract";
 import {Keyring} from '@polkadot/keyring';
-import {KeyringPair} from "@polkadot/keyring/types";
-import {SubmittableExtrinsic} from "@polkadot/api/submittable/types";
-import {ISubmittableResult} from "@polkadot/types/types";
+import {AddressOrPair, SubmittableExtrinsic, SubmittableResultSubscription} from "@polkadot/api/submittable/types";
+import {Callback, ISubmittableResult} from "@polkadot/types/types";
 import {cryptoWaitReady} from '@polkadot/util-crypto';
 import _ from "lodash";
 import {NodeStatus} from "./model/NodeStatus.js";
 import {cereTypes} from "./types/cere_types.js";
 import {BucketStatus} from "./model/BucketStatus.js";
 import {BucketStatusList} from "./model/BucketStatusList.js";
+import {ApiTypes} from "@polkadot/api/types";
+import {isAddress} from "@polkadot/util-crypto/address/is";
 
-const CERE = 10_000_000_000n
+const CERE = 10_000_000_000n;
 
 const txOptions = {
     value: 0n,
@@ -30,38 +31,40 @@ const txOptionsPay = {
 }
 
 export class SmartContract {
-    secretPhrase: string;
-    options: Options;
+    readonly options: Options;
+    readonly address: string;
 
-    account!: KeyringPair;
     contract!: ContractPromise;
 
-    private constructor(
-        secretPhrase: string,
-        options: Options,
-    ) {
-        this.secretPhrase = secretPhrase;
+    signAndSend: (tx: SubmittableExtrinsic<any>, statusCb: Callback<ISubmittableResult>) => SubmittableResultSubscription<ApiTypes>;
+
+    constructor(secretPhraseOrAddress: string, options: Options = TESTNET) {
+        const keyring = new Keyring({type: 'sr25519'});
+        let account: AddressOrPair;
+        if (isAddress(secretPhraseOrAddress)) {
+            account = keyring.addFromAddress(secretPhraseOrAddress);
+        } else {
+            account = keyring.addFromMnemonic(secretPhraseOrAddress, {name: 'sr25519'});
+        }
+
+        this.signAndSend = (tx, statusCb) => tx.signAndSend(account, statusCb);
+        this.address = account.address;
         this.options = options;
+        console.log(this.address)
     }
 
-    static async buildAndConnect(secretPhrase: string, options: Options = TESTNET): Promise<SmartContract> {
-        return new SmartContract(secretPhrase, options).connect()
+    static async buildAndConnect(secretPhraseOrAddress: string, options: Options = TESTNET): Promise<SmartContract> {
+        return new SmartContract(secretPhraseOrAddress, options).connect();
     }
 
-    async connect(): Promise<SmartContract> {
+    protected async connect(): Promise<SmartContract> {
         await cryptoWaitReady();
 
-        const keyring = new Keyring({type: 'sr25519'});
-        this.account = keyring.createFromUri(this.secretPhrase, {name: 'sr25519'});
-
         const wsProvider = new WsProvider(this.options.rpcUrl);
-        const api = await ApiPromise.create({
-            provider: wsProvider,
-            types: cereTypes,
-        });
+        const api = await ApiPromise.create({provider: wsProvider, types: cereTypes});
 
         this.contract = new ContractPromise(api, this.options.abi, this.options.contractAddress);
-        return this
+        return this;
     }
 
     async disconnect() {
@@ -70,24 +73,24 @@ export class SmartContract {
 
     async bucketCreate(balance: bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent> {
         const tx = await this.contract.tx.bucketCreate(txOptionsPay, bucketParams, clusterId);
-        const result = await this.sendTx(this.account, tx);
+        const result = await this.sendTx(tx);
         // @ts-ignore
         const events = result.contractEvents || [];
-        const bucketId = this.findCreatedBucketId(events);
+        const bucketId = SmartContract.findCreatedBucketId(events);
         return new BucketCreatedEvent(BigInt(bucketId));
     }
 
     async bucketGet(bucketId: bigint): Promise<BucketStatus> {
-        const {result, output} = await this.contract.query.bucketGet(this.account.address, txOptions, bucketId);
+        const {result, output} = await this.contract.query.bucketGet(this.address, txOptions, bucketId);
         if (!result.isOk) throw result.asErr;
 
         // @ts-ignore
-        return output.toJSON().ok as BucketStatus
+        return output.toJSON().ok as BucketStatus;
     }
 
     async bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList> {
         const {result, output} =
-            await this.contract.query.bucketList(this.account.address, txOptions, offset, limit, filterOwnerId);
+            await this.contract.query.bucketList(this.address, txOptions, offset, limit, filterOwnerId);
         if (!result.isOk) throw result.asErr;
 
         // @ts-ignore
@@ -97,41 +100,41 @@ export class SmartContract {
 
     async bucketGrantPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
         const tx = await this.contract.tx.bucketGrantPermission(txOptionsPay, bucketId, grantee, permission.toString());
-        const result = await this.sendTx(this.account, tx);
+        const result = await this.sendTx(tx);
 
         if (result.isError) {
-            throw new Error("Failed to grant bucket permission")
+            throw new Error("Failed to grant bucket permission");
         }
-        return new BucketPermissionGrantedEvent()
+        return new BucketPermissionGrantedEvent();
     }
 
     async bucketRevokePermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionRevokedEvent> {
         const tx = await this.contract.tx.bucketRevokePermission(txOptionsPay, bucketId, grantee, permission.toString());
-        const result = await this.sendTx(this.account, tx);
+        const result = await this.sendTx(tx);
 
         if (result.isError) {
-            throw new Error("Failed to revoke bucket permission")
+            throw new Error("Failed to revoke bucket permission");
         }
-        return new BucketPermissionRevokedEvent()
+        return new BucketPermissionRevokedEvent();
     }
 
     async clusterGet(clusterId: number): Promise<ClusterStatus> {
-        let {result, output} = await this.contract.query.clusterGet(this.account.address, txOptions, clusterId)
+        let {result, output} = await this.contract.query.clusterGet(this.address, txOptions, clusterId);
         if (!result.isOk) throw result.asErr;
         // @ts-ignore
-        return output.toJSON().ok as ClusterStatus
+        return output.toJSON().ok as ClusterStatus;
     }
 
     async nodeGet(nodeId: number): Promise<NodeStatus> {
-        let {result, output} = await this.contract.query.nodeGet(this.account.address, txOptions, nodeId)
+        let {result, output} = await this.contract.query.nodeGet(this.address, txOptions, nodeId);
         if (!result.isOk) throw result.asErr;
         // @ts-ignore
-        return output.toJSON().ok as NodeStatus
+        return output.toJSON().ok as NodeStatus;
     }
 
-    async sendTx(account: KeyringPair, tx: SubmittableExtrinsic<any>): Promise<ISubmittableResult> {
+    protected async sendTx(tx: SubmittableExtrinsic<any>): Promise<ISubmittableResult> {
         return await new Promise(async (resolve) => {
-            await tx.signAndSend(account, (result) => {
+            await this.signAndSend(tx, (result) => {
                 if (result.status.isInBlock || result.status.isFinalized) {
                     resolve(result);
                 }
@@ -139,13 +142,11 @@ export class SmartContract {
         });
     }
 
-    findCreatedId(events: Array<any>, eventName: string): string {
+    private static findCreatedBucketId(events: Array<any>): string {
+        const eventName = "BucketCreated";
+
         const event = _.find(events, ["event.identifier", eventName]);
         const id = _.get(event, "args[0]");
         return id && id.toString();
-    }
-
-    findCreatedBucketId(events: Array<any>): string {
-        return this.findCreatedId(events, "BucketCreated");
     }
 }

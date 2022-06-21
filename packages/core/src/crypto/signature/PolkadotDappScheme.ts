@@ -25,9 +25,9 @@ export class PolkadotDappScheme implements SchemeInterface {
     }
 
     static async createScheme(account: InjectedAccount): Promise<PolkadotDappScheme> {
-        await waitReady()
+        await waitReady();
 
-        const {web3FromAddress} = await import("@polkadot/extension-dapp")
+        const {web3FromAddress} = await import("@polkadot/extension-dapp");
         let injector = await web3FromAddress(account.address);
         let signRaw = injector.signer.signRaw;
 
