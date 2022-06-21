@@ -14,6 +14,8 @@ import {
     BucketPermissionRevokedEvent,
     Permission,
     SmartContract,
+    BucketStatus,
+    BucketStatusList
 } from "@cere-ddc-sdk/smart-contract";
 import {blake2AsU8a, naclBoxKeypairFromSecret, naclKeypairFromString} from "@polkadot/util-crypto";
 import {KeyValueStorage} from "@cere-ddc-sdk/key-value-storage";
@@ -75,7 +77,7 @@ export class DdcClient implements DdcClientInterface {
         return new DdcClient(caStorage, smartContract, secretPhrase, options);
     }
 
-    async diconnect() {
+    async disconnect() {
         return await this.smartContract.disconnect();
     }
 
@@ -91,11 +93,19 @@ export class DdcClient implements DdcClientInterface {
         return this.smartContract.bucketRevokePermission(bucketId, grantee, permission)
     }
 
+    async bucketGet(bucketId: bigint): Promise<BucketStatus> {
+        return this.smartContract.bucketGet(bucketId);
+    }
+
+    async bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList> {
+        return this.smartContract.bucketList(offset, limit, filterOwnerId);
+    }
+
     async store(bucketId: bigint, pieceArray: PieceArray, options: StoreOptions = {}): Promise<PieceUri> {
         if (options.encrypt) {
-            return this.storeEncrypted(bucketId, pieceArray, options)
+            return this.storeEncrypted(bucketId, pieceArray, options);
         } else {
-            return this.storeUnencrypted(bucketId, pieceArray)
+            return this.storeUnencrypted(bucketId, pieceArray);
         }
     }
 

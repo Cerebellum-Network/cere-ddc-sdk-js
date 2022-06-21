@@ -13,8 +13,8 @@ describe("DDC client integration tests", () => {
     const otherClient = DdcClient.buildAndConnect("wheat wise addict group walk park desk yard render scare false measure", options);
 
     afterAll(async () => {
-        await (await testSubject).diconnect();
-        await (await otherClient).diconnect();
+        await (await testSubject).disconnect();
+        await (await otherClient).disconnect();
     });
 
     it("store and read unencrypted small data", async () => {
