@@ -1,4 +1,4 @@
-const ddcBucketAbi = require("./abi/ddc_bucket.json");
+import {ddcBucketAbi} from "./abi/ddc_bucket.js";
 
 export class Options {
     rpcUrl?: string;

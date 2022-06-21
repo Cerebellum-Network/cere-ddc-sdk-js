@@ -13,8 +13,7 @@ import {ISubmittableResult} from "@polkadot/types/types";
 import {cryptoWaitReady} from '@polkadot/util-crypto';
 import _ from "lodash";
 import {NodeStatus} from "./model/NodeStatus.js";
-
-const cereTypes = require("./types/cere_types.json");
+import {cereTypes} from "./types/cere_types.js";
 
 const CERE = 10_000_000_000n
 

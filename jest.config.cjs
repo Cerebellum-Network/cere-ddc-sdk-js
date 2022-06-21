@@ -1,4 +1,4 @@
-//ToDo fix tests for running from IDE (throws exception for "*.js" import)
+//ToDo fix tests for running from IDE (throws exception for "*.js" import) for example add plugin
 
 module.exports = {
     verbose: true,

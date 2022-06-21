@@ -24,8 +24,8 @@ import {ReadOptions} from "./options/ReadOptions.js";
 import {BoxKeyPair} from "tweetnacl";
 import {hexToU8a, stringToU8a, u8aToHex} from "@polkadot/util";
 import {PieceArray} from "./model/PieceArray.js";
+import nacl from "tweetnacl";
 
-const nacl = require("tweetnacl");
 //ToDo generate from random for security
 const emptyNonce = new Uint8Array(nacl.box.nonceLength);
 
@@ -188,7 +188,12 @@ export class DdcClient implements DdcClientInterface {
             throw new Error("EDEK doesn't contains encryptor public key")
         }
 
-        return nacl.box.open(piece.data, emptyNonce, hexToU8a(encryptor), this.boxKeypair.secretKey);
+        const result = nacl.box.open(piece.data, emptyNonce, hexToU8a(encryptor), this.boxKeypair.secretKey);
+        if (result == null) {
+            throw new Error("Unable to decrypt dek");
+        }
+
+        return result;
     }
 
     private static buildHierarchicalDekHex(dek: Uint8Array, dekPath?: string): Uint8Array {
