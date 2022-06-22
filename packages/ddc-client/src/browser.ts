@@ -1,8 +1,7 @@
 import {DdcClient as CoreDdcClient} from "./DdcClient.js";
 import {ClientOptions, initDefaultOptions} from "./options/ClientOptions.js";
 import {InjectedAccount} from "@polkadot/extension-inject/types";
-import {web3FromAddress} from "@polkadot/extension-dapp";
-import {PolkadotDappScheme, SchemeName} from "@cere-ddc-sdk/core";
+import {PolkadotDappScheme, Scheme, SchemeInterface, SchemeName} from "@cere-ddc-sdk/core";
 import {SmartContract} from "@cere-ddc-sdk/smart-contract";
 import {ContentAddressableStorage} from "@cere-ddc-sdk/content-addressable-storage";
 
@@ -25,7 +24,7 @@ export class DdcClient extends CoreDdcClient {
 
         options = initDefaultOptions(options);
 
-        const scheme = (typeof options.scheme === "string") ? await PolkadotDappScheme.createScheme(accountOrSecretPhrase) : options.scheme!
+        const scheme = await DdcClient.createScheme(options, accountOrSecretPhrase);
         const smartContract = await SmartContract.buildAndConnect(accountOrSecretPhrase, options.smartContract);
         const caStorage = await ContentAddressableStorage.build( {
             clusterAddress: options.clusterAddress,
@@ -36,6 +35,14 @@ export class DdcClient extends CoreDdcClient {
         });
 
         return new DdcClient(caStorage, smartContract, options, encryptionSecretPhrase);
+    }
+
+    private static async createScheme(options: ClientOptions, accountOrSecretPhrase: InjectedAccount | string): Promise<SchemeInterface> {
+        if (typeof accountOrSecretPhrase !== "string") {
+            return (typeof options.scheme === "string") ? await PolkadotDappScheme.createScheme(accountOrSecretPhrase) : options.scheme!
+        }
+
+        return (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme, accountOrSecretPhrase) : options.scheme!
     }
 
     private static async createEncryptionSecretPhrase(accountOrSecretPhrase: InjectedAccount | string, encryptionSecretPhraseOrAccount?: string): Promise<string> {

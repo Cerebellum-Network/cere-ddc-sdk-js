@@ -10,7 +10,7 @@ import {web3FromAddress} from "@polkadot/extension-dapp";
  * Browser only
  */
 export class PolkadotDappScheme implements SchemeInterface {
-    name: SchemeName
+    name: SchemeName = "sr25519"
     publicKeyHex: string
     address: string
     signRaw: (raw: SignerPayloadRaw) => Promise<SignerResult>;
@@ -19,30 +19,24 @@ export class PolkadotDappScheme implements SchemeInterface {
         publicKeyHex: string,
         address: string,
         signRaw: (raw: SignerPayloadRaw) => Promise<SignerResult>,
-        name: SchemeName
     ) {
         this.publicKeyHex = publicKeyHex;
         this.address = address;
         this.signRaw = signRaw;
-        this.name = name;
     }
 
     static async createScheme(account: InjectedAccount): Promise<PolkadotDappScheme> {
-        if (account.type != "sr25519" && account.type != "ed25519") {
-            throw new Error(`Unsupported scheme name='${account.type}'`);
-        }
-
         await waitReady();
 
         let injector = await web3FromAddress(account.address);
         let signRaw = injector.signer.signRaw;
 
         if (!signRaw) {
-            throw Error("Failed to initialise scheme");
+            throw Error("Failed to initialize scheme");
         }
 
         let publicKeyHex = u8aToHex(decodeAddress(account.address));
-        return new PolkadotDappScheme(publicKeyHex, account.address, signRaw, account.type);
+        return new PolkadotDappScheme(publicKeyHex, account.address, signRaw);
     }
 
 
