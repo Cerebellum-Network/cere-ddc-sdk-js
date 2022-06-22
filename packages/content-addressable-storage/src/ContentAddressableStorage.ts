@@ -4,18 +4,18 @@ import {
     SearchResult as PbSearchResult,
     SignedPiece as PbSignedPiece,
 } from "@cere-ddc-sdk/proto";
-import {Piece} from "./models/Piece";
-import {PieceUri} from "./models/PieceUri";
-import {Query} from "./models/Query";
-import {SearchResult} from "./models/SearchResult";
-import {CidBuilder, CipherInterface, Scheme, SchemeInterface, SchemeType} from "@cere-ddc-sdk/core";
-import {base58Encode} from "@polkadot/util-crypto";
+import {Piece} from "./models/Piece.js";
+import {PieceUri} from "./models/PieceUri.js";
+import {Query} from "./models/Query.js";
+import {SearchResult} from "./models/SearchResult.js";
+import {CidBuilder, CipherInterface, Scheme, SchemeInterface, SchemeName} from "@cere-ddc-sdk/core";
+import {base58Encode, mnemonicGenerate} from "@polkadot/util-crypto";
 import {stringToU8a} from "@polkadot/util";
 import {fetch} from 'cross-fetch';
-import {Tag} from "./models/Tag";
-import {EncryptionOptions} from "./EncryptionOptions";
+import {Tag} from "./models/Tag.js";
+import {EncryptionOptions} from "./EncryptionOptions.js";
 import {Options as SmartContractOptions, SmartContract} from "@cere-ddc-sdk/smart-contract";
-import {initDefaultOptions, StorageOptions} from "./StorageOptions";
+import {initDefaultOptions, StorageOptions} from "./StorageOptions.js";
 
 const BASE_PATH = "/api/rest/pieces";
 const decoder = new TextDecoder();
@@ -42,21 +42,21 @@ export class ContentAddressableStorage {
         this.cipher = cipher;
     }
 
-    static async build(secretPhrase: string, options: StorageOptions): Promise<ContentAddressableStorage> {
+    static async build(options: StorageOptions, secretPhrase?: string): Promise<ContentAddressableStorage> {
         const caOptions = initDefaultOptions(options);
-        const scheme = (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme as SchemeType, secretPhrase) : options.scheme!
-        const cdn = await ContentAddressableStorage.getCdnAddress(secretPhrase, caOptions.smartContract!, caOptions.clusterAddress);
+        const scheme = (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme as SchemeName, secretPhrase!) : options.scheme!;
+        const cdn = await ContentAddressableStorage.getCdnAddress(caOptions.smartContract!, caOptions.clusterAddress);
 
         return new ContentAddressableStorage(scheme, cdn, caOptions.cipher, caOptions.cidBuilder);
     }
 
     //TODO implement balancer
-    private static async getCdnAddress(secretPhrase: string, smartContractOptions: SmartContractOptions, clusterAddress: string | number): Promise<string> {
+    private static async getCdnAddress(smartContractOptions: SmartContractOptions, clusterAddress: string | number): Promise<string> {
         if (typeof clusterAddress === "string") {
             return clusterAddress;
         }
 
-        const smartContract = await SmartContract.buildAndConnect(secretPhrase, smartContractOptions);
+        const smartContract = await SmartContract.buildAndConnect(mnemonicGenerate(), smartContractOptions);
         try {
             const cluster = await smartContract.clusterGet(clusterAddress as number);
             const vNodes = new Set<bigint>(cluster.cluster.vnodes);
@@ -175,7 +175,7 @@ export class ContentAddressableStorage {
     private toPiece(piece: PbPiece, cid: string): Piece {
         return new Piece(piece.data, piece.tags, piece.links.map(e => {
             return {cid: e.cid, size: BigInt(e.size), name: e.name}
-            }), cid);
+        }), cid);
     }
 
     private sendRequest(path: String, init?: RequestInit): Promise<Response> {

@@ -1,4 +1,4 @@
-export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig";
+export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig.js";
 
 import {PathLike} from "fs";
 import {
@@ -9,9 +9,9 @@ import {
     StorageOptions,
     Tag
 } from "@cere-ddc-sdk/content-addressable-storage";
-import {FileStorageConfig} from "./core/FileStorageConfig";
-import {CoreFileStorage} from "./core/CoreFileStorage";
-import {FileStorage as FileStorageInterface} from "./type";
+import {FileStorageConfig} from "./core/FileStorageConfig.js";
+import {CoreFileStorage} from "./core/CoreFileStorage.js";
+import {FileStorage as FileStorageInterface} from "./type.js";
 import * as streamWeb from "stream/web";
 import {Readable} from "node:stream";
 import {open} from 'node:fs/promises';
@@ -31,8 +31,8 @@ export class FileStorage implements FileStorageInterface {
         this.config = config;
     }
 
-    static async build(secretPhrase: string, storageOptions: StorageOptions, config: FileStorageConfig = new FileStorageConfig()): Promise<FileStorage> {
-        return new FileStorage(await ContentAddressableStorage.build(secretPhrase, storageOptions), config);
+    static async build(storageOptions: StorageOptions, config: FileStorageConfig = new FileStorageConfig(), secretPhrase?: string): Promise<FileStorage> {
+        return new FileStorage(await ContentAddressableStorage.build(storageOptions, secretPhrase), config);
     }
 
     async upload(bucketId: bigint, data: Data, tags: Array<Tag> = []): Promise<PieceUri> {

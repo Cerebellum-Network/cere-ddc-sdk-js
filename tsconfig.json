@@ -10,6 +10,7 @@
     "moduleResolution": "node",
     "skipLibCheck": true,
     "allowJs": true,
+    "resolveJsonModule": true,
     "paths": {
       "@cere-ddc-sdk/*": ["./packages/*/src/"]
     }

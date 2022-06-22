@@ -1,4 +1,4 @@
-const ddcBucketAbi = require("./abi/ddc_bucket.json");
+import {ddcBucketAbi} from "./abi/ddc_bucket.js";
 
 export class Options {
     rpcUrl?: string;
@@ -19,7 +19,7 @@ export const TESTNET: Options = {
 }
 
 export const DEVNET: Options = {
-    rpcUrl: "wss://rpc.devnet.cere.network:9945",
+    rpcUrl: "wss://rpc.v2.devnet.cere.network/ws",
     contractAddress: "5GqwX528CHg1jAGuRsiwDwBVXruUvnPeLkEcki4YFbigfKsC",
     abi: ddcBucketAbi
 }

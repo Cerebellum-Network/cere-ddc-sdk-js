@@ -1,4 +1,4 @@
-import {ContentAddressableStorage, Piece, PieceUri, StorageOptions,} from "@cere-ddc-sdk/content-addressable-storage";
+import {ContentAddressableStorage, Piece, PieceUri, StorageOptions} from "@cere-ddc-sdk/content-addressable-storage";
 
 const keyTag = "Key"
 
@@ -9,8 +9,8 @@ export class KeyValueStorage {
         this.caStorage = caStorage;
     }
 
-    static async build(secretPhrase: string, storageOptions: StorageOptions): Promise<KeyValueStorage> {
-        return new KeyValueStorage(await ContentAddressableStorage.build(secretPhrase, storageOptions))
+    static async build(storageOptions: StorageOptions, secretPhrase?: string): Promise<KeyValueStorage> {
+        return new KeyValueStorage(await ContentAddressableStorage.build(storageOptions, secretPhrase))
     }
 
     async store(bucketId: bigint, key: string, piece: Piece): Promise<PieceUri> {

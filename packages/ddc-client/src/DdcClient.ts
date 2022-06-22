@@ -1,4 +1,4 @@
-import {Scheme, SchemeType} from "@cere-ddc-sdk/core";
+import {Scheme, SchemeName} from "@cere-ddc-sdk/core";
 import {
     ContentAddressableStorage,
     DEK_PATH_TAG,
@@ -12,20 +12,21 @@ import {
     BucketCreatedEvent,
     BucketPermissionGrantedEvent,
     BucketPermissionRevokedEvent,
+    BucketStatus,
+    BucketStatusList,
     Permission,
-    SmartContract,
+    SmartContract
 } from "@cere-ddc-sdk/smart-contract";
 import {blake2AsU8a, naclBoxKeypairFromSecret, naclKeypairFromString} from "@polkadot/util-crypto";
 import {KeyValueStorage} from "@cere-ddc-sdk/key-value-storage";
-import {DdcClientInterface} from "./DdcClient.interface";
-import {ClientOptions, initDefaultOptions} from "./options/ClientOptions";
-import {StoreOptions} from "./options/StoreOptions";
-import {ReadOptions} from "./options/ReadOptions";
-import {BoxKeyPair} from "tweetnacl";
+import {DdcClientInterface} from "./DdcClient.interface.js";
+import {ClientOptions, initDefaultOptions} from "./options/ClientOptions.js";
+import {StoreOptions} from "./options/StoreOptions.js";
+import {ReadOptions} from "./options/ReadOptions.js";
+import nacl, {BoxKeyPair} from "tweetnacl";
 import {hexToU8a, stringToU8a, u8aToHex} from "@polkadot/util";
-import {PieceArray} from "./model/PieceArray";
+import {PieceArray} from "./model/PieceArray.js";
 
-const nacl = require("tweetnacl");
 //ToDo generate from random for security
 const emptyNonce = new Uint8Array(nacl.box.nonceLength);
 
@@ -42,11 +43,11 @@ export class DdcClient implements DdcClientInterface {
     readonly masterDek: Uint8Array;
     readonly boxKeypair: BoxKeyPair
 
-    private constructor(
+    protected constructor(
         caStorage: ContentAddressableStorage,
         smartContract: SmartContract,
-        secretPhrase: string,
         options: ClientOptions,
+        encryptionSecretPhrase: string,
     ) {
         this.smartContract = smartContract;
         this.options = options;
@@ -55,27 +56,30 @@ export class DdcClient implements DdcClientInterface {
         this.kvStorage = new KeyValueStorage(caStorage);
         this.fileStorage = new FileStorage(caStorage, new FileStorageConfig(options.pieceConcurrency, options.chunkSizeInBytes));
 
-        this.masterDek = blake2AsU8a(secretPhrase);
-        this.boxKeypair = naclBoxKeypairFromSecret(naclKeypairFromString(secretPhrase).secretKey);
+        this.masterDek = blake2AsU8a(encryptionSecretPhrase);
+        this.boxKeypair = naclBoxKeypairFromSecret(naclKeypairFromString(encryptionSecretPhrase).secretKey);
     }
 
-    static async buildAndConnect(secretPhrase: string, options: ClientOptions): Promise<DdcClient> {
+    static async buildAndConnect(options: ClientOptions, secretPhrase: string, encryptionSecretPhrase: string): Promise<DdcClient>
+    static async buildAndConnect(options: ClientOptions, secretPhrase: string): Promise<DdcClient>
+    static async buildAndConnect(options: ClientOptions, secretPhrase: string, encryptionSecretPhrase?: string): Promise<DdcClient> {
+        encryptionSecretPhrase = encryptionSecretPhrase != null ? encryptionSecretPhrase : secretPhrase;
         options = initDefaultOptions(options);
-        const scheme = (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme as SchemeType, secretPhrase) : options.scheme!
-        const smartContract = await SmartContract.buildAndConnect(secretPhrase, options.smartContract);
 
-        const caStorage = await ContentAddressableStorage.build(secretPhrase, {
+        const scheme = (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme as SchemeName, secretPhrase) : options.scheme!
+        const smartContract = await SmartContract.buildAndConnect(secretPhrase, options.smartContract);
+        const caStorage = await ContentAddressableStorage.build( {
             clusterAddress: options.clusterAddress,
             smartContract: options.smartContract,
             scheme: scheme,
             cipher: options.cipher,
             cidBuilder: options.cidBuilder
-        });
+        }, secretPhrase);
 
-        return new DdcClient(caStorage, smartContract, secretPhrase, options);
+        return new DdcClient(caStorage, smartContract, options, encryptionSecretPhrase);
     }
 
-    async diconnect() {
+    async disconnect() {
         return await this.smartContract.disconnect();
     }
 
@@ -91,11 +95,19 @@ export class DdcClient implements DdcClientInterface {
         return this.smartContract.bucketRevokePermission(bucketId, grantee, permission)
     }
 
+    async bucketGet(bucketId: bigint): Promise<BucketStatus> {
+        return this.smartContract.bucketGet(bucketId);
+    }
+
+    async bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList> {
+        return this.smartContract.bucketList(offset, limit, filterOwnerId);
+    }
+
     async store(bucketId: bigint, pieceArray: PieceArray, options: StoreOptions = {}): Promise<PieceUri> {
         if (options.encrypt) {
-            return this.storeEncrypted(bucketId, pieceArray, options)
+            return this.storeEncrypted(bucketId, pieceArray, options);
         } else {
-            return this.storeUnencrypted(bucketId, pieceArray)
+            return this.storeUnencrypted(bucketId, pieceArray);
         }
     }
 
@@ -188,7 +200,12 @@ export class DdcClient implements DdcClientInterface {
             throw new Error("EDEK doesn't contains encryptor public key")
         }
 
-        return nacl.box.open(piece.data, emptyNonce, hexToU8a(encryptor), this.boxKeypair.secretKey);
+        const result = nacl.box.open(piece.data, emptyNonce, hexToU8a(encryptor), this.boxKeypair.secretKey);
+        if (result == null) {
+            throw new Error("Unable to decrypt dek");
+        }
+
+        return result;
     }
 
     private static buildHierarchicalDekHex(dek: Uint8Array, dekPath?: string): Uint8Array {

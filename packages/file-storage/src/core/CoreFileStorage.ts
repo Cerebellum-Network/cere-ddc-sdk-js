@@ -1,6 +1,6 @@
 import {ContentAddressableStorage, Link, Piece, PieceUri, Tag, EncryptionOptions} from "@cere-ddc-sdk/content-addressable-storage";
-import {FileStorageConfig} from "./FileStorageConfig";
-import {IndexedLink} from "./model/IndexedLink";
+import {FileStorageConfig} from "./FileStorageConfig.js";
+import {IndexedLink} from "./model/IndexedLink.js";
 
 const multipartTag = "multipart"
 
