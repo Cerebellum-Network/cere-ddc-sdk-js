@@ -55,7 +55,7 @@ export class DdcClient extends CoreDdcClient {
                 throw new Error("Unable to create encryption secret phrase through extension");
             }
             const {signature} = await signRaw({
-                data: "SOME TEST DATA",
+                data: "DDC encryption secret phrase",
                 address: accountOrSecretPhrase.address,
                 type: 'payload'
             });
