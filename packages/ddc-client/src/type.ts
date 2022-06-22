@@ -17,8 +17,4 @@ export declare const DdcClient: {
     buildAndConnect(options: ClientOptions, secretPhrase: string): Promise<DdcClient>;
     //Browser only
     buildAndConnect(options: ClientOptions, account: InjectedAccount, encryptionSecretPhrase: string): Promise<DdcClient>;
-    //Browser only
-    buildAndConnect(options: ClientOptions, account: InjectedAccount, encryptionAccount: InjectedAccount): Promise<DdcClient>;
-    //Browser only
-    buildAndConnect(options: ClientOptions, account: InjectedAccount): Promise<DdcClient>;
 }
