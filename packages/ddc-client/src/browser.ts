@@ -17,9 +17,7 @@ export class DdcClient extends CoreDdcClient {
     static async buildAndConnect(options: ClientOptions, secretPhrase: string, encryptionSecretPhrase: string): Promise<DdcClient>;
     static async buildAndConnect(options: ClientOptions, secretPhrase: string): Promise<DdcClient>;
     static async buildAndConnect(options: ClientOptions, account: InjectedAccount, encryptionSecretPhrase: string): Promise<DdcClient>;
-    static async buildAndConnect(options: ClientOptions, account: InjectedAccount, encryptionAccount: InjectedAccount): Promise<DdcClient>;
-    static async buildAndConnect(options: ClientOptions, account: InjectedAccount): Promise<DdcClient>;
-    static async buildAndConnect(options: ClientOptions, accountOrSecretPhrase: InjectedAccount | string, encryptionSecretPhraseOrAccount?: InjectedAccount | string): Promise<DdcClient> {
+    static async buildAndConnect(options: ClientOptions, accountOrSecretPhrase: InjectedAccount | string, encryptionSecretPhraseOrAccount?: string): Promise<DdcClient> {
         const encryptionSecretPhrase = await DdcClient.createEncryptionSecretPhrase(encryptionSecretPhraseOrAccount != null ? encryptionSecretPhraseOrAccount : accountOrSecretPhrase);
         if (typeof accountOrSecretPhrase === "string") {
             return super.buildAndConnect(options, accountOrSecretPhrase, encryptionSecretPhrase);
@@ -44,23 +42,7 @@ export class DdcClient extends CoreDdcClient {
         if (typeof accountOrSecretPhrase === "string") {
             return accountOrSecretPhrase;
         } else {
-            if (accountOrSecretPhrase.type !== "ed25519") {
-                throw Error(`Unable to create encryption secret phrase for account type='${accountOrSecretPhrase.type}'`)
-            }
-
-            const injector = await web3FromAddress(accountOrSecretPhrase.address);
-            const signRaw = injector?.signer?.signRaw;
-
-            if (!signRaw) {
-                throw new Error("Unable to create encryption secret phrase through extension");
-            }
-            const {signature} = await signRaw({
-                data: "DDC encryption secret phrase",
-                address: accountOrSecretPhrase.address,
-                type: 'payload'
-            });
-
-            return signature;
+            throw new Error("Unable to create DDC Client. Encryption secret phrase should be entered")
         }
     }
 }
