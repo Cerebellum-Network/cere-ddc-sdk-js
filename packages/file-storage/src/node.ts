@@ -31,8 +31,8 @@ export class FileStorage implements FileStorageInterface {
         this.config = config;
     }
 
-    static async build(secretPhrase: string, storageOptions: StorageOptions, config: FileStorageConfig = new FileStorageConfig()): Promise<FileStorage> {
-        return new FileStorage(await ContentAddressableStorage.build(secretPhrase, storageOptions), config);
+    static async build(storageOptions: StorageOptions, config: FileStorageConfig = new FileStorageConfig(), secretPhrase?: string): Promise<FileStorage> {
+        return new FileStorage(await ContentAddressableStorage.build(storageOptions, secretPhrase), config);
     }
 
     async upload(bucketId: bigint, data: Data, tags: Array<Tag> = []): Promise<PieceUri> {

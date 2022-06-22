@@ -33,5 +33,5 @@ export interface FileStorage {
 export declare const FileStorage: {
     prototype: FileStorage;
     new(caStorage: ContentAddressableStorage, config?: FileStorageConfig): FileStorage;
-    build(storageOptions: StorageOptions, config?: FileStorageConfig): Promise<FileStorage>;
+    build(storageOptions: StorageOptions, config?: FileStorageConfig, secretPhrase?: string): Promise<FileStorage>;
 };

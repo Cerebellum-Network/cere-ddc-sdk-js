@@ -1,7 +1,7 @@
 import {SmartContract as CoreSmartContract} from "./SmartContract.js";
 import {Options, TESTNET} from "./Options.js";
-import {InjectedAccountWithMeta} from "@polkadot/extension-inject/types";
-import {web3FromSource} from "@polkadot/extension-dapp"
+import {InjectedAccount, InjectedAccountWithMeta} from "@polkadot/extension-inject/types";
+import {web3FromAddress} from "@polkadot/extension-dapp"
 import {Signer as InjectedSigner} from "@polkadot/api/types";
 
 export {Options, DEVNET, TESTNET, MAINNET} from "./Options.js"
@@ -22,11 +22,13 @@ export class SmartContract extends CoreSmartContract {
         }
     }
 
-    static async buildAndConnect(accountOrSecretPhrase: InjectedAccountWithMeta | string, options?: Options): Promise<CoreSmartContract> {
+    static async buildAndConnect(account: InjectedAccount, options?: Options): Promise<CoreSmartContract>;
+    static async buildAndConnect(secretPhrase: string, options?: Options): Promise<CoreSmartContract>;
+    static async buildAndConnect(accountOrSecretPhrase: InjectedAccount | string, options?: Options): Promise<CoreSmartContract> {
         if (typeof accountOrSecretPhrase === "string") {
             return super.buildAndConnect(accountOrSecretPhrase, options);
         } else {
-            const injector = await web3FromSource(accountOrSecretPhrase.meta.source);
+            const injector = await web3FromAddress(accountOrSecretPhrase.address);
             return new SmartContract(accountOrSecretPhrase.address, options, injector.signer).connect();
         }
     }

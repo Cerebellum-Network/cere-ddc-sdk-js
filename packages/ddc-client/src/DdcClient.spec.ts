@@ -7,10 +7,11 @@ import {u8aToHex} from "@polkadot/util";
 
 describe("DDC client integration tests", () => {
     const secretPhrase = "0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03";
+    const otherSecretPhrase = "wheat wise addict group walk park desk yard render scare false measure";
     const bucketId = 1n;
     const options = {clusterAddress: "http://localhost:8080", chunkSizeInBytes: 30};
-    const testSubject = DdcClient.buildAndConnect(secretPhrase, options);
-    const otherClient = DdcClient.buildAndConnect("wheat wise addict group walk park desk yard render scare false measure", options);
+    const testSubject = DdcClient.buildAndConnect(options, secretPhrase);
+    const otherClient = DdcClient.buildAndConnect(options, otherSecretPhrase);
 
     afterAll(async () => {
         await (await testSubject).disconnect();

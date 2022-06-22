@@ -1,10 +1,10 @@
 import {Options as SmartContractOptions, TESTNET} from "@cere-ddc-sdk/smart-contract";
-import {CidBuilder, CipherInterface, NaclCipher, SchemeInterface, SchemeType} from "@cere-ddc-sdk/core";
+import {CidBuilder, CipherInterface, NaclCipher, SchemeInterface, SchemeName} from "@cere-ddc-sdk/core";
 
 export class StorageOptions {
     clusterAddress: string | number; // Cluster ID or CDN URL
     smartContract?: SmartContractOptions = TESTNET;
-    scheme?: SchemeType | SchemeInterface = "sr25519";
+    scheme?: SchemeName | SchemeInterface = "sr25519";
     cipher?: CipherInterface = new NaclCipher();
     cidBuilder?: CidBuilder = new CidBuilder();
 

@@ -50,7 +50,6 @@ export class SmartContract {
         this.signAndSend = (tx, statusCb) => tx.signAndSend(account, statusCb);
         this.address = account.address;
         this.options = options;
-        console.log(this.address)
     }
 
     static async buildAndConnect(secretPhraseOrAddress: string, options: Options = TESTNET): Promise<SmartContract> {

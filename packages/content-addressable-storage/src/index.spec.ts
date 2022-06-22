@@ -4,10 +4,10 @@ import {ContentAddressableStorage, Piece, Query} from "./index.js"
 describe("content-addressable-storage integration tests", () => {
     const url = "http://localhost:8080";
     const testSubject = ContentAddressableStorage
-        .build("0x93e0153dc0f0bbee868dc00d8d05ddae260e01d418746443fa190c8eacd9544c", {
+        .build({
             clusterAddress: url,
             scheme: "ed25519",
-        });
+        }, "0x93e0153dc0f0bbee868dc00d8d05ddae260e01d418746443fa190c8eacd9544c");
 
 
     test("upload and read", async () => {

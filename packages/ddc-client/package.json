@@ -8,7 +8,9 @@
     "directory": "packages/ddc-client",
     "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
   },
-  "main": "dist/index.js",
+  "main": "dist/node.js",
+  "browser": "dist/browser.js",
+  "types": "dist/type.d.ts",
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
