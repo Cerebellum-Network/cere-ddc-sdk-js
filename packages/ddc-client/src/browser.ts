@@ -18,7 +18,7 @@ export class DdcClient extends CoreDdcClient {
     static async buildAndConnect(options: ClientOptions, secretPhrase: string): Promise<DdcClient>;
     static async buildAndConnect(options: ClientOptions, account: InjectedAccount, encryptionSecretPhrase: string): Promise<DdcClient>;
     static async buildAndConnect(options: ClientOptions, accountOrSecretPhrase: InjectedAccount | string, encryptionSecretPhraseOrAccount?: string): Promise<DdcClient> {
-        const encryptionSecretPhrase = await DdcClient.createEncryptionSecretPhrase(encryptionSecretPhraseOrAccount != null ? encryptionSecretPhraseOrAccount : accountOrSecretPhrase);
+        const encryptionSecretPhrase = await DdcClient.createEncryptionSecretPhrase(accountOrSecretPhrase, encryptionSecretPhraseOrAccount);
         if (typeof accountOrSecretPhrase === "string") {
             return super.buildAndConnect(options, accountOrSecretPhrase, encryptionSecretPhrase);
         }
@@ -38,9 +38,10 @@ export class DdcClient extends CoreDdcClient {
         return new DdcClient(caStorage, smartContract, options, encryptionSecretPhrase);
     }
 
-    private static async createEncryptionSecretPhrase(accountOrSecretPhrase: InjectedAccount | string): Promise<string> {
-        if (typeof accountOrSecretPhrase === "string") {
-            return accountOrSecretPhrase;
+    private static async createEncryptionSecretPhrase(accountOrSecretPhrase: InjectedAccount | string, encryptionSecretPhraseOrAccount?: string): Promise<string> {
+        const secret = encryptionSecretPhraseOrAccount != null ? encryptionSecretPhraseOrAccount : accountOrSecretPhrase
+        if (typeof secret === "string") {
+            return secret;
         } else {
             throw new Error("Unable to create DDC Client. Encryption secret phrase should be entered")
         }
