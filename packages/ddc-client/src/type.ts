@@ -1,14 +1,13 @@
-import {DdcClientInterface} from "./DdcClient.interface.js";
-import {ClientOptions} from "./options/ClientOptions";
-import {InjectedAccount, InjectedAccountWithMeta} from "@polkadot/extension-inject/types";
+import {DdcClient as CoreDdcClient} from "./DdcClient.js";
+import {ClientOptions} from "./options/ClientOptions.js";
+import {InjectedAccount} from "@polkadot/extension-inject/types";
 
-export {DdcClientInterface} from "./DdcClient.interface.js";
 export {ClientOptions} from "./options/ClientOptions.js";
 export {ReadOptions} from "./options/ReadOptions.js";
 export {StoreOptions} from "./options/StoreOptions.js";
 export {PieceArray} from "./model/PieceArray.js";
 
-export interface DdcClient extends DdcClientInterface {
+export interface DdcClient extends CoreDdcClient {
 }
 
 export declare const DdcClient: {
