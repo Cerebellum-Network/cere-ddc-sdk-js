@@ -11,34 +11,38 @@ Support commands:
 
 ### Setup
 
+Initialize client by cluster id and secret phrase.
+
 ```typescript
-import {Scheme} from "@cere-ddc-sdk/core"
 import {ContentAddressableStorage} from "@cere-ddc-sdk/content-addressable-storage"
 
-//Create Scheme for signing requests
 const signatureAlgorithm = "ed25519";
-const privateKey = "0x9gh7...";
-const scheme = await Scheme.createScheme(signatureAlgorithm, privateKey);
+const secretPhrase = "0x9gh7...";
 
-const cdnUrl = "https://node-0.cdn.devnet.cere.network/";
-const storage = new ContentAddressableStorage(scheme, cdnUrl);
+const cdnClusterId = 2n;
+const storage = ContentAddressableStorage.build({clusterAddress: cdnClusterId, scheme: signatureAlgorithm}, secretPhrase);
 ```
 
 ### Store
 
+Store piece with data in DDC
+
 ```typescript
 import {Piece, PieceUri, Tag} from "@cere-ddc-sdk/content-addressable-storage"
 
-const data: Uint8Array = []; // some data for storing
+const data = new Uint8Array([1, 2, 3, 4]); // data for storing
 
 const bucketId = 1n;
-const tags = [new Tag("key", "test")]; // some tag for search
+const tags = [new Tag("key", "test")]; // tag for search
 const piece = new Piece(data, tags);
 
 const pieceUri: PieceUri = await storage.store(bucketId, piece);
 ```
 
 ### Read
+
+Download piece from DDC
+
 ```typescript
 import {Piece} from "@cere-ddc-sdk/content-addressable-storage"
 
@@ -48,14 +52,17 @@ const cid = "b89mndf..."; // CID can get from pieceUri (pieceUri.cid)
 const piece: Piece = await storage.read(bucketId, cid);
 ```
 
-### Search
+### Search data
+
+Search by tags pieces and download
 
 ```typescript
 import {Piece, Query, SearchResult, Tag} from "@cere-ddc-sdk/content-addressable-storage"
 
 const bucketId = 1n;
 const tags = [new Tag("key", "test")];
-const query = new Query(bucketId, tags);
+const skipData = false; // download pieces with data or metadata only
+const query = new Query(bucketId, tags, skipData);
 
 const searchResult: SearchResult = await storage.search(query);
 const pieces: Array<Piece> = searchResult.pieces;
