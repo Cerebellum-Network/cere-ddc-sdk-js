@@ -2,7 +2,8 @@ import {PieceUri, Query} from "@cere-ddc-sdk/content-addressable-storage";
 import {
     BucketCreatedEvent,
     BucketPermissionGrantedEvent,
-    BucketPermissionRevokedEvent,
+    BucketPermissionRevokedEvent, BucketStatus, BucketStatusList,
+    Permission
 } from "@cere-ddc-sdk/smart-contract";
 import {StoreOptions} from "./options/StoreOptions.js";
 import {ReadOptions} from "./options/ReadOptions.js";
@@ -15,6 +16,10 @@ export interface DdcClientInterface {
 
     revokeBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionRevokedEvent>
 
+    bucketGet(bucketId: bigint): Promise<BucketStatus>
+
+    bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList>
+
     store(bucketId: bigint, pieceArray: PieceArray, options: StoreOptions): Promise<PieceUri>
 
     read(pieceUri: PieceUri, options: ReadOptions): Promise<PieceArray>
@@ -22,9 +27,4 @@ export interface DdcClientInterface {
     search(query: Query): Promise<Array<PieceArray>>
 
     shareData(bucketId: bigint, dekPath: string, publicKeyHex: string): Promise<PieceUri>
-}
-
-export enum Permission {
-    READ,
-    WRITE
 }
