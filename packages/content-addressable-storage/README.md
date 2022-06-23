@@ -3,6 +3,7 @@
 Basic package for working with data in DDC.
 
 Support commands:
+
 - `store` - store data in DDC
 - `read` - download piece with data from DDC
 - `search` - search pieces by tags and download from DDC
@@ -18,9 +19,12 @@ import {ContentAddressableStorage} from "@cere-ddc-sdk/content-addressable-stora
 
 const signatureAlgorithm = "ed25519";
 const secretPhrase = "0x9gh7...";
-
 const cdnClusterId = 2n;
-const storage = ContentAddressableStorage.build({clusterAddress: cdnClusterId, scheme: signatureAlgorithm}, secretPhrase);
+
+const storage = await ContentAddressableStorage.build({
+    clusterAddress: cdnClusterId,
+    scheme: signatureAlgorithm
+}, secretPhrase);
 ```
 
 ### Store
