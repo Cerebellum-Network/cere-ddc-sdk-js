@@ -115,30 +115,6 @@ const bucketId = 1n;
 const bucketStatus = await smartContract.bucketGet(bucketId);
 ```
 
-### Grant Bucket permission
-
-Grant write permission to user by public key.
-
-```typescript
-import {Permission} from "@cere-ddc-sdk/smart-contract";
-
-const bucketId = 1n;
-const partnerPublicKeyHex = "0xkldaf3a8as2109...";
-await smartContract.bucketGrantPermission(bucketId, partnerPublicKeyHex, Permission.WRITE);
-```
-
-### Revoke Bucket permission
-
-Revoke write permission for user
-
-```typescript
-import {Permission} from "@cere-ddc-sdk/smart-contract";
-
-const bucketId = 1n;
-const partnerPublicKeyHex = "0xkldaf3a8as2109...";
-await smartContract.bucketRevokePermission(bucketId, partnerPublicKeyHex, Permission.WRITE);
-```
-
 ### Get Cluster
 
 Get cluster status

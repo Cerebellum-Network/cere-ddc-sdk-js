@@ -12,9 +12,9 @@ import {PieceArray} from "./model/PieceArray.js";
 export interface DdcClientInterface {
     createBucket(balance:bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent>
 
-    grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent>
+/*    grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent>
 
-    revokeBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionRevokedEvent>
+    revokeBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionRevokedEvent>*/
 
     bucketGet(bucketId: bigint): Promise<BucketStatus>
 

@@ -87,13 +87,13 @@ export class DdcClient implements DdcClientInterface {
         return this.smartContract.bucketCreate(balance, bucketParams, clusterId)
     }
 
-    async grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
+/*    async grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
         return this.smartContract.bucketGrantPermission(bucketId, grantee, permission)
     }
 
     async revokeBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionRevokedEvent> {
         return this.smartContract.bucketRevokePermission(bucketId, grantee, permission)
-    }
+    }*/
 
     async bucketGet(bucketId: bigint): Promise<BucketStatus> {
         return this.smartContract.bucketGet(bucketId);
