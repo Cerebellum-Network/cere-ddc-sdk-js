@@ -2,7 +2,7 @@
 
 ## Introduction
 
-`DEK` is a data encryption key used to encrypt the data.
+`DEK` is a data encryption key used to encrypt the data. 
 
 `EDEK` is an encrypted data encryption key that is stored in DDC and used to share data (re-encrypt DEK per partner).
 
@@ -117,6 +117,32 @@ const getBucket = async (limit: bigint) => {
     console.log("Successfully got bucket statuses. Statuses: " + bucketStatuses);
 }
 ```
+
+[### Grant bucket permission
+
+Give write access to bucket for user by public key.
+
+```typescript
+const grantBucketPermission = async (bucketId: bigint) => {
+    const partnerPublicKeyHex = "0xkldaf3a8as2109..."
+    const permissionGrantedEvent = await ddcClient.grantBucketPermission(bucketId, partnerPublicKeyHex, Permission.WRITE)
+    console.log("Successfully granted read permission to the bucket. Event: " + permissionGrantedEvent);
+}
+```
+
+### Revoke bucket permission
+
+Revoke write to bucket permissions for user by public key.
+
+```typescript
+import {Permission} from "@cere-ddc-sdk/smart-contract";
+
+const revokeBucketPermission = async (bucketId: bigint) => {
+    const partnerPublicKeyHex = "0xkldaf3a8as2109...";
+    const permissionRevokedEvent = await ddcClient.revokeBucketPermission(bucketId, partnerPublicKeyHex, Permission.WRITE)
+    console.log("Successfully revoked read permission to the bucket. Event: " + permissionRevokedEvent);
+}
+```]: #
 
 ### Store unencrypted data
 
