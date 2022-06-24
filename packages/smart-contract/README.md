@@ -115,7 +115,7 @@ const bucketId = 1n;
 const bucketStatus = await smartContract.bucketGet(bucketId);
 ```
 
-### Grant Bucket permission
+[### Grant Bucket permission
 
 Grant write permission to user by public key.
 
@@ -137,7 +137,7 @@ import {Permission} from "@cere-ddc-sdk/smart-contract";
 const bucketId = 1n;
 const partnerPublicKeyHex = "0xkldaf3a8as2109...";
 await smartContract.bucketRevokePermission(bucketId, partnerPublicKeyHex, Permission.WRITE);
-```
+```]: #
 
 ### Get Cluster
 

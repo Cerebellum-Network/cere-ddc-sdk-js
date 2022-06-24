@@ -118,7 +118,7 @@ const getBucket = async (limit: bigint) => {
 }
 ```
 
-### Grant bucket permission
+[### Grant bucket permission
 
 Give write access to bucket for user by public key.
 
@@ -142,7 +142,7 @@ const revokeBucketPermission = async (bucketId: bigint) => {
     const permissionRevokedEvent = await ddcClient.revokeBucketPermission(bucketId, partnerPublicKeyHex, Permission.WRITE)
     console.log("Successfully revoked read permission to the bucket. Event: " + permissionRevokedEvent);
 }
-```
+```]: #
 
 ### Store unencrypted data
 

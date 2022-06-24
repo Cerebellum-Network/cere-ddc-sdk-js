@@ -97,7 +97,7 @@ export class SmartContract {
         return new BucketStatusList(statuses, length);
     }
 
-    async bucketGrantPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
+/*    async bucketGrantPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
         const tx = await this.contract.tx.bucketGrantPermission(txOptionsPay, bucketId, grantee, permission.toString());
         const result = await this.sendTx(tx);
 
@@ -115,7 +115,7 @@ export class SmartContract {
             throw new Error("Failed to revoke bucket permission");
         }
         return new BucketPermissionRevokedEvent();
-    }
+    }*/
 
     async clusterGet(clusterId: number): Promise<ClusterStatus> {
         let {result, output} = await this.contract.query.clusterGet(this.address, txOptions, clusterId);

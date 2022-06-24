@@ -7,6 +7,7 @@
 - [file-storage](packages/file-storage/README.md)
 - [proto](packages/proto/README.md)
 - [core](packages/core/README.md)
+- [smart-contract](packages/smart-contract/README.md)
 - [ddc-client](packages/ddc-client/README.md)
 
 ## Use case
@@ -14,6 +15,7 @@
 - `content-addressable-storage` use when need simple upload data to DDC as 1 unit
 - `key-value-storage` use when need store data by key
 - `file-storage` use when need to upload large data by chunks
+- `smart-contract` client for working DDC Smart-Contract
 - `ddc-client` simple client with all methods for working with DDC and DDC Smart-Contract
 
 ## Definitions
