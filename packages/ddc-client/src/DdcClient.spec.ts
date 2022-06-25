@@ -204,8 +204,6 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).search(new Query(bucketId, tags, true));
 
         //then
-        file.headCid = uri.cid;
-        file.data = new Uint8Array();
-        expect(result).toEqual([file]);
+        expect(result).toEqual([new Piece(new Uint8Array(), tags, [], uri.cid)]);
     });
 })
