@@ -1,4 +1,4 @@
-import {Options as SmartContractOptions, TESTNET} from "@cere-ddc-sdk/smart-contract";
+import {SmartContractOptions, TESTNET} from "@cere-ddc-sdk/smart-contract";
 import {CidBuilder, CipherInterface, NaclCipher, SchemeInterface, SchemeName} from "@cere-ddc-sdk/core";
 
 export class StorageOptions {

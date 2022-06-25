@@ -18,6 +18,7 @@ import {ReadOptions} from "./options/ReadOptions.js";
 import nacl, {BoxKeyPair} from "tweetnacl";
 import {hexToU8a, stringToU8a, u8aToHex} from "@polkadot/util";
 import {PieceArray} from "./model/PieceArray.js";
+import {BucketParams} from "@cere-ddc-sdk/smart-contract/src/options/BucketParams";
 
 //ToDo generate from random for security
 const emptyNonce = new Uint8Array(nacl.box.nonceLength);
@@ -76,8 +77,8 @@ export class DdcClient implements DdcClientInterface {
         return await this.smartContract.disconnect();
     }
 
-    async createBucket(balance: bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent> {
-        return this.smartContract.bucketCreate(balance, bucketParams, clusterId)
+    async createBucket(balance: bigint, clusterId: bigint, bucketParams?: BucketParams): Promise<BucketCreatedEvent> {
+        return this.smartContract.bucketCreate(balance, clusterId, bucketParams)
     }
 
     /*    async grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
@@ -249,9 +250,5 @@ export class DdcClient implements DdcClientInterface {
         }
 
         return dek
-    }
-
-    private static parseUrl(url: URL) {
-
     }
 }
