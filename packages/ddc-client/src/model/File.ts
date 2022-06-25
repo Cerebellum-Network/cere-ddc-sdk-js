@@ -14,7 +14,7 @@ export class File {
     }
 
     static isFile(obj: any): obj is File {
-        return obj instanceof File || (obj instanceof Object && obj.data && obj.tags instanceof Array);
+        return obj instanceof File || (obj instanceof Object && obj.data && obj.tags instanceof Array && typeof obj.dataReader === "function");
     }
 
     async* dataReader() {

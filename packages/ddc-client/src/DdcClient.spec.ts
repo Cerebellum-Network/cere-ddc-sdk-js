@@ -1,6 +1,6 @@
 import {DdcClient} from "./DdcClient.js";
 import {File} from "./model/File.js";
-import {Query, Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import {Piece, Query, Tag} from "@cere-ddc-sdk/content-addressable-storage";
 import {randomBytes} from "tweetnacl";
 import {randomUUID} from "crypto";
 import {u8aToHex} from "@polkadot/util";
@@ -22,47 +22,49 @@ describe("DDC client integration tests", () => {
         //given
         const data = randomBytes(20);
         const tags = [new Tag("some-key", "some-value")];
-        const file = new File(data, tags);
+        const piece = new Piece(data, tags);
 
         //when
-        const uri = await (await testSubject).store(bucketId, file, {encrypt: false});
+        const uri = await (await testSubject).store(bucketId, piece, {encrypt: false});
         const result = await (await testSubject).read(uri, {decrypt: false});
 
         //then
-        file.headCid = uri.cid;
-        expect(result).toEqual(file);
+        piece.cid = uri.cid;
+        expect(result).toEqual(piece);
+        expect(Piece.isPiece(result)).toBeTruthy();
     });
 
     it("store and read encrypted small data", async () => {
         //given
         const data = randomBytes(20);
         const tags = [new Tag("some-key", "some-value")];
-        const file = new File(data, tags);
+        const piece = new Piece(data, tags);
         const dekPath = "test/piece";
 
         //when
-        const uri = await (await testSubject).store(bucketId, file, {encrypt: true, dekPath: dekPath});
+        const uri = await (await testSubject).store(bucketId, piece, {encrypt: true, dekPath: dekPath});
         const result = await (await testSubject).read(uri, {decrypt: true, dekPath: dekPath});
 
         //then
-        file.headCid = uri.cid;
-        expect(result).toEqual(file);
+        piece.cid = uri.cid;
+        expect(result).toEqual(piece);
+        expect(Piece.isPiece(result)).toBeTruthy();
     });
 
     it("store and read by URL", async () => {
         //given
         const data = randomBytes(20);
         const tags = [new Tag("some-key", "some-value")];
-        const file = new File(data, tags);
-        const dekPath = "test/piece";
+        const piece = new Piece(data, tags);
 
         //when
-        const uri = await (await testSubject).store(bucketId, file, {encrypt: false});
+        const uri = await (await testSubject).store(bucketId, piece, {encrypt: false});
         const result = await (await testSubject).read(`/ddc/buc/${uri.bucketId}/ipiece/${uri.cid}`, {decrypt: false});
 
         //then
-        file.headCid = uri.cid;
-        expect(result).toEqual(file);
+        piece.cid = uri.cid;
+        expect(result).toEqual(piece);
+        expect(Piece.isPiece(result)).toBeTruthy();
     });
 
     it("store and read encrypted by URL", async () => {
@@ -79,6 +81,7 @@ describe("DDC client integration tests", () => {
         //then
         file.headCid = uri.cid;
         expect(result).toEqual(file);
+        expect(File.isFile(result)).toBeTruthy();
     });
 
 
@@ -93,9 +96,11 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).read(uri, {decrypt: false});
 
         //then
+        expect(File.isFile(result)).toBeTruthy();
+
         let offset = 0;
         const expectedData = new Uint8Array(data.length);
-        for await (const chunkData of result.dataReader()) {
+        for await (const chunkData of (result as File).dataReader()) {
             expectedData.set(chunkData, offset);
             offset += chunkData.length;
         }
@@ -117,9 +122,11 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).read(uri, {decrypt: true, dekPath: dekPath});
 
         //then
+        expect(File.isFile(result)).toBeTruthy();
+
         let offset = 0;
         const expectedData = new Uint8Array(data.length);
-        for await (const chunkData of result.dataReader()) {
+        for await (const chunkData of (result as File).dataReader()) {
             expectedData.set(chunkData, offset);
             offset += chunkData.length;
         }
@@ -142,7 +149,7 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).search(new Query(bucketId, [new Tag(key, value)], false));
 
         //then
-        result.forEach(p => p.headCid = undefined);
+        result.forEach(p => p.cid = undefined);
 
         file.data = (await testSubject).caStorage.cipher!.encrypt(data, (await testSubject).masterDek);
         file.tags = [new Tag(key, value), new Tag("dekPath", "")]
