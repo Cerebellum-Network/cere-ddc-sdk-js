@@ -67,7 +67,7 @@ export class CoreFileStorage {
     }
 
     chunkTransformer(): Transformer<Uint8Array, Uint8Array> {
-        const chunkSize = this.config.chunkSizeInBytes;
+        const chunkSize = this.config.pieceSizeInBytes;
         let prefix = new Uint8Array();
         return {
             start() {

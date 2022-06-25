@@ -49,6 +49,38 @@ describe("DDC client integration tests", () => {
         expect(result).toEqual(pieceArray);
     });
 
+    it("store and read by URL", async () => {
+        //given
+        const data = randomBytes(20);
+        const tags = [new Tag("some-key", "some-value")];
+        const pieceArray = new PieceArray(data, tags);
+        const dekPath = "test/piece";
+
+        //when
+        const uri = await (await testSubject).store(bucketId, pieceArray, {encrypt: false});
+        const result = await (await testSubject).read(`/ddc/buc/${uri.bucketId}/ipiece/${uri.cid}`, {decrypt: false});
+
+        //then
+        pieceArray.headCid = uri.cid;
+        expect(result).toEqual(pieceArray);
+    });
+
+    it("store and read encrypted by URL", async () => {
+        //given
+        const data = randomBytes(20);
+        const tags = [new Tag("some-key", "some-value")];
+        const pieceArray = new PieceArray(data, tags);
+        const dekPath = "test/piece/url";
+
+        //when
+        const uri = await (await testSubject).store(bucketId, pieceArray, {encrypt: true, dekPath: dekPath});
+        const result = await (await testSubject).read(new URL(`http://test.com/ddc/buc/${uri.bucketId}/ipiece/${uri.cid}`), {decrypt: true, dekPath: dekPath});
+
+        //then
+        pieceArray.headCid = uri.cid;
+        expect(result).toEqual(pieceArray);
+    });
+
 
     it("store and read unencrypted big data", async () => {
         //given
