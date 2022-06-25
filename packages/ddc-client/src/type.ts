@@ -5,7 +5,7 @@ import {InjectedAccount} from "@polkadot/extension-inject/types";
 export {ClientOptions} from "./options/ClientOptions.js";
 export {ReadOptions} from "./options/ReadOptions.js";
 export {StoreOptions} from "./options/StoreOptions.js";
-export {PieceArray} from "./model/PieceArray.js";
+export {File} from "./model/File.js";
 
 export interface DdcClient extends CoreDdcClient {
 }

@@ -15,6 +15,10 @@ export class Piece {
     }
 
     clone(): Piece {
-        return new Piece(this.data, this.tags, this.links, this.cid)
+        return new Piece(this.data, this.tags, this.links, this.cid);
+    }
+
+    static isPiece(obj: any): obj is Piece {
+        return obj instanceof Piece || (obj instanceof Object && obj.data instanceof Uint8Array && obj.tags instanceof Array && obj.links instanceof Array);
     }
 }

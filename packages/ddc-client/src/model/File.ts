@@ -2,7 +2,7 @@ import {Tag} from "@cere-ddc-sdk/content-addressable-storage";
 
 type Data = ReadableStream<Uint8Array> | string | Uint8Array
 
-export class PieceArray {
+export class File {
     data: Data;
     tags: Array<Tag>;
     headCid?: string;
@@ -13,8 +13,8 @@ export class PieceArray {
         this.headCid = headCid
     }
 
-    isMultipart(chunkSize: number): boolean {
-        return !(this.data instanceof Uint8Array && this.data.length <= chunkSize);
+    static isFile(obj: any): obj is File {
+        return obj instanceof File || (obj instanceof Object && obj.data && obj.tags instanceof Array);
     }
 
     async* dataReader() {

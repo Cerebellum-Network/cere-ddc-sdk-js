@@ -1,5 +1,5 @@
 import {DdcClient} from "./DdcClient.js";
-import {PieceArray} from "./model/PieceArray.js";
+import {File} from "./model/File.js";
 import {Query, Tag} from "@cere-ddc-sdk/content-addressable-storage";
 import {randomBytes} from "tweetnacl";
 import {randomUUID} from "crypto";
@@ -22,63 +22,63 @@ describe("DDC client integration tests", () => {
         //given
         const data = randomBytes(20);
         const tags = [new Tag("some-key", "some-value")];
-        const pieceArray = new PieceArray(data, tags);
+        const file = new File(data, tags);
 
         //when
-        const uri = await (await testSubject).store(bucketId, pieceArray, {encrypt: false});
+        const uri = await (await testSubject).store(bucketId, file, {encrypt: false});
         const result = await (await testSubject).read(uri, {decrypt: false});
 
         //then
-        pieceArray.headCid = uri.cid;
-        expect(result).toEqual(pieceArray);
+        file.headCid = uri.cid;
+        expect(result).toEqual(file);
     });
 
     it("store and read encrypted small data", async () => {
         //given
         const data = randomBytes(20);
         const tags = [new Tag("some-key", "some-value")];
-        const pieceArray = new PieceArray(data, tags);
+        const file = new File(data, tags);
         const dekPath = "test/piece";
 
         //when
-        const uri = await (await testSubject).store(bucketId, pieceArray, {encrypt: true, dekPath: dekPath});
+        const uri = await (await testSubject).store(bucketId, file, {encrypt: true, dekPath: dekPath});
         const result = await (await testSubject).read(uri, {decrypt: true, dekPath: dekPath});
 
         //then
-        pieceArray.headCid = uri.cid;
-        expect(result).toEqual(pieceArray);
+        file.headCid = uri.cid;
+        expect(result).toEqual(file);
     });
 
     it("store and read by URL", async () => {
         //given
         const data = randomBytes(20);
         const tags = [new Tag("some-key", "some-value")];
-        const pieceArray = new PieceArray(data, tags);
+        const file = new File(data, tags);
         const dekPath = "test/piece";
 
         //when
-        const uri = await (await testSubject).store(bucketId, pieceArray, {encrypt: false});
+        const uri = await (await testSubject).store(bucketId, file, {encrypt: false});
         const result = await (await testSubject).read(`/ddc/buc/${uri.bucketId}/ipiece/${uri.cid}`, {decrypt: false});
 
         //then
-        pieceArray.headCid = uri.cid;
-        expect(result).toEqual(pieceArray);
+        file.headCid = uri.cid;
+        expect(result).toEqual(file);
     });
 
     it("store and read encrypted by URL", async () => {
         //given
         const data = randomBytes(20);
         const tags = [new Tag("some-key", "some-value")];
-        const pieceArray = new PieceArray(data, tags);
+        const file = new File(data, tags);
         const dekPath = "test/piece/url";
 
         //when
-        const uri = await (await testSubject).store(bucketId, pieceArray, {encrypt: true, dekPath: dekPath});
+        const uri = await (await testSubject).store(bucketId, file, {encrypt: true, dekPath: dekPath});
         const result = await (await testSubject).read(new URL(`http://test.com/ddc/buc/${uri.bucketId}/ipiece/${uri.cid}`), {decrypt: true, dekPath: dekPath});
 
         //then
-        pieceArray.headCid = uri.cid;
-        expect(result).toEqual(pieceArray);
+        file.headCid = uri.cid;
+        expect(result).toEqual(file);
     });
 
 
@@ -86,10 +86,10 @@ describe("DDC client integration tests", () => {
         //given
         const data = randomBytes(100);
         const tags = [new Tag("some-key", "some-value")];
-        const pieceArray = new PieceArray(data, tags);
+        const file = new File(data, tags);
 
         //when
-        const uri = await (await testSubject).store(bucketId, pieceArray, {encrypt: false});
+        const uri = await (await testSubject).store(bucketId, file, {encrypt: false});
         const result = await (await testSubject).read(uri, {decrypt: false});
 
         //then
@@ -101,19 +101,19 @@ describe("DDC client integration tests", () => {
         }
 
         result.data = expectedData;
-        pieceArray.headCid = uri.cid;
-        expect(result).toEqual(pieceArray);
+        file.headCid = uri.cid;
+        expect(result).toEqual(file);
     });
 
     it("store and read encrypted big data", async () => {
         //given
         const data = randomBytes(100);
         const tags = [new Tag("some-key", "some-value")];
-        const pieceArray = new PieceArray(data, tags);
+        const file = new File(data, tags);
         const dekPath = "test/piece";
 
         //when
-        const uri = await (await testSubject).store(bucketId, pieceArray, {encrypt: true, dekPath: dekPath});
+        const uri = await (await testSubject).store(bucketId, file, {encrypt: true, dekPath: dekPath});
         const result = await (await testSubject).read(uri, {decrypt: true, dekPath: dekPath});
 
         //then
@@ -125,8 +125,8 @@ describe("DDC client integration tests", () => {
         }
 
         result.data = expectedData;
-        pieceArray.headCid = uri.cid;
-        expect(result).toEqual(pieceArray);
+        file.headCid = uri.cid;
+        expect(result).toEqual(file);
     });
 
 
@@ -135,8 +135,8 @@ describe("DDC client integration tests", () => {
         const data = randomBytes(20);
         const key = randomUUID();
         const value = randomUUID();
-        const pieceArray = new PieceArray(data, [new Tag(key, value)]);
-        await (await testSubject).store(bucketId, pieceArray, {encrypt: true});
+        const file = new File(data, [new Tag(key, value)]);
+        await (await testSubject).store(bucketId, file, {encrypt: true});
 
         //when
         const result = await (await testSubject).search(new Query(bucketId, [new Tag(key, value)], false));
@@ -144,44 +144,44 @@ describe("DDC client integration tests", () => {
         //then
         result.forEach(p => p.headCid = undefined);
 
-        pieceArray.data = (await testSubject).caStorage.cipher!.encrypt(data, (await testSubject).masterDek);
-        pieceArray.tags = [new Tag(key, value), new Tag("dekPath", "")]
-        expect(result).toEqual([pieceArray]);
+        file.data = (await testSubject).caStorage.cipher!.encrypt(data, (await testSubject).masterDek);
+        file.tags = [new Tag(key, value), new Tag("dekPath", "")]
+        expect(result).toEqual([file]);
     });
 
     it("share data", async () => {
         //given
         const data = randomBytes(20);
-        const pieceArray = new PieceArray(data);
+        const file = new File(data);
         const dekPath = randomUUID();
-        const pieceUri = await (await testSubject).store(bucketId, pieceArray, {encrypt: true, dekPath: dekPath});
+        const pieceUri = await (await testSubject).store(bucketId, file, {encrypt: true, dekPath: dekPath});
 
         //when
         await (await testSubject).shareData(bucketId, dekPath, u8aToHex((await otherClient).boxKeypair.publicKey));
         const result = await (await otherClient).read(pieceUri, {decrypt: true, dekPath: dekPath});
 
         //then
-        pieceArray.headCid = pieceUri.cid;
-        pieceArray.tags = [new Tag("dekPath", dekPath)];
-        expect(result).toEqual(pieceArray);
+        file.headCid = pieceUri.cid;
+        file.tags = [new Tag("dekPath", dekPath)];
+        expect(result).toEqual(file);
     });
 
     it("share data with high level key", async () => {
         //given
         const data = randomBytes(20);
-        const pieceArray = new PieceArray(data);
+        const file = new File(data);
         const highDekPath = "some";
         const fullDekPath = highDekPath + "/test/sub/path"
-        const pieceUri = await (await testSubject).store(bucketId, pieceArray, {encrypt: true, dekPath: fullDekPath});
+        const pieceUri = await (await testSubject).store(bucketId, file, {encrypt: true, dekPath: fullDekPath});
 
         //when
         await (await testSubject).shareData(bucketId, highDekPath, u8aToHex((await otherClient).boxKeypair.publicKey));
         const result = await (await otherClient).read(pieceUri, {decrypt: true, dekPath: highDekPath});
 
         //then
-        pieceArray.headCid = pieceUri.cid;
-        pieceArray.tags = [new Tag("dekPath", fullDekPath)]
-        expect(result).toEqual(pieceArray);
+        file.headCid = pieceUri.cid;
+        file.tags = [new Tag("dekPath", fullDekPath)]
+        expect(result).toEqual(file);
     });
 
     it("search metadata", async () => {
@@ -190,15 +190,15 @@ describe("DDC client integration tests", () => {
         const key = randomUUID();
         const value = randomUUID();
         const tags = [new Tag(key, value)];
-        const pieceArray = new PieceArray(data, tags);
-        const uri = await (await testSubject).store(bucketId, pieceArray, {encrypt: false});
+        const file = new File(data, tags);
+        const uri = await (await testSubject).store(bucketId, file, {encrypt: false});
 
         //when
         const result = await (await testSubject).search(new Query(bucketId, tags, true));
 
         //then
-        pieceArray.headCid = uri.cid;
-        pieceArray.data = new Uint8Array();
-        expect(result).toEqual([pieceArray]);
+        file.headCid = uri.cid;
+        file.data = new Uint8Array();
+        expect(result).toEqual([file]);
     });
 })
