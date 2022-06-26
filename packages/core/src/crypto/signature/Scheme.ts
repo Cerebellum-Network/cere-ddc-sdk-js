@@ -34,6 +34,16 @@ export class Scheme implements SchemeInterface{
     }
 
     async sign(data: Uint8Array): Promise<string> {
+        assertSafeMessage(data);
         return Promise.resolve(u8aToHex(this.keyringPair.sign(data)));
+    }
+}
+
+// Validate that the signed data does not conflict with the blockchain extrinsics.
+export function assertSafeMessage(data: Uint8Array) {
+    // Encoded extrinsics start with the pallet index; reserve up to 48 pallets.
+    // Make ASCII "0" the smallest first valid byte.
+    if(data[0] < 48) {
+        throw new Error("data unsafe to sign")
     }
 }
