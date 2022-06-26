@@ -14,7 +14,7 @@ import {stringToU8a} from "@polkadot/util";
 import {fetch} from 'cross-fetch';
 import {Tag} from "./models/Tag.js";
 import {EncryptionOptions} from "./EncryptionOptions.js";
-import {Options as SmartContractOptions, SmartContract} from "@cere-ddc-sdk/smart-contract";
+import {SmartContractOptions, SmartContract} from "@cere-ddc-sdk/smart-contract";
 import {initDefaultOptions, StorageOptions} from "./StorageOptions.js";
 
 const BASE_PATH = "/api/rest/pieces";

@@ -1,11 +1,13 @@
+import {BucketParams} from "../options/BucketParams";
+
 export class BucketStatus {
     bucket_id: bigint;
     bucket: Bucket;
-    params: string;
+    params: BucketParams;
     writer_ids: Array<string>;
     rent_covered_until_ms: string;
 
-    constructor(bucket_id: bigint, bucket: Bucket, params: string, writer_ids: Array<string>, rent_covered_until_ms: string) {
+    constructor(bucket_id: bigint, bucket: Bucket, params: BucketParams, writer_ids: Array<string>, rent_covered_until_ms: string) {
         this.bucket_id = bucket_id;
         this.bucket = bucket;
         this.params = params;

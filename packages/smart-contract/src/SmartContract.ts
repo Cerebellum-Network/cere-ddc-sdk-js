@@ -3,7 +3,7 @@ import {BucketPermissionRevokedEvent} from "./event/BucketPermissionRevokedEvent
 import {BucketCreatedEvent} from "./event/BucketCreatedEvent.js";
 import {Permission} from "./model/Permission.js";
 import {BucketPermissionGrantedEvent} from "./event/BucketPermissionGrantedEvent.js";
-import {Options, TESTNET} from "./Options.js";
+import {SmartContractOptions, TESTNET} from "./options/SmartContractOptions.js";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import {ContractPromise} from "@polkadot/api-contract";
 import {Keyring} from '@polkadot/keyring';
@@ -17,6 +17,8 @@ import {BucketStatus} from "./model/BucketStatus.js";
 import {BucketStatusList} from "./model/BucketStatusList.js";
 import {ApiTypes} from "@polkadot/api/types";
 import {isAddress} from "@polkadot/util-crypto/address/is";
+import {BucketParams, initDefaultBucketParams} from "./options/BucketParams.js";
+import {waitReady} from "@polkadot/wasm-crypto";
 
 const CERE = 10_000_000_000n;
 
@@ -31,14 +33,14 @@ const txOptionsPay = {
 }
 
 export class SmartContract {
-    readonly options: Options;
+    readonly options: SmartContractOptions;
     readonly address: string;
 
     contract!: ContractPromise;
 
     signAndSend: (tx: SubmittableExtrinsic<any>, statusCb: Callback<ISubmittableResult>) => SubmittableResultSubscription<ApiTypes>;
 
-    constructor(secretPhraseOrAddress: string, options: Options = TESTNET) {
+    constructor(secretPhraseOrAddress: string, options: SmartContractOptions = TESTNET) {
         const keyring = new Keyring({type: 'sr25519'});
         let account: AddressOrPair;
         if (isAddress(secretPhraseOrAddress)) {
@@ -52,7 +54,8 @@ export class SmartContract {
         this.options = options;
     }
 
-    static async buildAndConnect(secretPhraseOrAddress: string, options: Options = TESTNET): Promise<SmartContract> {
+    static async buildAndConnect(secretPhraseOrAddress: string, options: SmartContractOptions = TESTNET): Promise<SmartContract> {
+        await waitReady();
         return new SmartContract(secretPhraseOrAddress, options).connect();
     }
 
@@ -70,8 +73,9 @@ export class SmartContract {
         return await this.contract.api.disconnect();
     }
 
-    async bucketCreate(balance: bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent> {
-        const tx = await this.contract.tx.bucketCreate(txOptionsPay, bucketParams, clusterId);
+    async bucketCreate(balance: bigint, clusterId: bigint, bucketParams: BucketParams = new BucketParams()): Promise<BucketCreatedEvent> {
+        bucketParams = initDefaultBucketParams(bucketParams);
+        const tx = await this.contract.tx.bucketCreate(txOptionsPay, JSON.stringify(bucketParams), clusterId);
         const result = await this.sendTx(tx);
         // @ts-ignore
         const events = result.contractEvents || [];
@@ -84,7 +88,10 @@ export class SmartContract {
         if (!result.isOk) throw result.asErr;
 
         // @ts-ignore
-        return output.toJSON().ok as BucketStatus;
+        const bucketStatus = output.toJSON().ok;
+        bucketStatus.params = JSON.parse(bucketStatus.params);
+
+        return bucketStatus as BucketStatus;
     }
 
     async bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList> {

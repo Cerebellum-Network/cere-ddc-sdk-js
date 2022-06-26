@@ -1,6 +1,6 @@
 //TODO put comments
 import {CidBuilder, CipherInterface, NaclCipher, SchemeInterface, SchemeName} from "@cere-ddc-sdk/core";
-import {Options as SmartContractOptions, TESTNET} from "@cere-ddc-sdk/smart-contract";
+import {SmartContractOptions, TESTNET} from "@cere-ddc-sdk/smart-contract";
 import {FileStorageConfig} from "@cere-ddc-sdk/file-storage";
 
 type FileOptions = FileStorageConfig;

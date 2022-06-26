@@ -8,9 +8,10 @@ import {
 import {StoreOptions} from "./options/StoreOptions.js";
 import {ReadOptions} from "./options/ReadOptions.js";
 import {PieceArray} from "./model/PieceArray.js";
+import {BucketParams} from "@cere-ddc-sdk/smart-contract/src/options/BucketParams";
 
 export interface DdcClientInterface {
-    createBucket(balance:bigint, bucketParams: string, clusterId: bigint): Promise<BucketCreatedEvent>
+    createBucket(balance: bigint, clusterId: bigint, bucketParams?: BucketParams): Promise<BucketCreatedEvent>
 
 /*    grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent>
 
