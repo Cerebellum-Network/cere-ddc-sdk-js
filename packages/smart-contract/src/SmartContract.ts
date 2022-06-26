@@ -17,7 +17,7 @@ import {BucketStatus} from "./model/BucketStatus.js";
 import {BucketStatusList} from "./model/BucketStatusList.js";
 import {ApiTypes} from "@polkadot/api/types";
 import {isAddress} from "@polkadot/util-crypto/address/is";
-import {BucketParams, initDefaultOptions} from "./options/BucketParams.js";
+import {BucketParams, initDefaultBucketParams} from "./options/BucketParams.js";
 import {waitReady} from "@polkadot/wasm-crypto";
 
 const CERE = 10_000_000_000n;
@@ -74,9 +74,7 @@ export class SmartContract {
     }
 
     async bucketCreate(balance: bigint, clusterId: bigint, bucketParams: BucketParams = new BucketParams()): Promise<BucketCreatedEvent> {
-        console.log(bucketParams)
-        bucketParams = initDefaultOptions(bucketParams);
-        console.log(bucketParams)
+        bucketParams = initDefaultBucketParams(bucketParams);
         const tx = await this.contract.tx.bucketCreate(txOptionsPay, JSON.stringify(bucketParams), clusterId);
         const result = await this.sendTx(tx);
         // @ts-ignore
