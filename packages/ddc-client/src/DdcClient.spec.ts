@@ -1,9 +1,10 @@
 import {DdcClient} from "./DdcClient.js";
 import {File} from "./model/File.js";
-import {Link, Piece, Query, Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import {Piece, Query, Tag} from "@cere-ddc-sdk/content-addressable-storage";
 import {randomBytes} from "tweetnacl";
 import {randomUUID} from "crypto";
 import {u8aToHex} from "@polkadot/util";
+import {DdcUri} from "@cere-ddc-sdk/core";
 
 describe("DDC client integration tests", () => {
     const secretPhrase = "0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03";
@@ -29,7 +30,7 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).read(uri, {decrypt: false});
 
         //then
-        piece.cid = uri.cid;
+        piece.cid = uri.path as string;
         expect(result).toEqual(piece);
         expect(Piece.isPiece(result)).toBeTruthy();
     });
@@ -46,7 +47,7 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).read(uri, {decrypt: true, dekPath: dekPath});
 
         //then
-        piece.cid = uri.cid;
+        piece.cid = uri.path as string;
         expect(result).toEqual(piece);
         expect(Piece.isPiece(result)).toBeTruthy();
     });
@@ -59,10 +60,10 @@ describe("DDC client integration tests", () => {
 
         //when
         const uri = await (await testSubject).store(bucketId, piece, {encrypt: false});
-        const result = await (await testSubject).read(`/ddc/buc/${uri.bucketId}/ipiece/${uri.cid}`, {decrypt: false});
+        const result = await (await testSubject).read(DdcUri.parse(`/ddc/buc/${uri.bucket}/ipiece/${uri.path}`), {decrypt: false});
 
         //then
-        piece.cid = uri.cid;
+        piece.cid = uri.path as string;
         expect(result).toEqual(piece);
         expect(Piece.isPiece(result)).toBeTruthy();
     });
@@ -76,7 +77,7 @@ describe("DDC client integration tests", () => {
 
         //when
         const uri = await (await testSubject).store(bucketId, file, {encrypt: true, dekPath: dekPath});
-        const result = await (await testSubject).read(new URL(`http://test.com/ddc/buc/${uri.bucketId}/ifile/${uri.cid}`), {decrypt: true, dekPath: dekPath});
+        const result = await (await testSubject).read(DdcUri.parse(new URL(`http://test.com/ddc/buc/${uri.bucket}/ifile/${uri.path}`)), {decrypt: true, dekPath: dekPath});
 
         //then
         let offset = 0;
@@ -87,7 +88,7 @@ describe("DDC client integration tests", () => {
         }
 
         result.data = expectedData;
-        file.headCid = uri.cid;
+        file.headCid = uri.path as string;
         expect(result).toEqual(file);
         expect(File.isFile(result)).toBeTruthy();
     });
@@ -114,7 +115,7 @@ describe("DDC client integration tests", () => {
         }
 
         result.data = expectedData;
-        file.headCid = uri.cid;
+        file.headCid = uri.path as string;
         expect(result).toEqual(file);
     });
 
@@ -140,7 +141,7 @@ describe("DDC client integration tests", () => {
         }
 
         result.data = expectedData;
-        file.headCid = uri.cid;
+        file.headCid = uri.path as string;
         expect(result).toEqual(file);
     });
 
@@ -179,7 +180,7 @@ describe("DDC client integration tests", () => {
         //then
         expect(File.isFile(result)).toBeTruthy();
 
-        file.headCid = pieceUri.cid;
+        file.headCid = pieceUri.path as string;
         file.tags = [new Tag("dekPath", dekPath)];
 
         let offset = 0;
@@ -208,7 +209,7 @@ describe("DDC client integration tests", () => {
         //then
         expect(File.isFile(result)).toBeTruthy();
 
-        file.headCid = pieceUri.cid;
+        file.headCid = pieceUri.path as string;
         file.tags = [new Tag("dekPath", fullDekPath)];
 
         let offset = 0;
@@ -235,6 +236,6 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).search(new Query(bucketId, tags, true));
 
         //then
-        expect(result).toEqual([new Piece(new Uint8Array([]), tags, [], uri.cid)]);
+        expect(result).toEqual([new Piece(new Uint8Array([]), tags, [], uri.path as string)]);
     });
 })
