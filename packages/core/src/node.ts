@@ -3,5 +3,4 @@ export {Scheme} from "./crypto/signature/Scheme.js";
 export {CidBuilder} from "./cid/CidBuilder.js";
 export {CipherInterface} from "./crypto/encryption/Cipher.interface.js";
 export {NaclCipher} from "./crypto/encryption/NaclCipher.js";
-export {DdcUriParser} from "./uri/DdcUriParser.js";
-export {DdcUri} from "./uri/DdcUri.js";
+export {DdcUri, IPIECE, IFILE, FILE, PIECE} from "./uri/DdcUri.js";

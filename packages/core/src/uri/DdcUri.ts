@@ -1,3 +1,5 @@
+import {DdcUriParser} from "./DdcUriParser.js";
+
 export const DDC = "ddc";
 export const ORG = "org";
 export const BUC = "buc";
@@ -15,16 +17,15 @@ export type Protocol = IPIECE | IFILE | PIECE | FILE;
 
 export class DdcUri {
     readonly bucket: string | bigint;
-    readonly protocol: Protocol;
     readonly path: string | Array<string>;
+    readonly protocol?: Protocol;
     readonly organization?: string;
     readonly options?: string;
 
-
-    constructor(bucket: string | bigint, protocol: IPIECE | IFILE, path: string | Array<string>, organization?: string, options?: string)
-    constructor(bucket: string | bigint, protocol: PIECE | FILE, path: Array<string>, organization?: string, options?: string)
-    constructor(bucket: string | bigint, protocol: Protocol, path: string | Array<string>, organization?: string, options?: string) {
-        if (typeof path === "string" && (protocol !== "ipiece" && protocol !== "ifile")) {
+    constructor(bucket: string | bigint, path: string, protocol?: IPIECE | IFILE, organization?: string, options?: string)
+    constructor(bucket: string | bigint, path: string | Array<string>, protocol?: PIECE | FILE, organization?: string, options?: string)
+    constructor(bucket: string | bigint, path: string | Array<string>, protocol?: Protocol, organization?: string, options?: string) {
+        if (typeof path === "string" && (protocol === FILE || protocol === PIECE)) {
             throw new Error(`Unable create DdcUri with current parameters: protocol='${protocol}', path='${path}'`)
         }
         this.organization = organization;
@@ -34,6 +35,16 @@ export class DdcUri {
         this.options = options;
     }
 
+    static parse(url: URL): DdcUri;
+    static parse(uri: string): DdcUri;
+    static parse(bucketId: bigint, cid: string, protocol?: IPIECE | IFILE): DdcUri;
+    static parse(bucketIdOrUrlOrUri: URL | string | bigint, cid?: string, protocol?: IPIECE | IFILE): DdcUri {
+        if (typeof bucketIdOrUrlOrUri === "string" || bucketIdOrUrlOrUri instanceof URL) {
+            return DdcUriParser.parse(bucketIdOrUrlOrUri);
+        }
+
+        return new DdcUri(bucketIdOrUrlOrUri, cid!, protocol);
+    }
 
     toString(): string {
         const parts = new Array<string>(`/${DDC}`);
@@ -47,6 +58,10 @@ export class DdcUri {
         }
 
         if (this.path) {
+            if (!this.protocol) {
+                throw new Error("Unable to build DDC uri string without protocol");
+            }
+
             if (this.path instanceof Array) {
                 parts.push(this.protocol, ...this.path);
             } else {
