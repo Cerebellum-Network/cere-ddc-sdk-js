@@ -8,7 +8,11 @@ import {DdcUri} from "@cere-ddc-sdk/core";
 
 export interface DdcClientInterface {
 
-    createBucket(balance: bigint, clusterId: bigint, bucketParams?: BucketParams): Promise<BucketCreatedEvent>
+    createBucket(balance: bigint, resource: bigint, clusterId: bigint, bucketParams?: BucketParams): Promise<BucketCreatedEvent>
+
+    accountDeposit(balance: bigint): Promise<void>
+
+    bucketAllocIntoCluster(bucketId: bigint, resource: bigint): Promise<void>
 
     /*    grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent>
 

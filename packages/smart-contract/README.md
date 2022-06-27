@@ -107,8 +107,8 @@ Create new bucket in cluster 1 with replication factor 3.
 
 ```typescript
 const clusterId = 1n;
-const bucketParams = {replication: 3, resource: 4};
-const {bucketId} = await smartContract.bucketCreate(10n, bucketParams, clusterId);
+const bucketParams = {replication: 3};
+const {bucketId} = await smartContract.bucketCreate(clusterId, bucketParams);
 ```
 
 ### Get Bucket
@@ -127,6 +127,25 @@ Get bucket status.
 ```typescript
 const bucketId = 1n;
 const bucketStatus = await smartContract.bucketGet(bucketId);
+```
+
+### Account Deposit
+
+Deposit tokens to DDC account for bucket payment.
+
+```typescript
+const value = 10n;
+await smartContract.accountDeposit(value);
+```
+
+### Bucket allocate into cluster
+
+Add resources for bucket (bucket size)
+
+```typescript
+const bucketId = 1n;
+const resource = 3n;
+await smartContract.bucketAllocIntoCluster(bucketId, resource);
 ```
 
 [### Grant Bucket permission

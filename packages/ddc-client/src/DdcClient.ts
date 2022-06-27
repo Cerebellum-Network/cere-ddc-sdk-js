@@ -1,4 +1,4 @@
-import {DdcUri, Scheme, SchemeName, IFILE, IPIECE} from "@cere-ddc-sdk/core";
+import {DdcUri, IFILE, IPIECE, Scheme, SchemeName} from "@cere-ddc-sdk/core";
 import {
     ContentAddressableStorage,
     DEK_PATH_TAG,
@@ -8,7 +8,13 @@ import {
     Tag
 } from "@cere-ddc-sdk/content-addressable-storage";
 import {FileStorage} from "@cere-ddc-sdk/file-storage";
-import {BucketCreatedEvent, BucketStatus, BucketStatusList, SmartContract} from "@cere-ddc-sdk/smart-contract";
+import {
+    BucketCreatedEvent,
+    BucketParams,
+    BucketStatus,
+    BucketStatusList,
+    SmartContract
+} from "@cere-ddc-sdk/smart-contract";
 import {blake2AsU8a, naclBoxKeypairFromSecret, naclKeypairFromString} from "@polkadot/util-crypto";
 import {KeyValueStorage} from "@cere-ddc-sdk/key-value-storage";
 import {DdcClientInterface} from "./DdcClient.interface.js";
@@ -18,12 +24,12 @@ import {ReadOptions} from "./options/ReadOptions.js";
 import nacl, {BoxKeyPair} from "tweetnacl";
 import {hexToU8a, stringToU8a, u8aToHex} from "@polkadot/util";
 import {File} from "./model/File.js";
-import {BucketParams} from "@cere-ddc-sdk/smart-contract";
 
 //ToDo generate from random for security
 const emptyNonce = new Uint8Array(nacl.box.nonceLength);
 
-const encryptorTag = "encryptor";
+const ENCRYPTOR_TAG = "encryptor";
+const MAX_BUCKET_SIZE = 5n;
 
 export class DdcClient implements DdcClientInterface {
     readonly smartContract: SmartContract
@@ -76,8 +82,35 @@ export class DdcClient implements DdcClientInterface {
         return await this.smartContract.disconnect();
     }
 
-    async createBucket(balance: bigint, clusterId: bigint, bucketParams?: BucketParams): Promise<BucketCreatedEvent> {
-        return this.smartContract.bucketCreate(balance, clusterId, bucketParams)
+    async createBucket(balance: bigint, resource: bigint, clusterId: bigint, bucketParams?: BucketParams): Promise<BucketCreatedEvent> {
+        if (resource > MAX_BUCKET_SIZE) {
+            throw new Error("Exceed bucket size. Should be less than 5");
+        } else if (resource <= 0) {
+            resource = 1n;
+        }
+
+        const event = await this.smartContract.bucketCreate(clusterId, bucketParams);
+        if (balance > 0) {
+            await this.smartContract.accountDeposit(balance);
+        }
+        await this.smartContract.bucketAllocIntoCluster(event.bucketId, resource);
+
+        return event;
+    }
+
+    async accountDeposit(balance: bigint) {
+        await this.smartContract.accountDeposit(balance);
+    }
+
+    async bucketAllocIntoCluster(bucketId: bigint, resource: bigint) {
+        const bucketStatus = await this.bucketGet(bucketId);
+
+        const total = BigInt(bucketStatus.bucket.resource_reserved) + resource;
+        if (total > MAX_BUCKET_SIZE) {
+            throw new Error("Exceed bucket size. Should be less than 5");
+        }
+
+        await this.smartContract.bucketAllocIntoCluster(bucketId, resource);
     }
 
     /*    async grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
@@ -112,11 +145,11 @@ export class DdcClient implements DdcClientInterface {
         let edek = nacl.box(dek, emptyNonce, this.boxKeypair.publicKey, this.boxKeypair.secretKey);
 
         //ToDo need better structure to store keys
-        await this.caStorage.store(bucketId, new Piece(edek, [new Tag(encryptorTag, u8aToHex(this.boxKeypair.publicKey)), new Tag("Key", `${bucketId}/${options.dekPath || ""}/${u8aToHex(this.boxKeypair.publicKey)}`)]))
+        await this.caStorage.store(bucketId, new Piece(edek, [new Tag(ENCRYPTOR_TAG, u8aToHex(this.boxKeypair.publicKey)), new Tag("Key", `${bucketId}/${options.dekPath || ""}/${u8aToHex(this.boxKeypair.publicKey)}`)]))
 
         const encryptionOptions = {dekPath: options.dekPath || "", dek: dek};
         if (Piece.isPiece(fileOrPiece)) {
-            const pieceUri =  await this.caStorage.storeEncrypted(bucketId, fileOrPiece, encryptionOptions);
+            const pieceUri = await this.caStorage.storeEncrypted(bucketId, fileOrPiece, encryptionOptions);
             return DdcUri.parse(pieceUri.bucketId, pieceUri.cid, IPIECE);
         } else {
             const pieceUri = await this.fileStorage.uploadEncrypted(bucketId, fileOrPiece.data, fileOrPiece.tags, encryptionOptions);
@@ -126,7 +159,7 @@ export class DdcClient implements DdcClientInterface {
 
     private async storeUnencrypted(bucketId: bigint, fileOrPiece: File | Piece): Promise<DdcUri> {
         if (Piece.isPiece(fileOrPiece)) {
-            const pieceUri =  await this.caStorage.store(bucketId, fileOrPiece);
+            const pieceUri = await this.caStorage.store(bucketId, fileOrPiece);
             return DdcUri.parse(pieceUri.bucketId, pieceUri.cid, IPIECE);
         } else {
             const pieceUri = await this.fileStorage.upload(bucketId, fileOrPiece.data, fileOrPiece.tags);
@@ -185,7 +218,7 @@ export class DdcClient implements DdcClientInterface {
         const dek = DdcClient.buildHierarchicalDekHex(this.masterDek, dekPath);
         const partnerEdek = nacl.box(dek, emptyNonce, hexToU8a(partnerBoxPublicKey), this.boxKeypair.secretKey);
 
-        const pieceUri = await this.caStorage.store(bucketId, new Piece(partnerEdek, [new Tag(encryptorTag, u8aToHex(this.boxKeypair.publicKey)), new Tag("Key", `${bucketId}/${dekPath}/${partnerBoxPublicKey}`)]));
+        const pieceUri = await this.caStorage.store(bucketId, new Piece(partnerEdek, [new Tag(ENCRYPTOR_TAG, u8aToHex(this.boxKeypair.publicKey)), new Tag("Key", `${bucketId}/${dekPath}/${partnerBoxPublicKey}`)]));
         return DdcUri.parse(pieceUri.bucketId, pieceUri.cid, IPIECE);
     }
 
@@ -216,7 +249,7 @@ export class DdcClient implements DdcClientInterface {
                 return values[0]
             });
 
-        const encryptor = piece.tags.find(e => e.key === encryptorTag)?.value;
+        const encryptor = piece.tags.find(e => e.key === ENCRYPTOR_TAG)?.value;
         if (!encryptor) {
             throw new Error("EDEK doesn't contains encryptor public key")
         }
