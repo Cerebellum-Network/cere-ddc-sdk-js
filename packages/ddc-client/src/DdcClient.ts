@@ -84,7 +84,7 @@ export class DdcClient implements DdcClientInterface {
 
     async createBucket(balance: bigint, resource: bigint, clusterId: bigint, bucketParams?: BucketParams): Promise<BucketCreatedEvent> {
         if (resource > MAX_BUCKET_SIZE) {
-            throw new Error("Exceed bucket size. Should be less than 5");
+            throw new Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
         } else if (resource <= 0) {
             resource = 1n;
         }
@@ -107,7 +107,7 @@ export class DdcClient implements DdcClientInterface {
 
         const total = BigInt(bucketStatus.bucket.resource_reserved) + resource;
         if (total > MAX_BUCKET_SIZE) {
-            throw new Error("Exceed bucket size. Should be less than 5");
+            throw new Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
         }
 
         await this.smartContract.bucketAllocIntoCluster(bucketId, resource);
