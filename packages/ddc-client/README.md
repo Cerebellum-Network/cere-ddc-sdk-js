@@ -13,16 +13,16 @@ data on any level. Similar to directory based access.
 
 ### Data model
 
-`PieceArray` - model presents group of pieces which has general logical link (pieces of 1 file, big data splitted to
+`File` - model presents group of pieces which has general logical link (pieces of 1 file, big data splitted to
 many pieces).
 
 ```typescript
 type Data = ReadableStream<Uint8Array> | string | Uint8Array
 
-export class PieceArray {
+export class File {
     data: Data;
     tags: Array<Tag>;
-    cid?: string;
+    headCid?: string;
 }
 ```
 
@@ -36,8 +36,7 @@ parameters for data splitting by pieces and encryption.
 ```typescript
 export class ClientOptions {
     clusterAddress: string | number; // Cluster ID or CDN URL
-    pieceConcurrency?: number = 4;
-    chunkSizeInBytes?: number = 5 * MB;
+    fileOptions?: FileOptions = new FileStorageConfig();
     smartContract?: SmartContractOptions = TESTNET;
     scheme?: SchemeName | SchemeInterface = "sr25519";
     cipher?: CipherInterface = new NaclCipher();
@@ -91,7 +90,7 @@ Create bucket in storage cluster in required `storageClusterId`.
 
 ```typescript
 const createBucket = async (storageClusterId: bigint) => {
-    const bucketCreatedEvent = await ddcClient.createBucket(10n, `{"replication": 3}`, storageClusterId);
+    const bucketCreatedEvent = await ddcClient.createBucket(10n, {replication: 3, resource: 1}, storageClusterId);
     console.log("Successfully created bucket. Id: " + bucketCreatedEvent.bucketId);
 }
 ```
@@ -146,31 +145,42 @@ const revokeBucketPermission = async (bucketId: bigint) => {
 
 ### Store unencrypted data
 
-Store data in DDC so anyone can read it nad able to search by tag `type=photo`.
+Store data as piece in DDC so anyone can read it nad able to search by tag `type=photo`.
 
 ```typescript
-import {PieceArray} from "@cere-ddc-sdk/ddc-client";
+import {Tag, Piece} from "@cere-ddc-sdk/core";
+
+const storeUnencryptedData = async (bucketId: bigint, data: Uint8Array) => {
+    const pieceArray = new Piece(data, [new Tag("type", "photo")]);
+    const ddcUri = await ddcClient.store(bucketId, pieceArray, {encrypt: false});
+    console.log("Successfully uploaded unencrypted piece. DDC URI: " + ddcUri.toString());
+}
+```
+
+Store data as group of pieces(file) in DDC so anyone can read it nad able to search by tag `type=photo`.
+
+```typescript
+import {File} from "@cere-ddc-sdk/ddc-client";
 import {Tag} from "@cere-ddc-sdk/core";
 
 const storeUnencryptedData = async (bucketId: bigint, data: Uint8Array) => {
-    const pieceArray = new PieceArray(data, [new Tag("type", "photo")]);
-    const pieceUri = await ddcClient.store(bucketId, pieceArray, {encrypt: false});
-    console.log("Successfully uploaded unencrypted piece. CID: " + pieceUri.cid);
+    const pieceArray = new File(data, [new Tag("type", "photo")]);
+    const ddcUri = await ddcClient.store(bucketId, pieceArray, {encrypt: false});
+    console.log("Successfully uploaded unencrypted piece. DDC URI: " + ddcUri.toString());
 }
 ```
 
 ### Store encrypted data
 
-Store encrypted data in DDC, so only users with DEK can read it.
+Store encrypted data as piece in DDC, so only users with DEK can read it.
 
 ```typescript
-import {PieceArray} from "@cere-ddc-sdk/ddc-client";
-import {Tag} from "@cere-ddc-sdk/core";
+import {Tag, Piece} from "@cere-ddc-sdk/core";
 
 const storeUnencryptedData = async (bucketId: bigint, data: Uint8Array) => {
-    const pieceArray = new PieceArray(data, [new Tag("type", "photo")]);
-    const pieceUri = await ddcClient.store(bucketId, pieceArray, {encrypt: true});
-    console.log("Successfully uploaded encrypted piece. CID: " + pieceUri.cid);
+    const pieceArray = new Piece(data, [new Tag("type", "photo")]);
+    const ddcUri = await ddcClient.store(bucketId, pieceArray, {encrypt: true});
+    console.log("Successfully uploaded encrypted piece. DDC URI: " + ddcUri.toString());
 }
 ```
 
@@ -189,14 +199,15 @@ const shareData = async (bucketId: bigint) => {
 
 ### Read data
 
-Download data from DDC storage
+Download data from DDC storage. Downloads File or Piece, depends on `protocol` in DDC Uri.
 
 ```typescript
-import {PieceUri} from "@cere-ddc-sdk/content-addressable-storage";
+import {Piece} from "@cere-ddc-sdk/content-addressable-storage";
+import {DdcUri, File} from "@cere-ddc-sdk/ddc-client";
 
-const readData = async (pieceUri: PieceUri) => {
-    const pieceArray = await ddcClient.read(pieceUri);
-    console.log("Successfully read data. CID: " + pieceArray.cid);
+const readData = async (ddcUri: DdcUri) => {
+    const pieceOrFile: Piece | File = await ddcClient.read(ddcUri);
+    console.log("Successfully read data. CID: " + pieceOrFile.cid || pieceOrFile.headCid);
 }
 ```
 
@@ -207,8 +218,8 @@ Search data by tags without loading data.
 ```typescript
 const searchDataMetadataOnly = async (bucketId: bigint) => {
     const skipData = true;
-    const pieceArrays = await ddcClient.search(new Query(bucketId, [new Tag("type", "photo")], skipData));
-    console.log("Successfully searched metadata. CIDS: " + pieceArrays.map(e => e.cid));
+    const pieces = await ddcClient.search(new Query(bucketId, [new Tag("type", "photo")], skipData));
+    console.log("Successfully searched metadata. CIDS: " + pieces.map(e => e.cid));
 }
 ```
 
@@ -219,8 +230,8 @@ Search data by required tags with loading data.
 ```typescript
 const searchDataLoadData = async () => {
     const skipData = false;
-    const pieceArrays = await ddcClient.search(new Query(bucketId, [new Tag("type", "video")]), skipData);
-    console.log("Successfully searched pieces. CIDS: " + pieceArrays.map(e => e.cid));
+    const pieces = await ddcClient.search(new Query(bucketId, [new Tag("type", "video")]), skipData);
+    console.log("Successfully searched pieces. CIDS: " + pieces.map(e => e.cid));
 }
 ```
 
