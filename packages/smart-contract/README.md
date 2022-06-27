@@ -63,6 +63,7 @@ export class Node {
 
 ### Options
 
+#### Smart Contract
 Smart Contract options with required configuration for connecting to blockchain network.
 
 - `rpcUrl` - blockchain url address
@@ -70,10 +71,22 @@ Smart Contract options with required configuration for connecting to blockchain 
 - `abi` - contract ABI as object
 
 ```typescript
-export class Options {
+export class SmartContractOptions {
     rpcUrl: string;
     contractAddress: string;
     abi: any
+}
+```
+
+#### Bucket params
+
+- `replication` - replication factor when store data in bucket
+- `resource` - bucket size in GB
+
+```typescript
+export class BucketParams {
+    replication: number;
+    resource: number; // Resource reservation in GB
 }
 ```
 
@@ -94,7 +107,8 @@ Create new bucket in cluster 1 with replication factor 3.
 
 ```typescript
 const clusterId = 1n;
-const {bucketId} = await smartContract.bucketCreate(10n, '{"replication": 3}', clusterId);
+const bucketParams = {replication: 3, resource: 4};
+const {bucketId} = await smartContract.bucketCreate(10n, bucketParams, clusterId);
 ```
 
 ### Get Bucket
