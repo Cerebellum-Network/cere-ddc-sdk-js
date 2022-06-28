@@ -2,7 +2,7 @@
 
 ## Introduction
 
-`DEK` is a data encryption key used to encrypt the data. 
+`DEK` is a data encryption key used to encrypt the data.
 
 `EDEK` is an encrypted data encryption key that is stored in DDC and used to share data (re-encrypt DEK per partner).
 
@@ -13,8 +13,8 @@ data on any level. Similar to directory based access.
 
 ### Data model
 
-`File` - model presents group of pieces which has general logical link (pieces of 1 file, big data splitted to
-many pieces).
+`File` - model presents group of pieces which has general logical link (pieces of 1 file, big data splitted to many
+pieces).
 
 ```typescript
 type Data = ReadableStream<Uint8Array> | string | Uint8Array
@@ -86,12 +86,34 @@ const ddcClient = DdcClient.buildAndConnect(options, secretPhrase);
 
 ### Create bucket
 
-Create bucket in storage cluster in required `storageClusterId`.
+Create bucket in storage cluster in required `storageClusterId`, deposit to account and reserve resources.
 
 ```typescript
-const createBucket = async (storageClusterId: bigint) => {
-    const bucketCreatedEvent = await ddcClient.createBucket(10n, {replication: 3, resource: 1}, storageClusterId);
+const createBucket = async (balance: bigint, resource: bigint, storageClusterId: bigint) => {
+    const bucketCreatedEvent = await ddcClient.createBucket(balance, resource, storageClusterId, {replication: 3});
     console.log("Successfully created bucket. Id: " + bucketCreatedEvent.bucketId);
+}
+```
+
+### Account Deposit
+
+Add tokens to account.
+
+```typescript
+const accountDeposit = async (balance: bigint) => {
+    await ddcClient.accountDeposit(balance);
+    console.log("Successfully added tokens to account.");
+}
+```
+
+### Bucket allocation into cluster
+
+Increase bucket size.
+
+```typescript
+const bucketAllocIntoCluster = async (bucketId: bigint, resource: bigint) => {
+    await ddcClient.bucketAllocIntoCluster(bucketId, resource);
+    console.log(`Successfully increased bucket size to ${resource}.`);
 }
 ```
 

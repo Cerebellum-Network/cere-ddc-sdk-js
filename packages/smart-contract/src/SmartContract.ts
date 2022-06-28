@@ -1,8 +1,5 @@
 import {ClusterStatus} from "./model/ClusterStatus.js";
-import {BucketPermissionRevokedEvent} from "./event/BucketPermissionRevokedEvent.js";
 import {BucketCreatedEvent} from "./event/BucketCreatedEvent.js";
-import {Permission} from "./model/Permission.js";
-import {BucketPermissionGrantedEvent} from "./event/BucketPermissionGrantedEvent.js";
 import {SmartContractOptions, TESTNET} from "./options/SmartContractOptions.js";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import {ContractPromise} from "@polkadot/api-contract";
@@ -73,7 +70,7 @@ export class SmartContract {
         return await this.contract.api.disconnect();
     }
 
-    async bucketCreate(balance: bigint, clusterId: bigint, bucketParams: BucketParams = new BucketParams()): Promise<BucketCreatedEvent> {
+    async bucketCreate(clusterId: bigint, bucketParams: BucketParams = new BucketParams()): Promise<BucketCreatedEvent> {
         bucketParams = initDefaultBucketParams(bucketParams);
         const tx = await this.contract.tx.bucketCreate(txOptionsPay, JSON.stringify(bucketParams), clusterId);
         const result = await this.sendTx(tx);
@@ -104,31 +101,49 @@ export class SmartContract {
         return new BucketStatusList(statuses, length);
     }
 
-/*    async bucketGrantPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
-        const tx = await this.contract.tx.bucketGrantPermission(txOptionsPay, bucketId, grantee, permission.toString());
-        const result = await this.sendTx(tx);
+    /*    async bucketGrantPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
+            const tx = await this.contract.tx.bucketGrantPermission(txOptionsPay, bucketId, grantee, permission.toString());
+            const result = await this.sendTx(tx);
 
-        if (result.isError) {
-            throw new Error("Failed to grant bucket permission");
+            if (result.isError) {
+                throw new Error("Failed to grant bucket permission");
+            }
+            return new BucketPermissionGrantedEvent();
         }
-        return new BucketPermissionGrantedEvent();
-    }
 
-    async bucketRevokePermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionRevokedEvent> {
-        const tx = await this.contract.tx.bucketRevokePermission(txOptionsPay, bucketId, grantee, permission.toString());
-        const result = await this.sendTx(tx);
+        async bucketRevokePermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionRevokedEvent> {
+            const tx = await this.contract.tx.bucketRevokePermission(txOptionsPay, bucketId, grantee, permission.toString());
+            const result = await this.sendTx(tx);
 
-        if (result.isError) {
-            throw new Error("Failed to revoke bucket permission");
-        }
-        return new BucketPermissionRevokedEvent();
-    }*/
+            if (result.isError) {
+                throw new Error("Failed to revoke bucket permission");
+            }
+            return new BucketPermissionRevokedEvent();
+        }*/
 
     async clusterGet(clusterId: number): Promise<ClusterStatus> {
         let {result, output} = await this.contract.query.clusterGet(this.address, txOptions, clusterId);
         if (!result.isOk) throw result.asErr;
         // @ts-ignore
         return output.toJSON().ok as ClusterStatus;
+    }
+
+    async accountDeposit(value: bigint) {
+        const txOptions = {gasLimit: -1, value: value * CERE};
+        const tx = await this.contract.tx.accountDeposit(txOptions);
+        const result = await this.sendTx(tx);
+
+        if (result.dispatchError) throw new Error("Unable to deposit account");
+    }
+
+    async bucketAllocIntoCluster(bucketId: bigint, resource: bigint) {
+        if (resource <= 0) {
+            throw new Error("Invalid bucket size")
+        }
+
+        const tx = await this.contract.tx.bucketAllocIntoCluster(txOptions, bucketId, resource);
+        const result = await this.sendTx(tx);
+        if (result.dispatchError) throw new Error(`Unable to allocate in cluster. Bucket: ${bucketId}`);
     }
 
     async nodeGet(nodeId: number): Promise<NodeStatus> {
@@ -140,7 +155,7 @@ export class SmartContract {
 
     protected async sendTx(tx: SubmittableExtrinsic<any>): Promise<ISubmittableResult> {
         return await new Promise(async (resolve) => {
-            await this.signAndSend(tx, (result) => {
+            await this.signAndSend(tx, (result: any) => {
                 if (result.status.isInBlock || result.status.isFinalized) {
                     resolve(result);
                 }

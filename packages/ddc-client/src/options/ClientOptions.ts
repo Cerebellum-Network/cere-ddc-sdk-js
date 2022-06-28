@@ -22,7 +22,7 @@ const defaultClientOptions = new ClientOptions();
 const defaultFileOptions = new FileStorageConfig();
 
 export const initDefaultOptions = (options: ClientOptions): ClientOptions => {
-    if (!options.clusterAddress) {
+    if (!options.clusterAddress && options.clusterAddress != 0) {
         throw new Error(`invalid clusterAddress='${options.clusterAddress}'`)
     }
 

@@ -16,7 +16,7 @@ export class StorageOptions {
 const defaultOptions = new StorageOptions();
 
 export const initDefaultOptions = (options: StorageOptions): StorageOptions => {
-    if (!options.clusterAddress) {
+    if (!options.clusterAddress && options.clusterAddress != 0) {
         throw new Error(`invalid clusterAddress='${options.clusterAddress}'`)
     }
 
