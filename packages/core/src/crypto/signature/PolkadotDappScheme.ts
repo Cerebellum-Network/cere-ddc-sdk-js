@@ -1,5 +1,6 @@
 import {SignerPayloadRaw, SignerResult} from "@polkadot/types/types/extrinsic";
 import {SchemeInterface, SchemeName} from "./Scheme.interface.js";
+import {assertSafeMessage} from "./Scheme.js";
 import {u8aToHex} from "@polkadot/util";
 import {InjectedAccount} from "@polkadot/extension-inject/types";
 import {waitReady} from "@polkadot/wasm-crypto";
@@ -41,6 +42,8 @@ export class PolkadotDappScheme implements SchemeInterface {
 
 
     async sign(data: Uint8Array): Promise<string> {
+        assertSafeMessage(data);
+
         const {signature} = await this.signRaw({
             address: this.address,
             data: u8aToHex(data),
