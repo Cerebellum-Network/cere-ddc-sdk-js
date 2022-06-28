@@ -37,13 +37,12 @@ export class DdcUri {
 
     static parse(url: URL): DdcUri;
     static parse(uri: string): DdcUri;
-    static parse(bucketId: bigint, cid: string, protocol?: IPIECE | IFILE): DdcUri;
-    static parse(bucketIdOrUrlOrUri: URL | string | bigint, cid?: string, protocol?: IPIECE | IFILE): DdcUri {
-        if (typeof bucketIdOrUrlOrUri === "string" || bucketIdOrUrlOrUri instanceof URL) {
-            return DdcUriParser.parse(bucketIdOrUrlOrUri);
-        }
+    static parse(urlOrUri: string | URL): DdcUri {
+        return DdcUriParser.parse(urlOrUri);
+    };
 
-        return new DdcUri(bucketIdOrUrlOrUri, cid!, protocol);
+    static build(bucketId: bigint, cid: string, protocol?: IPIECE | IFILE): DdcUri {
+        return new DdcUri(bucketId, cid!, protocol);
     }
 
     toString(): string {

@@ -150,20 +150,20 @@ export class DdcClient implements DdcClientInterface {
         const encryptionOptions = {dekPath: options.dekPath || "", dek: dek};
         if (Piece.isPiece(fileOrPiece)) {
             const pieceUri = await this.caStorage.storeEncrypted(bucketId, fileOrPiece, encryptionOptions);
-            return DdcUri.parse(pieceUri.bucketId, pieceUri.cid, IPIECE);
+            return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
         } else {
             const pieceUri = await this.fileStorage.uploadEncrypted(bucketId, fileOrPiece.data, fileOrPiece.tags, encryptionOptions);
-            return DdcUri.parse(pieceUri.bucketId, pieceUri.cid, IFILE);
+            return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IFILE);
         }
     }
 
     private async storeUnencrypted(bucketId: bigint, fileOrPiece: File | Piece): Promise<DdcUri> {
         if (Piece.isPiece(fileOrPiece)) {
             const pieceUri = await this.caStorage.store(bucketId, fileOrPiece);
-            return DdcUri.parse(pieceUri.bucketId, pieceUri.cid, IPIECE);
+            return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
         } else {
             const pieceUri = await this.fileStorage.upload(bucketId, fileOrPiece.data, fileOrPiece.tags);
-            return DdcUri.parse(pieceUri.bucketId, pieceUri.cid, IFILE);
+            return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IFILE);
         }
     }
 
@@ -219,7 +219,7 @@ export class DdcClient implements DdcClientInterface {
         const partnerEdek = nacl.box(dek, emptyNonce, hexToU8a(partnerBoxPublicKey), this.boxKeypair.secretKey);
 
         const pieceUri = await this.caStorage.store(bucketId, new Piece(partnerEdek, [new Tag(ENCRYPTOR_TAG, u8aToHex(this.boxKeypair.publicKey)), new Tag("Key", `${bucketId}/${dekPath}/${partnerBoxPublicKey}`)]));
-        return DdcUri.parse(pieceUri.bucketId, pieceUri.cid, IPIECE);
+        return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
     }
 
     private async findDek(ddcUri: DdcUri, piece: Piece, options: ReadOptions): Promise<Uint8Array> {
