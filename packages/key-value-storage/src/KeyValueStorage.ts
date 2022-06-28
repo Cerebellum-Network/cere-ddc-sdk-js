@@ -1,4 +1,4 @@
-import {ContentAddressableStorage, Piece, PieceUri, StorageOptions} from "@cere-ddc-sdk/content-addressable-storage";
+import {ContentAddressableStorage, Piece, PieceUri, StorageOptions, Tag} from "@cere-ddc-sdk/content-addressable-storage";
 
 const keyTag = "Key"
 
@@ -18,7 +18,7 @@ export class KeyValueStorage {
             throw Error("'Key' is a reserved tag for key-value storage")
         }
 
-        piece.tags.push({key: keyTag, value: key})
+        piece.tags.push(new Tag(keyTag, key))
 
         return this.caStorage.store(bucketId, piece)
     }
@@ -27,7 +27,7 @@ export class KeyValueStorage {
         const searchResult = await this.caStorage.search(
             {
                 bucketId: bucketId,
-                tags: Array.of({key: keyTag, value: key}),
+                tags: Array.of(new Tag(keyTag, key)),
                 skipData: skipData
             }
         )

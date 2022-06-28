@@ -1,4 +1,4 @@
-import {ContentAddressableStorage, Piece, Query} from "./index.js"
+import {ContentAddressableStorage, Piece, Query, SearchType, Tag} from "./index.js"
 
 
 describe("content-addressable-storage integration tests", () => {
@@ -28,7 +28,7 @@ describe("content-addressable-storage integration tests", () => {
     test("search", async () => {
         //given
         const storage = await testSubject;
-        const tags = [{key: "testKey", value: "testValue"}]
+        const tags = [new Tag("testKey", "testValue")]
         const bucketId = 1n;
         const piece = new Piece(new Uint8Array([1, 2, 3]), tags);
         await storage.store(bucketId, piece);
@@ -38,6 +38,21 @@ describe("content-addressable-storage integration tests", () => {
 
         //then
         piece.cid = "bafk2bzacechpzp7rzthbhnjyxmkt3qlcyc24ruzormtvmnvdp5dsvjubh7vcc"
-        expect(searchResult.pieces).toStrictEqual([piece]);
+        expect(searchResult.pieces).toEqual([piece]);
+    });
+
+    test("search not searchable", async () => {
+        //given
+        const storage = await testSubject;
+        const tags = [new Tag("testKey2", "testValue2", SearchType.NOT_SEARCHABLE)]
+        const bucketId = 1n;
+        const piece = new Piece(new Uint8Array([1, 2, 3]), tags);
+        await storage.store(bucketId, piece);
+
+        //when
+        const searchResult = await storage.search(new Query(bucketId, tags));
+
+        //then
+        expect(searchResult.pieces).toStrictEqual([]);
     });
 });

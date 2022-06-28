@@ -26,8 +26,14 @@ message SignedPiece {
 }
 
 message Tag {
-  string key  = 1;
-  string value = 2;
+  string        key  = 1;
+  string        value = 2;
+  SearchType    searchable    = 3;
+}
+
+enum SearchType {
+  RANGE             = 0;
+  NOT_SEARCHABLE    = 1;
 }
 
 message Query {
