@@ -9,7 +9,6 @@ describe("content-addressable-storage integration tests", () => {
             scheme: "ed25519",
         }, "0x93e0153dc0f0bbee868dc00d8d05ddae260e01d418746443fa190c8eacd9544c");
 
-
     test("upload and read", async () => {
         //given
         const storage = await testSubject;

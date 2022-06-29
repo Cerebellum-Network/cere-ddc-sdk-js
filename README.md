@@ -49,3 +49,14 @@ To run the tests for a single package:
 ```shell
 npm run test -- packages/content-addressable-storage
 ```
+
+## Changing the schema or test vectors
+
+Keep the protobuf schema and the test vectors in sync with the `ddc-schemas` repo.
+First checkout the schemas repo:
+
+    git submodule update --init
+
+Then work in the `ddc-schemas` folder with git. For example, checkout a new branch, or add a new test vector ([example](packages/content-addressable-storage/src/ContentAddressableStorage.spec.ts)). Then record the specific version of the schemas:
+
+    git add ddc-schemas
