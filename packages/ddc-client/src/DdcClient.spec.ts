@@ -88,7 +88,7 @@ describe("DDC client integration tests", () => {
         }
 
         result.data = expectedData;
-        file.headCid = uri.path as string;
+        file.cid = uri.path as string;
         expect(result).toEqual(file);
         expect(File.isFile(result)).toBeTruthy();
     });
@@ -115,7 +115,7 @@ describe("DDC client integration tests", () => {
         }
 
         result.data = expectedData;
-        file.headCid = uri.path as string;
+        file.cid = uri.path as string;
         expect(result).toEqual(file);
     });
 
@@ -141,7 +141,7 @@ describe("DDC client integration tests", () => {
         }
 
         result.data = expectedData;
-        file.headCid = uri.path as string;
+        file.cid = uri.path as string;
         expect(result).toEqual(file);
     });
 
@@ -180,7 +180,7 @@ describe("DDC client integration tests", () => {
         //then
         expect(File.isFile(result)).toBeTruthy();
 
-        file.headCid = pieceUri.path as string;
+        file.cid = pieceUri.path as string;
         file.tags = [new Tag("dekPath", dekPath)];
 
         let offset = 0;
@@ -209,7 +209,7 @@ describe("DDC client integration tests", () => {
         //then
         expect(File.isFile(result)).toBeTruthy();
 
-        file.headCid = pieceUri.path as string;
+        file.cid = pieceUri.path as string;
         file.tags = [new Tag("dekPath", fullDekPath)];
 
         let offset = 0;

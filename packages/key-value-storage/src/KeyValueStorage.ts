@@ -13,8 +13,8 @@ export class KeyValueStorage {
         return new KeyValueStorage(await ContentAddressableStorage.build(storageOptions, secretPhrase))
     }
 
-    async store(bucketId: bigint, key: string, piece: Piece): Promise<PieceUri> {
-        if (piece.tags.some(t => t.key == keyTag)) {
+    async store(bucketId: bigint, key: Uint8Array | string, piece: Piece): Promise<PieceUri> {
+        if (piece.tags.some(t => t.keyString == keyTag)) {
             throw Error("'Key' is a reserved tag for key-value storage")
         }
 
@@ -23,7 +23,7 @@ export class KeyValueStorage {
         return this.caStorage.store(bucketId, piece)
     }
 
-    async read(bucketId: bigint, key: string, skipData: boolean = false): Promise<Piece[]> {
+    async read(bucketId: bigint, key: Uint8Array | string, skipData: boolean = false): Promise<Piece[]> {
         const searchResult = await this.caStorage.search(
             {
                 bucketId: bucketId,
@@ -34,7 +34,7 @@ export class KeyValueStorage {
 
         return searchResult.pieces.map(p => new Piece(
             p.data,
-            p.tags.filter(t => t.key != keyTag)
+            p.tags.filter(t => t.keyString != keyTag)
         ))
     }
 }

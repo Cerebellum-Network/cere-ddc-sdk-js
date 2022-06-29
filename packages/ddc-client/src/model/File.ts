@@ -5,12 +5,12 @@ type Data = ReadableStream<Uint8Array> | string | Uint8Array
 export class File {
     data: Data;
     tags: Array<Tag>;
-    headCid?: string;
+    cid?: string;
 
-    constructor(data: Data, tags: Array<Tag> = new Array<Tag>(), headCid?: string) {
+    constructor(data: Data, tags: Array<Tag> = new Array<Tag>(), cid?: string) {
         this.data = data;
         this.tags = tags;
-        this.headCid = headCid
+        this.cid = cid;
     }
 
     static isFile(obj: any): obj is File {
