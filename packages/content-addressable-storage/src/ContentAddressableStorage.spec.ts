@@ -8,7 +8,7 @@ import * as path from 'path';
 
 // To generate a new version of the test vector, change the filename, re-run
 // the test, and commit the new value in the ddc-schemas repo (git submodule).
-const VECTOR_FILE = "ddc-schemas/test-vectors/store-request-sdk-js-1.2.8.json";
+const VECTOR_FILE = "ddc-schemas/test-vectors/store-request-sdk-js-1.2.9.json";
 
 
 describe("content-addressable-storage test vector", () => {
@@ -37,6 +37,8 @@ describe("content-addressable-storage test vector", () => {
         //then
         const requestExpect = await readVector();
 
+        request.piece = null; // No need to test the JSON form.
+        requestExpect.piece = null;
         expect(request).toEqual(requestExpect);
     });
 });
