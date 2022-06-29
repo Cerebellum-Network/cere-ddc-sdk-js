@@ -14,7 +14,7 @@ export class DdcUriParser {
         }
 
         if (!uri.startsWith(DDC_PREFIX) && !new URL(url).pathname.startsWith(DDC_PREFIX)) {
-            throw new Error(`Invalid DDC Uri: '${url}'`)
+            throw Error(`Invalid DDC Uri: '${url}'`)
         }
 
         return DdcUriParser.consume(uri.split(DDC_PREFIX, 2)[1], options);
@@ -52,7 +52,7 @@ export class DdcUriParser {
             }
         }
 
-        throw new Error("DDC Uri doesn't have bucket");
+        throw Error("DDC Uri doesn't have bucket");
     }
 
     private static consumeProtocol(parts: Array<string>): Protocol {
@@ -60,13 +60,13 @@ export class DdcUriParser {
             const protocol = parts.shift();
 
             if (protocol !== IPIECE && protocol !== IFILE && protocol !== PIECE && protocol !== FILE) {
-                throw new Error(`Invalid protocol: '${protocol}'`);
+                throw Error(`Invalid protocol: '${protocol}'`);
             }
 
             return protocol;
         }
 
-        throw new Error("DDC Uri doesn't have protocol");
+        throw Error("DDC Uri doesn't have protocol");
     }
 
     private static consumePath(protocol: Protocol, parts: Array<string>): string | Array<string> {
@@ -77,7 +77,7 @@ export class DdcUriParser {
         const path = parts.shift();
 
         if (!path || parts.length > 0) {
-            throw new Error("Invalid DDC Uri");
+            throw Error("Invalid DDC Uri");
         }
 
         return path;

@@ -30,8 +30,7 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).read(uri, {decrypt: false});
 
         //then
-        piece.cid = uri.path as string;
-        expect(result).toEqual(piece);
+        expect(result).toEqual(new Piece(piece.data, piece.tags, piece.links, uri.path as string));
         expect(Piece.isPiece(result)).toBeTruthy();
     });
 
@@ -47,8 +46,7 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).read(uri, {decrypt: true, dekPath: dekPath});
 
         //then
-        piece.cid = uri.path as string;
-        expect(result).toEqual(piece);
+        expect(result).toEqual(new Piece(piece.data, piece.tags, piece.links, uri.path as string));
         expect(Piece.isPiece(result)).toBeTruthy();
     });
 
@@ -63,8 +61,7 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).read(DdcUri.parse(`/ddc/buc/${uri.bucket}/ipiece/${uri.path}`), {decrypt: false});
 
         //then
-        piece.cid = uri.path as string;
-        expect(result).toEqual(piece);
+        expect(result).toEqual(new Piece(piece.data, piece.tags, piece.links, uri.path as string));
         expect(Piece.isPiece(result)).toBeTruthy();
     });
 
@@ -77,19 +74,20 @@ describe("DDC client integration tests", () => {
 
         //when
         const uri = await (await testSubject).store(bucketId, file, {encrypt: true, dekPath: dekPath});
-        const result = await (await testSubject).read(DdcUri.parse(new URL(`http://test.com/ddc/buc/${uri.bucket}/ifile/${uri.path}`)), {decrypt: true, dekPath: dekPath});
+        const result = await (await testSubject).read(DdcUri.parse(new URL(`http://test.com/ddc/buc/${uri.bucket}/ifile/${uri.path}`)), {
+            decrypt: true,
+            dekPath: dekPath
+        }) as File;
 
         //then
         let offset = 0;
-        const expectedData = new Uint8Array(data.length);
+        const resultData = new Uint8Array(data.length);
         for await (const chunkData of (result as File).dataReader()) {
-            expectedData.set(chunkData, offset);
+            resultData.set(chunkData, offset);
             offset += chunkData.length;
         }
 
-        result.data = expectedData;
-        file.headCid = uri.path as string;
-        expect(result).toEqual(file);
+        expect(new File(resultData, result.tags, result.headCid)).toEqual(new File(file.data, file.tags, uri.path as string));
         expect(File.isFile(result)).toBeTruthy();
     });
 
@@ -102,21 +100,19 @@ describe("DDC client integration tests", () => {
 
         //when
         const uri = await (await testSubject).store(bucketId, file, {encrypt: false});
-        const result = await (await testSubject).read(uri, {decrypt: false});
+        const result = await (await testSubject).read(uri, {decrypt: false}) as File;
 
         //then
         expect(File.isFile(result)).toBeTruthy();
 
         let offset = 0;
-        const expectedData = new Uint8Array(data.length);
+        const resultData = new Uint8Array(data.length);
         for await (const chunkData of (result as File).dataReader()) {
-            expectedData.set(chunkData, offset);
+            resultData.set(chunkData, offset);
             offset += chunkData.length;
         }
 
-        result.data = expectedData;
-        file.headCid = uri.path as string;
-        expect(result).toEqual(file);
+        expect(new File(resultData, result.tags, result.headCid)).toEqual(new File(file.data, file.tags, uri.path as string));
     });
 
     it("store and read encrypted big data", async () => {
@@ -128,21 +124,19 @@ describe("DDC client integration tests", () => {
 
         //when
         const uri = await (await testSubject).store(bucketId, file, {encrypt: true, dekPath: dekPath});
-        const result = await (await testSubject).read(uri, {decrypt: true, dekPath: dekPath});
+        const result = await (await testSubject).read(uri, {decrypt: true, dekPath: dekPath}) as File;
 
         //then
         expect(File.isFile(result)).toBeTruthy();
 
         let offset = 0;
-        const expectedData = new Uint8Array(data.length);
+        const resultData = new Uint8Array(data.length);
         for await (const chunkData of (result as File).dataReader()) {
-            expectedData.set(chunkData, offset);
+            resultData.set(chunkData, offset);
             offset += chunkData.length;
         }
 
-        result.data = expectedData;
-        file.headCid = uri.path as string;
-        expect(result).toEqual(file);
+        expect(new File(resultData, result.tags, result.headCid)).toEqual(new File(file.data, file.tags, uri.path as string));
     });
 
 
@@ -158,11 +152,12 @@ describe("DDC client integration tests", () => {
         const result = await (await testSubject).search(new Query(bucketId, [new Tag(key, value)], false));
 
         //then
-        result.forEach(p => p.cid = undefined);
+        result.map(p => new Piece(p.data, p.tags, p.links));
 
-        const expectPiece = new Piece((await testSubject).caStorage.cipher!.encrypt(new Uint8Array([]), (await testSubject).masterDek));
-        expectPiece.tags = [new Tag(key, value), new Tag("dekPath", "")];
-        expectPiece.links = result[0].links;
+        const expectedTags = [new Tag(key, value), new Tag("dekPath", "")];
+        const expectedLinks = result[0].links;
+        const expectedData = (await testSubject).caStorage.cipher!.encrypt(new Uint8Array([]), (await testSubject).masterDek);
+        const expectPiece = new Piece(expectedData, expectedTags, expectedLinks, result[0].cid);
         expect(result).toEqual([expectPiece]);
     });
 
@@ -175,7 +170,7 @@ describe("DDC client integration tests", () => {
 
         //when
         await (await testSubject).shareData(bucketId, dekPath, u8aToHex((await otherClient).boxKeypair.publicKey));
-        const result = await (await otherClient).read(pieceUri, {decrypt: true, dekPath: dekPath});
+        const result = await (await otherClient).read(pieceUri, {decrypt: true, dekPath: dekPath}) as File;
 
         //then
         expect(File.isFile(result)).toBeTruthy();
@@ -189,9 +184,8 @@ describe("DDC client integration tests", () => {
             resultData.set(chunkData, offset);
             offset += chunkData.length;
         }
-        result.data = resultData;
 
-        expect(result).toEqual(file);
+        expect(new File(resultData, result.tags, result.headCid)).toEqual(new File(file.data, file.tags, file.headCid));
     });
 
     it("share data with high level key", async () => {
@@ -204,7 +198,7 @@ describe("DDC client integration tests", () => {
 
         //when
         await (await testSubject).shareData(bucketId, highDekPath, u8aToHex((await otherClient).boxKeypair.publicKey));
-        const result = await (await otherClient).read(pieceUri, {decrypt: true, dekPath: highDekPath});
+        const result = await (await otherClient).read(pieceUri, {decrypt: true, dekPath: highDekPath}) as File;
 
         //then
         expect(File.isFile(result)).toBeTruthy();
@@ -218,9 +212,8 @@ describe("DDC client integration tests", () => {
             resultData.set(chunkData, offset);
             offset += chunkData.length;
         }
-        result.data = resultData;
 
-        expect(result).toEqual(file);
+        expect(new File(resultData, result.tags, result.headCid)).toEqual(new File(file.data, file.tags, file.headCid));
     });
 
     it("search metadata", async () => {

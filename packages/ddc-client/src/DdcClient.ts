@@ -84,7 +84,7 @@ export class DdcClient implements DdcClientInterface {
 
     async createBucket(balance: bigint, resource: bigint, clusterId: bigint, bucketParams?: BucketParams): Promise<BucketCreatedEvent> {
         if (resource > MAX_BUCKET_SIZE) {
-            throw new Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
+            throw Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
         } else if (resource <= 0) {
             resource = 1n;
         }
@@ -107,7 +107,7 @@ export class DdcClient implements DdcClientInterface {
 
         const total = BigInt(bucketStatus.bucket.resource_reserved) + resource;
         if (total > MAX_BUCKET_SIZE) {
-            throw new Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
+            throw Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
         }
 
         await this.smartContract.bucketAllocIntoCluster(bucketId, resource);
@@ -170,11 +170,12 @@ export class DdcClient implements DdcClientInterface {
     async read(ddcUri: DdcUri, options: ReadOptions = {}): Promise<File | Piece> {
         if (ddcUri.protocol) {
             const pieceUri = new PieceUri(BigInt(ddcUri.bucket), ddcUri.path as string);
-            const piece = await this.caStorage.read(pieceUri.bucketId, pieceUri.cid);
+            let piece = await this.caStorage.read(pieceUri.bucketId, pieceUri.cid);
             if (ddcUri.protocol === IPIECE) {
                 if (options.decrypt) {
                     const dek = await this.findDek(ddcUri, piece, options);
-                    piece.data = this.caStorage.cipher!.decrypt(piece.data, dek);
+                    const data = this.caStorage.cipher!.decrypt(piece.data, dek);
+                    piece = new Piece(data, piece.tags, piece.links, piece.cid);
                 }
 
                 return piece;
@@ -182,7 +183,7 @@ export class DdcClient implements DdcClientInterface {
                 return this.readByPieceUri(ddcUri, piece, options);
             }
 
-            throw new Error(`Unsupported URL for read: ${ddcUri.toString()}`)
+            throw Error(`Unsupported URL for read: ${ddcUri.toString()}`)
         }
 
         const headPiece = await this.caStorage.read(ddcUri.bucket as bigint, ddcUri.path as string);
@@ -203,7 +204,8 @@ export class DdcClient implements DdcClientInterface {
             return new File(data, headPiece.tags, ddcUri.path as string)
         } else {
             if (isEncrypted && options.decrypt) {
-                headPiece.data = this.caStorage.cipher!.decrypt(headPiece.data, dek)
+                const data = this.caStorage.cipher!.decrypt(headPiece.data, dek);
+                headPiece = new Piece(data, headPiece.tags, headPiece.links, headPiece.cid);
             }
 
             return headPiece
@@ -226,9 +228,9 @@ export class DdcClient implements DdcClientInterface {
         if (options.decrypt) {
             const dekPath = piece.tags.find(t => t.key == DEK_PATH_TAG)?.value;
             if (dekPath == null) {
-                throw new Error(`Piece=${ddcUri} doesn't have dekPath`);
+                throw Error(`Piece=${ddcUri} doesn't have dekPath`);
             } else if (!dekPath.startsWith(options.dekPath! + "/") && dekPath !== options.dekPath!) {
-                throw new Error(`Provided dekPath='${options.dekPath}' doesn't correct for piece with dekPath='${dekPath}'`);
+                throw Error(`Provided dekPath='${options.dekPath}' doesn't correct for piece with dekPath='${dekPath}'`);
             }
 
             const clientDek = await this.downloadDek(ddcUri.bucket as bigint, options.dekPath!);
@@ -251,12 +253,12 @@ export class DdcClient implements DdcClientInterface {
 
         const encryptor = piece.tags.find(e => e.key === ENCRYPTOR_TAG)?.value;
         if (!encryptor) {
-            throw new Error("EDEK doesn't contains encryptor public key")
+            throw Error("EDEK doesn't contains encryptor public key")
         }
 
         const result = nacl.box.open(piece.data, emptyNonce, hexToU8a(encryptor), this.boxKeypair.secretKey);
         if (result == null) {
-            throw new Error("Unable to decrypt dek");
+            throw Error("Unable to decrypt dek");
         }
 
         return result;

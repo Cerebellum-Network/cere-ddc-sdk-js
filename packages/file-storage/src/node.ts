@@ -1,4 +1,4 @@
-export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig.js";
+export * from "./basic.js";
 
 import {PathLike} from "fs";
 import {
@@ -9,35 +9,30 @@ import {
     StorageOptions,
     Tag
 } from "@cere-ddc-sdk/content-addressable-storage";
-import {FileStorageConfig} from "./core/FileStorageConfig.js";
+import {DEFAULT_FILE_STORAGE_CONFIG, FileStorageConfig} from "./core/FileStorageConfig.js";
 import {CoreFileStorage} from "./core/CoreFileStorage.js";
 import {FileStorage as FileStorageInterface} from "./type.js";
 import * as streamWeb from "stream/web";
 import {Readable} from "node:stream";
 import {open} from 'node:fs/promises';
 
-type Data = streamWeb.ReadableStream<Uint8Array> | Readable | PathLike | Uint8Array
+type Data = ReadableStream<Uint8Array> | Readable | PathLike | Uint8Array
 
 export class FileStorage implements FileStorageInterface {
-
-    readonly config: FileStorageConfig;
-    readonly caStorage: ContentAddressableStorage;
-
     private readonly fs: CoreFileStorage;
 
-    constructor(caStorage: ContentAddressableStorage, config: FileStorageConfig = new FileStorageConfig()) {
+    constructor(readonly caStorage: ContentAddressableStorage, readonly config: FileStorageConfig = DEFAULT_FILE_STORAGE_CONFIG) {
         this.fs = new CoreFileStorage(caStorage, config);
-        this.caStorage = caStorage;
-        this.config = config;
     }
 
-    static async build(storageOptions: StorageOptions, config: FileStorageConfig = new FileStorageConfig(), secretPhrase?: string): Promise<FileStorage> {
+    static async build(storageOptions: StorageOptions, config: FileStorageConfig = DEFAULT_FILE_STORAGE_CONFIG, secretPhrase?: string): Promise<FileStorage> {
         return new FileStorage(await ContentAddressableStorage.build(storageOptions, secretPhrase), config);
     }
 
     async upload(bucketId: bigint, data: Data, tags: Array<Tag> = []): Promise<PieceUri> {
         const stream = await transformDataToStream(data);
         const reader = stream.pipeThrough(new streamWeb.TransformStream(this.fs.chunkTransformer())).getReader();
+
         return await this.fs.uploadFromStreamReader(bucketId, reader, tags);
     }
 
@@ -66,9 +61,6 @@ export class FileStorage implements FileStorageInterface {
         return new streamWeb.ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, links, dek),
             new streamWeb.CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }
-
-
-
 }
 
 async function transformDataToStream(data: Data): Promise<streamWeb.ReadableStream<Uint8Array>> {

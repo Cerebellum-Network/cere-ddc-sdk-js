@@ -21,14 +21,14 @@ describe("content-addressable-storage integration tests", () => {
         const storedPiece = await storage.read(bucketId, uri.cid);
 
         //then
-        piece.cid = "bafk2bzacecapv4eqjea5eznq5rksnltctqp5iff6scxejhhhlypqoo24fokyi"
-        expect(storedPiece).toStrictEqual(piece);
+        const expectedCid = "bafk2bzacecapv4eqjea5eznq5rksnltctqp5iff6scxejhhhlypqoo24fokyi";
+        expect(storedPiece).toStrictEqual(new Piece(piece.data, piece.tags, piece.links, expectedCid));
     });
 
     test("search", async () => {
         //given
         const storage = await testSubject;
-        const tags = [new Tag("testKey", "testValue")]
+        const tags = [new Tag("testKey", "testValue")];
         const bucketId = 1n;
         const piece = new Piece(new Uint8Array([1, 2, 3]), tags);
         await storage.store(bucketId, piece);
@@ -37,14 +37,14 @@ describe("content-addressable-storage integration tests", () => {
         const searchResult = await storage.search(new Query(bucketId, tags));
 
         //then
-        piece.cid = "bafk2bzacechpzp7rzthbhnjyxmkt3qlcyc24ruzormtvmnvdp5dsvjubh7vcc"
-        expect(searchResult.pieces).toEqual([piece]);
+        const expectedCid = "bafk2bzacechpzp7rzthbhnjyxmkt3qlcyc24ruzormtvmnvdp5dsvjubh7vcc";
+        expect(searchResult.pieces).toEqual([new Piece(piece.data, piece.tags, piece.links, expectedCid)]);
     });
 
     test("search not searchable", async () => {
         //given
         const storage = await testSubject;
-        const tags = [new Tag("testKey2", "testValue2", SearchType.NOT_SEARCHABLE)]
+        const tags = [new Tag("testKey2", "testValue2", SearchType.NOT_SEARCHABLE)];
         const bucketId = 1n;
         const piece = new Piece(new Uint8Array([1, 2, 3]), tags);
         await storage.store(bucketId, piece);

@@ -1,9 +1,9 @@
 import {ddcBucketAbi} from "../abi/ddc_bucket.js";
 
-export class SmartContractOptions {
-    rpcUrl?: string;
-    contractAddress!: string;
-    abi?: any
+export interface SmartContractOptions {
+    rpcUrl: string;
+    contractAddress: string;
+    abi: any
 }
 
 export const MAINNET: SmartContractOptions = {

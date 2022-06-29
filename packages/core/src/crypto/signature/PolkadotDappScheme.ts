@@ -1,29 +1,20 @@
 import {SignerPayloadRaw, SignerResult} from "@polkadot/types/types/extrinsic";
 import {SchemeInterface, SchemeName} from "./Scheme.interface.js";
-import {assertSafeMessage} from "./Scheme.js";
+import {assertSafeMessage} from "./Scheme.interface.js";
 import {u8aToHex} from "@polkadot/util";
 import {InjectedAccount} from "@polkadot/extension-inject/types";
 import {waitReady} from "@polkadot/wasm-crypto";
 import {decodeAddress} from "@polkadot/util-crypto";
 import {web3FromAddress} from "@polkadot/extension-dapp";
 
-/**
- * Browser only
- */
 export class PolkadotDappScheme implements SchemeInterface {
-    name: SchemeName = "sr25519"
-    publicKeyHex: string
-    address: string
-    signRaw: (raw: SignerPayloadRaw) => Promise<SignerResult>;
+    readonly name: SchemeName = "sr25519"
 
     private constructor(
-        publicKeyHex: string,
-        address: string,
-        signRaw: (raw: SignerPayloadRaw) => Promise<SignerResult>,
+        readonly publicKeyHex: string,
+        readonly address: string,
+        readonly signRaw: (raw: SignerPayloadRaw) => Promise<SignerResult>
     ) {
-        this.publicKeyHex = publicKeyHex;
-        this.address = address;
-        this.signRaw = signRaw;
     }
 
     static async createScheme(account: InjectedAccount): Promise<PolkadotDappScheme> {

@@ -1,5 +1,5 @@
 import {ClusterStatus} from "./model/ClusterStatus.js";
-import {BucketCreatedEvent} from "./event/BucketCreatedEvent.js";
+import {BucketCreatedEvent} from "./model/BucketCreatedEvent.js";
 import {SmartContractOptions, TESTNET} from "./options/SmartContractOptions.js";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import {ContractPromise} from "@polkadot/api-contract";
@@ -14,20 +14,10 @@ import {BucketStatus} from "./model/BucketStatus.js";
 import {BucketStatusList} from "./model/BucketStatusList.js";
 import {ApiTypes} from "@polkadot/api/types";
 import {isAddress} from "@polkadot/util-crypto/address/is";
-import {BucketParams, initDefaultBucketParams} from "./options/BucketParams.js";
+import {BucketParams, DEFAULT_BUCKET_PARAMS, initDefaultBucketParams} from "./options/BucketParams.js";
 import {waitReady} from "@polkadot/wasm-crypto";
+import {CERE, DEFAULT_READ_OPTIONS, DEFAULT_TRANSACTION_OPTIONS} from "./options/TransactionOptions";
 
-const CERE = 10_000_000_000n;
-
-const txOptions = {
-    value: 0n,
-    gasLimit: -1,
-};
-
-const txOptionsPay = {
-    value: 10n * CERE,
-    gasLimit: -1, //100_000n * MGAS,
-}
 
 export class SmartContract {
     readonly options: SmartContractOptions;
@@ -37,6 +27,8 @@ export class SmartContract {
 
     signAndSend: (tx: SubmittableExtrinsic<any>, statusCb: Callback<ISubmittableResult>) => SubmittableResultSubscription<ApiTypes>;
 
+    constructor(secretPhrase: string, options?: SmartContractOptions);
+    constructor(address: string, options?: SmartContractOptions);
     constructor(secretPhraseOrAddress: string, options: SmartContractOptions = TESTNET) {
         const keyring = new Keyring({type: 'sr25519'});
         let account: AddressOrPair;
@@ -70,9 +62,9 @@ export class SmartContract {
         return await this.contract.api.disconnect();
     }
 
-    async bucketCreate(clusterId: bigint, bucketParams: BucketParams = new BucketParams()): Promise<BucketCreatedEvent> {
+    async bucketCreate(clusterId: bigint, bucketParams: BucketParams = DEFAULT_BUCKET_PARAMS): Promise<BucketCreatedEvent> {
         bucketParams = initDefaultBucketParams(bucketParams);
-        const tx = await this.contract.tx.bucketCreate(txOptionsPay, JSON.stringify(bucketParams), clusterId);
+        const tx = await this.contract.tx.bucketCreate(DEFAULT_TRANSACTION_OPTIONS, JSON.stringify(bucketParams), clusterId);
         const result = await this.sendTx(tx);
         // @ts-ignore
         const events = result.contractEvents || [];
@@ -81,7 +73,7 @@ export class SmartContract {
     }
 
     async bucketGet(bucketId: bigint): Promise<BucketStatus> {
-        const {result, output} = await this.contract.query.bucketGet(this.address, txOptions, bucketId);
+        const {result, output} = await this.contract.query.bucketGet(this.address, DEFAULT_READ_OPTIONS, bucketId);
         if (!result.isOk) throw result.asErr;
 
         // @ts-ignore
@@ -93,7 +85,7 @@ export class SmartContract {
 
     async bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList> {
         const {result, output} =
-            await this.contract.query.bucketList(this.address, txOptions, offset, limit, filterOwnerId);
+            await this.contract.query.bucketList(this.address, DEFAULT_READ_OPTIONS, offset, limit, filterOwnerId);
         if (!result.isOk) throw result.asErr;
 
         // @ts-ignore
@@ -106,7 +98,7 @@ export class SmartContract {
             const result = await this.sendTx(tx);
 
             if (result.isError) {
-                throw new Error("Failed to grant bucket permission");
+                throw Error("Failed to grant bucket permission");
             }
             return new BucketPermissionGrantedEvent();
         }
@@ -116,38 +108,38 @@ export class SmartContract {
             const result = await this.sendTx(tx);
 
             if (result.isError) {
-                throw new Error("Failed to revoke bucket permission");
+                throw Error("Failed to revoke bucket permission");
             }
             return new BucketPermissionRevokedEvent();
         }*/
 
     async clusterGet(clusterId: number): Promise<ClusterStatus> {
-        let {result, output} = await this.contract.query.clusterGet(this.address, txOptions, clusterId);
+        let {result, output} = await this.contract.query.clusterGet(this.address, DEFAULT_READ_OPTIONS, clusterId);
         if (!result.isOk) throw result.asErr;
         // @ts-ignore
         return output.toJSON().ok as ClusterStatus;
     }
 
     async accountDeposit(value: bigint) {
-        const txOptions = {gasLimit: -1, value: value * CERE};
+        const txOptions = {gasLimit: DEFAULT_TRANSACTION_OPTIONS.gasLimit, value: value * CERE};
         const tx = await this.contract.tx.accountDeposit(txOptions);
         const result = await this.sendTx(tx);
 
-        if (result.dispatchError) throw new Error("Unable to deposit account");
+        if (result.dispatchError) throw Error("Unable to deposit account");
     }
 
     async bucketAllocIntoCluster(bucketId: bigint, resource: bigint) {
         if (resource <= 0) {
-            throw new Error("Invalid bucket size")
+            throw Error("Invalid bucket size")
         }
 
-        const tx = await this.contract.tx.bucketAllocIntoCluster(txOptions, bucketId, resource);
+        const tx = await this.contract.tx.bucketAllocIntoCluster(DEFAULT_READ_OPTIONS, bucketId, resource);
         const result = await this.sendTx(tx);
-        if (result.dispatchError) throw new Error(`Unable to allocate in cluster. Bucket: ${bucketId}`);
+        if (result.dispatchError) throw Error(`Unable to allocate in cluster. Bucket: ${bucketId}`);
     }
 
     async nodeGet(nodeId: number): Promise<NodeStatus> {
-        let {result, output} = await this.contract.query.nodeGet(this.address, txOptions, nodeId);
+        let {result, output} = await this.contract.query.nodeGet(this.address, DEFAULT_READ_OPTIONS, nodeId);
         if (!result.isOk) throw result.asErr;
         // @ts-ignore
         return output.toJSON().ok as NodeStatus;

@@ -16,23 +16,13 @@ export const FILE = "file";
 export type Protocol = IPIECE | IFILE | PIECE | FILE;
 
 export class DdcUri {
-    readonly bucket: string | bigint;
-    readonly path: string | Array<string>;
-    readonly protocol?: Protocol;
-    readonly organization?: string;
-    readonly options?: string;
 
     constructor(bucket: string | bigint, path: string, protocol?: IPIECE | IFILE, organization?: string, options?: string)
     constructor(bucket: string | bigint, path: string | Array<string>, protocol?: PIECE | FILE, organization?: string, options?: string)
-    constructor(bucket: string | bigint, path: string | Array<string>, protocol?: Protocol, organization?: string, options?: string) {
+    constructor(readonly bucket: string | bigint, readonly path: string | Array<string>, readonly protocol?: Protocol, readonly organization?: string, readonly options?: string) {
         if (typeof path === "string" && (protocol === FILE || protocol === PIECE)) {
-            throw new Error(`Unable create DdcUri with current parameters: protocol='${protocol}', path='${path}'`)
+            throw Error(`Unable create DdcUri with current parameters: protocol='${protocol}', path='${path}'`)
         }
-        this.organization = organization;
-        this.bucket = bucket;
-        this.protocol = protocol;
-        this.path = path;
-        this.options = options;
     }
 
     static parse(url: URL): DdcUri;
@@ -58,7 +48,7 @@ export class DdcUri {
 
         if (this.path) {
             if (!this.protocol) {
-                throw new Error("Unable to build DDC uri string without protocol");
+                throw Error("Unable to build DDC uri string without protocol");
             }
 
             if (this.path instanceof Array) {

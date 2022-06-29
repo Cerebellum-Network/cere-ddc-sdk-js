@@ -1,12 +1,15 @@
-import {ContentAddressableStorage, Piece, PieceUri, StorageOptions, Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import {
+    ContentAddressableStorage,
+    Piece,
+    PieceUri,
+    StorageOptions,
+    Tag
+} from "@cere-ddc-sdk/content-addressable-storage";
 
 const keyTag = "Key"
 
 export class KeyValueStorage {
-    caStorage: ContentAddressableStorage;
-
-    constructor(caStorage: ContentAddressableStorage) {
-        this.caStorage = caStorage;
+    constructor(readonly caStorage: ContentAddressableStorage) {
     }
 
     static async build(storageOptions: StorageOptions, secretPhrase?: string): Promise<KeyValueStorage> {
@@ -15,12 +18,12 @@ export class KeyValueStorage {
 
     async store(bucketId: bigint, key: string, piece: Piece): Promise<PieceUri> {
         if (piece.tags.some(t => t.key == keyTag)) {
-            throw Error("'Key' is a reserved tag for key-value storage")
+            throw Error("'Key' is a reserved tag for key-value storage");
         }
 
-        piece.tags.push(new Tag(keyTag, key))
+        piece.tags.push(new Tag(keyTag, key));
 
-        return this.caStorage.store(bucketId, piece)
+        return this.caStorage.store(bucketId, piece);
     }
 
     async read(bucketId: bigint, key: string, skipData: boolean = false): Promise<Piece[]> {
@@ -30,11 +33,8 @@ export class KeyValueStorage {
                 tags: Array.of(new Tag(keyTag, key)),
                 skipData: skipData
             }
-        )
+        );
 
-        return searchResult.pieces.map(p => new Piece(
-            p.data,
-            p.tags.filter(t => t.key != keyTag)
-        ))
+        return searchResult.pieces.map(p => new Piece(p.data, p.tags.filter(t => t.key != keyTag)));
     }
 }

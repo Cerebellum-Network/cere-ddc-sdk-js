@@ -13,9 +13,10 @@ import {base58Encode, mnemonicGenerate} from "@polkadot/util-crypto";
 import {stringToU8a} from "@polkadot/util";
 import {fetch} from 'cross-fetch';
 import {Tag} from "./models/Tag.js";
-import {EncryptionOptions} from "./EncryptionOptions.js";
-import {SmartContractOptions, SmartContract} from "@cere-ddc-sdk/smart-contract";
-import {initDefaultOptions, StorageOptions} from "./StorageOptions.js";
+import {EncryptionOptions} from "./options/EncryptionOptions.js";
+import {SmartContract, SmartContractOptions} from "@cere-ddc-sdk/smart-contract";
+import {initDefaultOptions, StorageOptions} from "./options/StorageOptions.js";
+import {Link} from "./models/Link.js";
 
 const BASE_PATH = "/api/rest/pieces";
 const decoder = new TextDecoder();
@@ -24,22 +25,12 @@ const decodeResponseBody = async (response: Response) => decoder.decode(await re
 export const DEK_PATH_TAG = "dekPath";
 
 export class ContentAddressableStorage {
-    readonly scheme: SchemeInterface;
-    readonly cdnNodeUrl: string;
-
-    readonly cipher?: CipherInterface;
-    readonly cidBuilder: CidBuilder;
-
     constructor(
-        scheme: SchemeInterface,
-        cdnNodeUrl: string,
-        cipher?: CipherInterface,
-        cidBuilder: CidBuilder = new CidBuilder()
+        readonly scheme: SchemeInterface,
+        readonly cdnNodeUrl: string,
+        readonly cipher?: CipherInterface,
+        readonly cidBuilder: CidBuilder = new CidBuilder()
     ) {
-        this.scheme = scheme;
-        this.cdnNodeUrl = cdnNodeUrl;
-        this.cidBuilder = cidBuilder;
-        this.cipher = cipher;
     }
 
     static async build(options: StorageOptions, secretPhrase?: string): Promise<ContentAddressableStorage> {
@@ -72,7 +63,7 @@ export class ContentAddressableStorage {
             await smartContract.disconnect();
         }
 
-        throw new Error(`unable to find cdn nodes in cluster='${clusterAddress}'`);
+        throw Error(`unable to find cdn nodes in cluster='${clusterAddress}'`);
     }
 
     async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
@@ -99,7 +90,7 @@ export class ContentAddressableStorage {
 
         const response = await this.sendRequest(BASE_PATH, {
             method: "PUT",
-            body: PbSignedPiece.toBinary(pbSignedPiece),
+            body: PbSignedPiece.toBinary(pbSignedPiece)
         });
 
         if (201 != response.status) {
@@ -116,14 +107,12 @@ export class ContentAddressableStorage {
             throw Error(`Failed to read piece. Response: status='${response.status}' body=${await decodeResponseBody(response)}`);
         }
 
-        const pbSignedPiece = await response.arrayBuffer().then(value => PbSignedPiece.fromBinary(new Uint8Array(value)))
-            .catch(() => {
-                throw new Error("Can't parse read response body to SignedPiece.");
-            });
-
+        const pbSignedPiece = await response.arrayBuffer()
+            .then(value => PbSignedPiece.fromBinary(new Uint8Array(value)))
+            .catch(() => Promise.reject("Can't parse read response body to SignedPiece."));
 
         if (!pbSignedPiece.piece) {
-            throw new Error(`Failed to parse signed piece. Response: status='${response.status}' body=${await decodeResponseBody(response)}`);
+            throw Error(`Failed to parse signed piece. Response: status='${response.status}' body=${await decodeResponseBody(response)}`);
         }
 
         return this.toPiece(pbSignedPiece.piece, cid);
@@ -147,41 +136,40 @@ export class ContentAddressableStorage {
         const pbSearchResult = await response.arrayBuffer()
             .then(value => PbSearchResult.fromBinary(new Uint8Array(value)))
             .catch(() => {
-                throw new Error("Can't parse search response body to SearchResult.");
-            })
+                throw Error("Can't parse search response body to SearchResult.");
+            });
 
         const isPiece = (val: PbPiece | undefined): val is PbPiece => val !== null;
         let pieces: Piece[] = pbSearchResult.searchedPieces
             .filter(p => isPiece(p.signedPiece?.piece))
-            .map(e => this.toPiece(e.signedPiece!.piece!, e.cid))
+            .map(e => this.toPiece(e.signedPiece!.piece!, e.cid));
 
         return new SearchResult(pieces);
     }
 
     async storeEncrypted(bucketId: bigint, piece: Piece, encryptionOptions: EncryptionOptions): Promise<PieceUri> {
-        const encryptedPiece = piece.clone();
-        encryptedPiece.tags.push(new Tag(DEK_PATH_TAG, encryptionOptions.dekPath));
-        encryptedPiece.data = this.cipher!.encrypt(piece.data, encryptionOptions.dek);
-        return this.store(bucketId, encryptedPiece)
+        piece.tags.push(new Tag(DEK_PATH_TAG, encryptionOptions.dekPath));
+        const data = this.cipher!.encrypt(piece.data, encryptionOptions.dek);
+        const encryptedPiece = new Piece(data, piece.tags, piece.links, piece.cid);
+
+        return this.store(bucketId, encryptedPiece);
     }
 
     async readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array): Promise<Piece> {
         const piece = await this.read(bucketId, cid);
-        piece.data = this.cipher!.decrypt(piece.data, dek)
+        const data = this.cipher!.decrypt(piece.data, dek);
 
-        return piece;
+        return new Piece(data, piece.tags, piece.links, piece.cid);
     }
 
     private toPiece(piece: PbPiece, cid: string): Piece {
-        return new Piece(piece.data, piece.tags, piece.links.map(e => {
-            return {cid: e.cid, size: BigInt(e.size), name: e.name}
-        }), cid);
+        return new Piece(piece.data, piece.tags, piece.links.map(e => new Link(e.cid, BigInt(e.size), e.name)), cid);
     }
 
     private sendRequest(path: String, init?: RequestInit): Promise<Response> {
-        let url = `${this.cdnNodeUrl}${path}`
+        let url = `${this.cdnNodeUrl}${path}`;
         return fetch(url, init).catch((error) => {
-            throw new Error(`Can't send request url='${url}', method='${init?.method || "GET"}', error='${error}'`);
+            throw Error(`Can't send request url='${url}', method='${init?.method || "GET"}', error='${error}'`);
         });
     }
 }

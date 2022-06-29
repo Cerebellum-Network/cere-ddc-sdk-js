@@ -1,13 +1,13 @@
 //TODO put comments
 import {CidBuilder, CipherInterface, NaclCipher, SchemeInterface, SchemeName} from "@cere-ddc-sdk/core";
 import {SmartContractOptions, TESTNET} from "@cere-ddc-sdk/smart-contract";
-import {FileStorageConfig} from "@cere-ddc-sdk/file-storage";
+import {DEFAULT_FILE_STORAGE_CONFIG, FileStorageConfig} from "@cere-ddc-sdk/file-storage";
 
 type FileOptions = FileStorageConfig;
 
 export class ClientOptions {
     clusterAddress: string | number; // Cluster ID or CDN URL
-    fileOptions?: FileOptions = new FileStorageConfig();
+    fileOptions?: FileOptions = DEFAULT_FILE_STORAGE_CONFIG;
     smartContract?: SmartContractOptions = TESTNET;
     scheme?: SchemeName | SchemeInterface = "sr25519";
     cipher?: CipherInterface = new NaclCipher();
@@ -19,16 +19,15 @@ export class ClientOptions {
 }
 
 const defaultClientOptions = new ClientOptions();
-const defaultFileOptions = new FileStorageConfig();
 
 export const initDefaultOptions = (options: ClientOptions): ClientOptions => {
     if (!options.clusterAddress && options.clusterAddress != 0) {
-        throw new Error(`invalid clusterAddress='${options.clusterAddress}'`)
+        throw Error(`invalid clusterAddress='${options.clusterAddress}'`)
     }
 
     options.fileOptions = {
-        parallel: options.fileOptions?.parallel || defaultFileOptions.parallel,
-        pieceSizeInBytes: options.fileOptions?.pieceSizeInBytes || defaultFileOptions.pieceSizeInBytes,
+        parallel: options.fileOptions?.parallel || DEFAULT_FILE_STORAGE_CONFIG.parallel,
+        pieceSizeInBytes: options.fileOptions?.pieceSizeInBytes || DEFAULT_FILE_STORAGE_CONFIG.pieceSizeInBytes,
     }
 
     return {

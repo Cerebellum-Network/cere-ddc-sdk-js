@@ -14,7 +14,7 @@ export class NaclCipher implements CipherInterface {
 
         const {encrypted} = naclEncrypt(data, dek, emptyNonce);
 
-        return encrypted
+        return encrypted;
     }
 
     decrypt(data: Uint8Array, dek: string | Uint8Array): Uint8Array {
@@ -25,7 +25,7 @@ export class NaclCipher implements CipherInterface {
         const result = naclDecrypt(data, emptyNonce, dek);
 
         if (result === null) {
-            throw new Error("Can't decrypt data");
+            throw Error("Can't decrypt data");
         }
 
         return result;

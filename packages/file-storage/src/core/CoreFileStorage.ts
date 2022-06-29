@@ -1,24 +1,28 @@
-import {ContentAddressableStorage, Link, Piece, PieceUri, Tag, EncryptionOptions} from "@cere-ddc-sdk/content-addressable-storage";
+import {
+    ContentAddressableStorage,
+    EncryptionOptions,
+    Link,
+    Piece,
+    PieceUri,
+    Tag
+} from "@cere-ddc-sdk/content-addressable-storage";
 import {FileStorageConfig} from "./FileStorageConfig.js";
 import {IndexedLink} from "./model/IndexedLink.js";
 
-const multipartTag = "multipart"
+const MULTIPART_TAG = "multipart";
 
 export class CoreFileStorage {
-
-    readonly config: FileStorageConfig;
-    readonly caStorage: ContentAddressableStorage;
-
-    constructor(caStorage: ContentAddressableStorage, config: FileStorageConfig) {
-        this.config = config;
-        this.caStorage = caStorage;
+    constructor(
+        readonly caStorage: ContentAddressableStorage,
+        readonly config: FileStorageConfig
+    ) {
     }
 
     async uploadFromStreamReader(bucketId: bigint, reader: ReadableStreamDefaultReader<Uint8Array>, tags: Array<Tag> = [], encryptionOptions?: EncryptionOptions): Promise<PieceUri> {
         const indexedLinks = await this.storeChunks(bucketId, reader, encryptionOptions);
 
         if (indexedLinks.length === 0) {
-            throw new Error("Upload data is empty");
+            throw Error("Upload data is empty");
         }
 
         const links = indexedLinks
@@ -33,15 +37,15 @@ export class CoreFileStorage {
         }
     }
 
-    createReadUnderlyingSource(bucketId: bigint, address?: string | Array<Link>, dek?: Uint8Array): UnderlyingSource<Uint8Array> {
-        let linksPromise = address instanceof Array<Link> ? Promise.resolve(address) : this.caStorage.read(bucketId, address as string).then(value => value.links);
+    createReadUnderlyingSource(bucketId: bigint, cidOrLinks: string | Array<Link>, dek?: Uint8Array): UnderlyingSource<Uint8Array> {
+        let linksPromise = typeof cidOrLinks === "string" ? this.caStorage.read(bucketId, cidOrLinks).then(value => value.links) : Promise.resolve(cidOrLinks);
 
         let index = 0;
-        const runReadPieceTask = () => new Promise<Uint8Array>(async (resolve, reject) => {
+        const runReadPieceTask = () => new Promise<Uint8Array>(async (resolve) => {
             const current = index++;
             const link = (await linksPromise)[current];
 
-            const promisePiece: Promise<Piece> = dek ? this.caStorage.readDecrypted(bucketId, link.cid, dek) : this.caStorage.read(bucketId, link.cid)
+            const promisePiece: Promise<Piece> = dek ? this.caStorage.readDecrypted(bucketId, link.cid, dek) : this.caStorage.read(bucketId, link.cid);
             promisePiece.then(piece => resolve(piece.data));
         });
 
@@ -112,10 +116,10 @@ export class CoreFileStorage {
                 while (!(result = await reader.read()).done) {
                     const current = index++;
 
-                    const piece = new Piece(result.value)
-                    piece.tags.push(new Tag(multipartTag, "true"));
+                    const piece = new Piece(result.value);
+                    piece.tags.push(new Tag(MULTIPART_TAG, "true"));
                     const pieceUri = encryptionOptions ? await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions)
-                        : await this.caStorage.store(bucketId, piece)
+                        : await this.caStorage.store(bucketId, piece);
 
                     indexedLinks.push(new IndexedLink(current, new Link(pieceUri.cid, BigInt(result.value.length))));
                 }

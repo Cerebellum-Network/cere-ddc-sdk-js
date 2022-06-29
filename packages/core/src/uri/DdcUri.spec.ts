@@ -11,5 +11,5 @@ describe("DDC Uri", () => {
 });
 
 function checkDdcUri(uri: string, ddcUri: DdcUri) {
-    expect(ddcUri.toString()).toBe(uri)
+    expect(ddcUri.toString()).toBe(uri);
 }

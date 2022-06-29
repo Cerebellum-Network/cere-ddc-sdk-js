@@ -8,12 +8,11 @@ import {
 } from "@cere-ddc-sdk/content-addressable-storage";
 import {FileStorageConfig} from "./core/FileStorageConfig.js";
 import {Readable} from "node:stream";
-import * as streamWeb from "stream/web";
 import {PathLike} from "fs";
 
-export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig.js";
+export * from "./basic.js";
 
-export type Data = ReadableStream<Uint8Array> | streamWeb.ReadableStream<Uint8Array> | Readable | Blob | Uint8Array | PathLike
+export type Data = ReadableStream<Uint8Array> | Readable | Blob | Uint8Array | PathLike
 
 export interface FileStorage {
     readonly config: FileStorageConfig;

@@ -1,16 +1,13 @@
 export class Tag {
-  key: string;
-  value: string;
-  searchable: SearchType;
-
-  constructor(key: string, value: string, searchable: SearchType = SearchType.RANGE) {
-    this.key = key;
-    this.value = value;
-    this.searchable = searchable;
-  }
+    constructor(
+        readonly key: string,
+        readonly value: string,
+        readonly searchable: SearchType = SearchType.RANGE
+    ) {
+    }
 }
 
 export enum SearchType {
-  RANGE             = 0,
-  NOT_SEARCHABLE    = 1
+    RANGE = 0,
+    NOT_SEARCHABLE = 1
 }

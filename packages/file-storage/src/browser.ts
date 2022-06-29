@@ -1,4 +1,4 @@
-export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig.js";
+export * from "./basic.js";
 
 import {
     ContentAddressableStorage,
@@ -8,7 +8,7 @@ import {
     StorageOptions,
     Tag
 } from "@cere-ddc-sdk/content-addressable-storage";
-import {FileStorageConfig} from "./core/FileStorageConfig.js";
+import {DEFAULT_FILE_STORAGE_CONFIG, FileStorageConfig} from "./core/FileStorageConfig.js";
 import {CoreFileStorage} from "./core/CoreFileStorage.js";
 import {FileStorage as FileStorageInterface} from "./type.js";
 
@@ -21,13 +21,13 @@ export class FileStorage implements FileStorageInterface {
 
     private readonly fs: CoreFileStorage;
 
-    constructor(caStorage: ContentAddressableStorage, config: FileStorageConfig = new FileStorageConfig()) {
+    constructor(caStorage: ContentAddressableStorage, config: FileStorageConfig = DEFAULT_FILE_STORAGE_CONFIG) {
         this.fs = new CoreFileStorage(caStorage, config);
         this.caStorage = caStorage;
         this.config = config;
     }
 
-    static async build(storageOptions: StorageOptions, config: FileStorageConfig = new FileStorageConfig(), secretPhrase?: string): Promise<FileStorage> {
+    static async build(storageOptions: StorageOptions, config: FileStorageConfig = DEFAULT_FILE_STORAGE_CONFIG, secretPhrase?: string): Promise<FileStorage> {
         return new FileStorage(await ContentAddressableStorage.build(storageOptions, secretPhrase), config);
     }
 

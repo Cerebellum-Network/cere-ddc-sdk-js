@@ -1,9 +1,9 @@
-import {FileStorage, FileStorageConfig} from "./node.js"
+import {FileStorage} from "./node.js"
 
 describe("key-value-storage integration tests", () => {
     const url = "http://localhost:8080";
     const testSubject = FileStorage
-        .build({clusterAddress: url, scheme: "ed25519"}, new FileStorageConfig(2, 1),
+        .build({clusterAddress: url, scheme: "ed25519"}, {parallel: 2, pieceSizeInBytes: 1},
             "0x93e0153dc0f0bbee868dc00d8d05ddae260e01d418746443fa190c8eacd9544c");
 
     test("upload and read chunked data", async () => {

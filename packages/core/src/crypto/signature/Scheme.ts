@@ -2,22 +2,19 @@ import {Keyring} from "@polkadot/keyring";
 import {KeyringPair} from "@polkadot/keyring/types";
 import {u8aToHex} from "@polkadot/util";
 import {waitReady} from "@polkadot/wasm-crypto";
-import {SchemeInterface, SchemeName} from "./Scheme.interface.js";
+import {assertSafeMessage, SchemeInterface, SchemeName} from "./Scheme.interface.js";
 
-export class Scheme implements SchemeInterface{
-    keyringPair: KeyringPair;
-    name: SchemeName;
-    publicKeyHex: string;
-
-    private constructor(keyringPair: KeyringPair, name: SchemeName, publicKeyHex: string) {
-        this.keyringPair = keyringPair;
-        this.name = name;
-        this.publicKeyHex = publicKeyHex;
+export class Scheme implements SchemeInterface {
+    private constructor(
+        readonly keyringPair: KeyringPair,
+        readonly name: SchemeName,
+        readonly publicKeyHex: string
+    ) {
     }
 
     static async createScheme(schemeName: SchemeName, secretPhrase: string): Promise<Scheme> {
         if (schemeName != "sr25519" && schemeName != "ed25519") {
-            throw new Error(`Unsupported scheme name='${schemeName}'`);
+            throw Error(`Unsupported scheme name='${schemeName}'`);
         }
 
         await waitReady();
@@ -27,7 +24,7 @@ export class Scheme implements SchemeInterface{
         try {
             keyringPair = keyring.addFromMnemonic(secretPhrase);
         } catch (err) {
-            throw new Error(`Couldn't create scheme with current secretPhrase`)
+            throw Error(`Couldn't create scheme with current secretPhrase`);
         }
 
         return new Scheme(keyringPair, schemeName, u8aToHex(keyring.publicKeys[0]));
@@ -36,14 +33,5 @@ export class Scheme implements SchemeInterface{
     async sign(data: Uint8Array): Promise<string> {
         assertSafeMessage(data);
         return Promise.resolve(u8aToHex(this.keyringPair.sign(data)));
-    }
-}
-
-// Validate that the signed data does not conflict with the blockchain extrinsics.
-export function assertSafeMessage(data: Uint8Array) {
-    // Encoded extrinsics start with the pallet index; reserve up to 48 pallets.
-    // Make ASCII "0" the smallest first valid byte.
-    if(data[0] < 48) {
-        throw new Error("data unsafe to sign")
     }
 }

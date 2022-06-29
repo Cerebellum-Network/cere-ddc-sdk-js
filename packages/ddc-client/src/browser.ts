@@ -55,7 +55,7 @@ export class DdcClient extends CoreDdcClient {
         if (typeof secret === "string") {
             return secret;
         } else {
-            throw new Error("Unable to create DDC Client. Encryption secret phrase should be entered")
+            throw Error("Unable to create DDC Client. Encryption secret phrase should be entered")
         }
     }
 }

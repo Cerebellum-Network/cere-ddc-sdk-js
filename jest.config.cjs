@@ -13,12 +13,13 @@ module.exports = {
         "jest.config.cjs",
         "/node_modules/",
         "/build/",
-        "/src/"
+        "/src/",
+        ".*.d.ts"
     ],
     testPathIgnorePatterns: [
         "/node_modules/",
         "/build/",
-        "/src/"
+        "/src/",
     ],
     moduleNameMapper: {
         '^@cere-ddc-sdk/(.*)$': '<rootDir>/packages/$1/'
