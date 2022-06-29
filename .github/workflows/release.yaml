@@ -15,8 +15,6 @@ jobs:
         with:
           node-version: '16.15.0'
           registry-url: 'https://registry.npmjs.org'
-      - name: Init ddc-schemas submodule
-        run: git submodule update --init
       - name: Install packages
         run: npm install
       - name: Compile
