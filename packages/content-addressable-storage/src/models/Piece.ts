@@ -1,5 +1,6 @@
 import {Tag} from "./Tag.js";
 import {Link} from "./Link.js";
+import {Piece as PbPiece,} from "@cere-ddc-sdk/proto";
 
 export class Piece {
     data: Uint8Array;
@@ -20,5 +21,14 @@ export class Piece {
 
     static isPiece(obj: any): obj is Piece {
         return obj instanceof Piece || (obj instanceof Object && obj.data instanceof Uint8Array && obj.tags instanceof Array && obj.links instanceof Array);
+    }
+
+    toProto(bucketId: bigint): PbPiece {
+        return {
+            bucketId: Number(bucketId),
+            data: this.data,
+            tags: this.tags,
+            links: this.links
+        };
     }
 }
