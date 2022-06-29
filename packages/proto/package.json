@@ -12,7 +12,7 @@
   "author": "",
   "license": "Apache-2.0",
   "scripts": {
-    "protoc": "npx protoc --ts_out ./src --proto_path src src/storage.proto"
+    "protoc": "npx protoc --ts_out ./src --proto_path ../../ddc-schemas/storage/protobuf $(find ../../../ddc-schemas/storage/protobuf -name '*.proto' -type f | sed 's/.*\\///' | sort)"
   },
   "dependencies": {
     "@types/node": "^16.0.0",

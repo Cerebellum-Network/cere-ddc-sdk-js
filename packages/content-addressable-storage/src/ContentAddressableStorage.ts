@@ -77,12 +77,10 @@ export class ContentAddressableStorage {
 
     async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
         const pbPiece: PbPiece = {
-            bucketId: bucketId.toString(),
+            bucketId: Number(bucketId),
             data: piece.data,
             tags: piece.tags,
-            links: piece.links.map(e => {
-                return {cid: e.cid, size: e.size.toString(), name: e.name}
-            })
+            links: piece.links
         };
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
         const cid = await this.cidBuilder.build(pieceAsBytes);
@@ -94,6 +92,7 @@ export class ContentAddressableStorage {
                 value: signature,
                 scheme: this.scheme.name,
                 signer: this.scheme.publicKeyHex,
+                multiHashType: 0n // default value
             },
         };
 
@@ -131,7 +130,7 @@ export class ContentAddressableStorage {
 
     async search(query: Query): Promise<SearchResult> {
         const pbQuery: PbQuery = {
-            bucketId: query.bucketId.toString(),
+            bucketId: Number(query.bucketId),
             tags: query.tags,
             skipData: query.skipData
         };
@@ -173,9 +172,7 @@ export class ContentAddressableStorage {
     }
 
     private toPiece(piece: PbPiece, cid: string): Piece {
-        return new Piece(piece.data, piece.tags.map(t => new Tag(t.key, t.value, t.searchable)), piece.links.map(e => {
-            return {cid: e.cid, size: BigInt(e.size), name: e.name}
-        }), cid);
+        return new Piece(piece.data, piece.tags.map(t => new Tag(t.key, t.value, t.searchable)), piece.links, cid);
     }
 
     private sendRequest(path: String, init?: RequestInit): Promise<Response> {
