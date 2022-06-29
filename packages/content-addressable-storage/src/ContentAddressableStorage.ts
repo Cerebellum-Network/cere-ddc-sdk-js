@@ -87,12 +87,13 @@ export class ContentAddressableStorage {
         const signature = await this.scheme.sign(stringToU8a(cid));
 
         const pbSignedPiece: PbSignedPiece = {
-            piece: pbPiece,
+            piece: pieceAsBytes,
             signature: {
                 value: signature,
                 scheme: this.scheme.name,
-                signer: this.scheme.publicKeyHex,
-                multiHashType: 0n // default value
+                signer: this.scheme.publicKey,
+                multiHashType: 0n, // default value
+                timestamp: BigInt(new Date().getTime())
             },
         };
 
@@ -125,7 +126,7 @@ export class ContentAddressableStorage {
             throw new Error(`Failed to parse signed piece. Response: status='${response.status}' body=${await decodeResponseBody(response)}`);
         }
 
-        return this.toPiece(pbSignedPiece.piece, cid);
+        return this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
     }
 
     async search(query: Query): Promise<SearchResult> {

@@ -4,15 +4,13 @@ import {u8aToHex} from "@polkadot/util";
 import {waitReady} from "@polkadot/wasm-crypto";
 import {SchemeInterface, SchemeName} from "./Scheme.interface.js";
 
-export class Scheme implements SchemeInterface{
+export class Scheme implements SchemeInterface {
     keyringPair: KeyringPair;
     name: SchemeName;
-    publicKeyHex: string;
 
-    private constructor(keyringPair: KeyringPair, name: SchemeName, publicKeyHex: string) {
+    private constructor(keyringPair: KeyringPair, name: SchemeName) {
         this.keyringPair = keyringPair;
         this.name = name;
-        this.publicKeyHex = publicKeyHex;
     }
 
     static async createScheme(schemeName: SchemeName, secretPhrase: string): Promise<Scheme> {
@@ -30,12 +28,20 @@ export class Scheme implements SchemeInterface{
             throw new Error(`Couldn't create scheme with current secretPhrase`)
         }
 
-        return new Scheme(keyringPair, schemeName, u8aToHex(keyring.publicKeys[0]));
+        return new Scheme(keyringPair, schemeName);
     }
 
-    async sign(data: Uint8Array): Promise<string> {
+    get publicKey(): Uint8Array {
+        return this.keyringPair.publicKey;
+    }
+
+    get publicKeyHex(): string {
+        return u8aToHex(this.keyringPair.publicKey);
+    }
+
+    async sign(data: Uint8Array): Promise<Uint8Array> {
         assertSafeMessage(data);
-        return Promise.resolve(u8aToHex(this.keyringPair.sign(data)));
+        return Promise.resolve(this.keyringPair.sign(data));
     }
 }
 
@@ -43,7 +49,7 @@ export class Scheme implements SchemeInterface{
 export function assertSafeMessage(data: Uint8Array) {
     // Encoded extrinsics start with the pallet index; reserve up to 48 pallets.
     // Make ASCII "0" the smallest first valid byte.
-    if(data[0] < 48) {
+    if (data[0] < 48) {
         throw new Error("data unsafe to sign")
     }
 }

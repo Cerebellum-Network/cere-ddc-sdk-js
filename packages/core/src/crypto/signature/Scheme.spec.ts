@@ -34,6 +34,6 @@ describe("Scheme", () => {
     const signature = await testSubject.sign(message);
 
     //then
-    expect(sr25519Verify(hexToU8a(signature), message, hexToU8a(testSubject.publicKeyHex))).toBeTruthy()
+    expect(sr25519Verify(signature, message, hexToU8a(testSubject.publicKeyHex))).toBeTruthy()
   });
 });
