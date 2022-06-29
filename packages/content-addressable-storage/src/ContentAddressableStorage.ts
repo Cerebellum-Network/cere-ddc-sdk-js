@@ -14,7 +14,7 @@ import {stringToU8a} from "@polkadot/util";
 import {fetch} from 'cross-fetch';
 import {Tag} from "./models/Tag.js";
 import {EncryptionOptions} from "./EncryptionOptions.js";
-import {SmartContractOptions, SmartContract} from "@cere-ddc-sdk/smart-contract";
+import {SmartContract, SmartContractOptions} from "@cere-ddc-sdk/smart-contract";
 import {initDefaultOptions, StorageOptions} from "./StorageOptions.js";
 
 const BASE_PATH = "/api/rest/pieces";
@@ -173,7 +173,7 @@ export class ContentAddressableStorage {
     }
 
     private toPiece(piece: PbPiece, cid: string): Piece {
-        return new Piece(piece.data, piece.tags, piece.links.map(e => {
+        return new Piece(piece.data, piece.tags.map(t => new Tag(t.key, t.value, t.searchable)), piece.links.map(e => {
             return {cid: e.cid, size: BigInt(e.size), name: e.name}
         }), cid);
     }

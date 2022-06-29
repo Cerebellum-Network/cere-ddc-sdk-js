@@ -26,8 +26,8 @@ message SignedPiece {
 }
 
 message Tag {
-  string        key  = 1;
-  string        value = 2;
+  bytes        key  = 1;
+  bytes        value = 2;
   SearchType    searchable    = 3;
 }
 

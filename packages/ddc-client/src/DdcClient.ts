@@ -190,7 +190,7 @@ export class DdcClient implements DdcClientInterface {
     }
 
     private async readByPieceUri(ddcUri: DdcUri, headPiece: Piece, options: ReadOptions): Promise<File | Piece> {
-        const isEncrypted = headPiece.tags.filter(t => t.key == DEK_PATH_TAG).length > 0;
+        const isEncrypted = headPiece.tags.filter(t => t.keyString == DEK_PATH_TAG).length > 0;
 
         //TODO 4. put into DEK cache
         const dek = await this.findDek(ddcUri, headPiece, options);
@@ -224,7 +224,7 @@ export class DdcClient implements DdcClientInterface {
 
     private async findDek(ddcUri: DdcUri, piece: Piece, options: ReadOptions): Promise<Uint8Array> {
         if (options.decrypt) {
-            const dekPath = piece.tags.find(t => t.key == DEK_PATH_TAG)?.value;
+            const dekPath = piece.tags.find(t => t.keyString == DEK_PATH_TAG)?.valueString;
             if (dekPath == null) {
                 throw new Error(`Piece=${ddcUri} doesn't have dekPath`);
             } else if (!dekPath.startsWith(options.dekPath! + "/") && dekPath !== options.dekPath!) {
@@ -249,7 +249,7 @@ export class DdcClient implements DdcClientInterface {
                 return values[0]
             });
 
-        const encryptor = piece.tags.find(e => e.key === ENCRYPTOR_TAG)?.value;
+        const encryptor = piece.tags.find(e => e.keyString === ENCRYPTOR_TAG)?.valueString;
         if (!encryptor) {
             throw new Error("EDEK doesn't contains encryptor public key")
         }
