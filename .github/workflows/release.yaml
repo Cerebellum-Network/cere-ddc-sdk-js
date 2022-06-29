@@ -15,8 +15,7 @@ jobs:
         with:
           node-version: '16.15.0'
           registry-url: 'https://registry.npmjs.org'
-      - name: Init submodules
-        run: git submodule update --init
+          submodules: "true"
       - name: Install packages
         run: npm install
       - name: Compile
