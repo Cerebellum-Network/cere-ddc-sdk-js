@@ -1,4 +1,7 @@
-import {ContentAddressableStorage, Piece} from "./index.js"
+import {ContentAddressableStorage, Piece, Tag, SearchType, Link} from "./index.js"
+import {
+    Piece as PbPiece,
+} from "@cere-ddc-sdk/proto";
 import {u8aToHex, hexToU8a} from "@polkadot/util";
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -19,11 +22,14 @@ describe("content-addressable-storage test vector", () => {
     test("store request", async () => {
         //given
         const storage = await testSubject;
-        const piece = new Piece(new Uint8Array([1, 2, 3]));
+        const tag = new Tag("some-key", "some-value", SearchType.NOT_SEARCHABLE);
+        const link = new Link("some-cid", 11n, "some-name");
+        const piece = new Piece(new Uint8Array([1, 2, 3]), [tag], [link]);
         const bucketId = 1n;
 
         //when
-        const request = await storage.buildStoreRequest(bucketId, piece);
+        const request: any = await storage.buildStoreRequest(bucketId, piece);
+        request.piece = PbPiece.toJson(piece.toProto(bucketId));
 
         // Re-generate the test vector if it does not exist.
         await writeVectorIfNotExists(request);
@@ -31,7 +37,7 @@ describe("content-addressable-storage test vector", () => {
         //then
         const requestExpect = await readVector();
 
-        expect(request).toStrictEqual(requestExpect);
+        expect(request).toEqual(requestExpect);
     });
 });
 

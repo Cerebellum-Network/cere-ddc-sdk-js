@@ -76,14 +76,7 @@ export class ContentAddressableStorage {
     }
 
     async buildStoreRequest(bucketId: bigint, piece: Piece): Promise<StoreRequest> {
-        const pbPiece: PbPiece = {
-            bucketId: bucketId.toString(),
-            data: piece.data,
-            tags: piece.tags,
-            links: piece.links.map(e => {
-                return {cid: e.cid, size: e.size.toString(), name: e.name}
-            })
-        };
+        const pbPiece: PbPiece = piece.toProto(bucketId);
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
         const cid = await this.cidBuilder.build(pieceAsBytes);
         const signature = await this.scheme.sign(stringToU8a(cid));
