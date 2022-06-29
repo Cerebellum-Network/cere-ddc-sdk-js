@@ -75,15 +75,8 @@ export class ContentAddressableStorage {
         throw new Error(`unable to find cdn nodes in cluster='${clusterAddress}'`);
     }
 
-    async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
-        const pbPiece: PbPiece = {
-            bucketId: bucketId.toString(),
-            data: piece.data,
-            tags: piece.tags,
-            links: piece.links.map(e => {
-                return {cid: e.cid, size: e.size.toString(), name: e.name}
-            })
-        };
+    async buildStoreRequest(bucketId: bigint, piece: Piece): Promise<StoreRequest> {
+        const pbPiece: PbPiece = piece.toProto(bucketId);
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
         const cid = await this.cidBuilder.build(pieceAsBytes);
         const signature = await this.scheme.sign(stringToU8a(cid));
@@ -97,16 +90,24 @@ export class ContentAddressableStorage {
             },
         };
 
-        const response = await this.sendRequest(BASE_PATH, {
-            method: "PUT",
-            body: PbSignedPiece.toBinary(pbSignedPiece),
+        const signedPieceSerial = PbSignedPiece.toBinary(pbSignedPiece);
+
+        return {body: signedPieceSerial, cid, method: "PUT", path: BASE_PATH};
+    }
+
+    async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
+        const request = await this.buildStoreRequest(bucketId, piece);
+
+        const response = await this.sendRequest(request.path, {
+            method: request.method,
+            body: request.body,
         });
 
         if (201 != response.status) {
             throw Error(`Failed to store. Response: status='${response.status}' body=${await decodeResponseBody(response)}`);
         }
 
-        return new PieceUri(bucketId, cid);
+        return new PieceUri(bucketId, request.cid);
     }
 
     async read(bucketId: bigint, cid: string): Promise<Piece> {
@@ -185,3 +186,10 @@ export class ContentAddressableStorage {
         });
     }
 }
+
+type StoreRequest = {
+    body: Uint8Array;
+    cid: string;
+    method: string;
+    path: string;
+};
