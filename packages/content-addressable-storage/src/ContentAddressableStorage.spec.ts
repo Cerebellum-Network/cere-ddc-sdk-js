@@ -10,8 +10,11 @@ import * as path from 'path';
 // the test, and commit the new value in the ddc-schemas repo (git submodule).
 const VECTOR_FILE = "ddc-schemas/test-vectors/store-request-sdk-js-1.2.9.json";
 
+const fakeTimestamp = new Date('2022-01-01');
+
 
 describe("content-addressable-storage test vector", () => {
+    jest.useFakeTimers().setSystemTime(fakeTimestamp);
     const url = "http://localhost:8080";
     const testSubject = ContentAddressableStorage
         .build({
@@ -38,6 +41,7 @@ describe("content-addressable-storage test vector", () => {
         const requestExpect = await readVector();
 
         request.piece = null; // No need to test the JSON form.
+        request.timestamp = fakeTimestamp;
         requestExpect.piece = null;
         expect(request).toEqual(requestExpect);
     });
@@ -50,6 +54,7 @@ async function writeVectorIfNotExists(request: any) {
         const requestJson = JSON.stringify(
             Object.assign({}, request, {
                 body: u8aToHex(request.body),
+                timestamp: fakeTimestamp
             }),
             null, 4);
         await fs.mkdir(path.dirname(VECTOR_FILE), {recursive: true});
@@ -62,5 +67,6 @@ async function readVector(): Promise<any> {
     const requestJson = await fs.readFile(VECTOR_FILE, {encoding: "utf-8"});
     const request = JSON.parse(requestJson);
     request.body = hexToU8a(request.body);
+    request.timestamp = new Date(request.timestamp);
     return request;
 }
