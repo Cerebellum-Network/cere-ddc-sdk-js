@@ -31,7 +31,7 @@ export class ContentAddressableStorage {
         this.cidBuilder = cidBuilder;
     }
 
-    async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
+    async store(bucketId: bigint, piece: Piece, dumpVector?: any): Promise<PieceUri> {
         let pbPiece: PbPiece = {
             bucketId: bucketId.toString(),
             data: piece.data,
@@ -52,6 +52,11 @@ export class ContentAddressableStorage {
                 signer: this.scheme.publicKeyHex,
             },
         };
+
+        if(dumpVector) {
+            dumpVector(pbPiece, PbSignedPiece.toBinary(pbSignedPiece), cid, new PieceUri(bucketId, cid).toString(), "PUT", BASE_PATH);
+        }
+
         let response = await fetch(this.gatewayNodeUrl + BASE_PATH, {
             method: "PUT",
             body: PbSignedPiece.toBinary(pbSignedPiece),
