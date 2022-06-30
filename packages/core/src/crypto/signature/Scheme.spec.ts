@@ -18,7 +18,7 @@ describe("Scheme", () => {
     const signature = await testSubject.sign(stringToU8a("test_string"));
 
     //then
-    expect(signature).toBe(expectedSignature);
+    expect(signature).toEqual(hexToU8a(expectedSignature));
   });
 
   it("sr25519", async () => {

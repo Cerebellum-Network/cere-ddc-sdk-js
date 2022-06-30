@@ -79,7 +79,8 @@ export class ContentAddressableStorage {
         const pbPiece: PbPiece = piece.toProto(bucketId);
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
         const cid = await this.cidBuilder.build(pieceAsBytes);
-        const signature = await this.scheme.sign(stringToU8a(cid));
+        const timestamp = new Date();
+        const signature = await this.scheme.sign(stringToU8a(`<Bytes>DDC store ${cid} at ${timestamp.toISOString()}</Bytes>`));
 
         const pbSignedPiece: PbSignedPiece = {
             piece: pieceAsBytes,
@@ -88,7 +89,7 @@ export class ContentAddressableStorage {
                 scheme: this.scheme.name,
                 signer: this.scheme.publicKey,
                 multiHashType: 0n, // default blake2b-256
-                timestamp: BigInt(new Date().getTime())
+                timestamp: BigInt(timestamp.getTime())
             },
         };
 

@@ -27,7 +27,6 @@ export class Scheme implements SchemeInterface {
         } catch (err) {
             throw new Error(`Couldn't create scheme with current secretPhrase`)
         }
-
         return new Scheme(keyringPair, schemeName);
     }
 
