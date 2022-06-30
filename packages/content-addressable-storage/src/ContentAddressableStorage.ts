@@ -79,14 +79,17 @@ export class ContentAddressableStorage {
         const pbPiece: PbPiece = piece.toProto(bucketId);
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
         const cid = await this.cidBuilder.build(pieceAsBytes);
-        const signature = await this.scheme.sign(stringToU8a(cid));
+        const timestamp = new Date();
+        const signature = await this.scheme.sign(stringToU8a(`<Bytes>DDC store ${cid} at ${timestamp.toISOString()}</Bytes>`));
 
         const pbSignedPiece: PbSignedPiece = {
-            piece: pbPiece,
+            piece: pieceAsBytes,
             signature: {
                 value: signature,
                 scheme: this.scheme.name,
-                signer: this.scheme.publicKeyHex,
+                signer: this.scheme.publicKey,
+                multiHashType: 0n, // default blake2b-256
+                timestamp: BigInt(timestamp.getTime())
             },
         };
 
@@ -127,12 +130,12 @@ export class ContentAddressableStorage {
             throw new Error(`Failed to parse signed piece. Response: status='${response.status}' body=${await decodeResponseBody(response)}`);
         }
 
-        return this.toPiece(pbSignedPiece.piece, cid);
+        return this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
     }
 
     async search(query: Query): Promise<SearchResult> {
         const pbQuery: PbQuery = {
-            bucketId: query.bucketId.toString(),
+            bucketId: Number(query.bucketId),
             tags: query.tags,
             skipData: query.skipData
         };
@@ -151,10 +154,10 @@ export class ContentAddressableStorage {
                 throw new Error("Can't parse search response body to SearchResult.");
             })
 
-        const isPiece = (val: PbPiece | undefined): val is PbPiece => val !== null;
+        const isPiece = (val: Uint8Array | undefined): val is Uint8Array => val != null;
         let pieces: Piece[] = pbSearchResult.searchedPieces
             .filter(p => isPiece(p.signedPiece?.piece))
-            .map(e => this.toPiece(e.signedPiece!.piece!, e.cid))
+            .map(e => this.toPiece(PbPiece.fromBinary(e.signedPiece!.piece!), e.cid))
 
         return new SearchResult(pieces);
     }

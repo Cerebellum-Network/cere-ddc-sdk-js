@@ -1,8 +1,6 @@
 import {Tag} from "./Tag.js";
 import {Link} from "./Link.js";
-import {
-    Piece as PbPiece,
-} from "@cere-ddc-sdk/proto";
+import {Piece as PbPiece,} from "@cere-ddc-sdk/proto";
 
 export class Piece {
     data: Uint8Array;
@@ -27,12 +25,10 @@ export class Piece {
 
     toProto(bucketId: bigint): PbPiece {
         return {
-            bucketId: bucketId.toString(),
+            bucketId: Number(bucketId),
             data: this.data,
             tags: this.tags,
-            links: this.links.map(e => {
-                return {cid: e.cid, size: e.size.toString(), name: e.name}
-            })
+            links: this.links
         };
     }
 }
