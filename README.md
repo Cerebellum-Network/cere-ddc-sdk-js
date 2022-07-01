@@ -26,6 +26,7 @@ Doesn't have fixed size and can represent fully logically completed data or part
 
 ## Dependencies
 
+- node.js `16+`. Setup with: `nvm use`
 - protobuf compiler (`protoc`) for compiling *.proto model files.
 - typescript `4.5.5+`
 
