@@ -95,7 +95,7 @@ export class DdcClient implements DdcClientInterface {
         }
 
         const clusterStatus = await this.smartContract.clusterGet(Number(clusterId));
-        const bucketSize = BigInt((Number(resource) / clusterStatus.cluster.vnodes.length) | 0);
+        const bucketSize = BigInt((Number(resource * 1000n) / clusterStatus.cluster.vnodes.length) | 0);
         await this.smartContract.bucketAllocIntoCluster(event.bucketId, bucketSize);
 
         return event;
@@ -109,12 +109,12 @@ export class DdcClient implements DdcClientInterface {
         const bucketStatus = await this.bucketGet(bucketId);
         const clusterStatus = await this.smartContract.clusterGet(bucketStatus.bucket.cluster_id);
 
-        const total = BigInt(bucketStatus.bucket.resource_reserved * clusterStatus.cluster.vnodes.length) + resource;
+        const total = BigInt(bucketStatus.bucket.resource_reserved * clusterStatus.cluster.vnodes.length) / 1000n + resource;
         if (total > MAX_BUCKET_SIZE) {
             throw new Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
         }
 
-        const bucketSize = BigInt((Number(resource) / clusterStatus.cluster.vnodes.length) | 0);
+        const bucketSize = BigInt((Number(resource * 1000n) / clusterStatus.cluster.vnodes.length) | 0);
         await this.smartContract.bucketAllocIntoCluster(bucketId, bucketSize);
     }
 
