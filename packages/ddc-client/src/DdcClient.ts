@@ -93,7 +93,10 @@ export class DdcClient implements DdcClientInterface {
         if (balance > 0) {
             await this.smartContract.accountDeposit(balance);
         }
-        await this.smartContract.bucketAllocIntoCluster(event.bucketId, resource);
+
+        const clusterStatus = await this.smartContract.clusterGet(Number(clusterId));
+        const bucketSize = BigInt((Number(resource * 1000n) / clusterStatus.cluster.vnodes.length) | 0);
+        await this.smartContract.bucketAllocIntoCluster(event.bucketId, bucketSize);
 
         return event;
     }
@@ -104,13 +107,15 @@ export class DdcClient implements DdcClientInterface {
 
     async bucketAllocIntoCluster(bucketId: bigint, resource: bigint) {
         const bucketStatus = await this.bucketGet(bucketId);
+        const clusterStatus = await this.smartContract.clusterGet(bucketStatus.bucket.cluster_id);
 
-        const total = BigInt(bucketStatus.bucket.resource_reserved) + resource;
+        const total = BigInt(bucketStatus.bucket.resource_reserved * clusterStatus.cluster.vnodes.length) / 1000n + resource;
         if (total > MAX_BUCKET_SIZE) {
             throw new Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
         }
 
-        await this.smartContract.bucketAllocIntoCluster(bucketId, resource);
+        const resourceToAlloc = BigInt((Number(resource * 1000n) / clusterStatus.cluster.vnodes.length) | 0);
+        await this.smartContract.bucketAllocIntoCluster(bucketId, resourceToAlloc);
     }
 
     /*    async grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {

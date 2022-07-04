@@ -22,16 +22,16 @@ export class DdcUri {
     readonly organization?: string;
     readonly options?: string;
 
-    constructor(bucket: string | bigint, path: string, protocol?: IPIECE | IFILE, organization?: string, options?: string)
+    constructor(bucket: string | bigint, cid: string, protocol?: IPIECE | IFILE, organization?: string, options?: string)
     constructor(bucket: string | bigint, path: string | Array<string>, protocol?: PIECE | FILE, organization?: string, options?: string)
-    constructor(bucket: string | bigint, path: string | Array<string>, protocol?: Protocol, organization?: string, options?: string) {
-        if (typeof path === "string" && (protocol === FILE || protocol === PIECE)) {
-            throw new Error(`Unable create DdcUri with current parameters: protocol='${protocol}', path='${path}'`)
+    constructor(bucket: string | bigint, pathOrCid: string | Array<string>, protocol?: Protocol, organization?: string, options?: string) {
+        if (typeof pathOrCid === "string" && (protocol === FILE || protocol === PIECE)) {
+            throw new Error(`Unable create DdcUri with current parameters: protocol='${protocol}', path='${pathOrCid}'`)
         }
         this.organization = organization;
         this.bucket = bucket;
         this.protocol = protocol;
-        this.path = path;
+        this.path = pathOrCid;
         this.options = options;
     }
 
