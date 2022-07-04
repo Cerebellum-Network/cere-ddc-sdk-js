@@ -114,8 +114,8 @@ export class DdcClient implements DdcClientInterface {
             throw new Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
         }
 
-        const bucketSize = BigInt((Number(resource * 1000n) / clusterStatus.cluster.vnodes.length) | 0);
-        await this.smartContract.bucketAllocIntoCluster(bucketId, bucketSize);
+        const resourceToAlloc = BigInt((Number(resource * 1000n) / clusterStatus.cluster.vnodes.length) | 0);
+        await this.smartContract.bucketAllocIntoCluster(bucketId, resourceToAlloc);
     }
 
     /*    async grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
