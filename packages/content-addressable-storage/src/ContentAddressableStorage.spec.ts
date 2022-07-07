@@ -1,4 +1,4 @@
-import {ContentAddressableStorage, Piece, Tag, SearchType, Link} from "./index.js"
+import {ContentAddressableStorage, Piece, Tag, SearchType, Link} from "./index"
 import {
     Piece as PbPiece,
 } from "@cere-ddc-sdk/proto";

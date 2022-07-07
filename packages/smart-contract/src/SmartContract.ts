@@ -1,20 +1,20 @@
-import {ClusterStatus} from "./model/ClusterStatus.js";
-import {BucketCreatedEvent} from "./event/BucketCreatedEvent.js";
-import {SmartContractOptions, TESTNET} from "./options/SmartContractOptions.js";
+import {ClusterStatus} from "./model/ClusterStatus";
+import {BucketCreatedEvent} from "./event/BucketCreatedEvent";
+import {SmartContractOptions, TESTNET} from "./options/SmartContractOptions";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import {ContractPromise} from "@polkadot/api-contract";
 import {Keyring} from '@polkadot/keyring';
 import {AddressOrPair, SubmittableExtrinsic, SubmittableResultSubscription} from "@polkadot/api/submittable/types";
 import {Callback, ISubmittableResult} from "@polkadot/types/types";
 import {cryptoWaitReady} from '@polkadot/util-crypto';
-import _ from "lodash";
-import {NodeStatus} from "./model/NodeStatus.js";
-import {cereTypes} from "./types/cere_types.js";
-import {BucketStatus} from "./model/BucketStatus.js";
-import {BucketStatusList} from "./model/BucketStatusList.js";
+import {find, get} from "lodash";
+import {NodeStatus} from "./model/NodeStatus";
+import {cereTypes} from "./types/cere_types";
+import {BucketStatus} from "./model/BucketStatus";
+import {BucketStatusList} from "./model/BucketStatusList";
 import {ApiTypes} from "@polkadot/api/types";
 import {isAddress} from "@polkadot/util-crypto/address/is";
-import {BucketParams, initDefaultBucketParams} from "./options/BucketParams.js";
+import {BucketParams, initDefaultBucketParams} from "./options/BucketParams";
 import {waitReady} from "@polkadot/wasm-crypto";
 
 const CERE = 10_000_000_000n;
@@ -56,7 +56,7 @@ export class SmartContract {
         return new SmartContract(secretPhraseOrAddress, options).connect();
     }
 
-    protected async connect(): Promise<SmartContract> {
+    async connect(): Promise<SmartContract> {
         await cryptoWaitReady();
 
         const wsProvider = new WsProvider(this.options.rpcUrl);
@@ -153,7 +153,7 @@ export class SmartContract {
         return output.toJSON().ok as NodeStatus;
     }
 
-    protected async sendTx(tx: SubmittableExtrinsic<any>): Promise<ISubmittableResult> {
+    async sendTx(tx: SubmittableExtrinsic<any>): Promise<ISubmittableResult> {
         return await new Promise(async (resolve) => {
             await this.signAndSend(tx, (result: any) => {
                 if (result.status.isInBlock || result.status.isFinalized) {
@@ -166,8 +166,8 @@ export class SmartContract {
     private static findCreatedBucketId(events: Array<any>): string {
         const eventName = "BucketCreated";
 
-        const event = _.find(events, ["event.identifier", eventName]);
-        const id = _.get(event, "args[0]");
+        const event = find(events, ["event.identifier", eventName]);
+        const id = get(event, "args[0]");
         return id && id.toString();
     }
 }

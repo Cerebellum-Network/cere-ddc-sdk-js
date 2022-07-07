@@ -1,4 +1,4 @@
-export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig.js";
+export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig";
 
 import {
     ContentAddressableStorage,
@@ -8,9 +8,9 @@ import {
     StorageOptions,
     Tag
 } from "@cere-ddc-sdk/content-addressable-storage";
-import {FileStorageConfig} from "./core/FileStorageConfig.js";
-import {CoreFileStorage} from "./core/CoreFileStorage.js";
-import {FileStorage as FileStorageInterface} from "./type.js";
+import {FileStorageConfig} from "./core/FileStorageConfig";
+import {CoreFileStorage} from "./core/CoreFileStorage";
+import {FileStorage as FileStorageInterface} from "./type";
 
 type Data = ReadableStream<Uint8Array> | Blob | string | Uint8Array
 

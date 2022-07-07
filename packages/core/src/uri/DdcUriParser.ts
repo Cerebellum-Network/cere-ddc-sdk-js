@@ -1,4 +1,4 @@
-import {BUC, DdcUri, FILE, IFILE, IPIECE, ORG, PIECE, Protocol} from "./DdcUri.js";
+import {BUC, DdcUri, FILE, IFILE, IPIECE, ORG, PIECE, Protocol} from "./DdcUri";
 
 const DDC_PREFIX = "/ddc/";
 

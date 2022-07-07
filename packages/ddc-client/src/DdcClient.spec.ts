@@ -1,5 +1,5 @@
-import {DdcClient} from "./DdcClient.js";
-import {File} from "./model/File.js";
+import {DdcClient} from "./DdcClient";
+import {File} from "./model/File";
 import {Piece, Query, Tag} from "@cere-ddc-sdk/content-addressable-storage";
 import {randomBytes} from "tweetnacl";
 import {randomUUID} from "crypto";

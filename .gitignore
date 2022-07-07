@@ -2,8 +2,12 @@
 /dist
 **/node_modules/
 **/dist/
+**/build/
 coverage/
 tsconfig.*buildinfo
+
+packages/proto/src/
+!packages/proto/src/index.ts
 
 # IntelliJ
 .idea

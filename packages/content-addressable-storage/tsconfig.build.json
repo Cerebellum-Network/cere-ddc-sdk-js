@@ -3,10 +3,10 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "baseUrl": ".",
-    "outDir": "dist",
-    "rootDir": "src"
+    "outDir": "build",
+    "rootDir": "src/"
   },
   "include": [
-    "src/"
+    "src/**/*.ts"
   ]
 }

@@ -1,4 +1,4 @@
-import {DdcUriParser} from "./DdcUriParser.js";
+import {DdcUriParser} from "./DdcUriParser";
 
 export const DDC = "ddc";
 export const ORG = "org";

@@ -1,5 +1,5 @@
-import {KeyValueStorage} from "./index.js"
 import {Piece} from "@cere-ddc-sdk/content-addressable-storage";
+import {KeyValueStorage} from "./index"
 
 describe("key-value-storage integration tests", () => {
     const url = "http://localhost:8080";

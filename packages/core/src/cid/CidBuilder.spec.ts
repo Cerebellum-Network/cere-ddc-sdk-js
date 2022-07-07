@@ -1,4 +1,4 @@
-import {CidBuilder} from "./CidBuilder.js";
+import {CidBuilder} from "./CidBuilder";
 import {stringToU8a} from "@polkadot/util";
 
 describe("CID Builder", () => {

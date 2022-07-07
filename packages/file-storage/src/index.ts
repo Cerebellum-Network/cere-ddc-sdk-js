@@ -1,4 +1,4 @@
-export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig.js";
+export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig";
 
 import {PathLike} from "fs";
 import {
@@ -9,9 +9,9 @@ import {
     StorageOptions,
     Tag
 } from "@cere-ddc-sdk/content-addressable-storage";
-import {FileStorageConfig} from "./core/FileStorageConfig.js";
-import {CoreFileStorage} from "./core/CoreFileStorage.js";
-import {FileStorage as FileStorageInterface} from "./type.js";
+import {FileStorageConfig} from "./core/FileStorageConfig";
+import {CoreFileStorage} from "./core/CoreFileStorage";
+import {FileStorage as FileStorageInterface} from "./type";
 import * as streamWeb from "stream/web";
 import {Readable} from "node:stream";
 import {open} from 'node:fs/promises';

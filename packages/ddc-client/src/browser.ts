@@ -1,15 +1,15 @@
-import {DdcClient as CoreDdcClient} from "./DdcClient.js";
-import {ClientOptions, initDefaultOptions} from "./options/ClientOptions.js";
+import {DdcClient as CoreDdcClient} from "./DdcClient";
+import {ClientOptions, initDefaultOptions} from "./options/ClientOptions";
 import {InjectedAccount} from "@polkadot/extension-inject/types";
-import {PolkadotDappScheme, Scheme, SchemeInterface, SchemeName} from "@cere-ddc-sdk/core";
-import {SmartContract} from "@cere-ddc-sdk/smart-contract";
+import {PolkadotDappScheme, Scheme, SchemeInterface} from "@cere-ddc-sdk/core/browser";
+import {SmartContract} from "@cere-ddc-sdk/smart-contract/browser";
 import {ContentAddressableStorage} from "@cere-ddc-sdk/content-addressable-storage";
 
-export {DdcClientInterface} from "./DdcClient.interface.js";
-export {ClientOptions} from "./options/ClientOptions.js";
-export {ReadOptions} from "./options/ReadOptions.js";
-export {StoreOptions} from "./options/StoreOptions.js";
-export {File} from "./model/File.js";
+export type {DdcClientInterface} from "./DdcClient.interface";
+export {ClientOptions} from "./options/ClientOptions";
+export {ReadOptions} from "./options/ReadOptions";
+export {StoreOptions} from "./options/StoreOptions";
+export {File} from "./model/File";
 
 export {TESTNET, DEVNET, SmartContractOptions, Permission, BucketParams} from "@cere-ddc-sdk/smart-contract";
 export * from "@cere-ddc-sdk/core";

@@ -10,6 +10,7 @@ import {
 import {FileStorage} from "@cere-ddc-sdk/file-storage";
 import {
     BucketCreatedEvent,
+    // @ts-ignore
     BucketParams,
     BucketStatus,
     BucketStatusList,
@@ -17,13 +18,13 @@ import {
 } from "@cere-ddc-sdk/smart-contract";
 import {blake2AsU8a, naclBoxKeypairFromSecret, naclKeypairFromString} from "@polkadot/util-crypto";
 import {KeyValueStorage} from "@cere-ddc-sdk/key-value-storage";
-import {DdcClientInterface} from "./DdcClient.interface.js";
-import {ClientOptions, initDefaultOptions} from "./options/ClientOptions.js";
-import {StoreOptions} from "./options/StoreOptions.js";
-import {ReadOptions} from "./options/ReadOptions.js";
+import {DdcClientInterface} from "./DdcClient.interface";
+import {ClientOptions, initDefaultOptions} from "./options/ClientOptions";
+import {StoreOptions} from "./options/StoreOptions";
+import {ReadOptions} from "./options/ReadOptions";
 import nacl, {BoxKeyPair} from "tweetnacl";
 import {hexToU8a, stringToU8a, u8aToHex} from "@polkadot/util";
-import {File} from "./model/File.js";
+import {File} from "./model/File";
 
 //ToDo generate from random for security
 const emptyNonce = new Uint8Array(nacl.box.nonceLength);
@@ -40,7 +41,7 @@ export class DdcClient implements DdcClientInterface {
     readonly fileStorage: FileStorage;
 
     readonly masterDek: Uint8Array;
-    readonly boxKeypair: BoxKeyPair
+    readonly boxKeypair: BoxKeyPair;
 
     protected constructor(
         caStorage: ContentAddressableStorage,
@@ -52,7 +53,9 @@ export class DdcClient implements DdcClientInterface {
         this.options = options;
 
         this.caStorage = caStorage;
+        // @ts-ignore
         this.kvStorage = new KeyValueStorage(caStorage);
+        // @ts-ignore
         this.fileStorage = new FileStorage(caStorage, options.fileOptions);
 
         this.masterDek = blake2AsU8a(encryptionSecretPhrase);
@@ -65,7 +68,7 @@ export class DdcClient implements DdcClientInterface {
         encryptionSecretPhrase = encryptionSecretPhrase != null ? encryptionSecretPhrase : secretPhrase;
         options = initDefaultOptions(options);
 
-        const scheme = (typeof options.scheme === "string") ? await Scheme.createScheme(options.scheme as SchemeName, secretPhrase) : options.scheme!
+        const scheme = (typeof options.scheme === 'string') ? await Scheme.createScheme(options.scheme as SchemeName, secretPhrase) : options.scheme!
         const smartContract = await SmartContract.buildAndConnect(secretPhrase, options.smartContract);
         const caStorage = await ContentAddressableStorage.build({
             clusterAddress: options.clusterAddress,
@@ -157,7 +160,7 @@ export class DdcClient implements DdcClientInterface {
             const pieceUri = await this.caStorage.storeEncrypted(bucketId, fileOrPiece, encryptionOptions);
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
         } else {
-            const pieceUri = await this.fileStorage.uploadEncrypted(bucketId, fileOrPiece.data, fileOrPiece.tags, encryptionOptions);
+            const pieceUri = await this.fileStorage.uploadEncrypted(bucketId, fileOrPiece.data as any, fileOrPiece.tags, encryptionOptions);
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IFILE);
         }
     }
@@ -167,7 +170,7 @@ export class DdcClient implements DdcClientInterface {
             const pieceUri = await this.caStorage.store(bucketId, fileOrPiece);
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
         } else {
-            const pieceUri = await this.fileStorage.upload(bucketId, fileOrPiece.data, fileOrPiece.tags);
+            const pieceUri = await this.fileStorage.upload(bucketId, fileOrPiece.data as any, fileOrPiece.tags);
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IFILE);
         }
     }
