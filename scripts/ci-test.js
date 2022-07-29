@@ -1,10 +1,12 @@
 import {createRequire} from 'node:module';
-import {execSync, fork} from 'node:child_process';
+import {execSync} from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import {URL} from 'node:url';
 import commandLine from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
+import packages from './packages.js';
+import { setVersions } from './set-versions.js';
 
 const optionDefinitions = [
     {
@@ -52,24 +54,7 @@ if (Object.keys(options).length === 0 || options.help) {
     process.exit();
 }
 
-if (options.minor) {
-    execSync(`npm version minor --workspaces`, {
-        cwd: root,
-        stdio: 'inherit',
-    });
-}
-if (options.major) {
-    execSync(`npm version major --workspaces`, {
-        cwd: root,
-        stdio: 'inherit',
-    });
-}
-if (options.patch) {
-    execSync(`npm version patch --workspaces`, {
-        cwd: root,
-        stdio: 'inherit',
-    });
-}
+setVersions(root, options);
 
 const packageJson = require(path.join(root, 'package.json'));
 
@@ -79,33 +64,32 @@ fs.writeFileSync(
     JSON.stringify(packageJson, null, 2),
 );
 
-[
-    'packages/smart-contract',
-    'packages/proto',
-    'packages/core',
-    'packages/content-addressable-storage',
-    'packages/file-storage',
-    'packages/key-value-storage',
-    'packages/ddc-client',
-].forEach((packageName) => {
+packages.forEach((packageName) => {
     const packageInfo = require(path.join(root, packageName, 'package.json'));
-    console.log({packageName});
+
     if (packageInfo.dependencies) {
+        const ddcDeps = [];
         Object.entries(packageInfo.dependencies ?? {}).forEach(([key]) => {
             if (/@cere-ddc-sdk/.test(key)) {
-                execSync(
-                    `npm link ${key} --save`,
-                    { cwd: path.join(root, packageName), stdio: 'inherit' }
-                )
+                delete packageInfo.dependencies[key];
+                ddcDeps.push(key);
+
             }
         });
         fs.writeFileSync(path.join(root, packageName, 'package.json'), JSON.stringify(packageInfo, null, 2));
+        ddcDeps.forEach(ddcPackage => {
+            execSync(
+                `npm link ${ddcPackage} --save`,
+                { cwd: path.join(root, packageName), stdio: 'inherit' }
+            )
+        });
     }
 
-    execSync(`rm -f package-lock.json`, {
+    execSync(`npm install`, {
         cwd: path.join(root, packageName),
         stdio: 'inherit',
     });
+
     execSync(`npm run package`, {
         cwd: path.join(root, packageName),
         stdio: 'inherit',

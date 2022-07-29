@@ -1,10 +1,3 @@
-import { execSync } from 'node:child_process';
-import { URL } from 'node:url';
-import path from 'node:path';
+import { push } from '../../../scripts/push.js';
 
-const dirname = path.dirname(new URL(import.meta.url).pathname);
-
-execSync('npm publish', {
-  cwd: path.join(dirname, '../build'),
-  stdio: 'inherit'
-});
+push(import.meta.url);
