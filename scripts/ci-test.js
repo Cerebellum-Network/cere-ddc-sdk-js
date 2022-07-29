@@ -7,47 +7,19 @@ import commandLine from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
 import packages from './packages.js';
 import { setVersions } from './set-versions.js';
-
-const optionDefinitions = [
-    {
-        name: 'patch',
-        type: Boolean,
-        description: 'Increase patch and publish',
-        typeLabel: ' ',
-    },
-    {
-        name: 'major',
-        type: Boolean,
-        description: 'Increase major and publish',
-        typeLabel: ' ',
-    },
-    {
-        name: 'minor',
-        type: Boolean,
-        description: 'Increase minor and publish',
-        typeLabel: ' ',
-    },
-    {
-        name: 'help',
-        alias: 'h',
-        type: Boolean,
-        description: 'Display this help',
-        typeLabel: ' ',
-    },
-];
-
-const options = commandLine(optionDefinitions);
+import { optionsDefinitions } from './options-definitions.js';
 
 const require = createRequire(import.meta.url);
 const dirname = path.dirname(new URL(import.meta.url).pathname);
 const root = path.join(dirname, '..');
 
+const options = commandLine(optionsDefinitions);
 if (Object.keys(options).length === 0 || options.help) {
     console.log(
         commandLineUsage([
             {
                 header: 'Options',
-                optionList: optionDefinitions,
+                optionList: optionsDefinitions,
             },
         ]),
     );
