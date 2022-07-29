@@ -4,18 +4,18 @@ import {
     SearchResult as PbSearchResult,
     SignedPiece as PbSignedPiece,
 } from "@cere-ddc-sdk/proto";
-import {Piece} from "./models/Piece.js";
-import {PieceUri} from "./models/PieceUri.js";
-import {Query} from "./models/Query.js";
-import {SearchResult} from "./models/SearchResult.js";
+import {Piece} from "./models/Piece";
+import {PieceUri} from "./models/PieceUri";
+import {Query} from "./models/Query";
+import {SearchResult} from "./models/SearchResult";
 import {CidBuilder, CipherInterface, Scheme, SchemeInterface, SchemeName} from "@cere-ddc-sdk/core";
 import {base58Encode, mnemonicGenerate} from "@polkadot/util-crypto";
 import {stringToU8a} from "@polkadot/util";
 import {fetch} from 'cross-fetch';
-import {Tag} from "./models/Tag.js";
-import {EncryptionOptions} from "./EncryptionOptions.js";
+import {Tag} from "./models/Tag";
+import {EncryptionOptions} from "./EncryptionOptions";
 import {SmartContract, SmartContractOptions} from "@cere-ddc-sdk/smart-contract";
-import {initDefaultOptions, StorageOptions} from "./StorageOptions.js";
+import {initDefaultOptions, StorageOptions} from "./StorageOptions";
 
 const BASE_PATH = "/api/rest/pieces";
 const decoder = new TextDecoder();

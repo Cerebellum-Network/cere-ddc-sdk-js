@@ -1,6 +1,6 @@
-import {FileStorage, FileStorageConfig} from "./node.js"
+import {FileStorage, FileStorageConfig} from "./index"
 
-describe("key-value-storage integration tests", () => {
+describe("ddc client integration tests", () => {
     const url = "http://localhost:8080";
     const testSubject = FileStorage
         .build({clusterAddress: url, scheme: "ed25519"}, new FileStorageConfig(2, 1),

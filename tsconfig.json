@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
     "baseUrl": "./",
-    "composite": true,
     "target": "esnext",
     "module": "esnext",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
     "skipLibCheck": true,
     "allowJs": true,
     "resolveJsonModule": true,
@@ -20,6 +21,6 @@
     "**/*.test.ts",
     "**/*.stub.ts",
     "node_modules",
-    "dist"
+    "build"
   ]
 }

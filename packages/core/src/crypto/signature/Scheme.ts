@@ -2,7 +2,7 @@ import {Keyring} from "@polkadot/keyring";
 import {KeyringPair} from "@polkadot/keyring/types";
 import {u8aToHex} from "@polkadot/util";
 import {waitReady} from "@polkadot/wasm-crypto";
-import {SchemeInterface, SchemeName} from "./Scheme.interface.js";
+import {SchemeInterface, SchemeName} from "./Scheme.interface";
 
 export class Scheme implements SchemeInterface {
     keyringPair: KeyringPair;

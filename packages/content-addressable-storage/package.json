@@ -8,17 +8,53 @@
     "directory": "packages/content-addressable-storage",
     "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
   },
-  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "browser": "./browser.js",
+      "require": "./index.cjs",
+      "import": "./index.js",
+      "default": "./index.js"
+    },
+    "./browser": {
+      "require": "./browser.cjs",
+      "import": "./browser.js",
+      "default": "./browser.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "browser": [
+        "index"
+      ]
+    }
+  },
+  "types": "index.d.ts",
   "author": "",
   "license": "Apache-2.0",
+  "scripts": {
+    "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
+    "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
+    "build:browser": "BROWSERSLIST_ENV=browser npm run build:cjs && BROWSERSLIST_ENV=browser npm run build:mjs",
+    "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
+    "build": "npm run build:browser && npm run build:node",
+    "types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "push": "node scripts/publish.js",
+    "package": "rimraf build && clean-publish --temp-dir build && npm run types && npm run build"
+  },
   "dependencies": {
     "@cere-ddc-sdk/core": "1.2.9",
     "@cere-ddc-sdk/proto": "1.2.9",
     "@cere-ddc-sdk/smart-contract": "1.2.9",
-    "@types/node": "^16.0.0",
-    "cross-fetch": "^3.1.5"
+    "@polkadot/util": "^6.0.5",
+    "@polkadot/util-crypto": "6.11.1"
   },
   "devDependencies": {
-    "typescript": "4.5.4"
+    "@types/node": "^16.0.0",
+    "clean-publish": "^4.0.1",
+    "cross-fetch": "^3.1.5",
+    "rimraf": "^3.0.2",
+    "typescript": "4.5.4",
+    "webpack": "^5.73.0",
+    "webpack-cli": "^4.10.0"
   }
 }

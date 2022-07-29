@@ -1,0 +1,30 @@
+store:
+  memory:
+    limit: 10000000
+web:
+  title: Verdaccio
+auth:
+  auth-memory:
+    users:
+      root:
+        name: root
+        password: password
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+packages:
+  "**":
+    access: $all
+    publish: $anonymous
+    unpublish: $anonymous
+    proxy: npmjs
+server:
+  keepAliveTimeout: 60
+middlewares:
+  audit:
+    enabled: true
+logs:
+  type: stdout
+  format: pretty
+  level: http
+max_body_size: 100mb

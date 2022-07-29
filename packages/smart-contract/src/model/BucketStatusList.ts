@@ -1,4 +1,4 @@
-import {BucketStatus} from "./BucketStatus.js";
+import {BucketStatus} from "./BucketStatus";
 
 export class BucketStatusList {
     bucketStatuses: Array<BucketStatus>;

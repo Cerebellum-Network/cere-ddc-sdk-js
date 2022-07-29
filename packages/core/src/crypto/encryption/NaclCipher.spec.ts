@@ -1,4 +1,4 @@
-import {NaclCipher} from "./NaclCipher.js";
+import {NaclCipher} from "./NaclCipher";
 import {hexToU8a, u8aToHex} from "@polkadot/util";
 import {blake2AsU8a} from "@polkadot/util-crypto";
 

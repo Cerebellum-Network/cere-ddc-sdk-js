@@ -1,4 +1,4 @@
-import {DdcUri, FILE, IFILE, IPIECE} from "./DdcUri.js";
+import {DdcUri, FILE, IFILE, IPIECE} from "./DdcUri";
 
 describe("DDC Uri", () => {
     it("to string", async () => {

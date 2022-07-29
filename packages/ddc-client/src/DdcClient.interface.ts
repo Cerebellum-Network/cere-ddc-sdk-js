@@ -1,8 +1,8 @@
 import {Piece, Query} from "@cere-ddc-sdk/content-addressable-storage";
 import {BucketCreatedEvent, BucketStatus, BucketStatusList} from "@cere-ddc-sdk/smart-contract";
-import {StoreOptions} from "./options/StoreOptions.js";
-import {ReadOptions} from "./options/ReadOptions.js";
-import {File} from "./model/File.js";
+import {StoreOptions} from "./options/StoreOptions";
+import {ReadOptions} from "./options/ReadOptions";
+import {File} from "./model/File";
 import {BucketParams} from "@cere-ddc-sdk/smart-contract";
 import {DdcUri} from "@cere-ddc-sdk/core";
 

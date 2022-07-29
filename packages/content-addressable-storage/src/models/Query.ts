@@ -1,4 +1,4 @@
-import {Tag} from "./Tag.js";
+import {Tag} from "./Tag";
 
 export class Query {
   bucketId: bigint;

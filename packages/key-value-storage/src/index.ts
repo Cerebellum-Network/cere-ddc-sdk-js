@@ -1,1 +1,1 @@
-export {KeyValueStorage} from "./KeyValueStorage.js";
+export {KeyValueStorage} from "./KeyValueStorage";

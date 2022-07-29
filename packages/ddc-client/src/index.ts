@@ -1,9 +1,9 @@
-export {DdcClientInterface} from "./DdcClient.interface.js";
-export {DdcClient} from "./DdcClient.js";
-export {ClientOptions} from "./options/ClientOptions.js";
-export {ReadOptions} from "./options/ReadOptions.js";
-export {StoreOptions} from "./options/StoreOptions.js";
-export {File} from "./model/File.js";
+export type {DdcClientInterface} from "./DdcClient.interface";
+export {DdcClient} from "./DdcClient";
+export {ClientOptions} from "./options/ClientOptions";
+export {ReadOptions} from "./options/ReadOptions";
+export {StoreOptions} from "./options/StoreOptions";
+export {File} from "./model/File";
 
 export {TESTNET, DEVNET, SmartContractOptions, Permission, BucketParams} from "@cere-ddc-sdk/smart-contract";
 export * from "@cere-ddc-sdk/core";

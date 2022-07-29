@@ -1,6 +1,6 @@
-import {Tag} from "./Tag.js";
-import {Link} from "./Link.js";
-import {Piece as PbPiece,} from "@cere-ddc-sdk/proto";
+import {Tag} from "./Tag";
+import {Link} from "./Link";
+import type {Piece as PbPiece} from "@cere-ddc-sdk/proto";
 
 export class Piece {
     data: Uint8Array;

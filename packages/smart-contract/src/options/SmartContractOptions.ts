@@ -1,4 +1,4 @@
-import {ddcBucketAbi} from "../abi/ddc_bucket.js";
+import {ddcBucketAbi} from "../abi/ddc_bucket";
 
 export class SmartContractOptions {
     rpcUrl?: string;

@@ -1,0 +1,5 @@
+[node]
+node >= 16.5
+
+[browser]
+>1% and not dead and not op_mini all
