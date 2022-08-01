@@ -28,8 +28,11 @@ packages.forEach((packageName) => {
         stdio: 'inherit',
     });
 
+    execSync('sleep 5');
+
     execSync('npm publish --access public', {
         cwd: path.join(root, packageName, 'build'),
         stdio: 'inherit',
     });
+    execSync('sleep 5');
 });
