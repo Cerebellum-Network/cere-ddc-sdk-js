@@ -8,7 +8,7 @@ import { hexToU8a, u8aToHex } from "@polkadot/util";
 import { InjectedAccount } from "@polkadot/extension-inject/types";
 import { waitReady } from "@polkadot/wasm-crypto";
 import { decodeAddress } from "@polkadot/util-crypto";
-import { web3FromAddress } from "@polkadot/extension-dapp";
+import { web3Enable, web3FromAddress } from "@polkadot/extension-dapp";
 
 /**
  * Browser only
@@ -25,6 +25,7 @@ export class PolkadotDappScheme implements SchemeInterface {
   static async createScheme(
     account: InjectedAccount
   ): Promise<PolkadotDappScheme> {
+    await web3Enable('ddc');
     await waitReady();
     let injector = await web3FromAddress(account.address);
     let signRaw = injector.signer.signRaw;
