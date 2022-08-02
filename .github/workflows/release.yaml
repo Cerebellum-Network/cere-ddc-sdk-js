@@ -20,6 +20,10 @@ jobs:
           submodules: "true"
       - name: Install packages
         run: npm install
+      - name: NPM set register
+        run: npm set registry https://registry.npmjs.org
+      - name: NPM whoami
+        run: npm whoami
       - name: Run tests
         run: npm run test
       - name: Compile
