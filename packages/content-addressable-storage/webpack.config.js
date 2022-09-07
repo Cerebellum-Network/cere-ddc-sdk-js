@@ -23,12 +23,4 @@ if (browserslistEnv === 'browser') {
     });
 }
 
-config = merge(config, {
-    externals: {
-        "@cere-ddc-sdk/core": "@cere-ddc-sdk/core",
-        "@cere-ddc-sdk/proto": "@cere-ddc-sdk/proto",
-        "@cere-ddc-sdk/smart-contract": "@cere-ddc-sdk/smart-contract"
-    }
-});
-
 export default config;

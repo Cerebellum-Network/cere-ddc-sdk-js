@@ -5,6 +5,7 @@ import {PolkadotDappScheme, Scheme, SchemeInterface} from "@cere-ddc-sdk/core/br
 import {SmartContract} from "@cere-ddc-sdk/smart-contract/browser";
 import {ContentAddressableStorage} from "@cere-ddc-sdk/content-addressable-storage";
 
+export {mnemonicGenerate} from '@polkadot/util-crypto';
 export type {DdcClientInterface} from "./DdcClient.interface";
 export {ClientOptions} from "./options/ClientOptions";
 export {ReadOptions} from "./options/ReadOptions";

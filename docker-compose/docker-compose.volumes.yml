@@ -1,0 +1,78 @@
+version: "3"
+
+services:
+  ddc-cdn-node:
+    container_name: "ddc-cdn-node"
+    image: 'cerebellumnetwork/ddc-cdn-node:dev-latest'
+    environment:
+      - 'HTTP_PORT=8080'
+      - 'HTTP_ADDRESS=http://localhost:8080'
+      - 'LOG_LEVEL=debug'
+      - 'LOG_JSON_FORMAT=false'
+      - 'TEST_ENABLED=true'
+    ports:
+      - '8080:8080'
+    volumes:
+      - './volumes/cdn:/data/badger'
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/info || exit 1
+      interval: 3s
+      timeout: 1s
+      retries: 5
+
+  ddc-storage-node-0:
+    container_name: "ddc-storage-node-0"
+    image: 'cerebellumnetwork/ddc-storage-node:dev-latest'
+    environment:
+      - 'HTTP_PORT=8090'
+      - 'HTTP_ADDRESS=http://localhost:8090'
+      - 'LOG_LEVEL=info'
+      - 'LOG_JSON_FORMAT=false'
+      - 'TEST_ENABLED=true'
+    ports:
+      - '8090:8090'
+    volumes:
+      - './volumes/storage0:/data/badger'
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8090/info || exit 1
+      interval: 3s
+      timeout: 1s
+      retries: 5
+
+  ddc-storage-node-1:
+    container_name: "ddc-storage-node-1"
+    image: 'cerebellumnetwork/ddc-storage-node:dev-latest'
+    environment:
+      - 'HTTP_PORT=8091'
+      - 'HTTP_ADDRESS=http://localhost:8091'
+      - 'LOG_LEVEL=info'
+      - 'LOG_JSON_FORMAT=false'
+      - 'TEST_ENABLED=true'
+    ports:
+      - '8091:8091'
+    volumes:
+      - './volumes/storage1:/data/badger'
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8091/info || exit 1
+      interval: 3s
+      timeout: 1s
+      retries: 5
+
+  ddc-storage-node-2:
+    container_name: "ddc-storage-node-2"
+    image: 'cerebellumnetwork/ddc-storage-node:dev-latest'
+    environment:
+      - 'HTTP_PORT=8092'
+      - 'HTTP_ADDRESS=http://localhost:8092'
+      - 'LOG_LEVEL=info'
+      - 'LOG_JSON_FORMAT=false'
+      - 'TEST_ENABLED=true'
+    ports:
+      - '8092:8092'
+    volumes:
+      - './volumes/storage2:/data/badger'
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8092/info || exit 1
+      interval: 3s
+      timeout: 1s
+      retries: 5
