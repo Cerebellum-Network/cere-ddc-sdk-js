@@ -62,11 +62,11 @@ export function createConfig(
             },
             filename: "[name].js",
         },
-        externals,
+        externals: process.env.npm_lifecycle_event === 'build:browser:module' ? {} : externals,
         plugins: [
             new webpack.ProvidePlugin({
                 Buffer: ['buffer', 'Buffer'],
-            })
+            }),
         ],
     };
 

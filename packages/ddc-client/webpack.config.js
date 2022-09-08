@@ -22,17 +22,4 @@ if (browserslistEnv === 'browser') {
     });
 }
 
-config = merge(config, {
-    externals: {
-        '@cere-ddc-sdk/content-addressable-storage': '@cere-ddc-sdk/content-addressable-storage',
-        '@cere-ddc-sdk/core': '@cere-ddc-sdk/core',
-        '@cere-ddc-sdk/file-storage': '@cere-ddc-sdk/file-storage',
-        '@cere-ddc-sdk/key-value-storage': '@cere-ddc-sdk/key-value-storage',
-        '@cere-ddc-sdk/smart-contract': '@cere-ddc-sdk/smart-contract',
-        "@polkadot/extension-inject": "@polkadot/extension-inject",
-        "@polkadot/util": "@polkadot/util",
-        "@polkadot/util-crypto": "@polkadot/util-crypto",
-    },
-});
-
 export default config;

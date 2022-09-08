@@ -42,6 +42,8 @@
     "package": "rimraf build && clean-publish --temp-dir build && npm run types && npm run build"
   },
   "devDependencies": {
+    "@polkadot/extension-dapp": "^0.44.1",
+    "@polkadot/extension-inject": "^0.44.1",
     "@types/lodash": "^4.14.182",
     "@types/node": "^16.0.0",
     "clean-publish": "^4.0.1",
@@ -56,8 +58,6 @@
   "dependencies": {
     "@polkadot/api": "4.3.1",
     "@polkadot/api-contract": "4.3.1",
-    "@polkadot/extension-inject": "^0.44.1",
-    "@polkadot/extension-dapp": "^0.44.1",
     "@polkadot/keyring": "6.11.1",
     "@polkadot/util-crypto": "6.11.1",
     "@polkadot/wasm-crypto": "4.6.1",

@@ -14,3 +14,4 @@ packages/proto/src/
 *.ipr
 *.iml
 *.iws
+docker-compose/volumes

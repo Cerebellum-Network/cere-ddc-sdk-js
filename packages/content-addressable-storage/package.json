@@ -35,6 +35,7 @@
     "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
     "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
     "build:browser": "BROWSERSLIST_ENV=browser npm run build:cjs && BROWSERSLIST_ENV=browser npm run build:mjs",
+    "build:browser:module": "TARGET=build:mjs BROWSERSLIST_ENV=browser NODE_ENV=production webpack",
     "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
     "build": "npm run build:browser && npm run build:node",
     "types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
