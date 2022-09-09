@@ -2,8 +2,8 @@ import {createRequire} from 'node:module';
 import path from 'node:path';
 import {URL} from 'node:url';
 import fs from 'node:fs';
-import packages from './packages.js';
 import {execSync} from 'node:child_process';
+import packages from './packages.js';
 
 const require = createRequire(import.meta.url);
 const dirname = path.dirname(new URL(import.meta.url).pathname);
