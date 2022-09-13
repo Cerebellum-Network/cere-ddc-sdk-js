@@ -20,6 +20,7 @@ export function createConfig(
     browserEntryName
 ) {
     const dirname = path.dirname(new URL(metaUrl).pathname);
+    const folderName = path.basename(dirname);
     const nodeModules = path.join(dirname, 'node_modules');
 
     const require = createRequire(import.meta.url);
@@ -29,6 +30,7 @@ export function createConfig(
         return acc;
     }, {});
 
+    const isBrowserModule = process.env.npm_lifecycle_event === 'build:browser:module';
     const config = {
         mode: process.env.NODE_ENV || 'production',
         target: 'browserslist',
@@ -62,7 +64,7 @@ export function createConfig(
             },
             filename: "[name].js",
         },
-        externals: process.env.npm_lifecycle_event === 'build:browser:module' ? {} : externals,
+        externals: isBrowserModule ? {} : externals,
         plugins: [
             new webpack.ProvidePlugin({
                 Buffer: ['buffer', 'Buffer'],
@@ -87,7 +89,13 @@ export function createConfig(
         });
     }
 
-    if (browserslistEnv === "browser") {
+    if (isBrowserModule) {
+        webpackConfig = merge(webpackConfig, {
+            entry: {
+                [folderName]: path.resolve(dirname, browserEntry || nodeEntry),
+            },
+        });
+    } else if (browserslistEnv === "browser") {
         webpackConfig = merge(webpackConfig, {
             entry: {
                 [browserEntryName ||
