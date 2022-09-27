@@ -13,8 +13,8 @@ describe("ddc client integration tests", () => {
         const data = new Uint8Array([1, 2, 3, 4, 5]);
 
         //when
-        const headPieceUri = await storage.upload(bucketId, data);
-        const stream = await storage.read(bucketId, headPieceUri.cid);
+        const headPieceUri = await storage.upload(bucketId, data, new Uint8Array());
+        const stream = await storage.read(bucketId, headPieceUri.cid, new Uint8Array());
 
         //then
         let result = [];

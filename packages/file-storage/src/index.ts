@@ -35,35 +35,35 @@ export class FileStorage implements FileStorageInterface {
         return new FileStorage(await ContentAddressableStorage.build(storageOptions, secretPhrase), config);
     }
 
-    async upload(bucketId: bigint, data: Data, tags: Array<Tag> = []): Promise<PieceUri> {
+    async upload(bucketId: bigint, data: Data, session: Uint8Array, tags: Array<Tag> = []): Promise<PieceUri> {
         const stream = await transformDataToStream(data);
         const reader = stream.pipeThrough(new streamWeb.TransformStream(this.fs.chunkTransformer())).getReader();
-        return await this.fs.uploadFromStreamReader(bucketId, reader, tags);
+        return await this.fs.uploadFromStreamReader(bucketId, reader, session, tags);
     }
 
-    read(bucketId: bigint, cid: string): streamWeb.ReadableStream<Uint8Array> {
-        return new streamWeb.ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, cid),
+    read(bucketId: bigint, cid: string, session: Uint8Array): streamWeb.ReadableStream<Uint8Array> {
+        return new streamWeb.ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, session, cid),
             new streamWeb.CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }
 
-    readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array): ReadableStream<Uint8Array> {
-        return new streamWeb.ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, cid, dek),
+    readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array, session: Uint8Array): ReadableStream<Uint8Array> {
+        return new streamWeb.ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, session, cid, dek),
             new streamWeb.CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }
 
-    async uploadEncrypted(bucketId: bigint, data: Data, tags: Array<Tag> = [], encryptionOptions: EncryptionOptions): Promise<PieceUri> {
+    async uploadEncrypted(bucketId: bigint, data: Data, session: Uint8Array, tags: Array<Tag> = [], encryptionOptions: EncryptionOptions): Promise<PieceUri> {
         const stream = await transformDataToStream(data);
         const reader = stream.pipeThrough(new streamWeb.TransformStream(this.fs.chunkTransformer())).getReader();
-        return await this.fs.uploadFromStreamReader(bucketId, reader, tags, encryptionOptions);
+        return await this.fs.uploadFromStreamReader(bucketId, reader, session, tags, encryptionOptions);
     }
 
-    readLinks(bucketId: bigint, links: Array<Link>): ReadableStream<Uint8Array> {
-        return new streamWeb.ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, links),
+    readLinks(bucketId: bigint, links: Array<Link>, session: Uint8Array): ReadableStream<Uint8Array> {
+        return new streamWeb.ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, session, links),
             new streamWeb.CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }
 
-    readDecryptedLinks(bucketId: bigint, links: Array<Link>, dek: Uint8Array): ReadableStream<Uint8Array> {
-        return new streamWeb.ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, links, dek),
+    readDecryptedLinks(bucketId: bigint, links: Array<Link>, dek: Uint8Array, session: Uint8Array): ReadableStream<Uint8Array> {
+        return new streamWeb.ReadableStream<Uint8Array>(this.fs.createReadUnderlyingSource(bucketId, session, links, dek),
             new streamWeb.CountQueuingStrategy({highWaterMark: this.fs.config.parallel}));
     }
 

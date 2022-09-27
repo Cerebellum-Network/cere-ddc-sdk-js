@@ -16,8 +16,8 @@ describe("content-addressable-storage integration tests", () => {
         const bucketId = 1n;
 
         //when
-        const uri = await storage.store(bucketId, piece);
-        const storedPiece = await storage.read(bucketId, uri.cid);
+        const uri = await storage.store(bucketId, piece, new Uint8Array());
+        const storedPiece = await storage.read(bucketId, uri.cid, new Uint8Array());
 
         //then
         piece.cid = "bafk2bzacecapv4eqjea5eznq5rksnltctqp5iff6scxejhhhlypqoo24fokyi"
@@ -30,7 +30,7 @@ describe("content-addressable-storage integration tests", () => {
         const tags = [new Tag("testKey", "testValue")]
         const bucketId = 1n;
         const piece = new Piece(new Uint8Array([1, 2, 3]), tags);
-        await storage.store(bucketId, piece);
+        await storage.store(bucketId, piece, new Uint8Array());
 
         //when
         const searchResult = await storage.search(new Query(bucketId, tags));
@@ -46,7 +46,7 @@ describe("content-addressable-storage integration tests", () => {
         const tags = [new Tag("testKey2", "testValue2", SearchType.NOT_SEARCHABLE)]
         const bucketId = 1n;
         const piece = new Piece(new Uint8Array([1, 2, 3]), tags);
-        await storage.store(bucketId, piece);
+        await storage.store(bucketId, piece, new Uint8Array());
 
         //when
         const searchResult = await storage.search(new Query(bucketId, tags));
