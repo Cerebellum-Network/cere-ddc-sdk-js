@@ -19,15 +19,15 @@ export interface FileStorage {
     readonly config: FileStorageConfig;
     readonly caStorage: ContentAddressableStorage;
 
-    upload(bucketId: bigint, data: Data, tags: Array<Tag>): Promise<PieceUri>;
-    upload(bucketId: bigint, data: Data): Promise<PieceUri>;
-    read(bucketId: bigint, cid: string): ReadableStream<Uint8Array>;
+    upload(bucketId: bigint, data: Data, session: Uint8Array, tags: Tag[]): Promise<PieceUri>;
+    upload(bucketId: bigint, data: Data, session: Uint8Array): Promise<PieceUri>;
+    read(bucketId: bigint, cid: string, session: Uint8Array): ReadableStream<Uint8Array>;
 
-    readLinks(bucketId: bigint, links: Array<Link>): ReadableStream<Uint8Array>;
-    readDecryptedLinks(bucketId: bigint, links: Array<Link>, dek: Uint8Array): ReadableStream<Uint8Array>;
+    readLinks(bucketId: bigint, links: Array<Link>, session: Uint8Array): ReadableStream<Uint8Array>;
+    readDecryptedLinks(bucketId: bigint, links: Array<Link>, dek: Uint8Array, session: Uint8Array): ReadableStream<Uint8Array>;
 
-    readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array): ReadableStream<Uint8Array>;
-    uploadEncrypted(bucketId: bigint, data: Data, tags: Array<Tag>, encryptionOptions: EncryptionOptions): Promise<PieceUri>;
+    readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array, session: Uint8Array): ReadableStream<Uint8Array>;
+    uploadEncrypted(bucketId: bigint, data: Data, session: Uint8Array, tags: Array<Tag>, encryptionOptions: EncryptionOptions): Promise<PieceUri>;
 }
 
 export declare const FileStorage: {

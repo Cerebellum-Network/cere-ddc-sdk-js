@@ -47,10 +47,13 @@
     "@cere-ddc-sdk/proto": "1.3.4",
     "@cere-ddc-sdk/smart-contract": "1.3.4",
     "@polkadot/util": "^6.0.5",
-    "@polkadot/util-crypto": "6.11.1"
+    "@polkadot/util-crypto": "6.11.1",
+    "nanoid": "3.3.3",
+    "varint": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^16.0.0",
+    "@types/varint": "^6.0.0",
     "clean-publish": "^4.0.1",
     "cross-fetch": "^3.1.5",
     "rimraf": "^3.0.2",

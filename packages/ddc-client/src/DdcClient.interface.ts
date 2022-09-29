@@ -22,13 +22,13 @@ export interface DdcClientInterface {
 
     bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList>
 
-    store(bucketId: bigint, piece: Piece, options?: StoreOptions): Promise<DdcUri>
+    store(bucketId: bigint, piece: Piece, session: Uint8Array, options?: StoreOptions): Promise<DdcUri>
 
-    store(bucketId: bigint, file: File, options?: StoreOptions): Promise<DdcUri>
+    store(bucketId: bigint, file: File, session: Uint8Array, options?: StoreOptions): Promise<DdcUri>
 
-    read(ddcUri: DdcUri, options?: ReadOptions): Promise<File | Piece>
+    read(ddcUri: DdcUri, session: Uint8Array, options?: ReadOptions): Promise<File | Piece>
 
     search(query: Query): Promise<Array<Piece>>
 
-    shareData(bucketId: bigint, dekPath: string, publicKeyHex: string): Promise<DdcUri>
+    shareData(bucketId: bigint, dekPath: string, publicKeyHex: string, session: Uint8Array): Promise<DdcUri>
 }

@@ -5,6 +5,7 @@
 **/build/
 coverage/
 tsconfig.*buildinfo
+test.ts
 
 packages/proto/src/
 !packages/proto/src/index.ts

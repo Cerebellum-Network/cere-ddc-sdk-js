@@ -1,6 +1,7 @@
-import { createConfig } from "../../shared.config.js";
 import { merge } from "webpack-merge";
+import webpack from "webpack";
 import { createRequire } from "module";
+import { createConfig } from "../../shared.config.js";
 
 const require = createRequire(import.meta.url);
 const browserslistEnv = process.env.BROWSERSLIST_ENV;
@@ -19,7 +20,16 @@ if (browserslistEnv === 'browser') {
                 crypto: require.resolve('crypto-browserify'),
                 stream: require.resolve('stream-browserify'),
             }
-        }
+        },
+    });
+} else if (browserslistEnv === 'node') {
+    config = merge(config, {
+        plugins: [
+            new webpack.ProvidePlugin({
+                'URL': ['node:url', 'URL'],
+                'URLSearchParams': ['node:url', 'URLSearchParams'],
+            }),
+        ],
     });
 }
 

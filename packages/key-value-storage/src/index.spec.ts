@@ -16,7 +16,7 @@ describe("key-value-storage integration tests", () => {
         const key = "keyValue";
 
         //when
-        await storage.store(bucketId, key, new Piece(data));
+        await storage.store(bucketId, key, new Piece(data), new Uint8Array());
         const storedPieces = await storage.read(bucketId, key);
 
         //then
