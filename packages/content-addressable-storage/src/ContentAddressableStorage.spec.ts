@@ -32,6 +32,7 @@ describe("content-addressable-storage test vector", () => {
 
         //when
         const request: any = await storage.buildStoreRequest(bucketId, piece, new Uint8Array());
+        // @ts-ignore
         request.piece = PbPiece.toJson(piece.toProto(bucketId));
 
         // Re-generate the test vector if it does not exist.

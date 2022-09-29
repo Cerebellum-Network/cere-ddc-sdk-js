@@ -120,6 +120,7 @@ export class ContentAddressableStorage {
             bucketId: Number(bucketId),
             endOfEpoch: BigInt(endOfEpoch),
         });
+        // @ts-ignore
         const sessionStatusEncoded = SessionStatus.toBinary(sessionStatus);
 
         const data = concatArrays(
@@ -141,11 +142,13 @@ export class ContentAddressableStorage {
 
         const response = await this.sendRequest(BASE_PATH_SESSION, {
             method: 'POST',
+            // @ts-ignore
             body: PbRequest.toBinary(request).buffer,
         });
 
         if (!response.ok) {
             const responseData = await response.arrayBuffer();
+            // @ts-ignore
             const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
             throw Error(JSON.stringify({
                 code: protoResponse.responseCode,
@@ -158,6 +161,7 @@ export class ContentAddressableStorage {
 
     async buildStoreRequest(bucketId: bigint, piece: Piece, sessionId: Uint8Array): Promise<StoreRequest> {
         const pbPiece: PbPiece = piece.toProto(bucketId);
+        // @ts-ignore
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
         const cid = await this.cidBuilder.build(pieceAsBytes);
         const timestamp = new Date();
@@ -174,6 +178,7 @@ export class ContentAddressableStorage {
             },
         };
 
+        // @ts-ignore
         const signedPieceSerial = PbSignedPiece.toBinary(pbSignedPiece);
 
         const request = PbRequest.create({
@@ -184,6 +189,7 @@ export class ContentAddressableStorage {
             multiHashType: 0n,
         });
 
+        // @ts-ignore
         return {body: PbRequest.toBinary(request), cid, method: "PUT", path: BASE_PATH_PIECES};
     }
 
@@ -195,6 +201,7 @@ export class ContentAddressableStorage {
             body: request.body,
         });
         const responseData = await response.arrayBuffer();
+        // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
 
         if (!response.ok) {
@@ -212,10 +219,12 @@ export class ContentAddressableStorage {
         });
         const search = new URLSearchParams();
         search.set('bucketId', bucketId.toString());
+        // @ts-ignore
         search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'));
 
         const response = await this.sendRequest(`${BASE_PATH_PIECES}/${cid}?${search.toString()}`);
         const responseData = await response.arrayBuffer();
+        // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
 
         if (!response.ok) {
@@ -224,6 +233,7 @@ export class ContentAddressableStorage {
 
         const pbSignedPiece = await new Promise<PbSignedPiece>((resolve) => {
             try {
+                // @ts-ignore
                 resolve(PbSignedPiece.fromBinary(protoResponse.body));
             } catch (e) {
                 throw new Error("Can't parse read response body to SignedPiece.");
@@ -234,6 +244,7 @@ export class ContentAddressableStorage {
             throw new Error(`Failed to parse signed piece. Response: status='${protoResponse.responseCode}' body=${u8aToString(protoResponse.body)}`);
         }
 
+        // @ts-ignore
         return this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
     }
 
@@ -243,11 +254,13 @@ export class ContentAddressableStorage {
             tags: query.tags,
             skipData: query.skipData
         };
+        // @ts-ignore
         const queryAsBytes = PbQuery.toBinary(pbQuery);
         const queryBase58 = base58Encode(queryAsBytes);
 
         const response = await this.sendRequest(`${BASE_PATH_PIECES}?query=${queryBase58}`);
         const responseData = await response.arrayBuffer();
+        // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
 
         if (!response.status) {
@@ -256,6 +269,7 @@ export class ContentAddressableStorage {
 
         const pbSearchResult = await new Promise<PbSearchResult>((resolve) => {
             try {
+                // @ts-ignore
                 resolve(PbSearchResult.fromBinary(protoResponse.body));
             } catch (e) {
                 throw new Error("Can't parse search response body to SearchResult.");
@@ -265,6 +279,7 @@ export class ContentAddressableStorage {
         const isPiece = (val: Uint8Array | undefined): val is Uint8Array => val != null;
         let pieces: Piece[] = pbSearchResult.searchedPieces
             .filter(p => isPiece(p.signedPiece?.piece))
+            // @ts-ignore
             .map(e => this.toPiece(PbPiece.fromBinary(e.signedPiece!.piece!), e.cid))
 
         return new SearchResult(pieces);
