@@ -13,7 +13,7 @@ export class KeyValueStorage {
         return new KeyValueStorage(await ContentAddressableStorage.build(storageOptions, secretPhrase))
     }
 
-    async store(bucketId: bigint, key: Uint8Array | string, piece: Piece, session: Uint8Array): Promise<PieceUri> {
+    async store(bucketId: bigint, key: Uint8Array | string, piece: Piece, session?: Uint8Array): Promise<PieceUri> {
         if (piece.tags.some(t => t.keyString == keyTag)) {
             throw Error("'Key' is a reserved tag for key-value storage")
         }
