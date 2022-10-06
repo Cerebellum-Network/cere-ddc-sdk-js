@@ -156,16 +156,16 @@ export class DdcClient implements DdcClientInterface {
         return this.caStorage.createSession(params);
     }
 
-    async store(bucketId: bigint, file: File, session: Uint8Array, options?: StoreOptions): Promise<DdcUri>;
-    async store(bucketId: bigint, piece: Piece, session: Uint8Array, options?: StoreOptions): Promise<DdcUri>;
+    async store(bucketId: bigint, file: File, options?: StoreOptions, session?: Uint8Array): Promise<DdcUri>;
+    async store(bucketId: bigint, piece: Piece, options?: StoreOptions, session?: Uint8Array): Promise<DdcUri>;
     async store(
         bucketId: bigint,
         fileOrPiece: File | Piece,
-        session: Uint8Array,
         options: StoreOptions = {},
+        session: Uint8Array,
     ): Promise<DdcUri> {
         if (options.encrypt) {
-            return this.storeEncrypted(bucketId, fileOrPiece, session, options);
+            return this.storeEncrypted(bucketId, fileOrPiece, options, session);
         } else {
             return this.storeUnencrypted(bucketId, fileOrPiece, session);
         }
@@ -174,8 +174,8 @@ export class DdcClient implements DdcClientInterface {
     private async storeEncrypted(
         bucketId: bigint,
         fileOrPiece: File | Piece,
-        session: Uint8Array,
         options: StoreOptions,
+        session?: Uint8Array,
     ): Promise<DdcUri> {
         let dek = DdcClient.buildHierarchicalDekHex(this.masterDek, options.dekPath);
         //ToDo can be random (Nacl ScaleBox). We need to decide if we need store publickey of user who created edek or shared
@@ -193,15 +193,15 @@ export class DdcClient implements DdcClientInterface {
 
         const encryptionOptions = {dekPath: options.dekPath || '', dek: dek};
         if (Piece.isPiece(fileOrPiece)) {
-            const pieceUri = await this.caStorage.storeEncrypted(bucketId, fileOrPiece, session, encryptionOptions);
+            const pieceUri = await this.caStorage.storeEncrypted(bucketId, fileOrPiece, encryptionOptions, session);
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
         } else {
             const pieceUri = await this.fileStorage.uploadEncrypted(
                 bucketId,
                 fileOrPiece.data as any,
-                session,
                 fileOrPiece.tags,
                 encryptionOptions,
+                session,
             );
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IFILE);
         }
@@ -215,14 +215,14 @@ export class DdcClient implements DdcClientInterface {
             const pieceUri = await this.fileStorage.upload(
                 bucketId,
                 fileOrPiece.data as any,
-                session,
                 fileOrPiece.tags,
+                session,
             );
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IFILE);
         }
     }
 
-    async read(ddcUri: DdcUri, session: Uint8Array, options: ReadOptions = {}): Promise<File | Piece> {
+    async read(ddcUri: DdcUri, options: ReadOptions = {}, session?: Uint8Array): Promise<File | Piece> {
         if (ddcUri.protocol) {
             const pieceUri = new PieceUri(BigInt(ddcUri.bucket), ddcUri.path as string);
             const piece = await this.caStorage.read(pieceUri.bucketId, pieceUri.cid, session);
@@ -234,17 +234,17 @@ export class DdcClient implements DdcClientInterface {
 
                 return piece;
             } else if (ddcUri.protocol === IFILE) {
-                return this.readByPieceUri(ddcUri, piece, session, options);
+                return this.readByPieceUri(ddcUri, piece, options, session);
             }
 
             throw new Error(`Unsupported URL for read: ${ddcUri.toString()}`);
         }
 
         const headPiece = await this.caStorage.read(BigInt(ddcUri.bucket), ddcUri.path as string, session);
-        return this.readByPieceUri(ddcUri, headPiece, session, options);
+        return this.readByPieceUri(ddcUri, headPiece, options, session);
     }
 
-    private async readByPieceUri(ddcUri: DdcUri, headPiece: Piece, session: Uint8Array, options: ReadOptions): Promise<File | Piece> {
+    private async readByPieceUri(ddcUri: DdcUri, headPiece: Piece, options: ReadOptions, session?: Uint8Array): Promise<File | Piece> {
         const isEncrypted = headPiece.tags.filter((t) => t.keyString == DEK_PATH_TAG).length > 0;
 
         //TODO 4. put into DEK cache
@@ -274,7 +274,7 @@ export class DdcClient implements DdcClientInterface {
         bucketId: bigint,
         dekPath: string,
         partnerBoxPublicKey: string,
-        session: Uint8Array,
+        session?: Uint8Array,
     ): Promise<DdcUri> {
         const dek = DdcClient.buildHierarchicalDekHex(this.masterDek, dekPath);
         const partnerEdek = nacl.box(dek, emptyNonce, hexToU8a(partnerBoxPublicKey), this.boxKeypair.secretKey);

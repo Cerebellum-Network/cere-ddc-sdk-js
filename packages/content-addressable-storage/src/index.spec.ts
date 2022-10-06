@@ -1,6 +1,5 @@
 import {ContentAddressableStorage, Piece, Query, SearchType, Tag} from "./index"
 
-
 describe("content-addressable-storage integration tests", () => {
     const url = "http://localhost:8080";
     const testSubject = ContentAddressableStorage
@@ -17,7 +16,7 @@ describe("content-addressable-storage integration tests", () => {
 
         //when
         const uri = await storage.store(bucketId, piece, new Uint8Array());
-        const storedPiece = await storage.read(bucketId, uri.cid, new Uint8Array());
+        const storedPiece = await storage.read(bucketId, uri.cid);
 
         //then
         piece.cid = "bafk2bzacecapv4eqjea5eznq5rksnltctqp5iff6scxejhhhlypqoo24fokyi"
