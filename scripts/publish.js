@@ -28,7 +28,7 @@ packages.forEach((packageName) => {
         stdio: 'inherit',
     });
 
-    execSync('sleep 5');
+    execSync('sleep 10');
 
     execSync('npm publish --access public', {
         cwd: path.join(root, packageName, 'build'),
