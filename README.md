@@ -58,6 +58,6 @@ First checkout the schemas repo:
 
     git submodule update --init
 
-Then work in the `ddc-schemas` folder with git. For example, checkout a new branch, or add a new test vector ([example](packages/content-addressable-storage/src/ContentAddressableStorage.spec.ts)). Then record the specific version of the schemas:
+Then work in the `ddc-schemas` folder with git. For example, checkout a new branch, or add a new test vector ([example](packages/content-addressable-storage/src/__tests__/ContentAddressableStorage.spec.ts)). Then record the specific version of the schemas:
 
     git add ddc-schemas

@@ -21,7 +21,7 @@
   "author": "",
   "license": "Apache-2.0",
   "scripts": {
-    "protoc": "npx protoc --ts_out ./src --proto_path ../../ddc-schemas/storage/protobuf $(find ../../ddc-schemas/storage/protobuf -name '*.proto' -type f | sed 's/.*\\///' | sort)",
+    "protoc": "protoc --ts_out ./src --proto_path ../../ddc-schemas/storage/protobuf $(find ../../ddc-schemas/storage/protobuf -name '*.proto' -type f | sed 's/.*\\///' | sort)",
     "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
     "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
     "build:browser": "BROWSERSLIST_ENV=browser npm run build:cjs && BROWSERSLIST_ENV=browser npm run build:mjs",

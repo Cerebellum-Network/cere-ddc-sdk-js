@@ -7,26 +7,35 @@ module.exports = {
     collectCoverage: true,
     coverageDirectory: "coverage",
     collectCoverageFrom: [
-        "packages/**/*.{ts,js,jsx}"
+        "packages/**/*.{ts}"
     ],
     coveragePathIgnorePatterns: [
         "jest.config.cjs",
+        "test.ts",
         "/node_modules/",
         "/build/",
+        "/scripts/",
         "/src/"
+    ],
+    "roots": [
+        "<rootDir>",
     ],
     testPathIgnorePatterns: [
         "/node_modules/",
         "/build/",
+        "test.ts",
         "/src/"
     ],
     moduleNameMapper: {
-        '^@cere-ddc-sdk/(.*)$': '<rootDir>/packages/$1/'
+        '^@cere-ddc-sdk/(.*)$': '<rootDir>/packages/$1/src'
     },
+    testMatch: [
+        "<rootDir>/tests/**/*.spec.ts",
+    ],
     transform: {
-        '^.+\\.(js|jsx|ts|tsx)$': require.resolve('babel-jest')
+        '\\.(js|ts)$': require.resolve('babel-jest')
     },
     globalTeardown: "./jest.teardown.cjs",
     globalSetup: "./jest.setup.cjs",
-    testTimeout: 10000
+    testTimeout: 100000
 };
