@@ -7,7 +7,6 @@ import {
     SessionStatus,
     SignedPiece as PbSignedPiece,
 } from '@cere-ddc-sdk/proto';
-import {SearchResult} from './models/SearchResult';
 import {CidBuilder, CipherInterface, Scheme, SchemeInterface, SchemeName} from '@cere-ddc-sdk/core';
 import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
 import {base58Encode, mnemonicGenerate} from '@polkadot/util-crypto';
@@ -15,6 +14,7 @@ import {stringToU8a, u8aToString} from '@polkadot/util';
 import {nanoid} from 'nanoid';
 import {fetch} from 'cross-fetch';
 import {encode} from 'varint';
+import {SearchResult} from './models/SearchResult';
 import {Piece} from './models/Piece';
 import {PieceUri} from './models/PieceUri';
 import {Query} from './models/Query';
@@ -189,7 +189,7 @@ export class ContentAddressableStorage {
         return sessionId;
     }
 
-    async buildStoreRequest(bucketId: bigint, piece: Piece, sessionId?: Uint8Array): Promise<StoreRequest> {
+    async buildStoreRequest(bucketId: bigint, piece: Piece): Promise<StoreRequest> {
         const pbPiece: PbPiece = piece.toProto(bucketId);
         // @ts-ignore
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
@@ -212,20 +212,17 @@ export class ContentAddressableStorage {
 
         // @ts-ignore
         const signedPieceSerial = PbSignedPiece.toBinary(pbSignedPiece);
-        const requestSignature = sessionId && sessionId.length > 0
-            ? undefined
-            : await this.signRequest(
-                  PbRequest.create({
-                      body: signedPieceSerial,
-                  }),
-                  BASE_PATH_PIECES,
-                  'PUT',
-              );
+        const requestSignature = await this.signRequest(
+            PbRequest.create({
+                body: signedPieceSerial,
+            }),
+            BASE_PATH_PIECES,
+            'PUT',
+        );
 
         const request = PbRequest.create({
             body: signedPieceSerial,
             scheme: this.scheme.name,
-            sessionId,
             publicKey: this.scheme.publicKey,
             multiHashType: 0n,
             signature: requestSignature,
@@ -235,8 +232,8 @@ export class ContentAddressableStorage {
         return {body: PbRequest.toBinary(request), cid, method: 'PUT', path: BASE_PATH_PIECES};
     }
 
-    async store(bucketId: bigint, piece: Piece, sessionId?: Uint8Array): Promise<PieceUri> {
-        const request = await this.buildStoreRequest(bucketId, piece, sessionId);
+    async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
+        const request = await this.buildStoreRequest(bucketId, piece);
 
         const response = await this.sendRequest(request.path, {
             method: request.method,
@@ -309,7 +306,7 @@ export class ContentAddressableStorage {
         return this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
     }
 
-    async search(query: Query): Promise<SearchResult> {
+    async search(query: Query, session?: Uint8Array): Promise<SearchResult> {
         const pbQuery: PbQuery = {
             bucketId: Number(query.bucketId),
             tags: query.tags,
@@ -319,7 +316,24 @@ export class ContentAddressableStorage {
         const queryAsBytes = PbQuery.toBinary(pbQuery);
         const queryBase58 = base58Encode(queryAsBytes);
 
-        const response = await this.sendRequest(`${BASE_PATH_PIECES}?query=${queryBase58}`);
+        const search = new URLSearchParams();
+        search.append('query', queryBase58);
+
+        const requestSignature = session && session.length > 0
+            ? undefined
+            : await this.signRequest(
+                PbRequest.create(),
+                `${BASE_PATH_PIECES}?${search.toString()}`,
+            );
+        const pbRequest = PbRequest.create({
+            scheme: this.scheme.name,
+            sessionId: session,
+            signature: requestSignature,
+            publicKey: this.scheme.publicKey,
+        });
+        search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'))
+
+        const response = await this.sendRequest(`${BASE_PATH_PIECES}?${search.toString()}`);
         const responseData = await response.arrayBuffer();
         // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
@@ -337,7 +351,7 @@ export class ContentAddressableStorage {
                 // @ts-ignore
                 resolve(PbSearchResult.fromBinary(protoResponse.body));
             } catch (e) {
-                throw new Error("Can't parse search response body to SearchResult.");
+                throw new Error(`Can't parse search response body to SearchResult.\n${u8aToString(protoResponse.body)}`);
             }
         });
 
@@ -354,12 +368,11 @@ export class ContentAddressableStorage {
         bucketId: bigint,
         piece: Piece,
         encryptionOptions: EncryptionOptions,
-        session?: Uint8Array,
     ): Promise<PieceUri> {
         const encryptedPiece = piece.clone();
         encryptedPiece.tags.push(new Tag(DEK_PATH_TAG, encryptionOptions.dekPath));
         encryptedPiece.data = this.cipher!.encrypt(piece.data, encryptionOptions.dek);
-        return this.store(bucketId, encryptedPiece, session);
+        return this.store(bucketId, encryptedPiece);
     }
 
     async readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array, session?: Uint8Array): Promise<Piece> {

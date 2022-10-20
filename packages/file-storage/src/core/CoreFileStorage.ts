@@ -25,9 +25,8 @@ export class CoreFileStorage {
         reader: ReadableStreamDefaultReader<Uint8Array>,
         tags: Array<Tag> = [],
         encryptionOptions?: EncryptionOptions,
-        session?: Uint8Array,
     ): Promise<PieceUri> {
-        const indexedLinks = await this.storeChunks(bucketId, reader, encryptionOptions, session);
+        const indexedLinks = await this.storeChunks(bucketId, reader, encryptionOptions);
 
         if (indexedLinks.length === 0) {
             throw new Error('Upload data is empty');
@@ -37,9 +36,9 @@ export class CoreFileStorage {
 
         const piece = new Piece(new Uint8Array(), tags, links);
         if (encryptionOptions) {
-            return await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions, session);
+            return await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions);
         } else {
-            return await this.caStorage.store(bucketId, piece, session);
+            return await this.caStorage.store(bucketId, piece);
         }
     }
 
@@ -144,8 +143,8 @@ export class CoreFileStorage {
                         const piece = new Piece(result.value);
                         piece.tags.push(new Tag(multipartTag, 'true'));
                         const pieceUri = encryptionOptions
-                            ? await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions, session)
-                            : await this.caStorage.store(bucketId, piece, session);
+                            ? await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions)
+                            : await this.caStorage.store(bucketId, piece);
 
                         indexedLinks.push(
                             new IndexedLink(current, new Link(pieceUri.cid, BigInt(result.value.length))),

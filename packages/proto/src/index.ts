@@ -1,4 +1,4 @@
-export * from "./link";
+export {Link} from "./link";
 export * from "./log_record";
 export {Piece} from "./piece";
 export * from "./query";

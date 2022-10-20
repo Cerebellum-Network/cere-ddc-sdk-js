@@ -22,5 +22,13 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Install packages
         run: npm install
+      - name: Install protoc
+        run: sudo apt-get install -y protobuf-compiler
+      - name: Check protoc version
+        run: protoc --version
+      - name: Compile proto
+        run: npm run compile
+      - name: Integration tests
+        run: npm test
       - name: Build and publish
         run: node scripts/ci-test.js --patch
