@@ -4,6 +4,8 @@ import {u8aToHex} from "@polkadot/util";
 import {DdcClient, File} from "@cere-ddc-sdk/ddc-client";
 import {DdcUri} from "@cere-ddc-sdk/core";
 import {Piece, Query, Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import {saveWithEmptyNonce} from './save-with-empty-nonce';
+import {unwrap} from './unwrap';
 
 describe("DDC client integration tests", () => {
     const seed = "0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03";
@@ -251,5 +253,29 @@ describe("DDC client integration tests", () => {
 
         //then
         expect(result).toEqual([new Piece(new Uint8Array([]), tags, [], uri.path as string)]);
+    });
+
+    describe('test encryption backward compatibility', () => {
+        it('encryption should work for data without nonce', async () => {
+            const data = randomBytes(20);
+            const key = randomUUID();
+            const value = randomUUID();
+            const tags = [new Tag(key, value)];
+            const piece = new Piece(data, tags);
+            const dekPath = "test/piece";
+            const uri = await saveWithEmptyNonce(mainClient, bucketId, piece, {
+                encrypt: true,
+                dekPath,
+            });
+            const result = await mainClient.read(uri, {decrypt: true, dekPath});
+            result.tags.forEach(tag => {
+                console.log(tag.keyString);
+                console.log(tag.valueString);
+            });
+            const tag = tags.find(t => t.keyString === key);
+            expect(tag).toBeDefined();
+            expect(unwrap(tag).valueString).toBe(value);
+            expect(piece.data).toEqual(piece.data);
+        });
     });
 })
