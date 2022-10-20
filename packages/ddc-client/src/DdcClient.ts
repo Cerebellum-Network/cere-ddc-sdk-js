@@ -27,10 +27,10 @@ import {StoreOptions} from './options/StoreOptions';
 import {ReadOptions} from './options/ReadOptions';
 import {File} from './model/File';
 
-//ToDo generate from random for security
 const emptyNonce = new Uint8Array(nacl.box.nonceLength);
 
 const ENCRYPTOR_TAG = 'encryptor';
+const NONCE_TAG = 'nonce';
 const MAX_BUCKET_SIZE = 5n;
 
 type GetFirstArgument<Fn> = Fn extends (x: infer R) => unknown ? R : unknown;
@@ -175,16 +175,16 @@ export class DdcClient implements DdcClientInterface {
         bucketId: bigint,
         fileOrPiece: File | Piece,
         options: StoreOptions,
-        session?: Uint8Array,
     ): Promise<DdcUri> {
-        let dek = DdcClient.buildHierarchicalDekHex(this.masterDek, options.dekPath);
-        //ToDo can be random (Nacl ScaleBox). We need to decide if we need store publickey of user who created edek or shared
-        let edek = nacl.box(dek, emptyNonce, this.boxKeypair.publicKey, this.boxKeypair.secretKey);
+        const dek = DdcClient.buildHierarchicalDekHex(this.masterDek, options.dekPath);
+        const nonce = nacl.randomBytes(nacl.box.nonceLength);
+        const edek = nacl.box(dek, nonce, this.boxKeypair.publicKey, this.boxKeypair.secretKey);
 
         //ToDo need better structure to store keys
         await this.caStorage.store(
             bucketId,
             new Piece(edek, [
+                new Tag(NONCE_TAG, nonce),
                 new Tag(ENCRYPTOR_TAG, u8aToHex(this.boxKeypair.publicKey)),
                 new Tag('Key', `${bucketId}/${options.dekPath || ''}/${u8aToHex(this.boxKeypair.publicKey)}`),
             ]),
@@ -323,7 +323,9 @@ export class DdcClient implements DdcClientInterface {
             throw new Error("EDEK doesn't contains encryptor public key");
         }
 
-        const result = nacl.box.open(piece.data, emptyNonce, hexToU8a(encryptor), this.boxKeypair.secretKey);
+        const nonce = piece.tags.find((t) => t.keyString === NONCE_TAG)?.value ?? emptyNonce;
+
+        const result = nacl.box.open(piece.data, nonce, hexToU8a(encryptor), this.boxKeypair.secretKey);
         if (result == null) {
             throw new Error('Unable to decrypt dek');
         }
