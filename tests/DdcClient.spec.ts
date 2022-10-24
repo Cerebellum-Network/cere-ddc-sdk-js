@@ -25,6 +25,10 @@ describe("DDC client integration tests", () => {
         await secondClient.disconnect();
     });
 
+    it('should read scheme address', () => {
+        expect(mainClient.caStorage.scheme.address).toBeDefined();
+    });
+
     it("store and read unencrypted small data", async () => {
         //given
         const data = randomBytes(20);
