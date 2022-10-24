@@ -331,6 +331,7 @@ export class ContentAddressableStorage {
             signature: requestSignature,
             publicKey: this.scheme.publicKey,
         });
+        // @ts-ignore
         search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'))
 
         const response = await this.sendRequest(`${BASE_PATH_PIECES}?${search.toString()}`);

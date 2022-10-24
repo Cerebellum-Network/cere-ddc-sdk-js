@@ -16,7 +16,7 @@
       "@cere-ddc-sdk/*": ["./packages/*/src/"]
     }
   },
-  "include": ["packages/"],
+  "include": ["packages/", "tests/"],
   "exclude": [
     "**/*.test.ts",
     "**/*.stub.ts",
