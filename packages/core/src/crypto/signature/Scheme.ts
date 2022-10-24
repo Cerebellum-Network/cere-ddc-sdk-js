@@ -7,10 +7,12 @@ import {SchemeInterface, SchemeName} from "./Scheme.interface";
 export class Scheme implements SchemeInterface {
     keyringPair: KeyringPair;
     name: SchemeName;
+    address: string;
 
     private constructor(keyringPair: KeyringPair, name: SchemeName) {
         this.keyringPair = keyringPair;
         this.name = name;
+        this.address = keyringPair.address;
     }
 
     static async createScheme(schemeName: SchemeName, secretPhrase: string): Promise<Scheme> {
