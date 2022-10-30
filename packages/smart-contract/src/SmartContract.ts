@@ -5,15 +5,14 @@ import {ApiPromise, WsProvider} from "@polkadot/api";
 import {ContractPromise} from "@polkadot/api-contract";
 import {Keyring} from '@polkadot/keyring';
 import {AddressOrPair, SubmittableExtrinsic, SubmittableResultSubscription} from "@polkadot/api/submittable/types";
-import {Callback, ISubmittableResult} from "@polkadot/types/types";
-import {cryptoWaitReady} from '@polkadot/util-crypto';
+import {Callback, ISubmittableResult } from "@polkadot/types/types";
+import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
 import {find, get} from "lodash";
 import {NodeStatus} from "./model/NodeStatus";
 import {cereTypes} from "./types/cere_types";
 import {BucketStatus} from "./model/BucketStatus";
 import {BucketStatusList} from "./model/BucketStatusList";
 import {ApiTypes} from "@polkadot/api/types";
-import {isAddress} from "@polkadot/util-crypto/address/is";
 import {BucketParams, initDefaultBucketParams} from "./options/BucketParams";
 import {waitReady} from "@polkadot/wasm-crypto";
 
@@ -61,7 +60,6 @@ export class SmartContract {
 
         const wsProvider = new WsProvider(this.options.rpcUrl);
         const api = await ApiPromise.create({provider: wsProvider, types: cereTypes});
-
         this.contract = new ContractPromise(api, this.options.abi, this.options.contractAddress);
         return this;
     }
@@ -100,26 +98,6 @@ export class SmartContract {
         const [statuses, length] = output.toJSON();
         return new BucketStatusList(statuses, length);
     }
-
-    /*    async bucketGrantPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent> {
-            const tx = await this.contract.tx.bucketGrantPermission(txOptionsPay, bucketId, grantee, permission.toString());
-            const result = await this.sendTx(tx);
-
-            if (result.isError) {
-                throw new Error("Failed to grant bucket permission");
-            }
-            return new BucketPermissionGrantedEvent();
-        }
-
-        async bucketRevokePermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionRevokedEvent> {
-            const tx = await this.contract.tx.bucketRevokePermission(txOptionsPay, bucketId, grantee, permission.toString());
-            const result = await this.sendTx(tx);
-
-            if (result.isError) {
-                throw new Error("Failed to revoke bucket permission");
-            }
-            return new BucketPermissionRevokedEvent();
-        }*/
 
     async clusterGet(clusterId: number): Promise<ClusterStatus> {
         let {result, output} = await this.contract.query.clusterGet(this.address, txOptions, clusterId);
