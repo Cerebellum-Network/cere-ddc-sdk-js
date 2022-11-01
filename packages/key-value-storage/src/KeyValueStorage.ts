@@ -1,6 +1,10 @@
-import {ContentAddressableStorage, Piece, PieceUri, StorageOptions, Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import {ContentAddressableStorage, Piece, PieceUri, Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import {GetFirstArgument, RequiredSelected} from '@cere-ddc-sdk/core';
 
 const keyTag = "Key"
+
+type CaCreateOptions = GetFirstArgument<typeof ContentAddressableStorage.build>;
+type Options = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
 
 export class KeyValueStorage {
     caStorage: ContentAddressableStorage;
@@ -9,7 +13,7 @@ export class KeyValueStorage {
         this.caStorage = caStorage;
     }
 
-    static async build(storageOptions: StorageOptions, secretPhrase?: string): Promise<KeyValueStorage> {
+    static async build(storageOptions: Options, secretPhrase: string): Promise<KeyValueStorage> {
         return new KeyValueStorage(await ContentAddressableStorage.build(storageOptions, secretPhrase))
     }
 

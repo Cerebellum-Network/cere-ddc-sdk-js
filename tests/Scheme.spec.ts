@@ -1,8 +1,11 @@
-import { Scheme } from "./Scheme";
+import { Scheme } from "@cere-ddc-sdk/core";
 import {hexToU8a, stringToU8a} from "@polkadot/util";
-import {sr25519Verify} from "@polkadot/wasm-crypto";
+import {sr25519Verify, waitReady} from "@polkadot/wasm-crypto";
 
-describe("Scheme", () => {
+describe("packages/core/src/crypto/signature/Scheme.ts", () => {
+  beforeAll(async () => {
+    await waitReady();
+  });
 
   it("ed25519", async () => {
     let testSubject = await Scheme.createScheme(

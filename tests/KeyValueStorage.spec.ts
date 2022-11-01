@@ -1,7 +1,7 @@
 import {Piece} from '@cere-ddc-sdk/content-addressable-storage';
 import {KeyValueStorage} from '@cere-ddc-sdk/key-value-storage';
 
-describe('key-value-storage integration tests', () => {
+describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
     const url = 'http://localhost:8080';
     let storage: KeyValueStorage;
 

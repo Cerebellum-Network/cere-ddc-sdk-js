@@ -30,5 +30,9 @@ jobs:
         run: npm run compile
       - name: Integration tests
         run: npm test
-      - name: Build and publish
-        run: node scripts/ci-test.js --patch
+      - name: Increase version
+        run: node scripts/release.js --patch
+      - name: NPM set register
+        run: npm set registry http://localhost:4873/
+      - name: Publishing dry-run
+        run: node scripts/ci-test.mjs

@@ -1,43 +1,23 @@
-//TODO put comments
-import {CidBuilder, CipherInterface, NaclCipher, SchemeInterface, SchemeName} from "@cere-ddc-sdk/core";
-import {SmartContractOptions, TESTNET} from "@cere-ddc-sdk/smart-contract";
-import {FileStorageConfig} from "@cere-ddc-sdk/file-storage";
+import {CidBuilder, CipherInterface, NaclCipher, RequiredSelected, SchemeInterface, SchemeName} from '@cere-ddc-sdk/core';
+import {SmartContractOptions, TESTNET} from '@cere-ddc-sdk/smart-contract';
+import {FileStorageConfig} from '@cere-ddc-sdk/file-storage';
+import { ContentAddressableStorage } from '@cere-ddc-sdk/content-addressable-storage';
+import {GetFirstArgument} from '@cere-ddc-sdk/core/browser';
 
-type FileOptions = FileStorageConfig;
+type CaOptions = Required<GetFirstArgument<typeof ContentAddressableStorage.build>>;
 
-export class ClientOptions {
-    clusterAddress: string | number; // Cluster ID or CDN URL
-    fileOptions?: FileOptions = new FileStorageConfig();
-    smartContract?: SmartContractOptions = TESTNET;
-    scheme?: SchemeName | SchemeInterface = "sr25519";
-    cipher?: CipherInterface = new NaclCipher();
-    cidBuilder?: CidBuilder = new CidBuilder();
-
-    constructor(clusterAddress: string | number = "") {
-        this.clusterAddress = clusterAddress;
-    }
+export interface ClientOptionsInterface extends CaOptions {
+    fileOptions: FileStorageConfig;
 }
 
-const defaultClientOptions = new ClientOptions();
-const defaultFileOptions = new FileStorageConfig();
-
-export const initDefaultOptions = (options: ClientOptions): ClientOptions => {
-    if (!options.clusterAddress && options.clusterAddress != 0) {
-        throw new Error(`invalid clusterAddress='${options.clusterAddress}'`)
-    }
-
-    options.fileOptions = {
-        parallel: options.fileOptions?.parallel || defaultFileOptions.parallel,
-        pieceSizeInBytes: options.fileOptions?.pieceSizeInBytes || defaultFileOptions.pieceSizeInBytes,
-    }
-
-    return {
-        clusterAddress: options.clusterAddress,
-        fileOptions: options.fileOptions,
-        smartContract: options.smartContract || defaultClientOptions.smartContract,
-        scheme: options.scheme || defaultClientOptions.scheme,
-        cipher: options.cipher || defaultClientOptions.cipher,
-        cidBuilder: options.cidBuilder || defaultClientOptions.cidBuilder
-    }
+export class ClientOptions implements ClientOptionsInterface {
+    constructor(
+        public readonly clusterAddress: string | number = '',
+        public readonly fileOptions: FileStorageConfig = new FileStorageConfig(),
+        public readonly smartContract: SmartContractOptions = TESTNET,
+        public readonly scheme: SchemeName | SchemeInterface = 'sr25519',
+        public readonly cipher: CipherInterface = new NaclCipher(),
+        public readonly cidBuilder: CidBuilder = new CidBuilder(),
+        public readonly readAttempts = 1,
+    ) {}
 }
-
