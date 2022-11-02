@@ -34,11 +34,16 @@ jobs:
         run: npm run test
       - name: Publish
         run: node scripts/publish.js
-      - name: Trigger e2e tests
-        run: |
-          curl \
-          -X POST \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.TRIGGER_GITHUB_TOKEN }}" \
-          https://api.github.com/repos/Cerebellum-Network/ddc-e2e-tests/dispatches \
-          -d '{"event_type":"sdk_release","client_payload":{"sdk":"golang"}}'
+  e2e-tests:
+    needs: continuous-deployment
+    strategy:
+      matrix:
+        repo: ['Cerebellum-Network/ddc-e2e-tests']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Cerebellum-Network/ddc-e2e-tests repository
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.TRIGGER_GITHUB_TOKEN }}
+          repository: ${{ matrix.repo }}
+          event-type: sdk_release
