@@ -4,7 +4,8 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "outDir": "build",
-    "rootDir": "src/"
+    "rootDir": "src/",
+    "paths": {}
   },
   "include": [
     "src/**/*.ts"

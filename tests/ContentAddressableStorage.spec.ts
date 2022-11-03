@@ -3,7 +3,7 @@ import {ContentAddressableStorage, Piece, Tag, SearchType, Query} from '@cere-dd
 
 const seed = '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03';
 
-describe('content-addressable-storage test vector', () => {
+describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts', () => {
     const url = 'http://localhost:8080';
     let storage: ContentAddressableStorage;
 

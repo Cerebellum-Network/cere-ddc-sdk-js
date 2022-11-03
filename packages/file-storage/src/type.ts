@@ -4,14 +4,17 @@ import {
     PieceUri,
     Tag,
     EncryptionOptions,
-    StorageOptions
 } from "@cere-ddc-sdk/content-addressable-storage";
 import {FileStorageConfig} from "./core/FileStorageConfig.js";
 import {Readable} from "node:stream";
 import * as streamWeb from "stream/web";
 import {PathLike} from "fs";
+import {GetFirstArgument, RequiredSelected} from '@cere-ddc-sdk/core';
 
 export {FileStorageConfig, KB, MB} from "./core/FileStorageConfig.js";
+
+type CaCreateOptions = GetFirstArgument<typeof ContentAddressableStorage.build>;
+type Options = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
 
 export type Data = ReadableStream<Uint8Array> | streamWeb.ReadableStream<Uint8Array> | Readable | Blob | Uint8Array | PathLike
 
@@ -32,5 +35,5 @@ export interface FileStorage {
 export declare const FileStorage: {
     prototype: FileStorage;
     new(caStorage: ContentAddressableStorage, config?: FileStorageConfig): FileStorage;
-    build(storageOptions: StorageOptions, config?: FileStorageConfig, secretPhrase?: string): Promise<FileStorage>;
+    build(storageOptions: Options, config?: FileStorageConfig, secretPhrase?: string): Promise<FileStorage>;
 };

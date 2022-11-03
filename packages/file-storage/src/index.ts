@@ -1,3 +1,5 @@
+import {GetFirstArgument, RequiredSelected} from '@cere-ddc-sdk/core';
+
 export {FileStorageConfig, KB, MB} from './core/FileStorageConfig';
 
 import {PathLike} from 'fs';
@@ -6,7 +8,6 @@ import {
     EncryptionOptions,
     Link,
     PieceUri,
-    StorageOptions,
     Tag,
 } from '@cere-ddc-sdk/content-addressable-storage';
 import {FileStorageConfig} from './core/FileStorageConfig';
@@ -17,6 +18,9 @@ import {Readable} from 'node:stream';
 import {open} from 'node:fs/promises';
 
 type Data = streamWeb.ReadableStream<Uint8Array> | Readable | PathLike | Uint8Array;
+
+type CaCreateOptions = GetFirstArgument<typeof ContentAddressableStorage.build>;
+type Options = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
 
 export class FileStorage implements FileStorageInterface {
     readonly config: FileStorageConfig;
@@ -31,9 +35,9 @@ export class FileStorage implements FileStorageInterface {
     }
 
     static async build(
-        storageOptions: StorageOptions,
+        storageOptions: Options,
         config: FileStorageConfig = new FileStorageConfig(),
-        secretPhrase?: string,
+        secretPhrase: string,
     ): Promise<FileStorage> {
         return new FileStorage(await ContentAddressableStorage.build(storageOptions, secretPhrase), config);
     }
