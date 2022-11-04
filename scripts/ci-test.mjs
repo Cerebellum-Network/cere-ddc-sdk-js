@@ -5,7 +5,7 @@ import { execSync } from 'node:child_process';
 
 const dirname = path.dirname(new URL(import.meta.url).pathname);
 const root = path.join(dirname, '..');
-const composeFilePath = path.join(dirname, '..', 'docker-compose');
+const composeFilePath = path.join(dirname, '..', 'ddc-test-cluster');
 const composeFile = 'docker-compose.local-npm.yml';
 const app = await new DockerComposeEnvironment(composeFilePath, composeFile)
     .withWaitStrategy("app-ci-test", Wait.forHealthCheck())
