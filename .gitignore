@@ -15,4 +15,4 @@ packages/proto/src/
 *.ipr
 *.iml
 *.iws
-docker-compose/volumes
+ddc-test-cluster/volumes

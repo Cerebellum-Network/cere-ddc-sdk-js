@@ -53,7 +53,8 @@ export class ContentAddressableStorage {
         public readonly cipher: CipherInterface,
         private readonly cidBuilder: CidBuilder,
         private readonly readAttempts: number,
-    ) {}
+    ) {
+    }
 
     static async build(options: Options, secretMnemonicOrSeed: string): Promise<ContentAddressableStorage> {
         const caOptions = initDefaultOptions(options);
@@ -279,7 +280,7 @@ export class ContentAddressableStorage {
                 // @ts-ignore
                 resolve(PbSignedPiece.fromBinary(protoResponse.body));
             } catch (e) {
-                throw new Error("Can't parse read response body to SignedPiece.");
+                throw new Error('Can\'t parse read response body to SignedPiece.');
             }
         });
 
@@ -291,8 +292,20 @@ export class ContentAddressableStorage {
             );
         }
 
+        const pieceVerifyResult = await this.verifySignedPiece(pbSignedPiece, cid);
+        if (!pieceVerifyResult) {
+            throw new Error(
+                `Incorrect response. The cid [${cid}] provided in the request doesn't corresponds to expected`,
+            );
+        }
+
         // @ts-ignore
         return this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
+    }
+
+    private async verifySignedPiece(pbSignedPiece: PbSignedPiece, cid: string) {
+        const pieceCid = await this.cidBuilder.build(pbSignedPiece.piece);
+        return pieceCid === cid;
     }
 
     async search(query: Query, session?: Uint8Array): Promise<SearchResult> {
