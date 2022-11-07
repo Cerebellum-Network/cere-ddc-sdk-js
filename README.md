@@ -24,6 +24,10 @@
 - `piece` - abstraction which represents a unit of data stored in the DDC.
 Doesn't have fixed size and can represent fully logically completed data or part of it.
 
+## Links
+- [Cere DDC](https://docs.cere.network/) description and documentation
+- [Polkadot{.js} extension](https://polkadot.js.org/extension/) necessary for Cere DDC SDK using in the web browsers. 
+
 ## Dependencies
 
 - node.js `16+`. Setup with: `nvm use`
@@ -35,6 +39,7 @@ Doesn't have fixed size and can represent fully logically completed data or part
 To compile the code in bulk:
 
 - clone repository
+- [install](https://grpc.io/docs/protoc-installation/) `protoc` 
 - download required modules ```npm install```
 - compile files ```npm run compile```
 
@@ -45,13 +50,7 @@ To run the tests for the entire project:
 npm run test
 ```
 
-To run the tests for a single package:
-
-```shell
-npm run test -- packages/content-addressable-storage
-```
-
-## Changing the schema or test vectors
+## Changing the schema
 
 Keep the protobuf schema and the test vectors in sync with the `ddc-schemas` repo.
 First checkout the schemas repo:
