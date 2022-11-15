@@ -1,5 +1,6 @@
 import {webcrypto} from 'node:crypto';
 import {ContentAddressableStorage, Piece, Tag, SearchType, Query} from '@cere-ddc-sdk/content-addressable-storage';
+import {delay} from './delay';
 
 const seed = '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03';
 
@@ -13,6 +14,7 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
             {
                 clusterAddress: url,
                 scheme: 'sr25519',
+                ackTimeout: 0,
             },
             seed,
         );
@@ -25,12 +27,16 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         const tag = new Tag('some-key', 'some-value', SearchType.NOT_SEARCHABLE);
         const piece = new Piece(randomPieceData, [tag]);
         const bucketId = 1n;
+        // @ts-ignore
+        const fn = jest.spyOn(storage, 'ack').mockImplementation(() => Promise.resolve(undefined))
 
         //when
         const storeRequest = await storage.store(bucketId, piece);
         expect(storeRequest.cid).toBeDefined();
 
         const readRequest = await storage.read(bucketId, storeRequest.cid);
+        await delay(20);
+        expect(fn).toBeCalled();
         expect(new Uint8Array(readRequest.data)).toEqual(randomPieceData);
     });
 
@@ -59,6 +65,8 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         const tag = new Tag('some-key', 'some-value', SearchType.NOT_SEARCHABLE);
         const piece = new Piece(randomPieceData, [tag]);
         const bucketId = 1n;
+        // @ts-ignore
+        const fn = jest.spyOn(storage, 'ack').mockImplementation(() => Promise.resolve(undefined))
 
         //when
         const d = new Date();
@@ -72,6 +80,8 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         expect(storeRequest.cid).toBeDefined();
 
         const readRequest = await storage.read(bucketId, storeRequest.cid, session);
+        await delay(20);
+        expect(fn).toBeCalled();
         expect(new Uint8Array(readRequest.data)).toEqual(randomPieceData);
     });
 

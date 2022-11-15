@@ -9,3 +9,4 @@ export * from "./search_result";
 export * from "./signature";
 export * from "./signed_piece";
 export * from "./tag";
+export * from "./ack";
