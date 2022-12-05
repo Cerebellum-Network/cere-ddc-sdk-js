@@ -5,7 +5,7 @@ import {waitReady} from "@polkadot/wasm-crypto";
 import {SchemeInterface, SchemeName} from "./Scheme.interface";
 
 export class Scheme implements SchemeInterface {
-    keyringPair: KeyringPair;
+    private readonly keyringPair: KeyringPair;
     name: SchemeName;
     address: string;
 

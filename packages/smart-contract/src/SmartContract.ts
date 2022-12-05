@@ -1,4 +1,3 @@
-import {ClusterStatus} from "./model/ClusterStatus";
 import {BucketCreatedEvent} from "./event/BucketCreatedEvent";
 import {SmartContractOptions, TESTNET} from "./options/SmartContractOptions";
 import {ApiPromise, WsProvider} from "@polkadot/api";
@@ -15,11 +14,12 @@ import {BucketStatusList} from "./model/BucketStatusList";
 import {ApiTypes} from "@polkadot/api/types";
 import {BucketParams, initDefaultBucketParams} from "./options/BucketParams";
 import {waitReady} from "@polkadot/wasm-crypto";
+import {CdnClusterGetResult, CdnNodeGetResult, ClusterGetResult} from './types/smart-contract-responses';
 
 const CERE = 10_000_000_000n;
 
 const txOptions = {
-    value: 0n,
+    storageDepositLimit: null,
     gasLimit: -1,
 };
 
@@ -31,6 +31,8 @@ const txOptionsPay = {
 export class SmartContract {
     readonly options: SmartContractOptions;
     readonly address: string;
+
+    private api!: ApiPromise;
 
     contract!: ContractPromise;
 
@@ -45,7 +47,7 @@ export class SmartContract {
             account = keyring.addFromMnemonic(secretPhraseOrAddress, {name: 'sr25519'});
         }
 
-        this.signAndSend = (tx, statusCb) => tx.signAndSend(account, statusCb);
+        this.signAndSend = (tx, statusCb): any => tx.signAndSend(account, statusCb as any);
         this.address = account.address;
         this.options = options;
     }
@@ -57,10 +59,10 @@ export class SmartContract {
 
     async connect(): Promise<SmartContract> {
         await cryptoWaitReady();
-
-        const wsProvider = new WsProvider(this.options.rpcUrl);
-        const api = await ApiPromise.create({provider: wsProvider, types: cereTypes});
-        this.contract = new ContractPromise(api, this.options.abi, this.options.contractAddress);
+        const provider = new WsProvider(this.options.rpcUrl);
+        this.api = await ApiPromise.create({provider, types: cereTypes});
+        await this.api.isReady;
+        this.contract = new ContractPromise(this.api, this.options.abi, this.options.contractAddress);
         return this;
     }
 
@@ -68,12 +70,11 @@ export class SmartContract {
         return await this.contract.api.disconnect();
     }
 
-    async bucketCreate(clusterId: bigint, bucketParams: BucketParams = new BucketParams()): Promise<BucketCreatedEvent> {
-        bucketParams = initDefaultBucketParams(bucketParams);
-        const tx = await this.contract.tx.bucketCreate(txOptionsPay, JSON.stringify(bucketParams), clusterId);
+    async bucketCreate(owner: string, clusterId: bigint, bucketParams: BucketParams = new BucketParams()): Promise<BucketCreatedEvent> {
+        const createBucketParams = initDefaultBucketParams(bucketParams);
+        const tx = await this.contract.tx.bucketCreate(txOptionsPay, JSON.stringify(createBucketParams), clusterId, owner);
         const result = await this.sendTx(tx);
-        // @ts-ignore
-        const events = result.contractEvents || [];
+        const events = (result as any).contractEvents || [];
         const bucketId = SmartContract.findCreatedBucketId(events);
         return new BucketCreatedEvent(BigInt(bucketId));
     }
@@ -82,8 +83,7 @@ export class SmartContract {
         const {result, output} = await this.contract.query.bucketGet(this.address, txOptions, bucketId);
         if (!result.isOk) throw result.asErr;
 
-        // @ts-ignore
-        const bucketStatus = output.toJSON().ok;
+        const bucketStatus = (output as any).toJSON().ok;
         bucketStatus.params = JSON.parse(bucketStatus.params);
 
         return bucketStatus as BucketStatus;
@@ -94,24 +94,49 @@ export class SmartContract {
             await this.contract.query.bucketList(this.address, txOptions, offset, limit, filterOwnerId);
         if (!result.isOk) throw result.asErr;
 
-        // @ts-ignore
-        const [statuses, length] = output.toJSON();
+        const [statuses, length] = (output as any).toJSON();
         return new BucketStatusList(statuses, length);
     }
 
-    async clusterGet(clusterId: number): Promise<ClusterStatus> {
+    async clusterGet(clusterId: number): Promise<ClusterGetResult> {
         let {result, output} = await this.contract.query.clusterGet(this.address, txOptions, clusterId);
-        if (!result.isOk) throw result.asErr;
+        if (!result.isOk) {
+            throw result.asErr;
+        }
+        return (output as any).toJSON().ok as ClusterGetResult;
+    }
+
+    async cdnClusterGet(clusterId: number): Promise<CdnClusterGetResult> {
+        let {result, output} = await this.contract.query.cdnClusterGet(this.address, txOptions, clusterId);
+        if (!result.isOk) {
+            throw result.asErr;
+        }
+        return (output as any).toJSON().ok as CdnClusterGetResult;
+    }
+
+    async cdnNodeGet(clusterId: number): Promise<CdnNodeGetResult> {
+        let {result, output} = await this.contract.query.cdnNodeGet(this.address, txOptions, clusterId);
+        if (!result.isOk) {
+            throw result.asErr;
+        }
         // @ts-ignore
-        return output.toJSON().ok as ClusterStatus;
+        return output.toJSON().ok as CdnNodeGetResult;
+    }
+
+    async accountBond(value: bigint) {
+        const tx = await this.contract.tx.accountBond(txOptions, value * CERE);
+        const result = await this.sendTx(tx);
+        if (result.dispatchError) {
+            throw new Error("Unable to deposit account");
+        }
     }
 
     async accountDeposit(value: bigint) {
-        const txOptions = {gasLimit: -1, value: value * CERE};
-        const tx = await this.contract.tx.accountDeposit(txOptions);
+        const tx = await this.contract.tx.accountDeposit({...txOptions, value: value * CERE});
         const result = await this.sendTx(tx);
-
-        if (result.dispatchError) throw new Error("Unable to deposit account");
+        if (result.dispatchError) {
+            throw new Error("Unable to deposit account");
+        }
     }
 
     async bucketAllocIntoCluster(bucketId: bigint, resource: bigint) {

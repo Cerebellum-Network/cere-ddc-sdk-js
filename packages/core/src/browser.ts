@@ -7,3 +7,4 @@ export {NaclCipher} from './crypto/encryption/NaclCipher';
 export {DdcUri, IPIECE, IFILE, FILE, PIECE} from './uri/DdcUri';
 export {RequiredSelected} from './types/required-selected';
 export {GetFirstArgument} from './types/get-first-argument';
+export {randomUint8} from './random';

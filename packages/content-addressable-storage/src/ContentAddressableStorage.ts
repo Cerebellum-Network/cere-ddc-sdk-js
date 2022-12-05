@@ -7,7 +7,15 @@ import {
     SessionStatus,
     SignedPiece as PbSignedPiece,
 } from '@cere-ddc-sdk/proto';
-import {CidBuilder, CipherInterface, isSchemeName, RequiredSelected, Scheme, SchemeInterface} from '@cere-ddc-sdk/core';
+import {
+    CidBuilder,
+    CipherInterface,
+    isSchemeName,
+    randomUint8,
+    RequiredSelected,
+    Scheme,
+    SchemeInterface,
+} from '@cere-ddc-sdk/core';
 import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
 import {base58Encode, mnemonicGenerate} from '@polkadot/util-crypto';
 import {stringToU8a, u8aToString} from '@polkadot/util';
@@ -53,8 +61,7 @@ export class ContentAddressableStorage {
         public readonly cipher: CipherInterface,
         private readonly cidBuilder: CidBuilder,
         private readonly readAttempts: number,
-    ) {
-    }
+    ) {}
 
     static async build(options: Options, secretMnemonicOrSeed: string): Promise<ContentAddressableStorage> {
         const caOptions = initDefaultOptions(options);
@@ -82,16 +89,15 @@ export class ContentAddressableStorage {
 
         const smartContract = await SmartContract.buildAndConnect(mnemonicGenerate(), smartContractOptions);
         try {
-            const cluster = await smartContract.clusterGet(clusterAddress);
-            const vNodes = new Set<bigint>(cluster.cluster.vnodes);
-            for (const vNode of vNodes) {
-                const node = await smartContract.nodeGet(Number(vNode));
-                const parameters = JSON.parse(node.params);
-
-                if (parameters.type === 'cdn') {
-                    return parameters.url;
-                }
+            const cluster = await smartContract.cdnClusterGet(clusterAddress);
+            if (cluster.cluster.cdnNodes.length === 0) {
+                throw new Error(`unable to find cdn nodes in cluster='${clusterAddress}'`);
             }
+            const index = randomUint8(cluster.cluster.cdnNodes.length);
+            const cdnNodeId = cluster.cluster.cdnNodes[index];
+            const cdnNodeInfo = await smartContract.cdnNodeGet(cdnNodeId);
+            return new URL(JSON.parse(cdnNodeInfo.params).url).href;
+
         } finally {
             await smartContract.disconnect();
         }
@@ -100,8 +106,13 @@ export class ContentAddressableStorage {
     }
 
     private getPath(path: string, method: HTTP_METHOD = 'GET'): Uint8Array {
-        const url = new URL(`${this.cdnNodeUrl}${path}`);
-        url.searchParams.delete('data');
+        const url = new URL(this.cdnNodeUrl);
+        const [pathname, search] = path.split('?');
+        url.pathname = pathname;
+        if (search) {
+            url.search = search;
+            url.searchParams.delete('data');
+        }
 
         const link = `${url.pathname}${url.search}`;
 
@@ -160,7 +171,7 @@ export class ContentAddressableStorage {
             publicKey: this.scheme.publicKey,
         });
 
-        const response = await this.sendRequest(BASE_PATH_SESSION, {
+        const response = await this.sendRequest(BASE_PATH_SESSION, undefined, {
             method: 'POST',
             // @ts-ignore
             body: PbRequest.toBinary(request).buffer,
@@ -227,7 +238,7 @@ export class ContentAddressableStorage {
     async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
         const request = await this.buildStoreRequest(bucketId, piece);
 
-        const response = await this.sendRequest(request.path, {
+        const response = await this.sendRequest(request.path, undefined, {
             method: request.method,
             body: request.body,
         });
@@ -237,7 +248,7 @@ export class ContentAddressableStorage {
 
         if (!response.ok) {
             throw Error(
-                `Failed to store. Response: status='${protoResponse.responseCode}' body=${u8aToString(
+                `Failed to store. Http response status: ${response.status} Response: status='${protoResponse.responseCode}' body=${u8aToString(
                     protoResponse.body,
                 )}`,
             );
@@ -262,7 +273,7 @@ export class ContentAddressableStorage {
         // @ts-ignore
         search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'));
 
-        const response = await this.sendRequest(`${BASE_PATH_PIECES}/${cid}?${search.toString()}`);
+        const response = await this.sendRequest(`${BASE_PATH_PIECES}/${cid}`, search.toString());
         const responseData = await response.arrayBuffer();
         // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
@@ -334,7 +345,7 @@ export class ContentAddressableStorage {
         // @ts-ignore
         search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'));
 
-        const response = await this.sendRequest(`${BASE_PATH_PIECES}?${search.toString()}`);
+        const response = await this.sendRequest(`${BASE_PATH_PIECES}`, search.toString());
         const responseData = await response.arrayBuffer();
         // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
@@ -392,11 +403,15 @@ export class ContentAddressableStorage {
         );
     }
 
-    private sendRequest(path: String, init?: RequestInit): Promise<Response> {
-        const url = `${this.cdnNodeUrl}${path}`;
+    private sendRequest(pathname: string, query?: string, init?: RequestInit): Promise<Response> {
+        const url = new URL(this.cdnNodeUrl);
+        url.pathname = pathname;
+        if (query) {
+            url.search = new URLSearchParams(query).toString();
+        }
         const method = init?.method?.toUpperCase() || 'GET';
         const options = init != null ? {...init, attempts: this.readAttempts} : {attempts: this.readAttempts};
-        const response = method === 'GET' ? fetch(url, init) : repeatableFetch(url, options);
+        const response = method === 'GET' ? fetch(url.href, init) : repeatableFetch(url.href, options);
 
         return response.catch((error) => {
             throw new Error(`Can't send request url='${url}', method='${method}', error='${error}'`);
