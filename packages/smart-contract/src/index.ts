@@ -1,4 +1,5 @@
-export {SmartContractOptions, DEVNET, TESTNET, MAINNET} from "./options/SmartContractOptions"
+export {DEVNET, TESTNET, MAINNET} from "./options/SmartContractOptions";
+export type {SmartContractOptions} from './options/SmartContractOptions';
 export {SmartContract} from "./SmartContract";
 export {BucketCreatedEvent} from "./event/BucketCreatedEvent"
 export {BucketPermissionGrantedEvent} from "./event/BucketPermissionGrantedEvent"

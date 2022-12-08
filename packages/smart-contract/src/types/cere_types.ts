@@ -20,6 +20,6 @@ export const cereTypes = {
         "id": "TokenId",
         "metadata": "Vec<u8>"
     },
-    "Address": "IndicesLookupSource",
-    "LookupSource": "IndicesLookupSource"
+  "Address": "MultiAddress",
+  "LookupSource": "MultiAddress"
 }

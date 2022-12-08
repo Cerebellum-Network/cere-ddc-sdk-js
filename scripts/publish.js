@@ -21,6 +21,11 @@ fs.writeFileSync(
     JSON.stringify(packageJson, null, 2),
 );
 
+execSync(`npm install`, {
+    cwd: path.join(root),
+    stdio: 'inherit',
+});
+
 for (let i = 0; i < packages.length; i += 1) {
     const packageName = packages[i];
     const packageInfo = require(path.join(root, packageName, 'package.json'));

@@ -22,15 +22,6 @@ if (browserslistEnv === 'browser') {
             }
         },
     });
-} else if (browserslistEnv === 'node') {
-    config = merge(config, {
-        plugins: [
-            new webpack.ProvidePlugin({
-                'URL': ['node:url', 'URL'],
-                'URLSearchParams': ['node:url', 'URLSearchParams'],
-            }),
-        ],
-    });
 }
 
 export default config;

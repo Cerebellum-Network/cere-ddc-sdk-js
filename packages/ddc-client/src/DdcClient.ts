@@ -16,9 +16,9 @@ import {
     SmartContract,
 } from '@cere-ddc-sdk/smart-contract';
 import {KeyValueStorage} from '@cere-ddc-sdk/key-value-storage';
-import {blake2AsU8a, naclBoxKeypairFromSecret, naclKeypairFromString} from '@polkadot/util-crypto';
+import {blake2AsU8a, naclBoxPairFromSecret} from '@polkadot/util-crypto';
 import nacl, {BoxKeyPair} from 'tweetnacl';
-import {hexToU8a, stringToU8a, u8aToHex} from '@polkadot/util';
+import {hexToU8a, isHex, stringToU8a, u8aToHex} from '@polkadot/util';
 
 import {DdcClientInterface} from './DdcClient.interface';
 import {ClientOptionsInterface} from './options/ClientOptions';
@@ -26,6 +26,7 @@ import {StoreOptions} from './options/StoreOptions';
 import {ReadOptions} from './options/ReadOptions';
 import {File} from './model/File';
 import {initDefaultClientOptions} from './lib/init-default-client-options';
+import {getNaclBoxSecret} from './lib/get-nacl-box-secret';
 
 const emptyNonce = new Uint8Array(nacl.box.nonceLength);
 
@@ -45,7 +46,7 @@ export class DdcClient implements DdcClientInterface {
 
     protected constructor(
         public readonly caStorage: ContentAddressableStorage,
-        private readonly smartContract: SmartContract,
+        public readonly smartContract: SmartContract,
         private readonly options: ClientOptionsInterface,
         encryptionSecretPhrase: string,
     ) {
@@ -53,7 +54,7 @@ export class DdcClient implements DdcClientInterface {
         this.fileStorage = new FileStorage(caStorage, options.fileOptions);
 
         this.masterDek = blake2AsU8a(encryptionSecretPhrase);
-        this.boxKeypair = naclBoxKeypairFromSecret(naclKeypairFromString(encryptionSecretPhrase).secretKey);
+        this.boxKeypair = naclBoxPairFromSecret(nacl.box.keyPair.fromSecretKey(getNaclBoxSecret(encryptionSecretPhrase)).secretKey);
     }
 
     static async buildAndConnect(
@@ -95,13 +96,13 @@ export class DdcClient implements DdcClientInterface {
             resource = 1n;
         }
 
-        const event = await this.smartContract.bucketCreate(clusterId, bucketParams);
+        const event = await this.smartContract.bucketCreate(this.caStorage.scheme.publicKeyHex, clusterId, bucketParams);
         if (balance > 0) {
             await this.smartContract.accountDeposit(balance);
         }
 
         const clusterStatus = await this.smartContract.clusterGet(Number(clusterId));
-        const bucketSize = BigInt((Number(resource * 1000n) / clusterStatus.cluster.vnodes.length) | 0);
+        const bucketSize = BigInt(Math.round(Number(resource * 1000n) / clusterStatus.cluster.vnodes.length));
         await this.smartContract.bucketAllocIntoCluster(event.bucketId, bucketSize);
 
         return event;

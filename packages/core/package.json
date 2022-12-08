@@ -42,15 +42,15 @@
     "package": "rimraf build && clean-publish --temp-dir build && npm run types && npm run build"
   },
   "dependencies": {
-    "@polkadot/keyring": "6.11.1",
-    "@polkadot/util": "6.11.1",
-    "@polkadot/util-crypto": "6.11.1",
-    "@polkadot/wasm-crypto": "4.6.1"
+    "@polkadot/keyring": "~9.7.2",
+    "@polkadot/util": "~9.7.2",
+    "@polkadot/util-crypto": "~9.7.2",
+    "@polkadot/wasm-crypto": "~6.4.1"
   },
   "devDependencies": {
     "@multiformats/blake2": "^1.0.10",
-    "@polkadot/extension-dapp": "0.40.4",
-    "@polkadot/extension-inject": "0.40.4",
+    "@polkadot/extension-dapp": "0.43.2",
+    "@polkadot/extension-inject": "0.43.2",
     "@types/node": "^16.0.0",
     "clean-publish": "^4.0.1",
     "multiformats": "^9.6.5",

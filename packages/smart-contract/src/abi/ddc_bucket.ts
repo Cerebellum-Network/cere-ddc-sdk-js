@@ -1,2580 +1,4808 @@
-export const ddcBucketAbi = {
-    "metadataVersion": "0.1.0",
-    "source": {
-        "hash": "0x5e690c8fd199cbf15e7f27bf1b510235aaf5d2bfebc776f72b77f04e03c1ad3b",
-        "language": "ink! 3.0.0-rc4",
-        "compiler": "rustc 1.59.0-nightly"
+export const ddcBucketAbi  = {
+    'metadataVersion': '0.1.0',
+    'source': {
+        'hash': '0xe31c7b8645d2b15ff5f74f58232eece7ce02d517513120616ac8943d97258f07',
+        'language': 'ink! 3.0.0-rc4',
+        'compiler': 'rustc 1.63.0-nightly',
     },
-    "contract": {
-        "name": "ddc_bucket",
-        "version": "0.5.0",
-        "authors": [
-            "Aurélien Nicolas <aurel@cere.network>"
-        ]
-    },
-    "spec": {
-        "constructors": [
-            {
-                "args": [],
-                "docs": [],
-                "name": [
-                    "new"
-                ],
-                "selector": "0x9bae9d5e"
-            }
+    'contract': {
+        'name': 'ddc_bucket',
+        'version': '0.5.2',
+        'authors': [
+            'Aurélien Nicolas <aurel@cere.network>',
         ],
-        "docs": [],
-        "events": [
-            {
-                "args": [
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "bucket_id",
-                        "type": {
-                            "displayName": [
-                                "BucketId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "owner_id",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    }
-                ],
-                "docs": [],
-                "name": "BucketCreated"
-            },
-            {
-                "args": [
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "bucket_id",
-                        "type": {
-                            "displayName": [
-                                "BucketId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": false,
-                        "name": "resource",
-                        "type": {
-                            "displayName": [
-                                "Resource"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "name": "BucketAllocated"
-            },
-            {
-                "args": [
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "bucket_id",
-                        "type": {
-                            "displayName": [
-                                "BucketId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "name": "BucketSettlePayment"
-            },
-            {
-                "args": [
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "manager",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": false,
-                        "name": "cluster_params",
-                        "type": {
-                            "displayName": [
-                                "ClusterParams"
-                            ],
-                            "type": 9
-                        }
-                    }
-                ],
-                "docs": [],
-                "name": "ClusterCreated"
-            },
-            {
-                "args": [
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "node_id",
-                        "type": {
-                            "displayName": [
-                                "NodeId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": false,
-                        "name": "vnode_index",
-                        "type": {
-                            "displayName": [
-                                "VNodeIndex"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "name": "ClusterNodeReplaced"
-            },
-            {
-                "args": [
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": false,
-                        "name": "resource",
-                        "type": {
-                            "displayName": [
-                                "Resource"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "name": "ClusterReserveResource"
-            },
-            {
-                "args": [
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "provider_id",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    }
-                ],
-                "docs": [],
-                "name": "ClusterDistributeRevenues"
-            },
-            {
-                "args": [
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "node_id",
-                        "type": {
-                            "displayName": [
-                                "NodeId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "provider_id",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": false,
-                        "name": "rent_per_month",
-                        "type": {
-                            "displayName": [
-                                "Balance"
-                            ],
-                            "type": 8
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": false,
-                        "name": "node_params",
-                        "type": {
-                            "displayName": [
-                                "NodeParams"
-                            ],
-                            "type": 9
-                        }
-                    }
-                ],
-                "docs": [],
-                "name": "NodeCreated"
-            },
-            {
-                "args": [
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "account_id",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": false,
-                        "name": "value",
-                        "type": {
-                            "displayName": [
-                                "Balance"
-                            ],
-                            "type": 8
-                        }
-                    }
-                ],
-                "docs": [],
-                "name": "Deposit"
-            },
-            {
-                "args": [
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "account_id",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": false,
-                        "name": "permission",
-                        "type": {
-                            "displayName": [
-                                "Permission"
-                            ],
-                            "type": 42
-                        }
-                    }
-                ],
-                "docs": [],
-                "name": "GrantPermission"
-            },
-            {
-                "args": [
-                    {
-                        "docs": [],
-                        "indexed": true,
-                        "name": "account_id",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    },
-                    {
-                        "docs": [],
-                        "indexed": false,
-                        "name": "permission",
-                        "type": {
-                            "displayName": [
-                                "Permission"
-                            ],
-                            "type": 42
-                        }
-                    }
-                ],
-                "docs": [],
-                "name": "RevokePermission"
-            }
-        ],
-        "messages": [
-            {
-                "args": [
-                    {
-                        "name": "bucket_params",
-                        "type": {
-                            "displayName": [
-                                "BucketParams"
-                            ],
-                            "type": 9
-                        }
-                    },
-                    {
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "bucket_create"
-                ],
-                "payable": true,
-                "returnType": {
-                    "displayName": [
-                        "BucketId"
-                    ],
-                    "type": 1
-                },
-                "selector": "0x0aeb2379"
-            },
-            {
-                "args": [
-                    {
-                        "name": "bucket_id",
-                        "type": {
-                            "displayName": [
-                                "BucketId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "resource",
-                        "type": {
-                            "displayName": [
-                                "Resource"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "bucket_alloc_into_cluster"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [],
-                    "type": 23
-                },
-                "selector": "0x4c482d19"
-            },
-            {
-                "args": [
-                    {
-                        "name": "bucket_id",
-                        "type": {
-                            "displayName": [
-                                "BucketId"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "bucket_settle_payment"
-                ],
-                "payable": false,
-                "returnType": null,
-                "selector": "0x15974555"
-            },
-            {
-                "args": [
-                    {
-                        "name": "bucket_id",
-                        "type": {
-                            "displayName": [
-                                "BucketId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "params",
-                        "type": {
-                            "displayName": [
-                                "BucketParams"
-                            ],
-                            "type": 9
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "bucket_change_params"
-                ],
-                "payable": true,
-                "returnType": null,
-                "selector": "0x9f2d075b"
-            },
-            {
-                "args": [
-                    {
-                        "name": "bucket_id",
-                        "type": {
-                            "displayName": [
-                                "BucketId"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": false,
-                "name": [
-                    "bucket_get"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "Result"
-                    ],
-                    "type": 24
-                },
-                "selector": "0x3802cb77"
-            },
-            {
-                "args": [
-                    {
-                        "name": "offset",
-                        "type": {
-                            "displayName": [
-                                "u32"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "limit",
-                        "type": {
-                            "displayName": [
-                                "u32"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "filter_owner_id",
-                        "type": {
-                            "displayName": [
-                                "Option"
-                            ],
-                            "type": 30
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": false,
-                "name": [
-                    "bucket_list"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [],
-                    "type": 31
-                },
-                "selector": "0x417ab584"
-            },
-            {
-                "args": [
-                    {
-                        "name": "manager",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    },
-                    {
-                        "name": "vnode_count",
-                        "type": {
-                            "displayName": [
-                                "u32"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "node_ids",
-                        "type": {
-                            "displayName": [
-                                "Vec"
-                            ],
-                            "type": 11
-                        }
-                    },
-                    {
-                        "name": "cluster_params",
-                        "type": {
-                            "displayName": [
-                                "ClusterParams"
-                            ],
-                            "type": 9
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "cluster_create"
-                ],
-                "payable": true,
-                "returnType": {
-                    "displayName": [
-                        "NodeId"
-                    ],
-                    "type": 1
-                },
-                "selector": "0x4c0f21f6"
-            },
-            {
-                "args": [
-                    {
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "amount",
-                        "type": {
-                            "displayName": [
-                                "Resource"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "cluster_reserve_resource"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [],
-                    "type": 23
-                },
-                "selector": "0xb5e38125"
-            },
-            {
-                "args": [
-                    {
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "vnode_i",
-                        "type": {
-                            "displayName": [
-                                "VNodeIndex"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "new_node_id",
-                        "type": {
-                            "displayName": [
-                                "NodeId"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "cluster_replace_node"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [],
-                    "type": 23
-                },
-                "selector": "0x48194ab1"
-            },
-            {
-                "args": [
-                    {
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "cluster_distribute_revenues"
-                ],
-                "payable": false,
-                "returnType": null,
-                "selector": "0xe71e66fc"
-            },
-            {
-                "args": [
-                    {
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "params",
-                        "type": {
-                            "displayName": [
-                                "ClusterParams"
-                            ],
-                            "type": 9
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "cluster_change_params"
-                ],
-                "payable": true,
-                "returnType": null,
-                "selector": "0x1207912c"
-            },
-            {
-                "args": [
-                    {
-                        "name": "cluster_id",
-                        "type": {
-                            "displayName": [
-                                "ClusterId"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": false,
-                "name": [
-                    "cluster_get"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "Result"
-                    ],
-                    "type": 33
-                },
-                "selector": "0xe75411f5"
-            },
-            {
-                "args": [
-                    {
-                        "name": "offset",
-                        "type": {
-                            "displayName": [
-                                "u32"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "limit",
-                        "type": {
-                            "displayName": [
-                                "u32"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "filter_manager_id",
-                        "type": {
-                            "displayName": [
-                                "Option"
-                            ],
-                            "type": 30
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": false,
-                "name": [
-                    "cluster_list"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [],
-                    "type": 35
-                },
-                "selector": "0xd9db9d44"
-            },
-            {
-                "args": [
-                    {
-                        "name": "manager",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "node_trust_manager"
-                ],
-                "payable": true,
-                "returnType": null,
-                "selector": "0x6fd54a01"
-            },
-            {
-                "args": [
-                    {
-                        "name": "manager",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "node_distrust_manager"
-                ],
-                "payable": false,
-                "returnType": null,
-                "selector": "0x40912279"
-            },
-            {
-                "args": [
-                    {
-                        "name": "rent_per_month",
-                        "type": {
-                            "displayName": [
-                                "Balance"
-                            ],
-                            "type": 8
-                        }
-                    },
-                    {
-                        "name": "node_params",
-                        "type": {
-                            "displayName": [
-                                "NodeParams"
-                            ],
-                            "type": 9
-                        }
-                    },
-                    {
-                        "name": "capacity",
-                        "type": {
-                            "displayName": [
-                                "Resource"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "node_create"
-                ],
-                "payable": true,
-                "returnType": {
-                    "displayName": [
-                        "NodeId"
-                    ],
-                    "type": 1
-                },
-                "selector": "0xb77ac1bb"
-            },
-            {
-                "args": [
-                    {
-                        "name": "node_id",
-                        "type": {
-                            "displayName": [
-                                "NodeId"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "params",
-                        "type": {
-                            "displayName": [
-                                "NodeParams"
-                            ],
-                            "type": 9
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "node_change_params"
-                ],
-                "payable": true,
-                "returnType": null,
-                "selector": "0x258ccb2a"
-            },
-            {
-                "args": [
-                    {
-                        "name": "node_id",
-                        "type": {
-                            "displayName": [
-                                "NodeId"
-                            ],
-                            "type": 1
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": false,
-                "name": [
-                    "node_get"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "Result"
-                    ],
-                    "type": 37
-                },
-                "selector": "0x847f3997"
-            },
-            {
-                "args": [
-                    {
-                        "name": "offset",
-                        "type": {
-                            "displayName": [
-                                "u32"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "limit",
-                        "type": {
-                            "displayName": [
-                                "u32"
-                            ],
-                            "type": 1
-                        }
-                    },
-                    {
-                        "name": "filter_provider_id",
-                        "type": {
-                            "displayName": [
-                                "Option"
-                            ],
-                            "type": 30
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": false,
-                "name": [
-                    "node_list"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [],
-                    "type": 39
-                },
-                "selector": "0x423286d6"
-            },
-            {
-                "args": [],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "account_deposit"
-                ],
-                "payable": true,
-                "returnType": {
-                    "displayName": [],
-                    "type": 23
-                },
-                "selector": "0xc311af62"
-            },
-            {
-                "args": [
-                    {
-                        "name": "account_id",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": false,
-                "name": [
-                    "account_get"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "Result"
-                    ],
-                    "type": 41
-                },
-                "selector": "0x1d4220fa"
-            },
-            {
-                "args": [],
-                "docs": [],
-                "mutates": false,
-                "name": [
-                    "account_get_usd_per_cere"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "Balance"
-                    ],
-                    "type": 8
-                },
-                "selector": "0xe4a4652a"
-            },
-            {
-                "args": [
-                    {
-                        "name": "usd_per_cere",
-                        "type": {
-                            "displayName": [
-                                "Balance"
-                            ],
-                            "type": 8
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "account_set_usd_per_cere"
-                ],
-                "payable": false,
-                "returnType": null,
-                "selector": "0x48d45ee8"
-            },
-            {
-                "args": [
-                    {
-                        "name": "grantee",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    },
-                    {
-                        "name": "permission",
-                        "type": {
-                            "displayName": [
-                                "Permission"
-                            ],
-                            "type": 42
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": false,
-                "name": [
-                    "has_permission"
-                ],
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "bool"
-                    ],
-                    "type": 22
-                },
-                "selector": "0xe0942492"
-            },
-            {
-                "args": [
-                    {
-                        "name": "grantee",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    },
-                    {
-                        "name": "permission",
-                        "type": {
-                            "displayName": [
-                                "Permission"
-                            ],
-                            "type": 42
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "admin_grant_permission"
-                ],
-                "payable": true,
-                "returnType": null,
-                "selector": "0xbe41ea55"
-            },
-            {
-                "args": [
-                    {
-                        "name": "grantee",
-                        "type": {
-                            "displayName": [
-                                "AccountId"
-                            ],
-                            "type": 3
-                        }
-                    },
-                    {
-                        "name": "permission",
-                        "type": {
-                            "displayName": [
-                                "Permission"
-                            ],
-                            "type": 42
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "admin_revoke_permission"
-                ],
-                "payable": false,
-                "returnType": null,
-                "selector": "0x6b150666"
-            },
-            {
-                "args": [
-                    {
-                        "name": "amount",
-                        "type": {
-                            "displayName": [
-                                "Balance"
-                            ],
-                            "type": 8
-                        }
-                    }
-                ],
-                "docs": [],
-                "mutates": true,
-                "name": [
-                    "admin_withdraw"
-                ],
-                "payable": false,
-                "returnType": null,
-                "selector": "0x2f6e0868"
-            }
-        ]
+        'description': 'DDC v2 Smart Contracts -- Orchestrate the network around clusters and buckets',
+        'license': 'Apache-2.0',
     },
-    "storage": {
-        "struct": {
-            "fields": [
+    'spec': {
+        'constructors': [
+            {
+                'args': [],
+                'docs': [
+                    'Create a new contract.',
+                    '',
+                    'The caller will be admin of the contract.',
+                ],
+                'name': [
+                    'new',
+                ],
+                'selector': '0x9bae9d5e',
+            },
+        ],
+        'docs': [],
+        'events': [
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'owner_id',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' A bucket was created. The given account is its first owner and payer of resources.',
+                ],
+                'name': 'BucketCreated',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': false,
+                        'name': 'resource',
+                        'type': {
+                            'displayName': [
+                                'Resource',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Some amount of resources of a cluster were allocated to a bucket.',
+                ],
+                'name': 'BucketAllocated',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' The due costs of a bucket was settled from the bucket payer to the cluster.',
+                ],
+                'name': 'BucketSettlePayment',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'manager',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': false,
+                        'name': 'cluster_params',
+                        'type': {
+                            'displayName': [
+                                'ClusterParams',
+                            ],
+                            'type': 15,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' A new cluster was created.',
+                ],
+                'name': 'ClusterCreated',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'node_id',
+                        'type': {
+                            'displayName': [
+                                'NodeId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': false,
+                        'name': 'vnode_index',
+                        'type': {
+                            'displayName': [
+                                'VNodeIndex',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' A vnode was re-assigned to new node.',
+                ],
+                'name': 'ClusterNodeReplaced',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': false,
+                        'name': 'resource',
+                        'type': {
+                            'displayName': [
+                                'Resource',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Some resources were reserved for the cluster from the nodes.',
+                ],
+                'name': 'ClusterReserveResource',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'provider_id',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' The share of revenues of a cluster for a provider was distributed.',
+                ],
+                'name': 'ClusterDistributeRevenues',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'manager',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' A new cluster was created.',
+                ],
+                'name': 'CdnClusterCreated',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'provider_id',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' The share of revenues of a cluster for a provider was distributed.',
+                ],
+                'name': 'CdnClusterDistributeRevenues',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'node_id',
+                        'type': {
+                            'displayName': [
+                                'NodeId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'provider_id',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': false,
+                        'name': 'undistributed_payment',
+                        'type': {
+                            'displayName': [
+                                'Balance',
+                            ],
+                            'type': 8,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' A node was created. The given account is its owner and recipient of revenues.',
+                ],
+                'name': 'CdnNodeCreated',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'node_id',
+                        'type': {
+                            'displayName': [
+                                'NodeId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'provider_id',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': false,
+                        'name': 'rent_per_month',
+                        'type': {
+                            'displayName': [
+                                'Balance',
+                            ],
+                            'type': 8,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': false,
+                        'name': 'node_params',
+                        'type': {
+                            'displayName': [
+                                'NodeParams',
+                            ],
+                            'type': 15,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' A node was created. The given account is its owner and recipient of revenues.',
+                ],
+                'name': 'NodeCreated',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'account_id',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': false,
+                        'name': 'value',
+                        'type': {
+                            'displayName': [
+                                'Balance',
+                            ],
+                            'type': 8,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Tokens were deposited on an account.',
+                ],
+                'name': 'Deposit',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'account_id',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': false,
+                        'name': 'permission',
+                        'type': {
+                            'displayName': [
+                                'Permission',
+                            ],
+                            'type': 65,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' A permission was granted to the account.',
+                ],
+                'name': 'GrantPermission',
+            },
+            {
+                'args': [
+                    {
+                        'docs': [],
+                        'indexed': true,
+                        'name': 'account_id',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'docs': [],
+                        'indexed': false,
+                        'name': 'permission',
+                        'type': {
+                            'displayName': [
+                                'Permission',
+                            ],
+                            'type': 65,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' A permission was revoked from the account.',
+                ],
+                'name': 'RevokePermission',
+            },
+        ],
+        'messages': [
+            {
+                'args': [
+                    {
+                        'name': 'bucket_params',
+                        'type': {
+                            'displayName': [
+                                'BucketParams',
+                            ],
+                            'type': 15,
+                        },
+                    },
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'owner_id',
+                        'type': {
+                            'displayName': [
+                                'Option',
+                            ],
+                            'type': 32,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Create a new bucket and return its `bucket_id`.',
+                    '',
+                    ' The caller will be its first owner and payer of resources.',
+                    '',
+                    ' `bucket_params` is configuration used by clients and nodes. See the [data structure of BucketParams](https://docs.cere.network/ddc/protocols/contract-params-schema)',
+                    '',
+                    ' The bucket can be connected to a single cluster (currently). Allocate cluster resources with the function `bucket_alloc_into_cluster`',
+                ],
+                'mutates': true,
+                'name': [
+                    'bucket_create',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [
+                        'BucketId',
+                    ],
+                    'type': 1,
+                },
+                'selector': '0x0aeb2379',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'owner_id',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Change owner of the bucket',
+                    ' ',
+                    ' Provide the account of new owner',
+                ],
+                'mutates': true,
+                'name': [
+                    'bucket_change_owner',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0xc7d0c2cd',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'resource',
+                        'type': {
+                            'displayName': [
+                                'Resource',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Allocate some resources of a cluster to a bucket.',
+                    '',
+                    ' The amount of resources is given per vnode (total resources will be `resource` times the number of vnodes).',
+                ],
+                'mutates': true,
+                'name': [
+                    'bucket_alloc_into_cluster',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0x4c482d19',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Settle the due costs of a bucket from its payer account to the cluster account.',
+                ],
+                'mutates': true,
+                'name': [
+                    'bucket_settle_payment',
+                ],
+                'payable': false,
+                'returnType': null,
+                'selector': '0x15974555',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'params',
+                        'type': {
+                            'displayName': [
+                                'BucketParams',
+                            ],
+                            'type': 15,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Change the `bucket_params`, which is configuration used by clients and nodes.',
+                    '',
+                    ' See the [data structure of BucketParams](https://docs.cere.network/ddc/protocols/contract-params-schema)',
+                ],
+                'mutates': true,
+                'name': [
+                    'bucket_change_params',
+                ],
+                'payable': true,
+                'returnType': null,
+                'selector': '0x9f2d075b',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Get the current status of a bucket.',
+                ],
+                'mutates': false,
+                'name': [
+                    'bucket_get',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Result',
+                    ],
+                    'type': 34,
+                },
+                'selector': '0x3802cb77',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'offset',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'limit',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'filter_owner_id',
+                        'type': {
+                            'displayName': [
+                                'Option',
+                            ],
+                            'type': 32,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Iterate through all buckets.',
+                    '',
+                    ' The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.',
+                    ' The optimal `limit` depends on the size of params.',
+                    '',
+                    ' The results can be filtered by owner. Note that paging must still be completed fully.',
+                ],
+                'mutates': false,
+                'name': [
+                    'bucket_list',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 38,
+                },
+                'selector': '0x417ab584',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'owner_id',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Iterate through all buckets and return only those owned by owner',
+                    '',
+                    ' This method returns bucket struct, not the status',
+                ],
+                'mutates': false,
+                'name': [
+                    'bucket_list_for_account',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Vec',
+                    ],
+                    'type': 40,
+                },
+                'selector': '0xc434cf57',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'public_availability',
+                        'type': {
+                            'displayName': [
+                                'bool',
+                            ],
+                            'type': 9,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Set availiablity of the bucket',
+                ],
+                'mutates': true,
+                'name': [
+                    'bucket_set_availability',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0x053eb3ce',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'new_resource_cap',
+                        'type': {
+                            'displayName': [
+                                'Resource',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Set max resource cap to be charged by CDN for public bucket',
+                ],
+                'mutates': true,
+                'name': [
+                    'bucket_set_resource_cap',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0x85010c6d',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Set permission for the reader of the bucket',
+                ],
+                'mutates': true,
+                'name': [
+                    'get_bucket_writers',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Vec',
+                    ],
+                    'type': 14,
+                },
+                'selector': '0x499cd4b7',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'writer',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Set permission for the writer of the bucket',
+                ],
+                'mutates': true,
+                'name': [
+                    'bucket_set_writer_perm',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0xea2e477a',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'writer',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Revoke permission for the writer of the bucket',
+                ],
+                'mutates': true,
+                'name': [
+                    'bucket_revoke_writer_perm',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0x2b3d8dd1',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Set permission for the reader of the bucket',
+                ],
+                'mutates': true,
+                'name': [
+                    'get_bucket_readers',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Vec',
+                    ],
+                    'type': 14,
+                },
+                'selector': '0xb9a7cc1c',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'reader',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Set permission for the reader of the bucket',
+                ],
+                'mutates': true,
+                'name': [
+                    'bucket_set_reader_perm',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0xfc0e94ea',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bucket_id',
+                        'type': {
+                            'displayName': [
+                                'BucketId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'writer',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Revoke permission for the reader of the bucket',
+                ],
+                'mutates': true,
+                'name': [
+                    'bucket_revoke_reader_perm',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0xe9bfed5a',
+            },
+            {
+                'args': [
+                    {
+                        'name': '_unused',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'name': 'vnode_count',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'node_ids',
+                        'type': {
+                            'displayName': [
+                                'Vec',
+                            ],
+                            'type': 17,
+                        },
+                    },
+                    {
+                        'name': 'cluster_params',
+                        'type': {
+                            'displayName': [
+                                'ClusterParams',
+                            ],
+                            'type': 15,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Create a new cluster and return its `cluster_id`.',
+                    '',
+                    ' The caller will be its first manager.',
+                    '',
+                    ' The cluster is split in a number of vnodes. The vnodes are assigned to the given physical nodes in a round-robin. Only nodes of providers that trust the cluster manager can be used (see `node_trust_manager`). The assignment can be changed with the function `cluster_replace_node`.',
+                    '',
+                    ' `cluster_params` is configuration used by clients and nodes. In particular, this describes the semantics of vnodes. See the [data structure of ClusterParams](https://docs.cere.network/ddc/protocols/contract-params-schema)',
+                ],
+                'mutates': true,
+                'name': [
+                    'cluster_create',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [
+                        'ClusterId',
+                    ],
+                    'type': 1,
+                },
+                'selector': '0x4c0f21f6',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'amount',
+                        'type': {
+                            'displayName': [
+                                'Resource',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As manager, reserve more resources for the cluster from the free capacity of nodes.',
+                    '',
+                    ' The amount of resources is given per vnode (total resources will be `resource` times the number of vnodes).',
+                ],
+                'mutates': true,
+                'name': [
+                    'cluster_reserve_resource',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0xb5e38125',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'vnode_i',
+                        'type': {
+                            'displayName': [
+                                'VNodeIndex',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'new_node_id',
+                        'type': {
+                            'displayName': [
+                                'NodeId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As manager, re-assign a vnode to another physical node.',
+                    '',
+                    ' The cluster manager can only use nodes of providers that trust him (see `node_trust_manager`), or any nodes if he is also SuperAdmin.',
+                ],
+                'mutates': true,
+                'name': [
+                    'cluster_replace_node',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0x48194ab1',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Trigger the distribution of revenues from the cluster to the providers.',
+                ],
+                'mutates': true,
+                'name': [
+                    'cluster_distribute_revenues',
+                ],
+                'payable': false,
+                'returnType': null,
+                'selector': '0xe71e66fc',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'params',
+                        'type': {
+                            'displayName': [
+                                'ClusterParams',
+                            ],
+                            'type': 15,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Change the `cluster_params`, which is configuration used by clients and nodes.',
+                    '',
+                    ' See the [data structure of ClusterParams](https://docs.cere.network/ddc/protocols/contract-params-schema)',
+                ],
+                'mutates': true,
+                'name': [
+                    'cluster_change_params',
+                ],
+                'payable': true,
+                'returnType': null,
+                'selector': '0x1207912c',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Get the current status of a cluster.',
+                ],
+                'mutates': false,
+                'name': [
+                    'cluster_get',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Result',
+                    ],
+                    'type': 41,
+                },
+                'selector': '0xe75411f5',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'offset',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'limit',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'filter_manager_id',
+                        'type': {
+                            'displayName': [
+                                'Option',
+                            ],
+                            'type': 32,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Iterate through all clusters.',
+                    '',
+                    ' The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.',
+                    ' The optimal `limit` depends on the size of params.',
+                    '',
+                    ' The results can be filtered by manager. Note that paging must still be completed fully.',
+                ],
+                'mutates': false,
+                'name': [
+                    'cluster_list',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 43,
+                },
+                'selector': '0xd9db9d44',
+            },
+            {
+                'args': [
+                    {
+                        'name': '_unused',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'name': 'node_ids',
+                        'type': {
+                            'displayName': [
+                                'Vec',
+                            ],
+                            'type': 17,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Create a new cluster and return its `cluster_id`.',
+                    '',
+                    ' The caller will be its first manager.',
+                    '',
+                    ' The cluster is split in a number of vnodes. The vnodes are assigned to the given physical nodes in a round-robin. Only nodes of providers that trust the cluster manager can be used (see `node_trust_manager`). The assignment can be changed with the function `cluster_replace_node`.',
+                    '',
+                    ' `cluster_params` is configuration used by clients and nodes. In particular, this describes the semantics of vnodes. See the [data structure of ClusterParams](https://docs.cere.network/ddc/protocols/contract-params-schema)',
+                ],
+                'mutates': true,
+                'name': [
+                    'cdn_cluster_create',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [
+                        'ClusterId',
+                    ],
+                    'type': 1,
+                },
+                'selector': '0x4344cd7e',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'usd_per_gb',
+                        'type': {
+                            'displayName': [
+                                'u128',
+                            ],
+                            'type': 8,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Set rate for streaming (price per gb)',
+                ],
+                'mutates': true,
+                'name': [
+                    'cdn_set_rate',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0x7578922a',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'aggregates_accounts',
+                        'type': {
+                            'displayName': [
+                                'Vec',
+                            ],
+                            'type': 45,
+                        },
+                    },
+                    {
+                        'name': 'aggregates_nodes',
+                        'type': {
+                            'displayName': [
+                                'Vec',
+                            ],
+                            'type': 47,
+                        },
+                    },
+                    {
+                        'name': 'aggregates_buckets',
+                        'type': {
+                            'displayName': [
+                                'Vec',
+                            ],
+                            'type': 49,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As manager, reserve more resources for the cluster from the free capacity of nodes.',
+                    '',
+                    ' The amount of resources is given per vnode (total resources will be `resource` times the number of vnodes).',
+                ],
+                'mutates': true,
+                'name': [
+                    'cdn_cluster_put_revenue',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0x7219be3f',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Trigger the distribution of revenues from the cluster to the providers.',
+                ],
+                'mutates': true,
+                'name': [
+                    'cdn_cluster_distribute_revenues',
+                ],
+                'payable': false,
+                'returnType': null,
+                'selector': '0xfa8d570d',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Get the current status of a cluster.',
+                ],
+                'mutates': false,
+                'name': [
+                    'cdn_cluster_get',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Result',
+                    ],
+                    'type': 51,
+                },
+                'selector': '0x4b22fbf1',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'offset',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'limit',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'filter_manager_id',
+                        'type': {
+                            'displayName': [
+                                'Option',
+                            ],
+                            'type': 32,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Iterate through all clusters.',
+                    '',
+                    ' The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.',
+                    ' The optimal `limit` depends on the size of params.',
+                    '',
+                    ' The results can be filtered by manager. Note that paging must still be completed fully.',
+                ],
+                'mutates': false,
+                'name': [
+                    'cdn_cluster_list',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 53,
+                },
+                'selector': '0xb242a64f',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'node',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [],
+                'mutates': false,
+                'name': [
+                    'get_commit',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Commit',
+                    ],
+                    'type': 30,
+                },
+                'selector': '0x5329f551',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'node',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'name': 'commit',
+                        'type': {
+                            'displayName': [
+                                'Commit',
+                            ],
+                            'type': 30,
+                        },
+                    },
+                ],
+                'docs': [],
+                'mutates': true,
+                'name': [
+                    'set_commit',
+                ],
+                'payable': false,
+                'returnType': null,
+                'selector': '0xe445e1fd',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'era_config',
+                        'type': {
+                            'displayName': [
+                                'EraConfig',
+                            ],
+                            'type': 55,
+                        },
+                    },
+                ],
+                'docs': [],
+                'mutates': true,
+                'name': [
+                    'set_era',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0x49a5b8f7',
+            },
+            {
+                'args': [],
+                'docs': [],
+                'mutates': false,
+                'name': [
+                    'get_era',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'u64',
+                    ],
+                    'type': 25,
+                },
+                'selector': '0x617f696b',
+            },
+            {
+                'args': [],
+                'docs': [],
+                'mutates': false,
+                'name': [
+                    'get_era_settings',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'EraConfig',
+                    ],
+                    'type': 55,
+                },
+                'selector': '0x84b61468',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'manager',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As node provider, authorize a cluster manager to use his nodes.',
+                ],
+                'mutates': true,
+                'name': [
+                    'cdn_node_trust_manager',
+                ],
+                'payable': true,
+                'returnType': null,
+                'selector': '0x372daa96',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'manager',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As node provider, revoke the authorization of a cluster manager to use his nodes.',
+                ],
+                'mutates': true,
+                'name': [
+                    'cdn_node_distrust_manager',
+                ],
+                'payable': false,
+                'returnType': null,
+                'selector': '0xf67f5438',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'node_params',
+                        'type': {
+                            'displayName': [
+                                'Params',
+                            ],
+                            'type': 15,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Create a new node and return its `node_id`.',
+                    '',
+                    ' The caller will be its owner.',
+                    '',
+                    ' `node_params` is configuration used by clients and nodes. In particular, this contains the URL to the service. See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)',
+                ],
+                'mutates': true,
+                'name': [
+                    'cdn_node_create',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [
+                        'NodeId',
+                    ],
+                    'type': 1,
+                },
+                'selector': '0xe8aa4ade',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'node_id',
+                        'type': {
+                            'displayName': [
+                                'NodeId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'params',
+                        'type': {
+                            'displayName': [
+                                'NodeParams',
+                            ],
+                            'type': 15,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Change the `node_params`, which is configuration used by clients and nodes.',
+                    '',
+                    ' See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)',
+                ],
+                'mutates': true,
+                'name': [
+                    'cdn_node_change_params',
+                ],
+                'payable': true,
+                'returnType': null,
+                'selector': '0xf52c20f5',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'node_id',
+                        'type': {
+                            'displayName': [
+                                'NodeId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Get the current state of the cdn node',
+                ],
+                'mutates': false,
+                'name': [
+                    'cdn_node_get',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Result',
+                    ],
+                    'type': 56,
+                },
+                'selector': '0xf9a5a813',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'offset',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'limit',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'filter_provider_id',
+                        'type': {
+                            'displayName': [
+                                'Option',
+                            ],
+                            'type': 32,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Iterate through all nodes.',
+                    '',
+                    ' The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.',
+                    ' The optimal `limit` depends on the size of params.',
+                    '',
+                    ' The results can be filtered by owner. Note that paging must still be completed fully.',
+                ],
+                'mutates': false,
+                'name': [
+                    'cdn_node_list',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 58,
+                },
+                'selector': '0xf8589aae',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'manager',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As node provider, authorize a cluster manager to use his nodes.',
+                ],
+                'mutates': true,
+                'name': [
+                    'node_trust_manager',
+                ],
+                'payable': true,
+                'returnType': null,
+                'selector': '0x6fd54a01',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'manager',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As node provider, revoke the authorization of a cluster manager to use his nodes.',
+                ],
+                'mutates': true,
+                'name': [
+                    'node_distrust_manager',
+                ],
+                'payable': false,
+                'returnType': null,
+                'selector': '0x40912279',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'rent_per_month',
+                        'type': {
+                            'displayName': [
+                                'Balance',
+                            ],
+                            'type': 8,
+                        },
+                    },
+                    {
+                        'name': 'node_params',
+                        'type': {
+                            'displayName': [
+                                'NodeParams',
+                            ],
+                            'type': 15,
+                        },
+                    },
+                    {
+                        'name': 'capacity',
+                        'type': {
+                            'displayName': [
+                                'Resource',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Create a new node and return its `node_id`.',
+                    '',
+                    ' The caller will be its owner.',
+                    '',
+                    ' `node_params` is configuration used by clients and nodes. In particular, this contains the URL to the service. See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)',
+                ],
+                'mutates': true,
+                'name': [
+                    'node_create',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [
+                        'NodeId',
+                    ],
+                    'type': 1,
+                },
+                'selector': '0xb77ac1bb',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'node_id',
+                        'type': {
+                            'displayName': [
+                                'NodeId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'params',
+                        'type': {
+                            'displayName': [
+                                'NodeParams',
+                            ],
+                            'type': 15,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Change the `node_params`, which is configuration used by clients and nodes.',
+                    '',
+                    ' See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)',
+                ],
+                'mutates': true,
+                'name': [
+                    'node_change_params',
+                ],
+                'payable': true,
+                'returnType': null,
+                'selector': '0x258ccb2a',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'node_id',
+                        'type': {
+                            'displayName': [
+                                'NodeId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Get the current status of a node.',
+                ],
+                'mutates': false,
+                'name': [
+                    'node_get',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Result',
+                    ],
+                    'type': 60,
+                },
+                'selector': '0x847f3997',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'offset',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'limit',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'filter_provider_id',
+                        'type': {
+                            'displayName': [
+                                'Option',
+                            ],
+                            'type': 32,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Iterate through all nodes.',
+                    '',
+                    ' The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.',
+                    ' The optimal `limit` depends on the size of params.',
+                    '',
+                    ' The results can be filtered by owner. Note that paging must still be completed fully.',
+                ],
+                'mutates': false,
+                'name': [
+                    'node_list',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 62,
+                },
+                'selector': '0x423286d6',
+            },
+            {
+                'args': [],
+                'docs': [
+                    ' As user, deposit tokens on the account of the caller from the transaction value. This deposit',
+                    ' can be used to pay for the services to buckets of the account.',
+                ],
+                'mutates': true,
+                'name': [
+                    'account_deposit',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0xc311af62',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'bond_amount',
+                        'type': {
+                            'displayName': [
+                                'Balance',
+                            ],
+                            'type': 8,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As user, bond some amount of tokens from the withdrawable balance. These funds will be used to ',
+                    ' pay for CDN nodes',
+                ],
+                'mutates': true,
+                'name': [
+                    'account_bond',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0xe9fad0bf',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'amount_to_unbond',
+                        'type': {
+                            'displayName': [
+                                'Cash',
+                            ],
+                            'type': 18,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As user, unbond a specified amount of tokens',
+                ],
+                'mutates': true,
+                'name': [
+                    'account_unbond',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0xf7ea2c67',
+            },
+            {
+                'args': [],
+                'docs': [
+                    ' As user, move the unbonded tokens back to withdrawable balance state',
+                ],
+                'mutates': true,
+                'name': [
+                    'account_withdraw_unbonded',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [],
+                    'type': 33,
+                },
+                'selector': '0x98173716',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'account_id',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Get the current status of an account.',
+                ],
+                'mutates': false,
+                'name': [
+                    'account_get',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Result',
+                    ],
+                    'type': 64,
+                },
+                'selector': '0x1d4220fa',
+            },
+            {
+                'args': [],
+                'docs': [
+                    ' Get the current conversion rate between the native currency and an external currency (USD).',
+                ],
+                'mutates': false,
+                'name': [
+                    'account_get_usd_per_cere',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Balance',
+                    ],
+                    'type': 8,
+                },
+                'selector': '0xe4a4652a',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'usd_per_cere',
+                        'type': {
+                            'displayName': [
+                                'Balance',
+                            ],
+                            'type': 8,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As price oracle, set the current conversion rate between the native currency and an external currency (USD).',
+                    '',
+                    ' This requires the permission SetExchangeRate or SuperAdmin.',
+                ],
+                'mutates': true,
+                'name': [
+                    'account_set_usd_per_cere',
+                ],
+                'payable': false,
+                'returnType': null,
+                'selector': '0x48d45ee8',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'grantee',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'name': 'permission',
+                        'type': {
+                            'displayName': [
+                                'Permission',
+                            ],
+                            'type': 65,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Check whether the given account has the given permission currently,',
+                    ' or the SuperAdmin permission.',
+                ],
+                'mutates': false,
+                'name': [
+                    'has_permission',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'bool',
+                    ],
+                    'type': 9,
+                },
+                'selector': '0xe0942492',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'grantee',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'name': 'permission',
+                        'type': {
+                            'displayName': [
+                                'Permission',
+                            ],
+                            'type': 65,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As SuperAdmin, grant any permission to any account.',
+                ],
+                'mutates': true,
+                'name': [
+                    'admin_grant_permission',
+                ],
+                'payable': true,
+                'returnType': null,
+                'selector': '0xbe41ea55',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'grantee',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                    {
+                        'name': 'permission',
+                        'type': {
+                            'displayName': [
+                                'Permission',
+                            ],
+                            'type': 65,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As SuperAdmin, revoke any permission to any account.',
+                ],
+                'mutates': true,
+                'name': [
+                    'admin_revoke_permission',
+                ],
+                'payable': false,
+                'returnType': null,
+                'selector': '0x6b150666',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'amount',
+                        'type': {
+                            'displayName': [
+                                'Balance',
+                            ],
+                            'type': 8,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As SuperAdmin, withdraw the funds held in custody in this contract.',
+                    '',
+                    ' This is a temporary measure to allow migrating the funds to a new version of the contract.',
+                ],
+                'mutates': true,
+                'name': [
+                    'admin_withdraw',
+                ],
+                'payable': false,
+                'returnType': null,
+                'selector': '0x2f6e0868',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'config',
+                        'type': {
+                            'displayName': [
+                                'FeeConfig',
+                            ],
+                            'type': 66,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As SuperAdmin, set the network and cluster fee configuration.',
+                ],
+                'mutates': true,
+                'name': [
+                    'admin_set_fee_config',
+                ],
+                'payable': false,
+                'returnType': null,
+                'selector': '0x00d441e7',
+            },
+            {
+                'args': [],
+                'docs': [
+                    ' Get all Account IDs stored in the SC',
+                ],
+                'mutates': false,
+                'name': [
+                    'get_accounts',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [
+                        'Vec',
+                    ],
+                    'type': 14,
+                },
+                'selector': '0xef03ead7',
+            },
+        ],
+    },
+    'storage': {
+        'struct': {
+            'fields': [
                 {
-                    "layout": {
-                        "struct": {
-                            "fields": [
+                    'layout': {
+                        'struct': {
+                            'fields': [
                                 {
-                                    "layout": {
-                                        "struct": {
-                                            "fields": [
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
                                                 {
-                                                    "layout": {
-                                                        "cell": {
-                                                            "key": "0x0000000000000000000000000000000000000000000000000000000000000000",
-                                                            "ty": 1
-                                                        }
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x0000000000000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 1,
+                                                        },
                                                     },
-                                                    "name": "len"
+                                                    'name': 'len',
                                                 },
                                                 {
-                                                    "layout": {
-                                                        "array": {
-                                                            "cellsPerElem": 1,
-                                                            "layout": {
-                                                                "cell": {
-                                                                    "key": "0x0000000001000000000000000000000000000000000000000000000000000000",
-                                                                    "ty": 2
-                                                                }
+                                                    'layout': {
+                                                        'array': {
+                                                            'cellsPerElem': 1,
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x0000000001000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 2,
+                                                                },
                                                             },
-                                                            "len": 4294967295,
-                                                            "offset": "0x0100000000000000000000000000000000000000000000000000000000000000"
-                                                        }
+                                                            'len': 4294967295,
+                                                            'offset': '0x0100000000000000000000000000000000000000000000000000000000000000',
+                                                        },
                                                     },
-                                                    "name": "elems"
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    "name": null
-                                }
-                            ]
-                        }
-                    },
-                    "name": "buckets"
-                },
-                {
-                    "layout": {
-                        "struct": {
-                            "fields": [
-                                {
-                                    "layout": {
-                                        "struct": {
-                                            "fields": [
-                                                {
-                                                    "layout": {
-                                                        "cell": {
-                                                            "key": "0x0000000001000000000000000000000000000000000000000000000000000000",
-                                                            "ty": 1
-                                                        }
-                                                    },
-                                                    "name": "len"
+                                                    'name': 'elems',
                                                 },
-                                                {
-                                                    "layout": {
-                                                        "array": {
-                                                            "cellsPerElem": 1,
-                                                            "layout": {
-                                                                "cell": {
-                                                                    "key": "0x0000000002000000000000000000000000000000000000000000000000000000",
-                                                                    "ty": 9
-                                                                }
-                                                            },
-                                                            "len": 4294967295,
-                                                            "offset": "0x0100000001000000000000000000000000000000000000000000000000000000"
-                                                        }
-                                                    },
-                                                    "name": "elems"
-                                                }
-                                            ]
-                                        }
+                                            ],
+                                        },
                                     },
-                                    "name": null
-                                }
-                            ]
-                        }
+                                    'name': null,
+                                },
+                            ],
+                        },
                     },
-                    "name": "bucket_params"
+                    'name': 'buckets',
                 },
                 {
-                    "layout": {
-                        "struct": {
-                            "fields": [
+                    'layout': {
+                        'struct': {
+                            'fields': [
                                 {
-                                    "layout": {
-                                        "struct": {
-                                            "fields": [
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
                                                 {
-                                                    "layout": {
-                                                        "cell": {
-                                                            "key": "0x0000000002000000000000000000000000000000000000000000000000000000",
-                                                            "ty": 1
-                                                        }
-                                                    },
-                                                    "name": "len"
-                                                },
-                                                {
-                                                    "layout": {
-                                                        "array": {
-                                                            "cellsPerElem": 1,
-                                                            "layout": {
-                                                                "cell": {
-                                                                    "key": "0x0000000003000000000000000000000000000000000000000000000000000000",
-                                                                    "ty": 10
-                                                                }
-                                                            },
-                                                            "len": 4294967295,
-                                                            "offset": "0x0100000002000000000000000000000000000000000000000000000000000000"
-                                                        }
-                                                    },
-                                                    "name": "elems"
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    "name": null
-                                }
-                            ]
-                        }
-                    },
-                    "name": "clusters"
-                },
-                {
-                    "layout": {
-                        "struct": {
-                            "fields": [
-                                {
-                                    "layout": {
-                                        "struct": {
-                                            "fields": [
-                                                {
-                                                    "layout": {
-                                                        "cell": {
-                                                            "key": "0x0000000003000000000000000000000000000000000000000000000000000000",
-                                                            "ty": 1
-                                                        }
-                                                    },
-                                                    "name": "len"
-                                                },
-                                                {
-                                                    "layout": {
-                                                        "array": {
-                                                            "cellsPerElem": 1,
-                                                            "layout": {
-                                                                "cell": {
-                                                                    "key": "0x0000000004000000000000000000000000000000000000000000000000000000",
-                                                                    "ty": 9
-                                                                }
-                                                            },
-                                                            "len": 4294967295,
-                                                            "offset": "0x0100000003000000000000000000000000000000000000000000000000000000"
-                                                        }
-                                                    },
-                                                    "name": "elems"
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    "name": null
-                                }
-                            ]
-                        }
-                    },
-                    "name": "cluster_params"
-                },
-                {
-                    "layout": {
-                        "struct": {
-                            "fields": [
-                                {
-                                    "layout": {
-                                        "struct": {
-                                            "fields": [
-                                                {
-                                                    "layout": {
-                                                        "cell": {
-                                                            "key": "0x0000000004000000000000000000000000000000000000000000000000000000",
-                                                            "ty": 1
-                                                        }
-                                                    },
-                                                    "name": "len"
-                                                },
-                                                {
-                                                    "layout": {
-                                                        "array": {
-                                                            "cellsPerElem": 1,
-                                                            "layout": {
-                                                                "cell": {
-                                                                    "key": "0x0000000005000000000000000000000000000000000000000000000000000000",
-                                                                    "ty": 13
-                                                                }
-                                                            },
-                                                            "len": 4294967295,
-                                                            "offset": "0x0100000004000000000000000000000000000000000000000000000000000000"
-                                                        }
-                                                    },
-                                                    "name": "elems"
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    "name": null
-                                }
-                            ]
-                        }
-                    },
-                    "name": "nodes"
-                },
-                {
-                    "layout": {
-                        "struct": {
-                            "fields": [
-                                {
-                                    "layout": {
-                                        "struct": {
-                                            "fields": [
-                                                {
-                                                    "layout": {
-                                                        "cell": {
-                                                            "key": "0x0000000005000000000000000000000000000000000000000000000000000000",
-                                                            "ty": 1
-                                                        }
-                                                    },
-                                                    "name": "len"
-                                                },
-                                                {
-                                                    "layout": {
-                                                        "array": {
-                                                            "cellsPerElem": 1,
-                                                            "layout": {
-                                                                "cell": {
-                                                                    "key": "0x0000000006000000000000000000000000000000000000000000000000000000",
-                                                                    "ty": 9
-                                                                }
-                                                            },
-                                                            "len": 4294967295,
-                                                            "offset": "0x0100000005000000000000000000000000000000000000000000000000000000"
-                                                        }
-                                                    },
-                                                    "name": "elems"
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    "name": null
-                                }
-                            ]
-                        }
-                    },
-                    "name": "node_params"
-                },
-                {
-                    "layout": {
-                        "struct": {
-                            "fields": [
-                                {
-                                    "layout": {
-                                        "struct": {
-                                            "fields": [
-                                                {
-                                                    "layout": {
-                                                        "struct": {
-                                                            "fields": [
+                                                    'layout': {
+                                                        'struct': {
+                                                            'fields': [
                                                                 {
-                                                                    "layout": {
-                                                                        "cell": {
-                                                                            "key": "0x0000000006000000000000000000000000000000000000000000000000000000",
-                                                                            "ty": 14
-                                                                        }
+                                                                    'layout': {
+                                                                        'cell': {
+                                                                            'key': '0x0000000001000000000000000000000000000000000000000000000000000000',
+                                                                            'ty': 10,
+                                                                        },
                                                                     },
-                                                                    "name": "header"
+                                                                    'name': 'header',
                                                                 },
                                                                 {
-                                                                    "layout": {
-                                                                        "struct": {
-                                                                            "fields": [
+                                                                    'layout': {
+                                                                        'struct': {
+                                                                            'fields': [
                                                                                 {
-                                                                                    "layout": {
-                                                                                        "cell": {
-                                                                                            "key": "0x0100000006000000000000000000000000000000000000000000000000000000",
-                                                                                            "ty": 1
-                                                                                        }
+                                                                                    'layout': {
+                                                                                        'cell': {
+                                                                                            'key': '0x0100000001000000000000000000000000000000000000000000000000000000',
+                                                                                            'ty': 1,
+                                                                                        },
                                                                                     },
-                                                                                    "name": "len"
+                                                                                    'name': 'len',
                                                                                 },
                                                                                 {
-                                                                                    "layout": {
-                                                                                        "array": {
-                                                                                            "cellsPerElem": 1,
-                                                                                            "layout": {
-                                                                                                "cell": {
-                                                                                                    "key": "0x0100000007000000000000000000000000000000000000000000000000000000",
-                                                                                                    "ty": 15
-                                                                                                }
+                                                                                    'layout': {
+                                                                                        'array': {
+                                                                                            'cellsPerElem': 1,
+                                                                                            'layout': {
+                                                                                                'cell': {
+                                                                                                    'key': '0x0100000002000000000000000000000000000000000000000000000000000000',
+                                                                                                    'ty': 11,
+                                                                                                },
                                                                                             },
-                                                                                            "len": 4294967295,
-                                                                                            "offset": "0x0200000006000000000000000000000000000000000000000000000000000000"
-                                                                                        }
+                                                                                            'len': 4294967295,
+                                                                                            'offset': '0x0200000001000000000000000000000000000000000000000000000000000000',
+                                                                                        },
                                                                                     },
-                                                                                    "name": "elems"
-                                                                                }
-                                                                            ]
-                                                                        }
+                                                                                    'name': 'elems',
+                                                                                },
+                                                                            ],
+                                                                        },
                                                                     },
-                                                                    "name": "entries"
-                                                                }
-                                                            ]
-                                                        }
+                                                                    'name': 'entries',
+                                                                },
+                                                            ],
+                                                        },
                                                     },
-                                                    "name": "keys"
+                                                    'name': 'keys',
                                                 },
                                                 {
-                                                    "layout": {
-                                                        "hash": {
-                                                            "layout": {
-                                                                "cell": {
-                                                                    "key": "0x0200000007000000000000000000000000000000000000000000000000000000",
-                                                                    "ty": 17
-                                                                }
+                                                    'layout': {
+                                                        'hash': {
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x0200000002000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 13,
+                                                                },
                                                             },
-                                                            "offset": "0x0100000007000000000000000000000000000000000000000000000000000000",
-                                                            "strategy": {
-                                                                "hasher": "Blake2x256",
-                                                                "postfix": "",
-                                                                "prefix": "0x696e6b20686173686d6170"
-                                                            }
-                                                        }
+                                                            'offset': '0x0100000002000000000000000000000000000000000000000000000000000000',
+                                                            'strategy': {
+                                                                'hasher': 'Blake2x256',
+                                                                'postfix': '',
+                                                                'prefix': '0x696e6b20686173686d6170',
+                                                            },
+                                                        },
                                                     },
-                                                    "name": "values"
-                                                }
-                                            ]
-                                        }
+                                                    'name': 'values',
+                                                },
+                                            ],
+                                        },
                                     },
-                                    "name": null
+                                    'name': 'writers',
                                 },
                                 {
-                                    "layout": {
-                                        "struct": {
-                                            "fields": [
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
                                                 {
-                                                    "layout": {
-                                                        "cell": {
-                                                            "key": "0x0200000007000000000000000000000000000000000000000000000000000000",
-                                                            "ty": 8
-                                                        }
-                                                    },
-                                                    "name": null
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    "name": null
-                                }
-                            ]
-                        }
-                    },
-                    "name": "accounts"
-                },
-                {
-                    "layout": {
-                        "struct": {
-                            "fields": [
-                                {
-                                    "layout": {
-                                        "struct": {
-                                            "fields": [
-                                                {
-                                                    "layout": {
-                                                        "struct": {
-                                                            "fields": [
+                                                    'layout': {
+                                                        'struct': {
+                                                            'fields': [
                                                                 {
-                                                                    "layout": {
-                                                                        "cell": {
-                                                                            "key": "0x0300000007000000000000000000000000000000000000000000000000000000",
-                                                                            "ty": 14
-                                                                        }
+                                                                    'layout': {
+                                                                        'cell': {
+                                                                            'key': '0x0200000002000000000000000000000000000000000000000000000000000000',
+                                                                            'ty': 10,
+                                                                        },
                                                                     },
-                                                                    "name": "header"
+                                                                    'name': 'header',
                                                                 },
                                                                 {
-                                                                    "layout": {
-                                                                        "struct": {
-                                                                            "fields": [
+                                                                    'layout': {
+                                                                        'struct': {
+                                                                            'fields': [
                                                                                 {
-                                                                                    "layout": {
-                                                                                        "cell": {
-                                                                                            "key": "0x0400000007000000000000000000000000000000000000000000000000000000",
-                                                                                            "ty": 1
-                                                                                        }
+                                                                                    'layout': {
+                                                                                        'cell': {
+                                                                                            'key': '0x0300000002000000000000000000000000000000000000000000000000000000',
+                                                                                            'ty': 1,
+                                                                                        },
                                                                                     },
-                                                                                    "name": "len"
+                                                                                    'name': 'len',
                                                                                 },
                                                                                 {
-                                                                                    "layout": {
-                                                                                        "array": {
-                                                                                            "cellsPerElem": 1,
-                                                                                            "layout": {
-                                                                                                "cell": {
-                                                                                                    "key": "0x0400000008000000000000000000000000000000000000000000000000000000",
-                                                                                                    "ty": 19
-                                                                                                }
+                                                                                    'layout': {
+                                                                                        'array': {
+                                                                                            'cellsPerElem': 1,
+                                                                                            'layout': {
+                                                                                                'cell': {
+                                                                                                    'key': '0x0300000003000000000000000000000000000000000000000000000000000000',
+                                                                                                    'ty': 11,
+                                                                                                },
                                                                                             },
-                                                                                            "len": 4294967295,
-                                                                                            "offset": "0x0500000007000000000000000000000000000000000000000000000000000000"
-                                                                                        }
+                                                                                            'len': 4294967295,
+                                                                                            'offset': '0x0400000002000000000000000000000000000000000000000000000000000000',
+                                                                                        },
                                                                                     },
-                                                                                    "name": "elems"
-                                                                                }
-                                                                            ]
-                                                                        }
+                                                                                    'name': 'elems',
+                                                                                },
+                                                                            ],
+                                                                        },
                                                                     },
-                                                                    "name": "entries"
-                                                                }
-                                                            ]
-                                                        }
+                                                                    'name': 'entries',
+                                                                },
+                                                            ],
+                                                        },
                                                     },
-                                                    "name": "keys"
+                                                    'name': 'keys',
                                                 },
                                                 {
-                                                    "layout": {
-                                                        "hash": {
-                                                            "layout": {
-                                                                "cell": {
-                                                                    "key": "0x0500000008000000000000000000000000000000000000000000000000000000",
-                                                                    "ty": 21
-                                                                }
+                                                    'layout': {
+                                                        'hash': {
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x0400000003000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 13,
+                                                                },
                                                             },
-                                                            "offset": "0x0400000008000000000000000000000000000000000000000000000000000000",
-                                                            "strategy": {
-                                                                "hasher": "Blake2x256",
-                                                                "postfix": "",
-                                                                "prefix": "0x696e6b20686173686d6170"
-                                                            }
-                                                        }
+                                                            'offset': '0x0300000003000000000000000000000000000000000000000000000000000000',
+                                                            'strategy': {
+                                                                'hasher': 'Blake2x256',
+                                                                'postfix': '',
+                                                                'prefix': '0x696e6b20686173686d6170',
+                                                            },
+                                                        },
                                                     },
-                                                    "name": "values"
-                                                }
-                                            ]
-                                        }
+                                                    'name': 'values',
+                                                },
+                                            ],
+                                        },
                                     },
-                                    "name": null
-                                }
-                            ]
-                        }
+                                    'name': 'readers',
+                                },
+                            ],
+                        },
                     },
-                    "name": "perms"
-                }
-            ]
-        }
+                    'name': 'buckets_perms',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x0400000003000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 1,
+                                                        },
+                                                    },
+                                                    'name': 'len',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'array': {
+                                                            'cellsPerElem': 1,
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x0400000004000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 15,
+                                                                },
+                                                            },
+                                                            'len': 4294967295,
+                                                            'offset': '0x0500000003000000000000000000000000000000000000000000000000000000',
+                                                        },
+                                                    },
+                                                    'name': 'elems',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'bucket_params',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x0400000004000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 1,
+                                                        },
+                                                    },
+                                                    'name': 'len',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'array': {
+                                                            'cellsPerElem': 1,
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x0400000005000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 16,
+                                                                },
+                                                            },
+                                                            'len': 4294967295,
+                                                            'offset': '0x0500000004000000000000000000000000000000000000000000000000000000',
+                                                        },
+                                                    },
+                                                    'name': 'elems',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'clusters',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x0400000005000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 1,
+                                                        },
+                                                    },
+                                                    'name': 'len',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'array': {
+                                                            'cellsPerElem': 1,
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x0400000006000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 19,
+                                                                },
+                                                            },
+                                                            'len': 4294967295,
+                                                            'offset': '0x0500000005000000000000000000000000000000000000000000000000000000',
+                                                        },
+                                                    },
+                                                    'name': 'elems',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'cdn_clusters',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x0400000006000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 1,
+                                                        },
+                                                    },
+                                                    'name': 'len',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'array': {
+                                                            'cellsPerElem': 1,
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x0400000007000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 15,
+                                                                },
+                                                            },
+                                                            'len': 4294967295,
+                                                            'offset': '0x0500000006000000000000000000000000000000000000000000000000000000',
+                                                        },
+                                                    },
+                                                    'name': 'elems',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'cluster_params',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x0400000007000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 1,
+                                                        },
+                                                    },
+                                                    'name': 'len',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'array': {
+                                                            'cellsPerElem': 1,
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x0400000008000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 20,
+                                                                },
+                                                            },
+                                                            'len': 4294967295,
+                                                            'offset': '0x0500000007000000000000000000000000000000000000000000000000000000',
+                                                        },
+                                                    },
+                                                    'name': 'elems',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'cdn_nodes',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x0400000008000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 1,
+                                                        },
+                                                    },
+                                                    'name': 'len',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'array': {
+                                                            'cellsPerElem': 1,
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x0400000009000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 15,
+                                                                },
+                                                            },
+                                                            'len': 4294967295,
+                                                            'offset': '0x0500000008000000000000000000000000000000000000000000000000000000',
+                                                        },
+                                                    },
+                                                    'name': 'elems',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'cdn_node_params',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x0400000009000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 1,
+                                                        },
+                                                    },
+                                                    'name': 'len',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'array': {
+                                                            'cellsPerElem': 1,
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x040000000a000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 21,
+                                                                },
+                                                            },
+                                                            'len': 4294967295,
+                                                            'offset': '0x0500000009000000000000000000000000000000000000000000000000000000',
+                                                        },
+                                                    },
+                                                    'name': 'elems',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'nodes',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x040000000a000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 1,
+                                                        },
+                                                    },
+                                                    'name': 'len',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'array': {
+                                                            'cellsPerElem': 1,
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x040000000b000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 15,
+                                                                },
+                                                            },
+                                                            'len': 4294967295,
+                                                            'offset': '0x050000000a000000000000000000000000000000000000000000000000000000',
+                                                        },
+                                                    },
+                                                    'name': 'elems',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'node_params',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'struct': {
+                                                            'fields': [
+                                                                {
+                                                                    'layout': {
+                                                                        'cell': {
+                                                                            'key': '0x040000000b000000000000000000000000000000000000000000000000000000',
+                                                                            'ty': 10,
+                                                                        },
+                                                                    },
+                                                                    'name': 'header',
+                                                                },
+                                                                {
+                                                                    'layout': {
+                                                                        'struct': {
+                                                                            'fields': [
+                                                                                {
+                                                                                    'layout': {
+                                                                                        'cell': {
+                                                                                            'key': '0x050000000b000000000000000000000000000000000000000000000000000000',
+                                                                                            'ty': 1,
+                                                                                        },
+                                                                                    },
+                                                                                    'name': 'len',
+                                                                                },
+                                                                                {
+                                                                                    'layout': {
+                                                                                        'array': {
+                                                                                            'cellsPerElem': 1,
+                                                                                            'layout': {
+                                                                                                'cell': {
+                                                                                                    'key': '0x050000000c000000000000000000000000000000000000000000000000000000',
+                                                                                                    'ty': 22,
+                                                                                                },
+                                                                                            },
+                                                                                            'len': 4294967295,
+                                                                                            'offset': '0x060000000b000000000000000000000000000000000000000000000000000000',
+                                                                                        },
+                                                                                    },
+                                                                                    'name': 'elems',
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    'name': 'entries',
+                                                                },
+                                                            ],
+                                                        },
+                                                    },
+                                                    'name': 'keys',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'hash': {
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x060000000c000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 23,
+                                                                },
+                                                            },
+                                                            'offset': '0x050000000c000000000000000000000000000000000000000000000000000000',
+                                                            'strategy': {
+                                                                'hasher': 'Blake2x256',
+                                                                'postfix': '',
+                                                                'prefix': '0x696e6b20686173686d6170',
+                                                            },
+                                                        },
+                                                    },
+                                                    'name': 'values',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x060000000c000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 8,
+                                                        },
+                                                    },
+                                                    'name': null,
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'accounts',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'struct': {
+                                                            'fields': [
+                                                                {
+                                                                    'layout': {
+                                                                        'cell': {
+                                                                            'key': '0x070000000c000000000000000000000000000000000000000000000000000000',
+                                                                            'ty': 10,
+                                                                        },
+                                                                    },
+                                                                    'name': 'header',
+                                                                },
+                                                                {
+                                                                    'layout': {
+                                                                        'struct': {
+                                                                            'fields': [
+                                                                                {
+                                                                                    'layout': {
+                                                                                        'cell': {
+                                                                                            'key': '0x080000000c000000000000000000000000000000000000000000000000000000',
+                                                                                            'ty': 1,
+                                                                                        },
+                                                                                    },
+                                                                                    'name': 'len',
+                                                                                },
+                                                                                {
+                                                                                    'layout': {
+                                                                                        'array': {
+                                                                                            'cellsPerElem': 1,
+                                                                                            'layout': {
+                                                                                                'cell': {
+                                                                                                    'key': '0x080000000d000000000000000000000000000000000000000000000000000000',
+                                                                                                    'ty': 26,
+                                                                                                },
+                                                                                            },
+                                                                                            'len': 4294967295,
+                                                                                            'offset': '0x090000000c000000000000000000000000000000000000000000000000000000',
+                                                                                        },
+                                                                                    },
+                                                                                    'name': 'elems',
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    'name': 'entries',
+                                                                },
+                                                            ],
+                                                        },
+                                                    },
+                                                    'name': 'keys',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'hash': {
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x090000000d000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 28,
+                                                                },
+                                                            },
+                                                            'offset': '0x080000000d000000000000000000000000000000000000000000000000000000',
+                                                            'strategy': {
+                                                                'hasher': 'Blake2x256',
+                                                                'postfix': '',
+                                                                'prefix': '0x696e6b20686173686d6170',
+                                                            },
+                                                        },
+                                                    },
+                                                    'name': 'values',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'perms',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x090000000d000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 8,
+                                                        },
+                                                    },
+                                                    'name': 'network_fee_bp',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x0a0000000d000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 3,
+                                                        },
+                                                    },
+                                                    'name': 'network_fee_destination',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x0b0000000d000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 8,
+                                                        },
+                                                    },
+                                                    'name': 'cluster_management_fee_bp',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'network_fee',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'cell': {
+                                            'key': '0x0c0000000d000000000000000000000000000000000000000000000000000000',
+                                            'ty': 3,
+                                        },
+                                    },
+                                    'name': 'operator_id',
+                                },
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'struct': {
+                                                            'fields': [
+                                                                {
+                                                                    'layout': {
+                                                                        'cell': {
+                                                                            'key': '0x0d0000000d000000000000000000000000000000000000000000000000000000',
+                                                                            'ty': 10,
+                                                                        },
+                                                                    },
+                                                                    'name': 'header',
+                                                                },
+                                                                {
+                                                                    'layout': {
+                                                                        'struct': {
+                                                                            'fields': [
+                                                                                {
+                                                                                    'layout': {
+                                                                                        'cell': {
+                                                                                            'key': '0x0e0000000d000000000000000000000000000000000000000000000000000000',
+                                                                                            'ty': 1,
+                                                                                        },
+                                                                                    },
+                                                                                    'name': 'len',
+                                                                                },
+                                                                                {
+                                                                                    'layout': {
+                                                                                        'array': {
+                                                                                            'cellsPerElem': 1,
+                                                                                            'layout': {
+                                                                                                'cell': {
+                                                                                                    'key': '0x0e0000000e000000000000000000000000000000000000000000000000000000',
+                                                                                                    'ty': 22,
+                                                                                                },
+                                                                                            },
+                                                                                            'len': 4294967295,
+                                                                                            'offset': '0x0f0000000d000000000000000000000000000000000000000000000000000000',
+                                                                                        },
+                                                                                    },
+                                                                                    'name': 'elems',
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    'name': 'entries',
+                                                                },
+                                                            ],
+                                                        },
+                                                    },
+                                                    'name': 'keys',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'hash': {
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x0f0000000e000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 29,
+                                                                },
+                                                            },
+                                                            'offset': '0x0e0000000e000000000000000000000000000000000000000000000000000000',
+                                                            'strategy': {
+                                                                'hasher': 'Blake2x256',
+                                                                'postfix': '',
+                                                                'prefix': '0x696e6b20686173686d6170',
+                                                            },
+                                                        },
+                                                    },
+                                                    'name': 'values',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': 'commits',
+                                },
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x0f0000000e000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 25,
+                                                        },
+                                                    },
+                                                    'name': 'start',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x100000000e000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 25,
+                                                        },
+                                                    },
+                                                    'name': 'interval',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x110000000e000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 25,
+                                                        },
+                                                    },
+                                                    'name': 'commit_duration',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x120000000e000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 25,
+                                                        },
+                                                    },
+                                                    'name': 'validation_duration',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': 'era_settings',
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'committer_store',
+                },
+            ],
+        },
     },
-    "types": [
+    'types': [
         {
-            "def": {
-                "primitive": "u32"
-            }
-        },
-        {
-            "def": {
-                "composite": {
-                    "fields": [
-                        {
-                            "name": "owner_id",
-                            "type": 3,
-                            "typeName": "AccountId"
-                        },
-                        {
-                            "name": "cluster_id",
-                            "type": 1,
-                            "typeName": "ClusterId"
-                        },
-                        {
-                            "name": "flow",
-                            "type": 6,
-                            "typeName": "Flow"
-                        },
-                        {
-                            "name": "resource_reserved",
-                            "type": 1,
-                            "typeName": "Resource"
-                        }
-                    ]
-                }
+            'def': {
+                'primitive': 'u32',
             },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "bucket",
-                "entity",
-                "Bucket"
-            ]
         },
         {
-            "def": {
-                "composite": {
-                    "fields": [
+            'def': {
+                'composite': {
+                    'fields': [
                         {
-                            "type": 4,
-                            "typeName": "[u8; 32]"
-                        }
-                    ]
-                }
+                            'name': 'owner_id',
+                            'type': 3,
+                            'typeName': 'AccountId',
+                        },
+                        {
+                            'name': 'cluster_id',
+                            'type': 1,
+                            'typeName': 'ClusterId',
+                        },
+                        {
+                            'name': 'flow',
+                            'type': 6,
+                            'typeName': 'Flow',
+                        },
+                        {
+                            'name': 'resource_reserved',
+                            'type': 1,
+                            'typeName': 'Resource',
+                        },
+                        {
+                            'name': 'public_availability',
+                            'type': 9,
+                            'typeName': 'bool',
+                        },
+                        {
+                            'name': 'resource_consumption_cap',
+                            'type': 1,
+                            'typeName': 'Resource',
+                        },
+                    ],
+                },
             },
-            "path": [
-                "ink_env",
-                "types",
-                "AccountId"
-            ]
-        },
-        {
-            "def": {
-                "array": {
-                    "len": 32,
-                    "type": 5
-                }
-            }
-        },
-        {
-            "def": {
-                "primitive": "u8"
-            }
-        },
-        {
-            "def": {
-                "composite": {
-                    "fields": [
-                        {
-                            "name": "from",
-                            "type": 3,
-                            "typeName": "AccountId"
-                        },
-                        {
-                            "name": "schedule",
-                            "type": 7,
-                            "typeName": "Schedule"
-                        }
-                    ]
-                }
-            },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "flow",
-                "Flow"
-            ]
-        },
-        {
-            "def": {
-                "composite": {
-                    "fields": [
-                        {
-                            "name": "rate",
-                            "type": 8,
-                            "typeName": "Balance"
-                        },
-                        {
-                            "name": "offset",
-                            "type": 8,
-                            "typeName": "Balance"
-                        }
-                    ]
-                }
-            },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "schedule",
-                "Schedule"
-            ]
-        },
-        {
-            "def": {
-                "primitive": "u128"
-            }
-        },
-        {
-            "def": {
-                "primitive": "str"
-            }
-        },
-        {
-            "def": {
-                "composite": {
-                    "fields": [
-                        {
-                            "name": "manager_id",
-                            "type": 3,
-                            "typeName": "AccountId"
-                        },
-                        {
-                            "name": "vnodes",
-                            "type": 11,
-                            "typeName": "Vec<NodeId>"
-                        },
-                        {
-                            "name": "resource_per_vnode",
-                            "type": 1,
-                            "typeName": "Resource"
-                        },
-                        {
-                            "name": "resource_used",
-                            "type": 1,
-                            "typeName": "Resource"
-                        },
-                        {
-                            "name": "revenues",
-                            "type": 12,
-                            "typeName": "Cash"
-                        },
-                        {
-                            "name": "total_rent",
-                            "type": 8,
-                            "typeName": "Balance"
-                        }
-                    ]
-                }
-            },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "cluster",
-                "entity",
-                "Cluster"
-            ]
-        },
-        {
-            "def": {
-                "sequence": {
-                    "type": 1
-                }
-            }
-        },
-        {
-            "def": {
-                "composite": {
-                    "fields": [
-                        {
-                            "name": "value",
-                            "type": 8,
-                            "typeName": "Balance"
-                        }
-                    ]
-                }
-            },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "cash",
-                "Cash"
-            ]
-        },
-        {
-            "def": {
-                "composite": {
-                    "fields": [
-                        {
-                            "name": "provider_id",
-                            "type": 3,
-                            "typeName": "ProviderId"
-                        },
-                        {
-                            "name": "rent_per_month",
-                            "type": 8,
-                            "typeName": "Balance"
-                        },
-                        {
-                            "name": "free_resource",
-                            "type": 1,
-                            "typeName": "Resource"
-                        }
-                    ]
-                }
-            },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "node",
-                "entity",
-                "Node"
-            ]
-        },
-        {
-            "def": {
-                "composite": {
-                    "fields": [
-                        {
-                            "name": "last_vacant",
-                            "type": 1,
-                            "typeName": "Index"
-                        },
-                        {
-                            "name": "len",
-                            "type": 1,
-                            "typeName": "u32"
-                        },
-                        {
-                            "name": "len_entries",
-                            "type": 1,
-                            "typeName": "u32"
-                        }
-                    ]
-                }
-            },
-            "path": [
-                "ink_storage",
-                "collections",
-                "stash",
-                "Header"
-            ]
-        },
-        {
-            "def": {
-                "variant": {
-                    "variants": [
-                        {
-                            "fields": [
-                                {
-                                    "type": 16,
-                                    "typeName": "VacantEntry"
-                                }
-                            ],
-                            "name": "Vacant"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "type": 3,
-                                    "typeName": "T"
-                                }
-                            ],
-                            "name": "Occupied"
-                        }
-                    ]
-                }
-            },
-            "params": [
-                3
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'bucket',
+                'entity',
+                'Bucket',
             ],
-            "path": [
-                "ink_storage",
-                "collections",
-                "stash",
-                "Entry"
-            ]
         },
         {
-            "def": {
-                "composite": {
-                    "fields": [
+            'def': {
+                'composite': {
+                    'fields': [
                         {
-                            "name": "next",
-                            "type": 1,
-                            "typeName": "Index"
+                            'type': 4,
+                            'typeName': '[u8; 32]',
                         },
-                        {
-                            "name": "prev",
-                            "type": 1,
-                            "typeName": "Index"
-                        }
-                    ]
-                }
+                    ],
+                },
             },
-            "path": [
-                "ink_storage",
-                "collections",
-                "stash",
-                "VacantEntry"
-            ]
-        },
-        {
-            "def": {
-                "composite": {
-                    "fields": [
-                        {
-                            "name": "value",
-                            "type": 18,
-                            "typeName": "V"
-                        },
-                        {
-                            "name": "key_index",
-                            "type": 1,
-                            "typeName": "KeyIndex"
-                        }
-                    ]
-                }
-            },
-            "params": [
-                18
+            'path': [
+                'ink_env',
+                'types',
+                'AccountId',
             ],
-            "path": [
-                "ink_storage",
-                "collections",
-                "hashmap",
-                "ValueEntry"
-            ]
         },
         {
-            "def": {
-                "composite": {
-                    "fields": [
-                        {
-                            "name": "deposit",
-                            "type": 12,
-                            "typeName": "Cash"
-                        },
-                        {
-                            "name": "payable_schedule",
-                            "type": 7,
-                            "typeName": "Schedule"
-                        }
-                    ]
-                }
+            'def': {
+                'array': {
+                    'len': 32,
+                    'type': 5,
+                },
             },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "account",
-                "entity",
-                "Account"
-            ]
         },
         {
-            "def": {
-                "variant": {
-                    "variants": [
+            'def': {
+                'primitive': 'u8',
+            },
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
                         {
-                            "fields": [
-                                {
-                                    "type": 16,
-                                    "typeName": "VacantEntry"
-                                }
-                            ],
-                            "name": "Vacant"
+                            'name': 'from',
+                            'type': 3,
+                            'typeName': 'AccountId',
                         },
                         {
-                            "fields": [
-                                {
-                                    "type": 20,
-                                    "typeName": "T"
-                                }
-                            ],
-                            "name": "Occupied"
-                        }
-                    ]
-                }
+                            'name': 'schedule',
+                            'type': 7,
+                            'typeName': 'Schedule',
+                        },
+                    ],
+                },
             },
-            "params": [
-                20
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'flow',
+                'Flow',
             ],
-            "path": [
-                "ink_storage",
-                "collections",
-                "stash",
-                "Entry"
-            ]
         },
         {
-            "def": {
-                "sequence": {
-                    "type": 5
-                }
-            }
-        },
-        {
-            "def": {
-                "composite": {
-                    "fields": [
+            'def': {
+                'composite': {
+                    'fields': [
                         {
-                            "name": "value",
-                            "type": 22,
-                            "typeName": "V"
+                            'name': 'rate',
+                            'type': 8,
+                            'typeName': 'Balance',
                         },
                         {
-                            "name": "key_index",
-                            "type": 1,
-                            "typeName": "KeyIndex"
-                        }
-                    ]
-                }
+                            'name': 'offset',
+                            'type': 8,
+                            'typeName': 'Balance',
+                        },
+                    ],
+                },
             },
-            "params": [
-                22
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'schedule',
+                'Schedule',
             ],
-            "path": [
-                "ink_storage",
-                "collections",
-                "hashmap",
-                "ValueEntry"
-            ]
         },
         {
-            "def": {
-                "primitive": "bool"
-            }
+            'def': {
+                'primitive': 'u128',
+            },
         },
         {
-            "def": {
-                "tuple": []
-            }
+            'def': {
+                'primitive': 'bool',
+            },
         },
         {
-            "def": {
-                "variant": {
-                    "variants": [
+            'def': {
+                'composite': {
+                    'fields': [
                         {
-                            "fields": [
-                                {
-                                    "type": 25,
-                                    "typeName": "T"
-                                }
-                            ],
-                            "name": "Ok"
+                            'name': 'last_vacant',
+                            'type': 1,
+                            'typeName': 'Index',
                         },
                         {
-                            "fields": [
-                                {
-                                    "type": 29,
-                                    "typeName": "E"
-                                }
-                            ],
-                            "name": "Err"
-                        }
-                    ]
-                }
+                            'name': 'len',
+                            'type': 1,
+                            'typeName': 'u32',
+                        },
+                        {
+                            'name': 'len_entries',
+                            'type': 1,
+                            'typeName': 'u32',
+                        },
+                    ],
+                },
             },
-            "params": [
-                25,
-                29
+            'path': [
+                'ink_storage',
+                'collections',
+                'stash',
+                'Header',
             ],
-            "path": [
-                "Result"
-            ]
         },
         {
-            "def": {
-                "composite": {
-                    "fields": [
+            'def': {
+                'variant': {
+                    'variants': [
                         {
-                            "name": "bucket_id",
-                            "type": 1,
-                            "typeName": "BucketId"
-                        },
-                        {
-                            "name": "bucket",
-                            "type": 26,
-                            "typeName": "BucketInStatus"
-                        },
-                        {
-                            "name": "params",
-                            "type": 9,
-                            "typeName": "BucketParams"
-                        },
-                        {
-                            "name": "writer_ids",
-                            "type": 27,
-                            "typeName": "Vec<AccountId>"
-                        },
-                        {
-                            "name": "rent_covered_until_ms",
-                            "type": 28,
-                            "typeName": "u64"
-                        }
-                    ]
-                }
-            },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "bucket",
-                "entity",
-                "BucketStatus"
-            ]
-        },
-        {
-            "def": {
-                "composite": {
-                    "fields": [
-                        {
-                            "name": "owner_id",
-                            "type": 3,
-                            "typeName": "AccountId"
-                        },
-                        {
-                            "name": "cluster_id",
-                            "type": 1,
-                            "typeName": "ClusterId"
-                        },
-                        {
-                            "name": "resource_reserved",
-                            "type": 1,
-                            "typeName": "Resource"
-                        }
-                    ]
-                }
-            },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "bucket",
-                "entity",
-                "BucketInStatus"
-            ]
-        },
-        {
-            "def": {
-                "sequence": {
-                    "type": 3
-                }
-            }
-        },
-        {
-            "def": {
-                "primitive": "u64"
-            }
-        },
-        {
-            "def": {
-                "variant": {
-                    "variants": [
-                        {
-                            "discriminant": 0,
-                            "name": "BucketDoesNotExist"
-                        },
-                        {
-                            "discriminant": 1,
-                            "name": "ClusterDoesNotExist"
-                        },
-                        {
-                            "discriminant": 2,
-                            "name": "TooManyVNodes"
-                        },
-                        {
-                            "discriminant": 3,
-                            "name": "ParamsTooBig"
-                        },
-                        {
-                            "discriminant": 4,
-                            "name": "VNodeDoesNotExist"
-                        },
-                        {
-                            "discriminant": 5,
-                            "name": "BucketClusterAlreadyConnected"
-                        },
-                        {
-                            "discriminant": 6,
-                            "name": "BucketClusterNotSetup"
-                        },
-                        {
-                            "discriminant": 7,
-                            "name": "NodeDoesNotExist"
-                        },
-                        {
-                            "discriminant": 8,
-                            "name": "FlowDoesNotExist"
-                        },
-                        {
-                            "discriminant": 9,
-                            "name": "AccountDoesNotExist"
-                        },
-                        {
-                            "discriminant": 10,
-                            "name": "ParamsDoesNotExist"
-                        },
-                        {
-                            "discriminant": 11,
-                            "name": "UnauthorizedProvider"
-                        },
-                        {
-                            "discriminant": 12,
-                            "name": "UnauthorizedOwner"
-                        },
-                        {
-                            "discriminant": 13,
-                            "name": "UnauthorizedClusterManager"
-                        },
-                        {
-                            "discriminant": 14,
-                            "name": "ClusterManagerIsNotTrusted"
-                        },
-                        {
-                            "discriminant": 15,
-                            "name": "TransferFailed"
-                        },
-                        {
-                            "discriminant": 16,
-                            "name": "InsufficientBalance"
-                        },
-                        {
-                            "discriminant": 17,
-                            "name": "InsufficientResources"
-                        },
-                        {
-                            "discriminant": 18,
-                            "name": "Unauthorized"
-                        }
-                    ]
-                }
-            },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "Error"
-            ]
-        },
-        {
-            "def": {
-                "variant": {
-                    "variants": [
-                        {
-                            "name": "None"
-                        },
-                        {
-                            "fields": [
+                            'fields': [
                                 {
-                                    "type": 3,
-                                    "typeName": "T"
-                                }
+                                    'type': 12,
+                                    'typeName': 'VacantEntry',
+                                },
                             ],
-                            "name": "Some"
-                        }
-                    ]
-                }
+                            'name': 'Vacant',
+                        },
+                        {
+                            'fields': [
+                                {
+                                    'type': 1,
+                                    'typeName': 'T',
+                                },
+                            ],
+                            'name': 'Occupied',
+                        },
+                    ],
+                },
             },
-            "params": [
-                3
+            'params': [
+                1,
             ],
-            "path": [
-                "Option"
-            ]
-        },
-        {
-            "def": {
-                "tuple": [
-                    32,
-                    1
-                ]
-            }
-        },
-        {
-            "def": {
-                "sequence": {
-                    "type": 25
-                }
-            }
-        },
-        {
-            "def": {
-                "variant": {
-                    "variants": [
-                        {
-                            "fields": [
-                                {
-                                    "type": 34,
-                                    "typeName": "T"
-                                }
-                            ],
-                            "name": "Ok"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "type": 29,
-                                    "typeName": "E"
-                                }
-                            ],
-                            "name": "Err"
-                        }
-                    ]
-                }
-            },
-            "params": [
-                34,
-                29
+            'path': [
+                'ink_storage',
+                'collections',
+                'stash',
+                'Entry',
             ],
-            "path": [
-                "Result"
-            ]
         },
         {
-            "def": {
-                "composite": {
-                    "fields": [
+            'def': {
+                'composite': {
+                    'fields': [
                         {
-                            "name": "cluster_id",
-                            "type": 1,
-                            "typeName": "ClusterId"
+                            'name': 'next',
+                            'type': 1,
+                            'typeName': 'Index',
                         },
                         {
-                            "name": "cluster",
-                            "type": 10,
-                            "typeName": "Cluster"
+                            'name': 'prev',
+                            'type': 1,
+                            'typeName': 'Index',
                         },
-                        {
-                            "name": "params",
-                            "type": 9,
-                            "typeName": "Params"
-                        }
-                    ]
-                }
+                    ],
+                },
             },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "cluster",
-                "entity",
-                "ClusterStatus"
-            ]
-        },
-        {
-            "def": {
-                "tuple": [
-                    36,
-                    1
-                ]
-            }
-        },
-        {
-            "def": {
-                "sequence": {
-                    "type": 34
-                }
-            }
-        },
-        {
-            "def": {
-                "variant": {
-                    "variants": [
-                        {
-                            "fields": [
-                                {
-                                    "type": 38,
-                                    "typeName": "T"
-                                }
-                            ],
-                            "name": "Ok"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "type": 29,
-                                    "typeName": "E"
-                                }
-                            ],
-                            "name": "Err"
-                        }
-                    ]
-                }
-            },
-            "params": [
-                38,
-                29
+            'path': [
+                'ink_storage',
+                'collections',
+                'stash',
+                'VacantEntry',
             ],
-            "path": [
-                "Result"
-            ]
         },
         {
-            "def": {
-                "composite": {
-                    "fields": [
+            'def': {
+                'composite': {
+                    'fields': [
                         {
-                            "name": "node_id",
-                            "type": 1,
-                            "typeName": "NodeId"
+                            'name': 'value',
+                            'type': 14,
+                            'typeName': 'V',
                         },
                         {
-                            "name": "node",
-                            "type": 13,
-                            "typeName": "Node"
+                            'name': 'key_index',
+                            'type': 1,
+                            'typeName': 'KeyIndex',
                         },
-                        {
-                            "name": "params",
-                            "type": 9,
-                            "typeName": "Params"
-                        }
-                    ]
-                }
+                    ],
+                },
             },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "node",
-                "entity",
-                "NodeStatus"
-            ]
-        },
-        {
-            "def": {
-                "tuple": [
-                    40,
-                    1
-                ]
-            }
-        },
-        {
-            "def": {
-                "sequence": {
-                    "type": 38
-                }
-            }
-        },
-        {
-            "def": {
-                "variant": {
-                    "variants": [
-                        {
-                            "fields": [
-                                {
-                                    "type": 18,
-                                    "typeName": "T"
-                                }
-                            ],
-                            "name": "Ok"
-                        },
-                        {
-                            "fields": [
-                                {
-                                    "type": 29,
-                                    "typeName": "E"
-                                }
-                            ],
-                            "name": "Err"
-                        }
-                    ]
-                }
-            },
-            "params": [
-                18,
-                29
+            'params': [
+                14,
             ],
-            "path": [
-                "Result"
-            ]
+            'path': [
+                'ink_storage',
+                'collections',
+                'hashmap',
+                'ValueEntry',
+            ],
         },
         {
-            "def": {
-                "variant": {
-                    "variants": [
-                        {
-                            "fields": [
-                                {
-                                    "type": 3,
-                                    "typeName": "AccountId"
-                                }
-                            ],
-                            "name": "ManagerTrustedBy"
-                        },
-                        {
-                            "name": "SetExchangeRate"
-                        },
-                        {
-                            "name": "SuperAdmin"
-                        }
-                    ]
-                }
+            'def': {
+                'sequence': {
+                    'type': 3,
+                },
             },
-            "path": [
-                "ddc_bucket",
-                "ddc_bucket",
-                "perm",
-                "entity",
-                "Permission"
-            ]
-        }
-    ]
-}
+        },
+        {
+            'def': {
+                'primitive': 'str',
+            },
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'manager_id',
+                            'type': 3,
+                            'typeName': 'AccountId',
+                        },
+                        {
+                            'name': 'vnodes',
+                            'type': 17,
+                            'typeName': 'Vec<NodeId>',
+                        },
+                        {
+                            'name': 'resource_per_vnode',
+                            'type': 1,
+                            'typeName': 'Resource',
+                        },
+                        {
+                            'name': 'resource_used',
+                            'type': 1,
+                            'typeName': 'Resource',
+                        },
+                        {
+                            'name': 'revenues',
+                            'type': 18,
+                            'typeName': 'Cash',
+                        },
+                        {
+                            'name': 'total_rent',
+                            'type': 8,
+                            'typeName': 'Balance',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'cluster',
+                'entity',
+                'Cluster',
+            ],
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 1,
+                },
+            },
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'value',
+                            'type': 8,
+                            'typeName': 'Balance',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'cash',
+                'Cash',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'manager_id',
+                            'type': 3,
+                            'typeName': 'AccountId',
+                        },
+                        {
+                            'name': 'cdn_nodes',
+                            'type': 17,
+                            'typeName': 'Vec<NodeId>',
+                        },
+                        {
+                            'name': 'resources_used',
+                            'type': 1,
+                            'typeName': 'Resource',
+                        },
+                        {
+                            'name': 'revenues',
+                            'type': 18,
+                            'typeName': 'Cash',
+                        },
+                        {
+                            'name': 'usd_per_gb',
+                            'type': 8,
+                            'typeName': 'u128',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'cdn_cluster',
+                'entity',
+                'CdnCluster',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'provider_id',
+                            'type': 3,
+                            'typeName': 'ProviderId',
+                        },
+                        {
+                            'name': 'undistributed_payment',
+                            'type': 8,
+                            'typeName': 'Balance',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'cdn_node',
+                'entity',
+                'CdnNode',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'provider_id',
+                            'type': 3,
+                            'typeName': 'ProviderId',
+                        },
+                        {
+                            'name': 'rent_per_month',
+                            'type': 8,
+                            'typeName': 'Balance',
+                        },
+                        {
+                            'name': 'free_resource',
+                            'type': 1,
+                            'typeName': 'Resource',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'node',
+                'entity',
+                'Node',
+            ],
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'fields': [
+                                {
+                                    'type': 12,
+                                    'typeName': 'VacantEntry',
+                                },
+                            ],
+                            'name': 'Vacant',
+                        },
+                        {
+                            'fields': [
+                                {
+                                    'type': 3,
+                                    'typeName': 'T',
+                                },
+                            ],
+                            'name': 'Occupied',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                3,
+            ],
+            'path': [
+                'ink_storage',
+                'collections',
+                'stash',
+                'Entry',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'value',
+                            'type': 24,
+                            'typeName': 'V',
+                        },
+                        {
+                            'name': 'key_index',
+                            'type': 1,
+                            'typeName': 'KeyIndex',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                24,
+            ],
+            'path': [
+                'ink_storage',
+                'collections',
+                'hashmap',
+                'ValueEntry',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'deposit',
+                            'type': 18,
+                            'typeName': 'Cash',
+                        },
+                        {
+                            'name': 'bonded',
+                            'type': 18,
+                            'typeName': 'Cash',
+                        },
+                        {
+                            'name': 'negative',
+                            'type': 18,
+                            'typeName': 'Cash',
+                        },
+                        {
+                            'name': 'unbonded_amount',
+                            'type': 18,
+                            'typeName': 'Cash',
+                        },
+                        {
+                            'name': 'unbonded_timestamp',
+                            'type': 25,
+                            'typeName': 'u64',
+                        },
+                        {
+                            'name': 'payable_schedule',
+                            'type': 7,
+                            'typeName': 'Schedule',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'account',
+                'entity',
+                'Account',
+            ],
+        },
+        {
+            'def': {
+                'primitive': 'u64',
+            },
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'fields': [
+                                {
+                                    'type': 12,
+                                    'typeName': 'VacantEntry',
+                                },
+                            ],
+                            'name': 'Vacant',
+                        },
+                        {
+                            'fields': [
+                                {
+                                    'type': 27,
+                                    'typeName': 'T',
+                                },
+                            ],
+                            'name': 'Occupied',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                27,
+            ],
+            'path': [
+                'ink_storage',
+                'collections',
+                'stash',
+                'Entry',
+            ],
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 5,
+                },
+            },
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'value',
+                            'type': 9,
+                            'typeName': 'V',
+                        },
+                        {
+                            'name': 'key_index',
+                            'type': 1,
+                            'typeName': 'KeyIndex',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                9,
+            ],
+            'path': [
+                'ink_storage',
+                'collections',
+                'hashmap',
+                'ValueEntry',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'value',
+                            'type': 30,
+                            'typeName': 'V',
+                        },
+                        {
+                            'name': 'key_index',
+                            'type': 1,
+                            'typeName': 'KeyIndex',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                30,
+            ],
+            'path': [
+                'ink_storage',
+                'collections',
+                'hashmap',
+                'ValueEntry',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'hash',
+                            'type': 31,
+                            'typeName': 'Hash',
+                        },
+                        {
+                            'name': 'total',
+                            'type': 8,
+                            'typeName': 'u128',
+                        },
+                        {
+                            'name': 'from_timestamp',
+                            'type': 25,
+                            'typeName': 'u64',
+                        },
+                        {
+                            'name': 'to_timestamp',
+                            'type': 25,
+                            'typeName': 'u64',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'committer',
+                'store',
+                'Commit',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'type': 4,
+                            'typeName': '[u8; 32]',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ink_env',
+                'types',
+                'Hash',
+            ],
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'name': 'None',
+                        },
+                        {
+                            'fields': [
+                                {
+                                    'type': 3,
+                                    'typeName': 'T',
+                                },
+                            ],
+                            'name': 'Some',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                3,
+            ],
+            'path': [
+                'Option',
+            ],
+        },
+        {
+            'def': {
+                'tuple': [],
+            },
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'fields': [
+                                {
+                                    'type': 35,
+                                    'typeName': 'T',
+                                },
+                            ],
+                            'name': 'Ok',
+                        },
+                        {
+                            'fields': [
+                                {
+                                    'type': 37,
+                                    'typeName': 'E',
+                                },
+                            ],
+                            'name': 'Err',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                35,
+                37,
+            ],
+            'path': [
+                'Result',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'bucket_id',
+                            'type': 1,
+                            'typeName': 'BucketId',
+                        },
+                        {
+                            'name': 'bucket',
+                            'type': 36,
+                            'typeName': 'BucketInStatus',
+                        },
+                        {
+                            'name': 'params',
+                            'type': 15,
+                            'typeName': 'BucketParams',
+                        },
+                        {
+                            'name': 'writer_ids',
+                            'type': 14,
+                            'typeName': 'Vec<AccountId>',
+                        },
+                        {
+                            'name': 'reader_ids',
+                            'type': 14,
+                            'typeName': 'Vec<AccountId>',
+                        },
+                        {
+                            'name': 'rent_covered_until_ms',
+                            'type': 25,
+                            'typeName': 'u64',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'bucket',
+                'entity',
+                'BucketStatus',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'owner_id',
+                            'type': 3,
+                            'typeName': 'AccountId',
+                        },
+                        {
+                            'name': 'cluster_id',
+                            'type': 1,
+                            'typeName': 'ClusterId',
+                        },
+                        {
+                            'name': 'resource_reserved',
+                            'type': 1,
+                            'typeName': 'Resource',
+                        },
+                        {
+                            'name': 'public_availability',
+                            'type': 9,
+                            'typeName': 'bool',
+                        },
+                        {
+                            'name': 'resource_consumption_cap',
+                            'type': 1,
+                            'typeName': 'Resource',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'bucket',
+                'entity',
+                'BucketInStatus',
+            ],
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'discriminant': 0,
+                            'name': 'BucketDoesNotExist',
+                        },
+                        {
+                            'discriminant': 1,
+                            'name': 'ClusterDoesNotExist',
+                        },
+                        {
+                            'discriminant': 2,
+                            'name': 'TooManyVNodes',
+                        },
+                        {
+                            'discriminant': 3,
+                            'name': 'ParamsTooBig',
+                        },
+                        {
+                            'discriminant': 4,
+                            'name': 'VNodeDoesNotExist',
+                        },
+                        {
+                            'discriminant': 5,
+                            'name': 'BondingPeriodNotFinished',
+                        },
+                        {
+                            'discriminant': 6,
+                            'name': 'BucketClusterAlreadyConnected',
+                        },
+                        {
+                            'discriminant': 7,
+                            'name': 'BucketClusterNotSetup',
+                        },
+                        {
+                            'discriminant': 8,
+                            'name': 'NodeDoesNotExist',
+                        },
+                        {
+                            'discriminant': 9,
+                            'name': 'FlowDoesNotExist',
+                        },
+                        {
+                            'discriminant': 10,
+                            'name': 'AccountDoesNotExist',
+                        },
+                        {
+                            'discriminant': 11,
+                            'name': 'ParamsDoesNotExist',
+                        },
+                        {
+                            'discriminant': 12,
+                            'name': 'UnauthorizedProvider',
+                        },
+                        {
+                            'discriminant': 13,
+                            'name': 'UnauthorizedOwner',
+                        },
+                        {
+                            'discriminant': 14,
+                            'name': 'UnauthorizedClusterManager',
+                        },
+                        {
+                            'discriminant': 15,
+                            'name': 'ClusterManagerIsNotTrusted',
+                        },
+                        {
+                            'discriminant': 16,
+                            'name': 'TransferFailed',
+                        },
+                        {
+                            'discriminant': 17,
+                            'name': 'InsufficientBalance',
+                        },
+                        {
+                            'discriminant': 18,
+                            'name': 'InsufficientResources',
+                        },
+                        {
+                            'discriminant': 19,
+                            'name': 'Unauthorized',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'Error',
+            ],
+        },
+        {
+            'def': {
+                'tuple': [
+                    39,
+                    1,
+                ],
+            },
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 35,
+                },
+            },
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 2,
+                },
+            },
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'fields': [
+                                {
+                                    'type': 42,
+                                    'typeName': 'T',
+                                },
+                            ],
+                            'name': 'Ok',
+                        },
+                        {
+                            'fields': [
+                                {
+                                    'type': 37,
+                                    'typeName': 'E',
+                                },
+                            ],
+                            'name': 'Err',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                42,
+                37,
+            ],
+            'path': [
+                'Result',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'cluster_id',
+                            'type': 1,
+                            'typeName': 'ClusterId',
+                        },
+                        {
+                            'name': 'cluster',
+                            'type': 16,
+                            'typeName': 'Cluster',
+                        },
+                        {
+                            'name': 'params',
+                            'type': 15,
+                            'typeName': 'Params',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'cluster',
+                'entity',
+                'ClusterStatus',
+            ],
+        },
+        {
+            'def': {
+                'tuple': [
+                    44,
+                    1,
+                ],
+            },
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 42,
+                },
+            },
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 46,
+                },
+            },
+        },
+        {
+            'def': {
+                'tuple': [
+                    3,
+                    8,
+                ],
+            },
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 48,
+                },
+            },
+        },
+        {
+            'def': {
+                'tuple': [
+                    1,
+                    8,
+                ],
+            },
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 50,
+                },
+            },
+        },
+        {
+            'def': {
+                'tuple': [
+                    1,
+                    1,
+                ],
+            },
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'fields': [
+                                {
+                                    'type': 52,
+                                    'typeName': 'T',
+                                },
+                            ],
+                            'name': 'Ok',
+                        },
+                        {
+                            'fields': [
+                                {
+                                    'type': 37,
+                                    'typeName': 'E',
+                                },
+                            ],
+                            'name': 'Err',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                52,
+                37,
+            ],
+            'path': [
+                'Result',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'cluster_id',
+                            'type': 1,
+                            'typeName': 'ClusterId',
+                        },
+                        {
+                            'name': 'cluster',
+                            'type': 19,
+                            'typeName': 'CdnCluster',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'cdn_cluster',
+                'entity',
+                'CdnClusterStatus',
+            ],
+        },
+        {
+            'def': {
+                'tuple': [
+                    54,
+                    1,
+                ],
+            },
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 52,
+                },
+            },
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'start',
+                            'type': 25,
+                            'typeName': 'u64',
+                        },
+                        {
+                            'name': 'interval',
+                            'type': 25,
+                            'typeName': 'u64',
+                        },
+                        {
+                            'name': 'commit_duration',
+                            'type': 25,
+                            'typeName': 'u64',
+                        },
+                        {
+                            'name': 'validation_duration',
+                            'type': 25,
+                            'typeName': 'u64',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'committer',
+                'store',
+                'EraConfig',
+            ],
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'fields': [
+                                {
+                                    'type': 57,
+                                    'typeName': 'T',
+                                },
+                            ],
+                            'name': 'Ok',
+                        },
+                        {
+                            'fields': [
+                                {
+                                    'type': 37,
+                                    'typeName': 'E',
+                                },
+                            ],
+                            'name': 'Err',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                57,
+                37,
+            ],
+            'path': [
+                'Result',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'node_id',
+                            'type': 1,
+                            'typeName': 'NodeId',
+                        },
+                        {
+                            'name': 'node',
+                            'type': 20,
+                            'typeName': 'CdnNode',
+                        },
+                        {
+                            'name': 'params',
+                            'type': 15,
+                            'typeName': 'Params',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'cdn_node',
+                'entity',
+                'CdnNodeStatus',
+            ],
+        },
+        {
+            'def': {
+                'tuple': [
+                    59,
+                    1,
+                ],
+            },
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 57,
+                },
+            },
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'fields': [
+                                {
+                                    'type': 61,
+                                    'typeName': 'T',
+                                },
+                            ],
+                            'name': 'Ok',
+                        },
+                        {
+                            'fields': [
+                                {
+                                    'type': 37,
+                                    'typeName': 'E',
+                                },
+                            ],
+                            'name': 'Err',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                61,
+                37,
+            ],
+            'path': [
+                'Result',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'node_id',
+                            'type': 1,
+                            'typeName': 'NodeId',
+                        },
+                        {
+                            'name': 'node',
+                            'type': 21,
+                            'typeName': 'Node',
+                        },
+                        {
+                            'name': 'params',
+                            'type': 15,
+                            'typeName': 'Params',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'node',
+                'entity',
+                'NodeStatus',
+            ],
+        },
+        {
+            'def': {
+                'tuple': [
+                    63,
+                    1,
+                ],
+            },
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 61,
+                },
+            },
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'fields': [
+                                {
+                                    'type': 24,
+                                    'typeName': 'T',
+                                },
+                            ],
+                            'name': 'Ok',
+                        },
+                        {
+                            'fields': [
+                                {
+                                    'type': 37,
+                                    'typeName': 'E',
+                                },
+                            ],
+                            'name': 'Err',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                24,
+                37,
+            ],
+            'path': [
+                'Result',
+            ],
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'fields': [
+                                {
+                                    'type': 3,
+                                    'typeName': 'AccountId',
+                                },
+                            ],
+                            'name': 'ManagerTrustedBy',
+                        },
+                        {
+                            'name': 'SetExchangeRate',
+                        },
+                        {
+                            'name': 'SuperAdmin',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'perm',
+                'entity',
+                'Permission',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'network_fee_bp',
+                            'type': 8,
+                            'typeName': 'BasisPoints',
+                        },
+                        {
+                            'name': 'network_fee_destination',
+                            'type': 3,
+                            'typeName': 'AccountId',
+                        },
+                        {
+                            'name': 'cluster_management_fee_bp',
+                            'type': 8,
+                            'typeName': 'BasisPoints',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'network_fee',
+                'FeeConfig',
+            ],
+        },
+    ],
+};
+
+export type ContractAbi = typeof ddcBucketAbi;

@@ -63,6 +63,7 @@ export function createConfig(
                 type: "module",
             },
             filename: "[name].js",
+            path: path.join(dirname, "build"),
         },
         externals: isBrowserModule ? {} : externals,
         plugins: [
@@ -73,11 +74,8 @@ export function createConfig(
     };
 
 
-    let webpackConfig = merge(config, {
-        output: {
-            path: path.join(dirname, "build"),
-        },
-    });
+    let webpackConfig = config;
+
     if (browserslistEnv === "node") {
         webpackConfig = merge(webpackConfig, {
             entry: {
@@ -86,6 +84,18 @@ export function createConfig(
                     nodeEntry
                 ),
             },
+        });
+    }
+
+    if (browserslistEnv === 'node') {
+        webpackConfig = merge(config, {
+            plugins: [
+                new webpack.ProvidePlugin({
+                    'crypto': ['node:crypto', 'webcrypto'],
+                    'URL': ['node:url', 'URL'],
+                    'URLSearchParams': ['node:url', 'URLSearchParams'],
+                }),
+            ],
         });
     }
 

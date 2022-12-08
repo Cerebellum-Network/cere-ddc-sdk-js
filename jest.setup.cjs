@@ -1,4 +1,5 @@
 const {DockerComposeEnvironment, Wait} = require("testcontainers");
+const { webcrypto } = require('node:crypto');
 const {composeFilePath, composeFile} = require("./jest.variables.cjs");
 const path = require('node:path');
 const { execSync } = require('node:child_process');
@@ -12,6 +13,7 @@ module.exports = async function (globalConfig, projectConfig) {
             cwd: __dirname,
         });
     });
+    globalThis.crypto = webcrypto;
     console.log(`Start ${composeFilePath}/${composeFile}`);
     globalThis.__DOCKER_COMPOSE__ = await new DockerComposeEnvironment(composeFilePath, composeFile)
         .withWaitStrategy("ddc-cdn-node", Wait.forHealthCheck())
