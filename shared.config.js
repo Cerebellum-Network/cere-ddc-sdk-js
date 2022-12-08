@@ -88,7 +88,7 @@ export function createConfig(
     }
 
     if (browserslistEnv === 'node') {
-        webpackConfig = merge(config, {
+        webpackConfig = merge(webpackConfig, {
             plugins: [
                 new webpack.ProvidePlugin({
                     'crypto': ['node:crypto', 'webcrypto'],
