@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/file-storage",
   "description": "File storage client",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "type": "module",
   "repository": {
     "type": "git",
@@ -35,7 +35,7 @@
     "package": "rimraf build && clean-publish --temp-dir build && npm run types && npm run build"
   },
   "dependencies": {
-    "@cere-ddc-sdk/content-addressable-storage": "1.5.0"
+    "@cere-ddc-sdk/content-addressable-storage": "1.6.0"
   },
   "devDependencies": {
     "@types/node": "^16.0.0",
