@@ -166,6 +166,23 @@ export class SmartContract {
         });
     }
 
+    public async cdnClusterPutRevenue(
+        clusterId: any,
+        aggregatesAccounts: [any, any][],
+        aggregatesNodes: any[],
+        aggregatesBuckets: any[] = []
+    ) :Promise<void>
+    {
+        const tx = await this.contract.tx.cdnClusterPutRevenue(
+            txOptions,
+            clusterId,
+            aggregatesAccounts,
+            aggregatesNodes,
+            aggregatesBuckets
+        );
+        await this.sendTx(tx);
+    }
+
     private static findCreatedBucketId(events: Array<any>): string {
         const eventName = "BucketCreated";
 
