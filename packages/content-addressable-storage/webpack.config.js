@@ -1,6 +1,6 @@
 import { merge } from "webpack-merge";
 import webpack from "webpack";
-import { createRequire } from "module";
+import { createRequire } from "node:module";
 import { createConfig } from "../../shared.config.js";
 
 const require = createRequire(import.meta.url);

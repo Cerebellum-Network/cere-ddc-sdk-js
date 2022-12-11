@@ -19,5 +19,6 @@ export class ClientOptions implements ClientOptionsInterface {
         public readonly cipher: CipherInterface = new NaclCipher(),
         public readonly cidBuilder: CidBuilder = new CidBuilder(),
         public readonly readAttempts = 1,
+        public readonly ackTimeout = 500,
     ) {}
 }
