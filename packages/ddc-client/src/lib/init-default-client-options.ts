@@ -28,5 +28,6 @@ export const initDefaultClientOptions = (options: Options): ClientOptionsInterfa
         cipher: options.cipher || defaultClientOptions.cipher,
         cidBuilder: options.cidBuilder || defaultClientOptions.cidBuilder,
         readAttempts: options.readAttempts || defaultClientOptions.readAttempts,
+        ackTimeout: options.ackTimeout || defaultClientOptions.ackTimeout,
     }
 }

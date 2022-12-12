@@ -6,6 +6,7 @@ import {
     SearchResult as PbSearchResult,
     SessionStatus,
     SignedPiece as PbSignedPiece,
+    Ack as PbAsk,
 } from '@cere-ddc-sdk/proto';
 import {
     CidBuilder,
@@ -31,6 +32,8 @@ import {EncryptionOptions} from './EncryptionOptions';
 import {CaCreateOptions} from './ca-create-options';
 import {concatArrays} from './lib/concat-arrays';
 import {DEK_PATH_TAG} from './constants';
+import { GasCounter } from './lib/gas-counter';
+import { TasksRunner } from './lib/tasks-runner';
 import {initDefaultOptions} from './lib/init-default-options';
 import {repeatableFetch} from './lib/repeatable-fetch';
 
@@ -55,13 +58,21 @@ type StoreRequest = {
 type Options = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
 
 export class ContentAddressableStorage {
+    private readonly gasCounter: GasCounter;
+
+    private readonly taskRunner: TasksRunner;
+
     private constructor(
         public readonly scheme: SchemeInterface,
         public readonly cdnNodeUrl: string,
         public readonly cipher: CipherInterface,
         private readonly cidBuilder: CidBuilder,
-        private readonly readAttempts: number,
-    ) {}
+        private readonly readAttempts: number = 1,
+        ackTimeout = 500,
+    ) {
+        this.gasCounter = new GasCounter();
+        this.taskRunner = new TasksRunner(ackTimeout);
+    }
 
     static async build(options: Options, secretMnemonicOrSeed: string): Promise<ContentAddressableStorage> {
         const caOptions = initDefaultOptions(options);
@@ -76,6 +87,7 @@ export class ContentAddressableStorage {
             caOptions.cipher,
             caOptions.cidBuilder,
             caOptions.readAttempts,
+            caOptions.ackTimeout,
         );
     }
 
@@ -295,6 +307,11 @@ export class ContentAddressableStorage {
             }
         });
 
+        if (protoResponse.responseCode === 0) {
+            this.gasCounter.push(protoResponse.gas);
+            this.taskRunner.addTask(this.ack, session);
+        }
+
         if (!pbSignedPiece.piece) {
             throw new Error(
                 `Failed to parse signed piece. Response: status='${protoResponse.responseCode}' body=${u8aToString(
@@ -402,6 +419,45 @@ export class ContentAddressableStorage {
             cid,
         );
     }
+
+    private ack = async (session?: Uint8Array): Promise<void> => {
+        const nonce = new Uint8Array(3);
+        crypto.getRandomValues(nonce);
+        const [gas, gasCommit] = this.gasCounter.readUncommitted();
+        const ack = PbAsk.create({
+            timestamp: BigInt(Date.now()),
+            publicKey: this.scheme.publicKey,
+            gas,
+            nonce,
+        });
+        const request = PbRequest.create({
+            // @ts-ignore
+            body: PbAsk.toBinary(ack),
+            publicKey: this.scheme.publicKey,
+            scheme: this.scheme.name,
+            multiHashType: 0n,
+        });
+        const ackSignature =
+            session && session.length > 0
+                ? undefined
+                : await this.signRequest(request, '/api/rest/ack', 'POST');
+        if (ackSignature) {
+            request.signature = ackSignature;
+        }
+        if (session) {
+            request.sessionId = session;
+        }
+        try {
+            await this.sendRequest('/api/rest/ack', undefined, {
+                method: 'POST',
+                // @ts-ignore
+                body: PbRequest.toBinary(request).buffer,
+            });
+            this.gasCounter.commit(gasCommit);
+        } catch (e) {
+            this.gasCounter.revert(gasCommit);
+        }
+    };
 
     private sendRequest(pathname: string, query?: string, init?: RequestInit): Promise<Response> {
         const url = new URL(this.cdnNodeUrl);

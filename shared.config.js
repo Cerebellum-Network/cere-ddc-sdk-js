@@ -1,8 +1,8 @@
-import path from "node:path";
-import {URL} from "node:url";
-import {merge} from "webpack-merge";
+import path from 'node:path';
+import {URL} from 'node:url';
+import {merge} from 'webpack-merge';
 import webpack from 'webpack';
-import {createRequire} from "module";
+import {createRequire} from 'module';
 
 const target = process.env.TARGET;
 const browserslistEnv = process.env.BROWSERSLIST_ENV;
@@ -31,7 +31,7 @@ export function createConfig(
     }, {});
 
     const isBrowserModule = process.env.npm_lifecycle_event === 'build:browser:module';
-    const config = {
+    let webpackConfig = {
         mode: process.env.NODE_ENV || 'production',
         target: 'browserslist',
         experiments: {
@@ -73,9 +73,6 @@ export function createConfig(
         ],
     };
 
-
-    let webpackConfig = config;
-
     if (browserslistEnv === "node") {
         webpackConfig = merge(webpackConfig, {
             entry: {
@@ -89,6 +86,9 @@ export function createConfig(
 
     if (browserslistEnv === 'node') {
         webpackConfig = merge(webpackConfig, {
+            optimization: {
+                minimize: false,
+            },
             plugins: [
                 new webpack.ProvidePlugin({
                     'crypto': ['node:crypto', 'webcrypto'],
