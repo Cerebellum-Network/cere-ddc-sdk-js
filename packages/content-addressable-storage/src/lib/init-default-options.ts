@@ -18,5 +18,6 @@ export const initDefaultOptions = (options: Options): CaCreateOptions => {
         cidBuilder: options.cidBuilder || defaultOptions.cidBuilder,
         readAttempts: options.readAttempts || 1,
         ackTimeout: options.ackTimeout,
+        tier: options.tier,
     }
 }

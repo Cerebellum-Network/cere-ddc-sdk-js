@@ -28,6 +28,7 @@ import {Piece} from './models/Piece';
 import {PieceUri} from './models/PieceUri';
 import {Query} from './models/Query';
 import {Tag} from './models/Tag';
+import {Tier} from './models/Tier';
 import {EncryptionOptions} from './EncryptionOptions';
 import {CaCreateOptions} from './ca-create-options';
 import {concatArrays} from './lib/concat-arrays';
@@ -79,7 +80,7 @@ export class ContentAddressableStorage {
         const scheme = isSchemeName(caOptions.scheme)
             ? await Scheme.createScheme(caOptions.scheme, secretMnemonicOrSeed)
             : caOptions.scheme;
-        const cdn = await ContentAddressableStorage.getCdnAddress(caOptions.smartContract, caOptions.clusterAddress);
+        const cdn = await ContentAddressableStorage.getCdnAddress(caOptions.smartContract, caOptions.clusterAddress, caOptions.tier);
 
         return new ContentAddressableStorage(
             scheme,
@@ -94,19 +95,40 @@ export class ContentAddressableStorage {
     private static async getCdnAddress(
         smartContractOptions: SmartContractOptions,
         clusterAddress: string | number,
+        tier?: Tier,
     ): Promise<string> {
         if (typeof clusterAddress === 'string') {
             return clusterAddress;
         }
 
         const smartContract = await SmartContract.buildAndConnect(mnemonicGenerate(), smartContractOptions);
+
         try {
             const cluster = await smartContract.cdnClusterGet(clusterAddress);
             if (cluster.cluster.cdnNodes.length === 0) {
                 throw new Error(`unable to find cdn nodes in cluster='${clusterAddress}'`);
             }
-            const index = randomUint8(cluster.cluster.cdnNodes.length);
-            const cdnNodeId = cluster.cluster.cdnNodes[index];
+            let cdnNodes = cluster.cluster.cdnNodes;
+
+            if (tier) {
+                const cdnNodeWithTier = [];
+                for (const cdnNode of cdnNodes) {
+                    const node = await smartContract.cdnNodeGet(cdnNode);
+                    const parameters = JSON.parse(node.params);
+
+                    if (parameters.tier === tier) {
+                        cdnNodeWithTier.push(cdnNode);
+                    }
+                }
+                if (cdnNodeWithTier.length === 0) {
+                    throw new Error(`unable to find cdn nodes with tier ${tier} in cluster='${clusterAddress}'`);
+                } else {
+                    cdnNodes = cdnNodeWithTier;
+                }
+            }
+
+            const index = randomUint8(cdnNodes.length);
+            const cdnNodeId = cdnNodes[index];
             const cdnNodeInfo = await smartContract.cdnNodeGet(cdnNodeId);
             return new URL(JSON.parse(cdnNodeInfo.params).url).href;
 

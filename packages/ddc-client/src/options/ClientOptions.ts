@@ -1,10 +1,17 @@
-import {CidBuilder, CipherInterface, NaclCipher, RequiredSelected, SchemeInterface, SchemeName} from '@cere-ddc-sdk/core';
+import {
+    CidBuilder,
+    CipherInterface,
+    NaclCipher,
+    SchemeInterface,
+    SchemeName
+} from '@cere-ddc-sdk/core';
 import {SmartContractOptions, TESTNET} from '@cere-ddc-sdk/smart-contract';
 import {FileStorageConfig} from '@cere-ddc-sdk/file-storage';
-import { ContentAddressableStorage } from '@cere-ddc-sdk/content-addressable-storage';
+import {ContentAddressableStorage} from '@cere-ddc-sdk/content-addressable-storage';
 import {GetFirstArgument} from '@cere-ddc-sdk/core/browser';
+import {Tier} from "@cere-ddc-sdk/content-addressable-storage/models/Tier";
 
-type CaOptions = Required<GetFirstArgument<typeof ContentAddressableStorage.build>>;
+type CaOptions = GetFirstArgument<typeof ContentAddressableStorage.build>;
 
 export interface ClientOptionsInterface extends CaOptions {
     fileOptions: FileStorageConfig;
@@ -20,5 +27,6 @@ export class ClientOptions implements ClientOptionsInterface {
         public readonly cidBuilder: CidBuilder = new CidBuilder(),
         public readonly readAttempts = 1,
         public readonly ackTimeout = 500,
+        public readonly tier: Tier | undefined = undefined,
     ) {}
 }

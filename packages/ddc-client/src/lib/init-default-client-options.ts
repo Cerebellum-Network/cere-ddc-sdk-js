@@ -29,5 +29,6 @@ export const initDefaultClientOptions = (options: Options): ClientOptionsInterfa
         cidBuilder: options.cidBuilder || defaultClientOptions.cidBuilder,
         readAttempts: options.readAttempts || defaultClientOptions.readAttempts,
         ackTimeout: options.ackTimeout || defaultClientOptions.ackTimeout,
+        tier: options.tier,
     }
 }
