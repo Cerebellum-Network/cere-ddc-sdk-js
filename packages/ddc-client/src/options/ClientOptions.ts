@@ -11,10 +11,11 @@ import {ContentAddressableStorage} from '@cere-ddc-sdk/content-addressable-stora
 import {GetFirstArgument} from '@cere-ddc-sdk/core/browser';
 import {Tier} from "@cere-ddc-sdk/content-addressable-storage/models/Tier";
 
-type CaOptions = GetFirstArgument<typeof ContentAddressableStorage.build>;
+type CaOptions = Required<Omit<GetFirstArgument<typeof ContentAddressableStorage.build>, 'tier'>>
 
 export interface ClientOptionsInterface extends CaOptions {
     fileOptions: FileStorageConfig;
+    tier?: Tier;
 }
 
 export class ClientOptions implements ClientOptionsInterface {
@@ -27,6 +28,5 @@ export class ClientOptions implements ClientOptionsInterface {
         public readonly cidBuilder: CidBuilder = new CidBuilder(),
         public readonly readAttempts = 1,
         public readonly ackTimeout = 500,
-        public readonly tier: Tier | undefined = undefined,
     ) {}
 }
