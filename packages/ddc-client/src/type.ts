@@ -19,7 +19,10 @@ export declare const DdcClient: {
     prototype: DdcClient;
 
     buildAndConnect(options: ClientOptions, secretPhrase: string, encryptionSecretPhrase: string): Promise<DdcClient>;
+    build(options: ClientOptions, secretPhrase: string, encryptionSecretPhrase: string): Promise<DdcClient>;
     buildAndConnect(options: ClientOptions, secretPhrase: string): Promise<DdcClient>;
+    build(options: ClientOptions, secretPhrase: string): Promise<DdcClient>;
     //Browser only
     buildAndConnect(options: ClientOptions, account: InjectedAccount, encryptionSecretPhrase: string): Promise<DdcClient>;
+    build(options: ClientOptions, account: InjectedAccount, encryptionSecretPhrase: string): Promise<DdcClient>;
 }

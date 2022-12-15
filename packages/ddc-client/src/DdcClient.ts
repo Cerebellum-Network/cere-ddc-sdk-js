@@ -57,6 +57,29 @@ export class DdcClient implements DdcClientInterface {
         this.boxKeypair = naclBoxPairFromSecret(nacl.box.keyPair.fromSecretKey(getNaclBoxSecret(encryptionSecretPhrase)).secretKey);
     }
 
+    static async build(
+        options: Options,
+        secretPhrase: string,
+        encryptionSecretPhrase?: string,
+    ): Promise<DdcClient> {
+        encryptionSecretPhrase = encryptionSecretPhrase != null ? encryptionSecretPhrase : secretPhrase;
+        const clientCreateOptions = initDefaultClientOptions(options);
+
+        const scheme = isSchemeName(clientCreateOptions.scheme)
+            ? await Scheme.createScheme(clientCreateOptions.scheme, secretPhrase)
+            : clientCreateOptions.scheme;
+        const caStorage = await ContentAddressableStorage.build(
+            {
+                ...clientCreateOptions,
+                scheme,
+            },
+            secretPhrase,
+        );
+
+        // @ts-ignore
+        return new DdcClient(caStorage, null, clientCreateOptions, encryptionSecretPhrase);
+    }
+
     static async buildAndConnect(
         options: Options,
         secretPhrase: string,
