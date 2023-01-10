@@ -24,6 +24,10 @@ execSync('npm whoami', {
     stdio: 'inherit'
 });
 
+execSync('npm get registry', {
+    stdio: 'inherit'
+});
+
 execSync('node scripts/publish.js', {
     cwd: root,
     stdio: 'inherit',

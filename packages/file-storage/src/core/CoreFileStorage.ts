@@ -6,6 +6,7 @@ import {
     Tag,
     EncryptionOptions,
 } from '@cere-ddc-sdk/content-addressable-storage';
+import type {UnderlyingSource} from 'stream/web';
 import {FileStorageConfig} from './FileStorageConfig';
 import {IndexedLink} from './model/IndexedLink';
 
@@ -77,7 +78,9 @@ export class CoreFileStorage {
             },
             async pull(controller) {
                 const tasks = await tasksPromise;
-                controller.enqueue(await tasks.shift());
+                const currentTask = tasks.shift();
+                const taskResult = currentTask ? await currentTask : new Uint8Array;
+                controller.enqueue(taskResult);
                 if (index < (await linksPromise).length) {
                     tasks.push(runReadPieceTask());
                 }
