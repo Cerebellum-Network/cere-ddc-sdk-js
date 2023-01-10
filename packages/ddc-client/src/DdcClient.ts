@@ -18,7 +18,7 @@ import {
 import {KeyValueStorage} from '@cere-ddc-sdk/key-value-storage';
 import {blake2AsU8a, naclBoxPairFromSecret} from '@polkadot/util-crypto';
 import nacl, {BoxKeyPair} from 'tweetnacl';
-import {hexToU8a, isHex, stringToU8a, u8aToHex} from '@polkadot/util';
+import {hexToU8a, stringToU8a, u8aToHex} from '@polkadot/util';
 
 import {DdcClientInterface} from './DdcClient.interface';
 import {ClientOptionsInterface} from './options/ClientOptions';

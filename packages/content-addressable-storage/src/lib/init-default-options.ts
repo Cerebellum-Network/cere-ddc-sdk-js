@@ -17,6 +17,7 @@ export const initDefaultOptions = (options: Options): CaCreateOptions => {
         cipher: options.cipher || defaultOptions.cipher,
         cidBuilder: options.cidBuilder || defaultOptions.cidBuilder,
         readAttempts: options.readAttempts || 1,
+        writeAttempts: options.writeAttempts || 1,
         ackTimeout: options.ackTimeout,
     }
 }

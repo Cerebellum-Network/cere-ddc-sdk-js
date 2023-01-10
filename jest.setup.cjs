@@ -13,7 +13,7 @@ module.exports = async function (globalConfig, projectConfig) {
             cwd: __dirname,
         });
     });
-    globalThis.crypto = webcrypto;
+    global.crypto = webcrypto;
     console.log(`Start ${composeFilePath}/${composeFile}`);
     globalThis.__DOCKER_COMPOSE__ = await new DockerComposeEnvironment(composeFilePath, composeFile)
         .withWaitStrategy("ddc-cdn-node", Wait.forHealthCheck())

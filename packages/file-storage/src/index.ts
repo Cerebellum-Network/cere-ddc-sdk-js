@@ -1,7 +1,4 @@
 import {GetFirstArgument, RequiredSelected} from '@cere-ddc-sdk/core';
-
-export {FileStorageConfig, KB, MB} from './core/FileStorageConfig';
-
 import {PathLike} from 'fs';
 import {
     ContentAddressableStorage,
@@ -16,6 +13,8 @@ import {FileStorage as FileStorageInterface} from './type';
 import * as streamWeb from 'stream/web';
 import {Readable} from 'node:stream';
 import {open} from 'node:fs/promises';
+
+export {FileStorageConfig, KB, MB} from './core/FileStorageConfig';
 
 type Data = streamWeb.ReadableStream<Uint8Array> | Readable | PathLike | Uint8Array;
 
@@ -55,7 +54,12 @@ export class FileStorage implements FileStorageInterface {
         );
     }
 
-    readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array, session: Uint8Array): ReadableStream<Uint8Array> {
+    readDecrypted(
+        bucketId: bigint,
+        cid: string,
+        dek: Uint8Array,
+        session: Uint8Array,
+    ): streamWeb.ReadableStream<Uint8Array> {
         return new streamWeb.ReadableStream<Uint8Array>(
             this.fs.createReadUnderlyingSource(bucketId, session, cid, dek),
             new streamWeb.CountQueuingStrategy({highWaterMark: this.fs.config.parallel}),
@@ -66,14 +70,14 @@ export class FileStorage implements FileStorageInterface {
         bucketId: bigint,
         data: Data,
         tags: Array<Tag> = [],
-        encryptionOptions: EncryptionOptions
+        encryptionOptions: EncryptionOptions,
     ): Promise<PieceUri> {
         const stream = await transformDataToStream(data);
         const reader = stream.pipeThrough(new streamWeb.TransformStream(this.fs.chunkTransformer())).getReader();
         return await this.fs.uploadFromStreamReader(bucketId, reader, tags, encryptionOptions);
     }
 
-    readLinks(bucketId: bigint, links: Array<Link>, session?: Uint8Array): ReadableStream<Uint8Array> {
+    readLinks(bucketId: bigint, links: Array<Link>, session?: Uint8Array): streamWeb.ReadableStream<Uint8Array> {
         return new streamWeb.ReadableStream<Uint8Array>(
             this.fs.createReadUnderlyingSource(bucketId, session, links),
             new streamWeb.CountQueuingStrategy({highWaterMark: this.fs.config.parallel}),
@@ -85,7 +89,7 @@ export class FileStorage implements FileStorageInterface {
         links: Array<Link>,
         dek: Uint8Array,
         session?: Uint8Array,
-    ): ReadableStream<Uint8Array> {
+    ): streamWeb.ReadableStream<Uint8Array> {
         return new streamWeb.ReadableStream<Uint8Array>(
             this.fs.createReadUnderlyingSource(bucketId, session, links, dek),
             new streamWeb.CountQueuingStrategy({highWaterMark: this.fs.config.parallel}),

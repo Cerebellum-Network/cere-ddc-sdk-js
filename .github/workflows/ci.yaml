@@ -31,7 +31,7 @@ jobs:
       - name: Integration tests
         run: npm test
       - name: Increase version
-        run: node scripts/release.js --patch
+        run: node scripts/release.js --major
       - name: NPM set register
         run: npm set registry http://localhost:4873/
       - name: Publishing dry-run

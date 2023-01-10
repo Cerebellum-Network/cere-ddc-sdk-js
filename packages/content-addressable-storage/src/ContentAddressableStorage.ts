@@ -68,7 +68,8 @@ export class ContentAddressableStorage {
         public readonly cipher: CipherInterface,
         private readonly cidBuilder: CidBuilder,
         private readonly readAttempts: number = 1,
-        ackTimeout = 500,
+        private readonly writeAttempts: number = 1,
+        ackTimeout = 300,
     ) {
         this.gasCounter = new GasCounter();
         this.taskRunner = new TasksRunner(ackTimeout);
@@ -87,6 +88,7 @@ export class ContentAddressableStorage {
             caOptions.cipher,
             caOptions.cidBuilder,
             caOptions.readAttempts,
+            caOptions.writeAttempts,
             caOptions.ackTimeout,
         );
     }
@@ -466,8 +468,9 @@ export class ContentAddressableStorage {
             url.search = new URLSearchParams(query).toString();
         }
         const method = init?.method?.toUpperCase() || 'GET';
-        const options = init != null ? {...init, attempts: this.readAttempts} : {attempts: this.readAttempts};
-        const response = method === 'GET' ? fetch(url.href, init) : repeatableFetch(url.href, options);
+        const attempts = method === 'GET' ? this.readAttempts : this.writeAttempts;
+        const options = init != null ? {...init, attempts} : {attempts};
+        const response = attempts === 1 ? fetch(url.href, init) : repeatableFetch(url.href, options);
 
         return response.catch((error) => {
             throw new Error(`Can't send request url='${url}', method='${method}', error='${error}'`);
