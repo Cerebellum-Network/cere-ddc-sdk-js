@@ -11,7 +11,7 @@ import {
 } from '@cere-ddc-sdk/content-addressable-storage';
 import {FileStorageConfig} from './core/FileStorageConfig';
 import {CoreFileStorage} from './core/CoreFileStorage';
-import {FileStorage as FileStorageInterface} from './type';
+import {FileStorage as FileStorageInterface} from './types';
 
 type Data = ReadableStream<Uint8Array> | Blob | string | Uint8Array;
 
@@ -36,6 +36,10 @@ export class FileStorage implements FileStorageInterface {
         secretPhrase: string,
     ): Promise<FileStorage> {
         return new FileStorage(await ContentAddressableStorage.build(storageOptions, secretPhrase), config);
+    }
+
+    disconnect(): Promise<void> {
+        return this.caStorage.disconnect();
     }
 
     async upload(bucketId: bigint, data: Data, tags: Array<Tag> = []): Promise<PieceUri> {

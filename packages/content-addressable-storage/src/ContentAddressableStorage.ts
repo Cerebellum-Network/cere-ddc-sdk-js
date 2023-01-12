@@ -93,6 +93,10 @@ export class ContentAddressableStorage {
         );
     }
 
+    async disconnect(): Promise<void> {
+        await this.ack();
+    }
+
     private static async getCdnAddress(
         smartContractOptions: SmartContractOptions,
         clusterAddress: string | number,
@@ -268,6 +272,11 @@ export class ContentAddressableStorage {
             );
         }
 
+        if (protoResponse.responseCode === 0 || protoResponse.responseCode === 1) {
+            this.gasCounter.push(protoResponse.gas);
+            this.taskRunner.addTask(this.ack);
+        }
+
         return new PieceUri(bucketId, request.cid);
     }
 
@@ -309,9 +318,9 @@ export class ContentAddressableStorage {
             }
         });
 
-        if (protoResponse.responseCode === 0) {
+        if (protoResponse.responseCode === 0 && !session) {
             this.gasCounter.push(protoResponse.gas);
-            this.taskRunner.addTask(this.ack, session);
+            this.taskRunner.addTask(this.ack);
         }
 
         if (!pbSignedPiece.piece) {
@@ -377,6 +386,11 @@ export class ContentAddressableStorage {
             );
         }
 
+        if (protoResponse.responseCode === 0 || protoResponse.responseCode === 1) {
+            this.gasCounter.push(protoResponse.gas);
+            this.taskRunner.addTask(this.ack);
+        }
+
         const pbSearchResult = await new Promise<PbSearchResult>((resolve) => {
             try {
                 // @ts-ignore
@@ -422,7 +436,7 @@ export class ContentAddressableStorage {
         );
     }
 
-    private ack = async (session?: Uint8Array): Promise<void> => {
+    private ack = async (): Promise<void> => {
         const nonce = new Uint8Array(3);
         crypto.getRandomValues(nonce);
         const [gas, gasCommit] = this.gasCounter.readUncommitted();
@@ -439,16 +453,11 @@ export class ContentAddressableStorage {
             scheme: this.scheme.name,
             multiHashType: 0n,
         });
-        const ackSignature =
-            session && session.length > 0
-                ? undefined
-                : await this.signRequest(request, '/api/rest/ack', 'POST');
+        const ackSignature = await this.signRequest(request, '/api/rest/ack', 'POST');
         if (ackSignature) {
             request.signature = ackSignature;
         }
-        if (session) {
-            request.sessionId = session;
-        }
+
         try {
             await this.sendRequest('/api/rest/ack', undefined, {
                 method: 'POST',

@@ -22,6 +22,10 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         webcrypto.getRandomValues(randomPieceData);
     });
 
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
     test('store/read without session', async () => {
         //given
         const tag = new Tag('some-key', 'some-value', SearchType.NOT_SEARCHABLE);
@@ -57,7 +61,19 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         } catch (e) {
             expect(e).toMatchObject(expect.any(Error));
         }
-        jest.restoreAllMocks();
+    });
+
+    it('should call ack on store', async () => {
+        //given
+        const tag = new Tag('some-key', 'some-value', SearchType.NOT_SEARCHABLE);
+        const piece = new Piece(randomPieceData, [tag]);
+        const bucketId = 1n;
+        // @ts-ignore
+        const fn = jest.spyOn(storage, 'ack').mockImplementation(() => Promise.resolve(undefined));
+        const storeRequest = await storage.store(bucketId, piece);
+        expect(storeRequest.cid).toBeDefined();
+        await delay(20);
+        expect(fn).toBeCalled();
     });
 
     test('store/read with session', async () => {
@@ -66,7 +82,7 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         const piece = new Piece(randomPieceData, [tag]);
         const bucketId = 1n;
         // @ts-ignore
-        const fn = jest.spyOn(storage, 'ack').mockImplementation(() => Promise.resolve(undefined))
+        const fn = jest.spyOn(storage, 'ack').mockImplementation(() => Promise.resolve(undefined));
 
         //when
         const d = new Date();
@@ -92,11 +108,16 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         const piece = new Piece(new Uint8Array([1, 2, 3]), tags);
         await storage.store(bucketId, piece);
 
+        // @ts-ignore
+        const fn = jest.spyOn(storage, 'ack').mockImplementation(() => Promise.resolve(undefined))
+
         //when
         const searchResult = await storage.search(new Query(bucketId, tags));
 
         //then
         piece.cid = 'bafk2bzacechpzp7rzthbhnjyxmkt3qlcyc24ruzormtvmnvdp5dsvjubh7vcc';
+        await delay(20);
+        expect(fn).toBeCalled();
         expect(searchResult.pieces).toEqual([piece]);
     });
 

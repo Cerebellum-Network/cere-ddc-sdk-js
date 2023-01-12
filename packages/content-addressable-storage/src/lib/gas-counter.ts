@@ -17,7 +17,7 @@ export class GasCounter {
             this.engine.delete(gas);
             commit.add(gas);
             return value;
-        }).reduce((a, b) => a + b);
+        }).reduce((a, b) => a + b, 0n);
         this.commits.set(this.commitId, commit);
         return [gasAmount, this.commitId];
     }
