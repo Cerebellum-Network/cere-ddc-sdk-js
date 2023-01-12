@@ -81,7 +81,10 @@ export class DdcClient implements DdcClientInterface {
     }
 
     async disconnect() {
-        return await this.smartContract.disconnect();
+        await Promise.all([
+            this.caStorage.disconnect(),
+            this.smartContract.disconnect(),
+        ]);
     }
 
     async createBucket(

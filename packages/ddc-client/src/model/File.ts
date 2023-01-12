@@ -1,6 +1,8 @@
 import {Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import { ReadableStream as NodeReadableStream } from 'stream/web';
 
-type Data = ReadableStream<Uint8Array> | string | Uint8Array
+
+type Data = NodeReadableStream<Uint8Array> | ReadableStream<Uint8Array> | string | Uint8Array
 
 export class File {
     data: Data;

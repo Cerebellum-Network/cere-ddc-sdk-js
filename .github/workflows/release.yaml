@@ -34,3 +34,15 @@ jobs:
         run: npm run test
       - name: Publish
         run: node scripts/publish.js
+      - name: Build artifacts
+        run: node scripts/release-artifacts.js
+      - name: Upload content-addressable-storage browser module
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: "content-addressable-storage.js"
+          path: ./packages/content-addressable-storage/build/content-addressable-storage.js
+      - name: Upload ddc-client browser module
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: "ddc-client.js"
+          path: .packages/ddc-client/build/ddc-client.js
