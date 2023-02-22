@@ -22,8 +22,8 @@ describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
         const key = 'keyValue';
 
         //when
-        await storage.store(bucketId, key, new Piece(data));
-        const storedPieces = await storage.read(bucketId, key);
+        await storage.store(bucketId, session, key, new Piece(data));
+        const storedPieces = await storage.read(bucketId, session, key);
 
         //then
         expect(storedPieces).toEqual([new Piece(data)]);

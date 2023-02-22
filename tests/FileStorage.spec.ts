@@ -18,8 +18,8 @@ describe('packages/file-storage/src/index.ts', () => {
         const data = new Uint8Array([1, 2, 3, 4, 5]);
 
         //when
-        const headPieceUri = await storage.upload(bucketId, data, []);
-        const stream = await storage.read(bucketId, headPieceUri.cid, new Uint8Array());
+        const headPieceUri = await storage.upload(bucketId, session, data, []);
+        const stream = await storage.read(bucketId, session, headPieceUri.cid);
 
         //then
         let result = [];
