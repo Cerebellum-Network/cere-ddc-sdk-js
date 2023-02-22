@@ -17,7 +17,7 @@ import {
     SchemeInterface,
 } from '@cere-ddc-sdk/core';
 import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
-import {base58Encode, mnemonicGenerate} from '@polkadot/util-crypto';
+import {base58Encode, mnemonicGenerate, randomAsU8a} from '@polkadot/util-crypto';
 import {stringToU8a, u8aToString} from '@polkadot/util';
 import {fetch} from 'cross-fetch';
 import {encode} from 'varint';
@@ -345,7 +345,7 @@ export class ContentAddressableStorage {
 
     async createSession(session?: Session): Promise<Uint8Array> {
         if (session == null) {
-            return ContentAddressableStorage.randomBytes(DEFAULT_SESSION_ID_SIZE)
+            return randomAsU8a(DEFAULT_SESSION_ID_SIZE);
         }
 
         return session
@@ -379,7 +379,7 @@ export class ContentAddressableStorage {
             publicKey: this.scheme.publicKey,
             requestId,
             gas: BigInt(protoResponse.gas),
-            nonce: ContentAddressableStorage.randomBytes(32),
+            nonce: randomAsU8a(32),
         });
         const request = PbRequest.create({
             // @ts-ignore
@@ -422,12 +422,5 @@ export class ContentAddressableStorage {
         return response.catch((error) => {
             throw new Error(`Can't send request url='${url}', method='${method}', error='${error}'`);
         });
-    }
-
-    private static randomBytes(size: number): Uint8Array {
-        const result = new Uint8Array(size);
-        crypto.getRandomValues(result);
-
-        return result
     }
 }
