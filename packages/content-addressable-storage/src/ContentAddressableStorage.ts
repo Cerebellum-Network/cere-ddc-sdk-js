@@ -1,12 +1,11 @@
 import {
+    Ack as PbAck,
     Piece as PbPiece,
     Query as PbQuery,
     Request as PbRequest,
     Response as PbResponse,
     SearchResult as PbSearchResult,
-    SessionStatus,
     SignedPiece as PbSignedPiece,
-    Ack as PbAsk,
 } from '@cere-ddc-sdk/proto';
 import {
     CidBuilder,
@@ -20,7 +19,6 @@ import {
 import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
 import {base58Encode, mnemonicGenerate} from '@polkadot/util-crypto';
 import {stringToU8a, u8aToString} from '@polkadot/util';
-import {nanoid} from 'nanoid';
 import {fetch} from 'cross-fetch';
 import {encode} from 'varint';
 import {SearchResult} from './models/SearchResult';
@@ -31,22 +29,14 @@ import {Tag} from './models/Tag';
 import {EncryptionOptions} from './EncryptionOptions';
 import {CaCreateOptions} from './ca-create-options';
 import {concatArrays} from './lib/concat-arrays';
-import {DEK_PATH_TAG} from './constants';
-import { GasCounter } from './lib/gas-counter';
-import { TasksRunner } from './lib/tasks-runner';
+import {DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG, REQIEST_ID_HEADER} from './constants';
 import {initDefaultOptions} from './lib/init-default-options';
 import {repeatableFetch} from './lib/repeatable-fetch';
 
 const BASE_PATH_PIECES = '/api/v1/rest/pieces';
-const BASE_PATH_SESSION = '/api/v1/rest/session';
 
 type HTTP_METHOD = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-
-type CreateSessionParams = {
-    gas: number;
-    endOfEpoch: number;
-    bucketId: BigInt;
-};
+export type Session = Uint8Array
 
 type StoreRequest = {
     body: Uint8Array;
@@ -58,9 +48,6 @@ type StoreRequest = {
 type Options = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
 
 export class ContentAddressableStorage {
-    private readonly gasCounter: GasCounter;
-
-    private readonly taskRunner: TasksRunner;
 
     private constructor(
         public readonly scheme: SchemeInterface,
@@ -69,10 +56,7 @@ export class ContentAddressableStorage {
         private readonly cidBuilder: CidBuilder,
         private readonly readAttempts: number = 1,
         private readonly writeAttempts: number = 1,
-        ackTimeout = 300,
     ) {
-        this.gasCounter = new GasCounter();
-        this.taskRunner = new TasksRunner(ackTimeout);
     }
 
     static async build(options: Options, secretMnemonicOrSeed: string): Promise<ContentAddressableStorage> {
@@ -89,12 +73,10 @@ export class ContentAddressableStorage {
             caOptions.cidBuilder,
             caOptions.readAttempts,
             caOptions.writeAttempts,
-            caOptions.ackTimeout,
         );
     }
 
     async disconnect(): Promise<void> {
-        await this.ack();
     }
 
     private static async getCdnAddress(
@@ -115,7 +97,6 @@ export class ContentAddressableStorage {
             const cdnNodeId = cluster.cluster.cdnNodes[index];
             const cdnNodeInfo = await smartContract.cdnNodeGet(cdnNodeId);
             return new URL(JSON.parse(cdnNodeInfo.params).url).href;
-
         } finally {
             await smartContract.disconnect();
         }
@@ -159,58 +140,7 @@ export class ContentAddressableStorage {
         return this.scheme.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
     }
 
-    async createSession({bucketId, gas, endOfEpoch}: CreateSessionParams): Promise<Uint8Array> {
-        const sessionId = stringToU8a(nanoid());
-        const sessionStatus = SessionStatus.create({
-            publicKey: this.scheme.publicKey,
-            gas,
-            sessionId,
-            bucketId: Number(bucketId),
-            endOfEpoch: BigInt(endOfEpoch),
-        });
-        const signature = await this.signRequest(
-            PbRequest.create({
-                // @ts-ignore
-                body: SessionStatus.toBinary(sessionStatus),
-                scheme: this.scheme.name,
-                multiHashType: 0n,
-                publicKey: this.scheme.publicKey,
-            }),
-            BASE_PATH_SESSION,
-            'POST',
-        );
-
-        const request = PbRequest.create({
-            // @ts-ignore
-            body: SessionStatus.toBinary(sessionStatus),
-            scheme: this.scheme.name,
-            multiHashType: 0n,
-            signature,
-            publicKey: this.scheme.publicKey,
-        });
-
-        const response = await this.sendRequest(BASE_PATH_SESSION, undefined, {
-            method: 'POST',
-            // @ts-ignore
-            body: PbRequest.toBinary(request).buffer,
-        });
-
-        if (!response.ok) {
-            const responseData = await response.arrayBuffer();
-            // @ts-ignore
-            const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
-            throw Error(
-                JSON.stringify({
-                    code: protoResponse.responseCode,
-                    body: u8aToString(protoResponse.body),
-                }),
-            );
-        }
-
-        return sessionId;
-    }
-
-    async buildStoreRequest(bucketId: bigint, piece: Piece): Promise<StoreRequest> {
+    async buildStoreRequest(bucketId: bigint, session: Session, piece: Piece): Promise<StoreRequest> {
         const pbPiece: PbPiece = piece.toProto(bucketId);
         // @ts-ignore
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
@@ -236,6 +166,7 @@ export class ContentAddressableStorage {
         const requestSignature = await this.signRequest(
             PbRequest.create({
                 body: signedPieceSerial,
+                sessionId: session,
             }),
             BASE_PATH_PIECES,
             'PUT',
@@ -247,14 +178,15 @@ export class ContentAddressableStorage {
             publicKey: this.scheme.publicKey,
             multiHashType: 0n,
             signature: requestSignature,
+            sessionId: session,
         });
 
         // @ts-ignore
         return {body: PbRequest.toBinary(request), cid, method: 'PUT', path: BASE_PATH_PIECES};
     }
 
-    async store(bucketId: bigint, piece: Piece): Promise<PieceUri> {
-        const request = await this.buildStoreRequest(bucketId, piece);
+    async store(bucketId: bigint, session: Session, piece: Piece): Promise<PieceUri> {
+        const request = await this.buildStoreRequest(bucketId, session, piece);
 
         const response = await this.sendRequest(request.path, undefined, {
             method: request.method,
@@ -272,15 +204,12 @@ export class ContentAddressableStorage {
             );
         }
 
-        if (protoResponse.responseCode === 0 || protoResponse.responseCode === 1) {
-            this.gasCounter.push(protoResponse.gas);
-            this.taskRunner.addTask(this.ack);
-        }
+        await this.ack(response, protoResponse);
 
         return new PieceUri(bucketId, request.cid);
     }
 
-    async read(bucketId: bigint, cid: string, session?: Uint8Array): Promise<Piece> {
+    async read(bucketId: bigint, cid: string, session: Session): Promise<Piece> {
         const search = new URLSearchParams();
         search.set('bucketId', bucketId.toString());
         const requestSignature =
@@ -318,11 +247,6 @@ export class ContentAddressableStorage {
             }
         });
 
-        if (protoResponse.responseCode === 0 && !session) {
-            this.gasCounter.push(protoResponse.gas);
-            this.taskRunner.addTask(this.ack);
-        }
-
         if (!pbSignedPiece.piece) {
             throw new Error(
                 `Failed to parse signed piece. Response: status='${protoResponse.responseCode}' body=${u8aToString(
@@ -338,16 +262,13 @@ export class ContentAddressableStorage {
             );
         }
 
+        await this.ack(response, protoResponse);
+
         // @ts-ignore
         return this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
     }
 
-    private async verifySignedPiece(pbSignedPiece: PbSignedPiece, cid: string) {
-        const pieceCid = await this.cidBuilder.build(pbSignedPiece.piece);
-        return pieceCid === cid;
-    }
-
-    async search(query: Query, session?: Uint8Array): Promise<SearchResult> {
+    async search(query: Query, session: Session): Promise<SearchResult> {
         const pbQuery: PbQuery = {
             bucketId: Number(query.bucketId),
             tags: query.tags,
@@ -386,11 +307,6 @@ export class ContentAddressableStorage {
             );
         }
 
-        if (protoResponse.responseCode === 0 || protoResponse.responseCode === 1) {
-            this.gasCounter.push(protoResponse.gas);
-            this.taskRunner.addTask(this.ack);
-        }
-
         const pbSearchResult = await new Promise<PbSearchResult>((resolve) => {
             try {
                 // @ts-ignore
@@ -408,21 +324,36 @@ export class ContentAddressableStorage {
             // @ts-ignore
             .map((e) => this.toPiece(PbPiece.fromBinary(e.signedPiece!.piece!), e.cid));
 
+        await this.ack(response, protoResponse);
+
         return new SearchResult(pieces);
     }
 
-    async storeEncrypted(bucketId: bigint, piece: Piece, encryptionOptions: EncryptionOptions): Promise<PieceUri> {
+    async storeEncrypted(bucketId: bigint, session: Session, piece: Piece, encryptionOptions: EncryptionOptions): Promise<PieceUri> {
         const encryptedPiece = piece.clone();
         encryptedPiece.tags.push(new Tag(DEK_PATH_TAG, encryptionOptions.dekPath));
         encryptedPiece.data = this.cipher.encrypt(piece.data, encryptionOptions.dek);
-        return this.store(bucketId, encryptedPiece);
+        return this.store(bucketId, session, encryptedPiece);
     }
 
-    async readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array, session?: Uint8Array): Promise<Piece> {
+    async readDecrypted(bucketId: bigint, session: Session, cid: string, dek: Uint8Array): Promise<Piece> {
         const piece = await this.read(bucketId, cid, session);
         piece.data = this.cipher.decrypt(piece.data, dek);
 
         return piece;
+    }
+
+    async createSession(session?: Session): Promise<Uint8Array> {
+        if (session == null) {
+            return ContentAddressableStorage.randomBytes(DEFAULT_SESSION_ID_SIZE)
+        }
+
+        return session
+    }
+
+    private async verifySignedPiece(pbSignedPiece: PbSignedPiece, cid: string) {
+        const pieceCid = await this.cidBuilder.build(pbSignedPiece.piece);
+        return pieceCid === cid;
     }
 
     private toPiece(piece: PbPiece, cid: string): Piece {
@@ -436,19 +367,23 @@ export class ContentAddressableStorage {
         );
     }
 
-    private ack = async (): Promise<void> => {
-        const nonce = new Uint8Array(3);
-        crypto.getRandomValues(nonce);
-        const [gas, gasCommit] = this.gasCounter.readUncommitted();
-        const ack = PbAsk.create({
+    private ack = async (response: Response, protoResponse: PbResponse): Promise<void> => {
+        if (!response.headers.has(REQIEST_ID_HEADER) || (protoResponse.responseCode !== 0 && protoResponse.responseCode !== 1)) {
+            return
+        }
+
+        const requestId = response.headers.get(REQIEST_ID_HEADER)!!
+
+        const ack = PbAck.create({
             timestamp: BigInt(Date.now()),
             publicKey: this.scheme.publicKey,
-            gas,
-            nonce,
+            requestId,
+            gas: BigInt(protoResponse.gas),
+            nonce: ContentAddressableStorage.randomBytes(32),
         });
         const request = PbRequest.create({
             // @ts-ignore
-            body: PbAsk.toBinary(ack),
+            body: PbAck.toBinary(ack),
             publicKey: this.scheme.publicKey,
             scheme: this.scheme.name,
             multiHashType: 0n,
@@ -458,15 +393,18 @@ export class ContentAddressableStorage {
             request.signature = ackSignature;
         }
 
-        try {
-            await this.sendRequest('/api/rest/ack', undefined, {
-                method: 'POST',
-                // @ts-ignore
-                body: PbRequest.toBinary(request).buffer,
-            });
-            this.gasCounter.commit(gasCommit);
-        } catch (e) {
-            this.gasCounter.revert(gasCommit);
+        const ackResponse = await this.sendRequest('/api/rest/ack', undefined, {
+            method: 'POST',
+            // @ts-ignore
+            body: PbRequest.toBinary(request).buffer,
+        });
+
+        const pbAckResponse = PbResponse.fromBinary(new Uint8Array(await ackResponse.arrayBuffer()));
+
+        if (!ackResponse.ok) {
+            throw Error(
+                `Failed to send ack id='${requestId}. Http response status: ${ackResponse.status} Response: status='${pbAckResponse.responseCode}' body=${u8aToString(pbAckResponse.body)}`,
+            );
         }
     };
 
@@ -484,5 +422,12 @@ export class ContentAddressableStorage {
         return response.catch((error) => {
             throw new Error(`Can't send request url='${url}', method='${method}', error='${error}'`);
         });
+    }
+
+    private static randomBytes(size: number): Uint8Array {
+        const result = new Uint8Array(size);
+        crypto.getRandomValues(result);
+
+        return result
     }
 }

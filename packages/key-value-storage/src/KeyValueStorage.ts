@@ -1,4 +1,4 @@
-import {ContentAddressableStorage, Piece, PieceUri, Tag} from "@cere-ddc-sdk/content-addressable-storage";
+import {ContentAddressableStorage, Piece, PieceUri, Session, Tag} from "@cere-ddc-sdk/content-addressable-storage";
 import {GetFirstArgument, RequiredSelected} from '@cere-ddc-sdk/core';
 
 const keyTag = "Key"
@@ -21,17 +21,17 @@ export class KeyValueStorage {
         return this.caStorage.disconnect();
     }
 
-    async store(bucketId: bigint, key: Uint8Array | string, piece: Piece): Promise<PieceUri> {
+    async store(bucketId: bigint, session: Session, key: Uint8Array | string, piece: Piece): Promise<PieceUri> {
         if (piece.tags.some(t => t.keyString == keyTag)) {
             throw Error("'Key' is a reserved tag for key-value storage")
         }
 
         piece.tags.push(new Tag(keyTag, key))
 
-        return this.caStorage.store(bucketId, piece)
+        return this.caStorage.store(bucketId, session, piece)
     }
 
-    async read(bucketId: bigint, key: Uint8Array | string, skipData: boolean = false, session?: Uint8Array): Promise<Piece[]> {
+    async read(bucketId: bigint, session: Session, key: Uint8Array | string, skipData: boolean = false): Promise<Piece[]> {
         const searchResult = await this.caStorage.search(
             {
                 bucketId: bucketId,
