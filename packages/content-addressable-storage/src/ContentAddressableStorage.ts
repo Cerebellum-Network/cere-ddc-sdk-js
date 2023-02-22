@@ -393,6 +393,7 @@ export class ContentAddressableStorage {
             body: PbRequest.toBinary(request).buffer,
         });
 
+        // @ts-ignore
         const pbAckResponse = PbResponse.fromBinary(new Uint8Array(await ackResponse.arrayBuffer()));
 
         if (!ackResponse.ok) {
