@@ -1,10 +1,12 @@
 import {DdcClient, DdcUri, IPIECE, Piece, StoreOptions, Tag} from '@cere-ddc-sdk/ddc-client';
 import nacl from 'tweetnacl';
 import {u8aToHex} from '@polkadot/util';
+import {Session} from "@cere-ddc-sdk/content-addressable-storage";
 
 export async function saveWithEmptyNonce(
     client: DdcClient,
     bucketId: bigint,
+    session: Session,
     piece: Piece,
     options: StoreOptions,
 ): Promise<DdcUri> {
@@ -15,6 +17,7 @@ export async function saveWithEmptyNonce(
 
     await client.caStorage.store(
         bucketId,
+        session,
         new Piece(edek, [
             new Tag('encryptor', u8aToHex(client.boxKeypair.publicKey)),
             new Tag('Key', `${bucketId}/${options.dekPath || ''}/${u8aToHex(client.boxKeypair.publicKey)}`),
@@ -22,6 +25,6 @@ export async function saveWithEmptyNonce(
     );
 
     const encryptionOptions = {dekPath: options.dekPath || '', dek: dek};
-    const pieceUri = await client.caStorage.storeEncrypted(bucketId, piece, encryptionOptions);
+    const pieceUri = await client.caStorage.storeEncrypted(bucketId, session, piece, encryptionOptions);
     return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
 }

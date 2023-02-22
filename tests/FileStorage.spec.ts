@@ -1,8 +1,10 @@
 import {FileStorage, FileStorageConfig} from '@cere-ddc-sdk/file-storage';
+import {Session} from "@cere-ddc-sdk/content-addressable-storage";
 
 describe('packages/file-storage/src/index.ts', () => {
     const url = 'http://localhost:8080';
     let storage: FileStorage;
+    let session: Session;
 
     beforeAll(async () => {
         storage = await FileStorage.build(
@@ -10,6 +12,7 @@ describe('packages/file-storage/src/index.ts', () => {
             new FileStorageConfig(2, 1),
             '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03',
         );
+        session = await storage.caStorage.createSession();
     });
 
     test('upload and read chunked data', async () => {
@@ -18,8 +21,8 @@ describe('packages/file-storage/src/index.ts', () => {
         const data = new Uint8Array([1, 2, 3, 4, 5]);
 
         //when
-        const headPieceUri = await storage.upload(bucketId, data, []);
-        const stream = await storage.read(bucketId, headPieceUri.cid, new Uint8Array());
+        const headPieceUri = await storage.upload(bucketId, session, data, []);
+        const stream = await storage.read(bucketId, session, headPieceUri.cid);
 
         //then
         let result = [];
