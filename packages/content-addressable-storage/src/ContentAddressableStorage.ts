@@ -212,10 +212,7 @@ export class ContentAddressableStorage {
     async read(bucketId: bigint, cid: string, session: Session): Promise<Piece> {
         const search = new URLSearchParams();
         search.set('bucketId', bucketId.toString());
-        const requestSignature =
-            session && session.length > 0
-                ? undefined
-                : await this.signRequest(PbRequest.create(), `${BASE_PATH_PIECES}/${cid}?${search.toString()}`);
+        const requestSignature = await this.signRequest(PbRequest.create({sessionId: session}), `${BASE_PATH_PIECES}/${cid}?${search.toString()}`);
         const pbRequest = PbRequest.create({
             scheme: this.scheme.name,
             sessionId: session,
@@ -281,10 +278,7 @@ export class ContentAddressableStorage {
         const search = new URLSearchParams();
         search.append('query', queryBase58);
 
-        const requestSignature =
-            session && session.length > 0
-                ? undefined
-                : await this.signRequest(PbRequest.create(), `${BASE_PATH_PIECES}?${search.toString()}`);
+        const requestSignature = await this.signRequest(PbRequest.create({sessionId: session}), `${BASE_PATH_PIECES}?${search.toString()}`);
         const pbRequest = PbRequest.create({
             scheme: this.scheme.name,
             sessionId: session,

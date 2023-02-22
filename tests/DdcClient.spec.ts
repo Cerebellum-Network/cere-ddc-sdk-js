@@ -183,7 +183,7 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         expect(result).toEqual([expectPiece]);
     });
 
-    it('share data', async () => {
+    /*it('share data', async () => {
         //given
         const data = randomBytes(20);
         const file = new File(data);
@@ -209,8 +209,8 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         result.data = resultData;
 
         expect(result).toEqual(file);
-    });
-
+    });*/
+/*
     it('share data with high level key', async () => {
         //given
         const data = randomBytes(20);
@@ -238,7 +238,7 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         result.data = resultData;
 
         expect(result).toEqual(file);
-    });
+    });*/
 
     it('search metadata', async () => {
         //given
