@@ -1,7 +1,7 @@
 import {randomBytes} from 'tweetnacl';
 import {randomUUID} from 'crypto';
 import {u8aToHex} from '@polkadot/util';
-import {DdcClient, File} from '@cere-ddc-sdk/ddc-client';
+import {DdcClient, File, Session} from '@cere-ddc-sdk/ddc-client';
 import {DdcUri} from '@cere-ddc-sdk/core';
 import {Piece, Query, Tag} from '@cere-ddc-sdk/content-addressable-storage';
 import {saveWithEmptyNonce} from './save-with-empty-nonce';
@@ -14,10 +14,12 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
     const options = {clusterAddress: 'http://localhost:8080', chunkSizeInBytes: 30, readAttempts: 3};
     let mainClient: DdcClient;
     let secondClient: DdcClient;
+    let session: Session;
 
     beforeAll(async () => {
         mainClient = await DdcClient.buildAndConnect(options, seed);
         secondClient = await DdcClient.buildAndConnect(options, otherSecretPhrase);
+        session = await mainClient.createSession()
     });
 
     afterAll(async () => {
