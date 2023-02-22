@@ -74,14 +74,10 @@ services:
     container_name: dac-redis
     ports:
       - 6379:6379
-    networks:
-      - common-net
 
   redis-setup:
     build: redis
     restart: 'no'
     depends_on:
       - redis
-    networks:
-      - common-net
     entrypoint: ["bash", "-c", "cat mylib.lua | redis-cli -h redis -x FUNCTION LOAD REPLACE"]
