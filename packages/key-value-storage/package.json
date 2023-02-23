@@ -30,7 +30,7 @@
     "package": "rimraf build && clean-publish --temp-dir build && npm run types && npm run build"
   },
   "dependencies": {
-    "@cere-ddc-sdk/content-addressable-storage": "1.7.5"
+    "@cere-ddc-sdk/content-addressable-storage": "1.7.5-RC1"
   },
   "devDependencies": {
     "@types/node": "^16.0.0",
