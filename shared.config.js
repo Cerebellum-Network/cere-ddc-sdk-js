@@ -2,7 +2,7 @@ import path from 'node:path';
 import {URL} from 'node:url';
 import {merge} from 'webpack-merge';
 import webpack from 'webpack';
-import {createRequire} from 'module';
+import {createRequire} from 'node:module';
 
 const target = process.env.TARGET;
 const browserslistEnv = process.env.BROWSERSLIST_ENV;
@@ -20,6 +20,7 @@ export function createConfig(
     browserEntryName
 ) {
     const dirname = path.dirname(new URL(metaUrl).pathname);
+    const root = path.dirname(new URL(import.meta.url).pathname);
     const folderName = path.basename(dirname);
     const nodeModules = path.join(dirname, 'node_modules');
 
@@ -56,6 +57,18 @@ export function createConfig(
         },
         resolve: {
             extensions: [".ts", ".js"],
+            alias: {
+                '@cere-ddc-sdk/content-addressable-storage': path.join(root, 'packages/content-addressable-storage/src/index.ts'),
+                '@cere-ddc-sdk/core/browser': path.join(root, 'packages/core/src/browser.ts'),
+                '@cere-ddc-sdk/core': path.join(root, 'packages/core/src/index.ts'),
+                '@cere-ddc-sdk/ddc-client': path.join(root, 'packages/ddc-client/src/index.ts'),
+                '@cere-ddc-sdk/file-storage/browser': path.join(root, 'packages/file-storage/src/browser.ts'),
+                '@cere-ddc-sdk/file-storage': path.join(root, 'packages/file-storage/src/index.ts'),
+                '@cere-ddc-sdk/key-value-storage': path.join(root, 'packages/key-value-storage/src/index.ts'),
+                '@cere-ddc-sdk/proto': path.join(root, 'packages/proto/src/index.ts'),
+                '@cere-ddc-sdk/smart-contract/browser': path.join(root, 'packages/smart-contract/src/browser.ts'),
+                '@cere-ddc-sdk/smart-contract': path.join(root, 'packages/smart-contract/src/index.ts'),
+            }
         },
         output: {
             iife: false,

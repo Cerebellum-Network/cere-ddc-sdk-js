@@ -1,10 +1,6 @@
 import {execSync} from 'node:child_process';
-import { createRequire } from 'module';
 import path from 'node:path';
 import fs from 'node:fs';
-import packages from './packages.js';
-
-const require = createRequire(import.meta.url);
 
 /**
  * @param {String} root
@@ -33,18 +29,8 @@ export function setVersions(root, options) {
             stdio: 'inherit',
         });
     }
-
-    const versions = JSON.parse(execSync('npm version --workspaces --json', {cwd: root}).toString());
-
-    packages.forEach((packageName) => {
-        const packageInfo = require(path.join(root, packageName, 'package.json'));
-        if (packageInfo.dependencies) {
-            Object.entries(packageInfo.dependencies ?? {}).forEach(([key]) => {
-                if (/@cere-ddc-sdk/.test(key) && versions[key]) {
-                    packageInfo.dependencies[key] = versions[key];
-                }
-            });
-            fs.writeFileSync(path.join(root, packageName, 'package.json'), JSON.stringify(packageInfo, null, 2));
-        }
-    });
+    const lockFile = path.join(root, 'package-lock.json');
+    if (fs.existsSync(lockFile)) {
+        fs.rmSync(lockFile);
+    }
 }

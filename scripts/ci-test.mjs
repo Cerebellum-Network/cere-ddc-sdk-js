@@ -7,7 +7,7 @@ const dirname = path.dirname(new URL(import.meta.url).pathname);
 const root = path.join(dirname, '..');
 const composeFilePath = path.join(dirname, '..', 'ddc-test-cluster');
 const composeFile = 'docker-compose.local-npm.yml';
-const app = await new DockerComposeEnvironment(composeFilePath, composeFile)
+const environment = await new DockerComposeEnvironment(composeFilePath, composeFile)
     .withWaitStrategy("app-ci-test", Wait.forHealthCheck())
     .up();
 
@@ -33,4 +33,4 @@ execSync('node scripts/publish.js', {
     stdio: 'inherit',
 });
 
-await app.down();
+await environment.down();

@@ -5,11 +5,5 @@
     "outDir": "build/",
     "rootDir": "src",
     "paths": {}
-  },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "src/**/*.spec.ts"
-  ]
+  }
 }

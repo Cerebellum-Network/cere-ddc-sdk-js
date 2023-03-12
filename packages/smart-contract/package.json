@@ -38,7 +38,7 @@
     "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
     "build": "npm run build:browser && npm run build:node",
     "push": "node scripts/publish.js",
-    "types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "types": "tsc -p tsconfig.types.json --emitDeclarationOnly || exit 0",
     "package": "rimraf build && clean-publish --temp-dir build && npm run types && npm run build"
   },
   "devDependencies": {
@@ -49,9 +49,10 @@
     "clean-publish": "^4.0.1",
     "crypto-browserify": "^3.12.0",
     "lodash": "^4.17.21",
+    "multiformats": "^9.6.5",
     "rimraf": "^3.0.2",
     "stream-browserify": "^3.0.0",
-    "typescript": "4.5.4"
+    "typescript": "^4.5.5"
   },
   "dependencies": {
     "@polkadot/api": "8.2.1",

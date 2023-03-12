@@ -4,6 +4,7 @@ import {
     Query as PbQuery,
     Request as PbRequest,
     Response as PbResponse,
+    SearchedPiece,
     SearchResult as PbSearchResult,
     SignedPiece as PbSignedPiece,
 } from '@cere-ddc-sdk/proto';
@@ -26,6 +27,7 @@ import {Piece} from './models/Piece';
 import {PieceUri} from './models/PieceUri';
 import {Query} from './models/Query';
 import {Tag} from './models/Tag';
+import {Link} from './models/Link';
 import {EncryptionOptions} from './EncryptionOptions';
 import {CaCreateOptions} from './ca-create-options';
 import {concatArrays} from './lib/concat-arrays';
@@ -314,7 +316,7 @@ export class ContentAddressableStorage {
 
         const isPiece = (val: Uint8Array | undefined): val is Uint8Array => val != null;
         let pieces: Piece[] = pbSearchResult.searchedPieces
-            .filter((p) => isPiece(p.signedPiece?.piece))
+            .filter((p: SearchedPiece) => isPiece(p.signedPiece?.piece))
             // @ts-ignore
             .map((e) => this.toPiece(PbPiece.fromBinary(e.signedPiece!.piece!), e.cid));
 
@@ -323,7 +325,8 @@ export class ContentAddressableStorage {
         return new SearchResult(pieces);
     }
 
-    async storeEncrypted(bucketId: bigint, session: Session, piece: Piece, encryptionOptions: EncryptionOptions): Promise<PieceUri> {
+    async storeEncrypted(bucketId: bigint, session: Session, piece: Piece,
+        encryptionOptions: EncryptionOptions): Promise<PieceUri> {
         const encryptedPiece = piece.clone();
         encryptedPiece.tags.push(new Tag(DEK_PATH_TAG, encryptionOptions.dekPath));
         encryptedPiece.data = this.cipher.encrypt(piece.data, encryptionOptions.dek);
@@ -342,7 +345,7 @@ export class ContentAddressableStorage {
             return randomAsU8a(DEFAULT_SESSION_ID_SIZE);
         }
 
-        return session
+        return session;
     }
 
     private async verifySignedPiece(pbSignedPiece: PbSignedPiece, cid: string) {
@@ -354,7 +357,7 @@ export class ContentAddressableStorage {
         return new Piece(
             piece.data,
             piece.tags.map((t) => new Tag(t.key, t.value, t.searchable)),
-            piece.links.map((e) => {
+            piece.links.map((e: Link) => {
                 return {cid: e.cid, size: BigInt(e.size), name: e.name};
             }),
             cid,
@@ -363,10 +366,10 @@ export class ContentAddressableStorage {
 
     private ack = async (response: Response, protoResponse: PbResponse): Promise<void> => {
         if (!response.headers.has(REQIEST_ID_HEADER) || (protoResponse.responseCode !== 0 && protoResponse.responseCode !== 1)) {
-            return
+            return;
         }
 
-        const requestId = response.headers.get(REQIEST_ID_HEADER)!!
+        const requestId = response.headers.get(REQIEST_ID_HEADER)!!;
 
         const ack = PbAck.create({
             timestamp: BigInt(Date.now()),

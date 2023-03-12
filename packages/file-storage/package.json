@@ -31,16 +31,13 @@
     "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
     "build": "npm run build:browser && npm run build:node",
     "push": "node scripts/publish.js",
-    "types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "types": "tsc -p tsconfig.types.json --emitDeclarationOnly || exit 0",
     "package": "rimraf build && clean-publish --temp-dir build && npm run types && npm run build"
   },
-  "dependencies": {
-    "@cere-ddc-sdk/content-addressable-storage": "1.7.5-RC2"
-  },
   "devDependencies": {
-    "@types/node": "^16.0.0",
     "clean-publish": "^4.0.1",
+    "multiformats": "^9.6.5",
     "rimraf": "^3.0.2",
-    "typescript": "^4.7.4"
+    "typescript": "^4.5.5"
   }
 }

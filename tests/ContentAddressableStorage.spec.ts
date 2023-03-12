@@ -2,10 +2,10 @@ import {webcrypto} from 'node:crypto';
 import {
     ContentAddressableStorage,
     Piece,
-    Tag,
-    SearchType,
     Query,
-    Session
+    SearchType,
+    Session,
+    Tag,
 } from '@cere-ddc-sdk/content-addressable-storage';
 import {delay} from './delay';
 
@@ -28,7 +28,7 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         );
         randomPieceData = new Uint8Array(10);
         webcrypto.getRandomValues(randomPieceData);
-        session = await storage.createSession()
+        session = await storage.createSession();
     });
 
     afterEach(() => {
@@ -41,7 +41,7 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         const piece = new Piece(randomPieceData, [tag]);
         const bucketId = 1n;
         // @ts-ignore
-        const fn = jest.spyOn(storage, 'ack').mockImplementation(() => Promise.resolve(undefined))
+        const fn = jest.spyOn(storage, 'ack').mockImplementation(() => Promise.resolve(undefined));
 
         //when
         const storeRequest = await storage.store(bucketId, session, piece);
@@ -113,7 +113,7 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         await storage.store(bucketId, session, piece);
 
         // @ts-ignore
-        const fn = jest.spyOn(storage, 'ack').mockImplementation(() => Promise.resolve(undefined))
+        const fn = jest.spyOn(storage, 'ack').mockImplementation(() => Promise.resolve(undefined));
 
         //when
         const searchResult = await storage.search(new Query(bucketId, tags), session);

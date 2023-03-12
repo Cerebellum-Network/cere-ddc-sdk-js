@@ -20,8 +20,12 @@ jobs:
         with:
           node-version: '16.15.0'
           registry-url: 'https://registry.npmjs.org'
+      - name: NPM set NPM_TOKEN
+        run: npm set '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }} --location project
+      - name: check
+        run: cat .npmrc && npm whoami
       - name: Install packages
-        run: npm install
+        run: yarn
       - name: Install protoc
         run: sudo apt-get install -y protobuf-compiler
       - name: Check protoc version
@@ -30,9 +34,9 @@ jobs:
         run: npm run compile
       - name: Integration tests
         run: npm test
-      - name: Increase version
-        run: node scripts/release.js --major
       - name: NPM set register
         run: npm set registry http://localhost:4873/
+      - name: Increase version
+        run: node scripts/release.js --major
       - name: Publishing dry-run
         run: node scripts/ci-test.mjs

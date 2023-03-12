@@ -6,8 +6,5 @@
     "outDir": "build",
     "rootDir": "src/",
     "paths": {}
-  },
-  "include": [
-    "src/**/*.ts"
-  ]
+  }
 }

@@ -16,8 +16,9 @@ export {File} from './model/File';
 export {TESTNET, DEVNET, Permission, BucketParams} from '@cere-ddc-sdk/smart-contract';
 export type {SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
 export {DdcUri, IPIECE, IFILE, FILE, PIECE} from '@cere-ddc-sdk/core';
-export {Piece, Query, Tag, SearchType, EncryptionOptions, Session} from '@cere-ddc-sdk/content-addressable-storage';
-export {FileStorageConfig, KB, MB} from '@cere-ddc-sdk/file-storage';
+export {Piece, Query, Tag, EncryptionOptions} from '@cere-ddc-sdk/content-addressable-storage';
+export type {SearchType, Session} from '@cere-ddc-sdk/content-addressable-storage';
+export {FileStorageConfig, KB, MB} from '@cere-ddc-sdk/file-storage/browser';
 
 export class DdcClient extends CoreDdcClient {
     static async buildAndConnect(
