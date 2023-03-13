@@ -26,7 +26,9 @@
       "@cere-ddc-sdk/proto": ["packages/proto/src"],
       "@cere-ddc-sdk/proto/*": ["packages/proto/src/*"],
       "@cere-ddc-sdk/smart-contract": ["packages/smart-contract/src"],
-      "@cere-ddc-sdk/smart-contract/*": ["packages/smart-contract/src/*"]
+      "@cere-ddc-sdk/smart-contract/*": ["packages/smart-contract/src/*"],
+      "@cere-ddc-sdk/ddc-staking": ["packages/ddc-staking/src"],
+      "@cere-ddc-sdk/ddc-staking/*": ["packages/ddc-staking/src/*"]
     }
   },
   "include": [
