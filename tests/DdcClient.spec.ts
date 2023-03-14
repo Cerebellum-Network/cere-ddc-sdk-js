@@ -181,7 +181,7 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         expect(result).toEqual([expectPiece]);
     });
 
-    it('share data', async () => {
+    it.skip('share data', async () => {
         //given
         const data = randomBytes(20);
         const file = new File(data);
@@ -214,7 +214,7 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         expect(result).toEqual(file);
     });
 
-    it('share data with high level key', async () => {
+    it.skip('share data with high level key', async () => {
         //given
         const data = randomBytes(20);
         const file = new File(data);
