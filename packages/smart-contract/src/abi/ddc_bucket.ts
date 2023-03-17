@@ -1,9 +1,9 @@
 export const ddcBucketAbi = {
     'metadataVersion': '0.1.0',
     'source': {
-        'hash': '0xb639456298d0d5533161e76257f09259a7bd49e9e48db5a3d9f8d0d854491d11',
+        'hash': '0x7bcd275ba84830b021733878e42d10d6ed815114736489fc683950ba5a69bfc6',
         'language': 'ink! 3.0.0-rc4',
-        'compiler': 'rustc 1.70.0-nightly',
+        'compiler': 'rustc 1.68.0-nightly',
     },
     'contract': {
         'name': 'ddc_bucket',
