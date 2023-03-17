@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/proto",
   "description": "Storage protocol buffer models",
-  "version": "1.7.5-beta.1",
+  "version": "1.7.5-beta.2",
   "type": "module",
   "exports": {
     ".": {
