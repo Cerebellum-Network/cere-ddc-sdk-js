@@ -1,5 +1,5 @@
 import {
-    Ack as PbAck,
+    Ack as PbAck, Link,
     Piece as PbPiece,
     Query as PbQuery,
     Request as PbRequest,
@@ -204,7 +204,9 @@ export class ContentAddressableStorage {
             );
         }
 
-        await this.ack(response, protoResponse);
+        const chunks = piece.links.map((item: Link) => item.cid);
+
+        await this.ack(response, protoResponse, chunks);
 
         return new PieceUri(bucketId, request.cid);
     }
@@ -259,10 +261,14 @@ export class ContentAddressableStorage {
             );
         }
 
-        await this.ack(response, protoResponse);
+        const piece = PbPiece.fromBinary(pbSignedPiece.piece);
+
+        const chunks = piece.links.map((item: Link) => item.cid);
+
+        await this.ack(response, protoResponse, chunks);
 
         // @ts-ignore
-        return this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
+        return this.toPiece(piece, cid);
     }
 
     async search(query: Query, session: Session): Promise<SearchResult> {
@@ -318,7 +324,10 @@ export class ContentAddressableStorage {
             // @ts-ignore
             .map((e) => this.toPiece(PbPiece.fromBinary(e.signedPiece!.piece!), e.cid));
 
-        await this.ack(response, protoResponse);
+
+        const chunks: string[] = pieces.map((piece: Piece) => piece.cid).filter((item: string | undefined): item is string => !!item);
+
+        await this.ack(response, protoResponse, chunks);
 
         return new SearchResult(pieces);
     }
@@ -361,7 +370,7 @@ export class ContentAddressableStorage {
         );
     }
 
-    private ack = async (response: Response, protoResponse: PbResponse): Promise<void> => {
+    private ack = async (response: Response, protoResponse: PbResponse, chunks: string[]): Promise<void> => {
         if (!response.headers.has(REQIEST_ID_HEADER) || (protoResponse.responseCode !== 0 && protoResponse.responseCode !== 1)) {
             return
         }
@@ -374,7 +383,11 @@ export class ContentAddressableStorage {
             requestId,
             gas: BigInt(protoResponse.gas),
             nonce: randomAsU8a(32),
+            // @ts-ignore
+            chunks,
         });
+
+
         const request = PbRequest.create({
             // @ts-ignore
             body: PbAck.toBinary(ack),
