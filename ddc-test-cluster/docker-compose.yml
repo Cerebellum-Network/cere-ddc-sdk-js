@@ -80,4 +80,4 @@ services:
     restart: 'no'
     depends_on:
       - redis
-    entrypoint: ["bash", "-c", "cat mylib.lua | redis-cli -h redis -x FUNCTION LOAD REPLACE"]
+    entrypoint: ["bash", "-c", "cat main.lua | redis-cli -h redis -x FUNCTION LOAD REPLACE"]
