@@ -383,7 +383,6 @@ export class ContentAddressableStorage {
             requestId,
             gas: BigInt(protoResponse.gas),
             nonce: randomAsU8a(32),
-            // @ts-ignore
             chunks,
         });
 
