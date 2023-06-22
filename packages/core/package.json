@@ -1,7 +1,7 @@
 {
     "name": "@cere-ddc-sdk/core",
     "description": "Core with common logic",
-    "version": "1.7.5-beta.3",
+    "version": "1.7.6-rc.1",
     "type": "module",
     "repository": {
         "type": "git",
