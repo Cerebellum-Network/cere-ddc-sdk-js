@@ -19,7 +19,7 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
     beforeAll(async () => {
         mainClient = await DdcClient.buildAndConnect(options, seed);
         secondClient = await DdcClient.buildAndConnect(options, otherSecretPhrase);
-        session = await mainClient.createSession()
+        session = await mainClient.createSession();
     });
 
     afterAll(async () => {
@@ -92,7 +92,8 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         //when
         const uri = await mainClient.store(bucketId, session, file, {encrypt: true, dekPath: dekPath});
         const result = await mainClient.read(
-            DdcUri.parse(new URL(`http://test.com/ddc/buc/${uri.bucket}/ifile/${uri.path}`)), session,
+            DdcUri.parse(new URL(`http://test.com/ddc/buc/${uri.bucket}/ifile/${uri.path}`)),
+            session,
             {decrypt: true, dekPath: dekPath},
         );
 
@@ -210,7 +211,7 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
 
         expect(result).toEqual(file);
     });*/
-/*
+    /*
     it('share data with high level key', async () => {
         //given
         const data = randomBytes(20);

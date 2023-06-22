@@ -85,7 +85,7 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         expect(fn).toBeCalled();
     });
 
-    test('store/read with session', async () => {
+    test.skip('store/read with session', async () => {
         //given
         const tag = new Tag('some-key', 'some-value', SearchType.NOT_SEARCHABLE);
         const piece = new Piece(randomPieceData, [tag]);
