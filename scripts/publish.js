@@ -16,10 +16,7 @@ const packageJsonCopy = {};
 Object.assign(packageJsonCopy, packageJson);
 
 delete packageJson.workspaces;
-fs.writeFileSync(
-    path.join(root, 'package.json'),
-    JSON.stringify(packageJson, null, 2),
-);
+fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify(packageJson, null, 2));
 
 execSync(`npm install`, {
     cwd: path.join(root),
@@ -42,17 +39,14 @@ for (let i = 0; i < packages.length; i += 1) {
     await delay(10_000);
 
     execSync('npm publish --access public', {
-        cwd: path.join(root, packageName, 'build'),
+        cwd: path.join(root, packageName, 'package'),
         stdio: 'inherit',
     });
     await waitForVersion(packageInfo.name, packageInfo.version);
-    execSync('rm -rf build', {
+    execSync('rm -rf package', {
         cwd: path.join(root, packageName),
         stdio: 'inherit',
-    })
+    });
 }
 
-fs.writeFileSync(
-    path.join(root, 'package.json'),
-    `${JSON.stringify(packageJsonCopy, null, 2)}\n`,
-);
+fs.writeFileSync(path.join(root, 'package.json'), `${JSON.stringify(packageJsonCopy, null, 2)}\n`);

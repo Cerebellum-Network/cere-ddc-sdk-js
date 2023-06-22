@@ -8,28 +8,29 @@
         "directory": "packages/ddc-client",
         "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
     },
+    "main": "./dist/index.cjs",
+    "types": "./dist/types",
     "exports": {
         ".": {
-            "browser": "./browser.js",
-            "require": "./index.cjs",
-            "import": "./index.js",
-            "default": "./index.js"
+            "browser": "./dist/browser.js",
+            "require": "./dist/index.cjs",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
         },
         "./browser": {
-            "require": "./browser.cjs",
-            "import": "./browser.js",
-            "default": "./browser.js"
+            "require": "./dist/browser.cjs",
+            "import": "./dist/browser.js",
+            "default": "./dist/browser.js"
         }
     },
-    "types": "index.d.ts",
     "typesVersions": {
         "*": {
             "browser": [
-                "browser"
+                "./dist/types/browser.d.ts"
             ]
         }
     },
-    "author": "",
+    "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
     "license": "Apache-2.0",
     "scripts": {
         "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
@@ -37,10 +38,11 @@
         "build:browser": "BROWSERSLIST_ENV=browser npm run build:cjs && BROWSERSLIST_ENV=browser npm run build:mjs",
         "build:browser:module": "TARGET=build:mjs BROWSERSLIST_ENV=browser NODE_ENV=production webpack",
         "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
-        "build": "npm run build:browser && npm run build:node",
+        "build": "npm run types && npm run build:browser && npm run build:node",
         "push": "node scripts/publish.js",
         "types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
-        "package": "rimraf build && clean-publish --temp-dir build && npm run types && npm run build"
+        "package": "npm run clean && npm run build && clean-publish",
+        "clean": "rimraf dist package"
     },
     "dependencies": {
         "@cere-ddc-sdk/content-addressable-storage": "1.7.6-rc.1",

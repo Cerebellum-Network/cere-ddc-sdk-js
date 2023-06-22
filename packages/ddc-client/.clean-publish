@@ -1,12 +1,12 @@
 {
-  "withoutPublish": true,
-  "tempDir": "build",
-  "files": [
-      "scripts/**",
-      "webpack.config.js",
-      "shared.config.js",
-      "babel.config.json",
-      "tsconfig.*",
-      ".browserslistrc"
-  ]
+    "withoutPublish": true,
+    "tempDir": "package",
+    "files": [
+        "scripts/**",
+        "webpack.config.js",
+        "shared.config.js",
+        "babel.config.json",
+        "tsconfig.*",
+        ".browserslistrc"
+    ]
 }

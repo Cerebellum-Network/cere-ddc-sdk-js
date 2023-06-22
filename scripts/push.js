@@ -7,11 +7,13 @@ export function push(metaUrl) {
     const registry = process.env.REGISTRY;
     if (registry) {
         execSync(`npm publish --registry ${registry}`, {
-            cwd: path.join(dirname, "../build"), stdio: "inherit",
+            cwd: path.join(dirname, '../package'),
+            stdio: 'inherit',
         });
     } else {
         execSync('npm publish', {
-            cwd: path.join(dirname, '../build'), stdio: 'inherit'
+            cwd: path.join(dirname, '../package'),
+            stdio: 'inherit',
         });
     }
 }
