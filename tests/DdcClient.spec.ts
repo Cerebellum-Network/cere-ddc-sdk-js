@@ -15,6 +15,8 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
     let mainClient: DdcClient;
     let secondClient: DdcClient;
     let session: Session;
+    let ackMainSpy: jest.SpyInstance;
+    let ackSecondSpy: jest.SpyInstance;
 
     beforeAll(async () => {
         mainClient = await DdcClient.buildAndConnect(options, seed);
@@ -25,6 +27,21 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
     afterAll(async () => {
         await mainClient.disconnect();
         await secondClient.disconnect();
+    });
+
+    beforeEach(() => {
+        ackMainSpy = jest.spyOn(mainClient.caStorage as any, 'ack');
+        ackSecondSpy = jest.spyOn(secondClient.caStorage as any, 'ack');
+
+        /**
+         * TODO: Remove when ack fixed
+         */
+        ackMainSpy.mockResolvedValue(undefined);
+        ackSecondSpy.mockResolvedValue(undefined);
+    });
+
+    afterEach(() => {
+        jest.resetAllMocks();
     });
 
     it('should read scheme address', () => {
