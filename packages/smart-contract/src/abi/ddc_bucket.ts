@@ -1,9 +1,9 @@
-export const ddcBucketAbi  = {
+export const ddcBucketAbi = {
     'metadataVersion': '0.1.0',
     'source': {
-        'hash': '0xe31c7b8645d2b15ff5f74f58232eece7ce02d517513120616ac8943d97258f07',
+        'hash': '0x7bcd275ba84830b021733878e42d10d6ed815114736489fc683950ba5a69bfc6',
         'language': 'ink! 3.0.0-rc4',
-        'compiler': 'rustc 1.63.0-nightly',
+        'compiler': 'rustc 1.68.0-nightly',
     },
     'contract': {
         'name': 'ddc_bucket',
@@ -197,17 +197,6 @@ export const ddcBucketAbi  = {
                             'type': 1,
                         },
                     },
-                    {
-                        'docs': [],
-                        'indexed': false,
-                        'name': 'vnode_index',
-                        'type': {
-                            'displayName': [
-                                'VNodeIndex',
-                            ],
-                            'type': 1,
-                        },
-                    },
                 ],
                 'docs': [
                     ' A vnode was re-assigned to new node.',
@@ -330,7 +319,7 @@ export const ddcBucketAbi  = {
                     },
                 ],
                 'docs': [
-                    ' The share of revenues of a cluster for a provider was distributed.',
+                    ' The respective share of revenues of a CDN cluster for a provider was distributed.',
                 ],
                 'name': 'CdnClusterDistributeRevenues',
             },
@@ -478,7 +467,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Permission',
                             ],
-                            'type': 65,
+                            'type': 78,
                         },
                     },
                 ],
@@ -508,7 +497,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Permission',
                             ],
-                            'type': 65,
+                            'type': 78,
                         },
                     },
                 ],
@@ -545,7 +534,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Option',
                             ],
-                            'type': 32,
+                            'type': 43,
                         },
                     },
                 ],
@@ -594,7 +583,7 @@ export const ddcBucketAbi  = {
                 ],
                 'docs': [
                     ' Change owner of the bucket',
-                    ' ',
+                    '',
                     ' Provide the account of new owner',
                 ],
                 'mutates': true,
@@ -604,7 +593,7 @@ export const ddcBucketAbi  = {
                 'payable': true,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0xc7d0c2cd',
             },
@@ -641,7 +630,7 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0x4c482d19',
             },
@@ -726,7 +715,7 @@ export const ddcBucketAbi  = {
                     'displayName': [
                         'Result',
                     ],
-                    'type': 34,
+                    'type': 45,
                 },
                 'selector': '0x3802cb77',
             },
@@ -756,7 +745,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Option',
                             ],
-                            'type': 32,
+                            'type': 43,
                         },
                     },
                 ],
@@ -775,7 +764,7 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 38,
+                    'type': 49,
                 },
                 'selector': '0x417ab584',
             },
@@ -805,7 +794,7 @@ export const ddcBucketAbi  = {
                     'displayName': [
                         'Vec',
                     ],
-                    'type': 40,
+                    'type': 51,
                 },
                 'selector': '0xc434cf57',
             },
@@ -840,7 +829,7 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0x053eb3ce',
             },
@@ -875,7 +864,7 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0x85010c6d',
             },
@@ -938,7 +927,7 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0xea2e477a',
             },
@@ -973,7 +962,7 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0x2b3d8dd1',
             },
@@ -1036,7 +1025,7 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0xfc0e94ea',
             },
@@ -1071,9 +1060,95 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0xe9bfed5a',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'node_ids',
+                        'type': {
+                            'displayName': [
+                                'Vec',
+                            ],
+                            'type': 19,
+                        },
+                    },
+                    {
+                        'name': 'v_nodes',
+                        'type': {
+                            'displayName': [
+                                'Vec',
+                            ],
+                            'type': 20,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Removes a node to an existing cluster',
+                    '',
+                    ' The caller will be its first manager.',
+                ],
+                'mutates': true,
+                'name': [
+                    'cluster_remove_node',
+                ],
+                'payable': true,
+                'returnType': null,
+                'selector': '0x793e0778',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'node_ids',
+                        'type': {
+                            'displayName': [
+                                'Vec',
+                            ],
+                            'type': 19,
+                        },
+                    },
+                    {
+                        'name': 'v_nodes',
+                        'type': {
+                            'displayName': [
+                                'Vec',
+                            ],
+                            'type': 20,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Adds node to an existing cluster',
+                    '',
+                    ' The caller will be its first manager.',
+                ],
+                'mutates': true,
+                'name': [
+                    'cluster_add_node',
+                ],
+                'payable': true,
+                'returnType': null,
+                'selector': '0xf7496bdc',
             },
             {
                 'args': [
@@ -1087,12 +1162,12 @@ export const ddcBucketAbi  = {
                         },
                     },
                     {
-                        'name': 'vnode_count',
+                        'name': 'v_nodes',
                         'type': {
                             'displayName': [
-                                'u32',
+                                'Vec',
                             ],
-                            'type': 1,
+                            'type': 20,
                         },
                     },
                     {
@@ -1101,7 +1176,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Vec',
                             ],
-                            'type': 17,
+                            'type': 19,
                         },
                     },
                     {
@@ -1169,9 +1244,44 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0xb5e38125',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'node_id',
+                        'type': {
+                            'displayName': [
+                                'NodeId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'new_tag',
+                        'type': {
+                            'displayName': [
+                                'NodeTag',
+                            ],
+                            'type': 26,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' As manager, change a node tag',
+                ],
+                'mutates': true,
+                'name': [
+                    'cluster_change_node_tag',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 44,
+                },
+                'selector': '0x9640d48e',
             },
             {
                 'args': [
@@ -1185,12 +1295,12 @@ export const ddcBucketAbi  = {
                         },
                     },
                     {
-                        'name': 'vnode_i',
+                        'name': 'v_nodes',
                         'type': {
                             'displayName': [
-                                'VNodeIndex',
+                                'Vec',
                             ],
-                            'type': 1,
+                            'type': 21,
                         },
                     },
                     {
@@ -1215,7 +1325,7 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0x48194ab1',
             },
@@ -1300,7 +1410,7 @@ export const ddcBucketAbi  = {
                     'displayName': [
                         'Result',
                     ],
-                    'type': 41,
+                    'type': 52,
                 },
                 'selector': '0xe75411f5',
             },
@@ -1330,7 +1440,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Option',
                             ],
-                            'type': 32,
+                            'type': 43,
                         },
                     },
                 ],
@@ -1349,28 +1459,19 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 43,
+                    'type': 54,
                 },
                 'selector': '0xd9db9d44',
             },
             {
                 'args': [
                     {
-                        'name': '_unused',
-                        'type': {
-                            'displayName': [
-                                'AccountId',
-                            ],
-                            'type': 3,
-                        },
-                    },
-                    {
-                        'name': 'node_ids',
+                        'name': 'cdn_node_ids',
                         'type': {
                             'displayName': [
                                 'Vec',
                             ],
-                            'type': 17,
+                            'type': 19,
                         },
                     },
                 ],
@@ -1379,9 +1480,7 @@ export const ddcBucketAbi  = {
                     '',
                     ' The caller will be its first manager.',
                     '',
-                    ' The cluster is split in a number of vnodes. The vnodes are assigned to the given physical nodes in a round-robin. Only nodes of providers that trust the cluster manager can be used (see `node_trust_manager`). The assignment can be changed with the function `cluster_replace_node`.',
-                    '',
-                    ' `cluster_params` is configuration used by clients and nodes. In particular, this describes the semantics of vnodes. See the [data structure of ClusterParams](https://docs.cere.network/ddc/protocols/contract-params-schema)',
+                    ' The CDN node ids are provided, which will form a cluster.',
                 ],
                 'mutates': true,
                 'name': [
@@ -1411,7 +1510,7 @@ export const ddcBucketAbi  = {
                         'name': 'usd_per_gb',
                         'type': {
                             'displayName': [
-                                'u128',
+                                'Balance',
                             ],
                             'type': 8,
                         },
@@ -1427,9 +1526,37 @@ export const ddcBucketAbi  = {
                 'payable': true,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0x7578922a',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'cluster_id',
+                        'type': {
+                            'displayName': [
+                                'ClusterId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Get rate for streaming (price per gb)',
+                ],
+                'mutates': false,
+                'name': [
+                    'cdn_get_rate',
+                ],
+                'payable': true,
+                'returnType': {
+                    'displayName': [
+                        'Balance',
+                    ],
+                    'type': 8,
+                },
+                'selector': '0xa1e3ea8a',
             },
             {
                 'args': [
@@ -1448,7 +1575,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Vec',
                             ],
-                            'type': 45,
+                            'type': 56,
                         },
                     },
                     {
@@ -1457,7 +1584,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Vec',
                             ],
-                            'type': 47,
+                            'type': 58,
                         },
                     },
                     {
@@ -1466,14 +1593,23 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Vec',
                             ],
-                            'type': 49,
+                            'type': 60,
+                        },
+                    },
+                    {
+                        'name': 'era',
+                        'type': {
+                            'displayName': [
+                                'u64',
+                            ],
+                            'type': 22,
                         },
                     },
                 ],
                 'docs': [
-                    ' As manager, reserve more resources for the cluster from the free capacity of nodes.',
+                    ' As validator, charge payments from users and allocate undistributed payments to CDN nodes.',
                     '',
-                    ' The amount of resources is given per vnode (total resources will be `resource` times the number of vnodes).',
+                    ' As a result CDN cluster revenue increases, which can be distributed between CDN node providers via method cdn_cluster_distribute_revenues.',
                 ],
                 'mutates': true,
                 'name': [
@@ -1482,7 +1618,7 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0x7219be3f',
             },
@@ -1499,7 +1635,11 @@ export const ddcBucketAbi  = {
                     },
                 ],
                 'docs': [
-                    ' Trigger the distribution of revenues from the cluster to the providers.',
+                    ' Trigger the distribution of revenues from the cluster to the CDN node providers.',
+                    '',
+                    ' Anyone can call this method.',
+                    '',
+                    ' Undistributed payments will be trasnferred, CDN cluster revenue will decrease.',
                 ],
                 'mutates': true,
                 'name': [
@@ -1533,7 +1673,7 @@ export const ddcBucketAbi  = {
                     'displayName': [
                         'Result',
                     ],
-                    'type': 51,
+                    'type': 62,
                 },
                 'selector': '0x4b22fbf1',
             },
@@ -1563,7 +1703,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Option',
                             ],
-                            'type': 32,
+                            'type': 43,
                         },
                     },
                 ],
@@ -1582,14 +1722,14 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 53,
+                    'type': 64,
                 },
                 'selector': '0xb242a64f',
             },
             {
                 'args': [
                     {
-                        'name': 'node',
+                        'name': 'cdn_owner',
                         'type': {
                             'displayName': [
                                 'AccountId',
@@ -1597,30 +1737,13 @@ export const ddcBucketAbi  = {
                             'type': 3,
                         },
                     },
-                ],
-                'docs': [],
-                'mutates': false,
-                'name': [
-                    'get_commit',
-                ],
-                'payable': false,
-                'returnType': {
-                    'displayName': [
-                        'Commit',
-                    ],
-                    'type': 30,
-                },
-                'selector': '0x5329f551',
-            },
-            {
-                'args': [
                     {
-                        'name': 'node',
+                        'name': 'node_id',
                         'type': {
                             'displayName': [
-                                'AccountId',
+                                'NodeId',
                             ],
-                            'type': 3,
+                            'type': 1,
                         },
                     },
                     {
@@ -1629,11 +1752,13 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Commit',
                             ],
-                            'type': 30,
+                            'type': 36,
                         },
                     },
                 ],
-                'docs': [],
+                'docs': [
+                    ' CDN node operator sets the commit for current era.',
+                ],
                 'mutates': true,
                 'name': [
                     'set_commit',
@@ -1645,16 +1770,74 @@ export const ddcBucketAbi  = {
             {
                 'args': [
                     {
+                        'name': 'cdn_owner',
+                        'type': {
+                            'displayName': [
+                                'AccountId',
+                            ],
+                            'type': 3,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Return the last commit submitted by CDN node operator',
+                ],
+                'mutates': false,
+                'name': [
+                    'get_commit',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Vec',
+                    ],
+                    'type': 34,
+                },
+                'selector': '0x5329f551',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'node',
+                        'type': {
+                            'displayName': [
+                                'NodeId',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Return last era validated per CDN node',
+                ],
+                'mutates': false,
+                'name': [
+                    'get_validated_commit',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'EraAndTimestamp',
+                    ],
+                    'type': 39,
+                },
+                'selector': '0x7d497bc1',
+            },
+            {
+                'args': [
+                    {
                         'name': 'era_config',
                         'type': {
                             'displayName': [
                                 'EraConfig',
                             ],
-                            'type': 55,
+                            'type': 66,
                         },
                     },
                 ],
-                'docs': [],
+                'docs': [
+                    ' Set the new configs for era',
+                ],
                 'mutates': true,
                 'name': [
                     'set_era',
@@ -1662,13 +1845,15 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0x49a5b8f7',
             },
             {
                 'args': [],
-                'docs': [],
+                'docs': [
+                    ' Return current status of an era',
+                ],
                 'mutates': false,
                 'name': [
                     'get_era',
@@ -1676,15 +1861,17 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [
-                        'u64',
+                        'EraStatus',
                     ],
-                    'type': 25,
+                    'type': 67,
                 },
                 'selector': '0x617f696b',
             },
             {
                 'args': [],
-                'docs': [],
+                'docs': [
+                    ' Return current era settings',
+                ],
                 'mutates': false,
                 'name': [
                     'get_era_settings',
@@ -1694,7 +1881,7 @@ export const ddcBucketAbi  = {
                     'displayName': [
                         'EraConfig',
                     ],
-                    'type': 55,
+                    'type': 66,
                 },
                 'selector': '0x84b61468',
             },
@@ -1834,7 +2021,7 @@ export const ddcBucketAbi  = {
                     'displayName': [
                         'Result',
                     ],
-                    'type': 56,
+                    'type': 69,
                 },
                 'selector': '0xf9a5a813',
             },
@@ -1864,7 +2051,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Option',
                             ],
-                            'type': 32,
+                            'type': 43,
                         },
                     },
                 ],
@@ -1883,7 +2070,7 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 58,
+                    'type': 71,
                 },
                 'selector': '0xf8589aae',
             },
@@ -1960,6 +2147,15 @@ export const ddcBucketAbi  = {
                                 'Resource',
                             ],
                             'type': 1,
+                        },
+                    },
+                    {
+                        'name': 'node_tag',
+                        'type': {
+                            'displayName': [
+                                'NodeTag',
+                            ],
+                            'type': 26,
                         },
                     },
                 ],
@@ -2041,7 +2237,7 @@ export const ddcBucketAbi  = {
                     'displayName': [
                         'Result',
                     ],
-                    'type': 60,
+                    'type': 73,
                 },
                 'selector': '0x847f3997',
             },
@@ -2071,7 +2267,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Option',
                             ],
-                            'type': 32,
+                            'type': 43,
                         },
                     },
                 ],
@@ -2090,9 +2286,97 @@ export const ddcBucketAbi  = {
                 'payable': false,
                 'returnType': {
                     'displayName': [],
-                    'type': 62,
+                    'type': 75,
                 },
                 'selector': '0x423286d6',
+            },
+            {
+                'args': [],
+                'docs': [
+                    ' Get the Fee Percentage Basis Points that will be charged by the protocol',
+                ],
+                'mutates': false,
+                'name': [
+                    'get_fee_bp',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'u32',
+                    ],
+                    'type': 1,
+                },
+                'selector': '0x0d5daf5f',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'fee_bp',
+                        'type': {
+                            'displayName': [
+                                'u32',
+                            ],
+                            'type': 1,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Return the last commit submitted by CDN node operator',
+                ],
+                'mutates': true,
+                'name': [
+                    'set_fee_bp',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 44,
+                },
+                'selector': '0xc5e3e2ca',
+            },
+            {
+                'args': [],
+                'docs': [
+                    ' Return fees accumulated by the protocol',
+                ],
+                'mutates': false,
+                'name': [
+                    'get_protocol_revenues',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [
+                        'Cash',
+                    ],
+                    'type': 18,
+                },
+                'selector': '0x07c63885',
+            },
+            {
+                'args': [
+                    {
+                        'name': 'amount',
+                        'type': {
+                            'displayName': [
+                                'u128',
+                            ],
+                            'type': 8,
+                        },
+                    },
+                ],
+                'docs': [
+                    ' Pay the revenues accumulated by the protocol',
+                ],
+                'mutates': true,
+                'name': [
+                    'protocol_withdraw_revenues',
+                ],
+                'payable': false,
+                'returnType': {
+                    'displayName': [],
+                    'type': 44,
+                },
+                'selector': '0x85c6fa6d',
             },
             {
                 'args': [],
@@ -2107,7 +2391,7 @@ export const ddcBucketAbi  = {
                 'payable': true,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0xc311af62',
             },
@@ -2124,8 +2408,7 @@ export const ddcBucketAbi  = {
                     },
                 ],
                 'docs': [
-                    ' As user, bond some amount of tokens from the withdrawable balance. These funds will be used to ',
-                    ' pay for CDN nodes',
+                    ' As user, bond some amount of tokens from the withdrawable balance. These funds will be used to pay for CDN node service.',
                 ],
                 'mutates': true,
                 'name': [
@@ -2134,7 +2417,7 @@ export const ddcBucketAbi  = {
                 'payable': true,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0xe9fad0bf',
             },
@@ -2151,7 +2434,7 @@ export const ddcBucketAbi  = {
                     },
                 ],
                 'docs': [
-                    ' As user, unbond a specified amount of tokens',
+                    ' As user, unbond a specified amount of tokens. The tokens will be locked for some time, as defined by contract owner.',
                 ],
                 'mutates': true,
                 'name': [
@@ -2160,14 +2443,16 @@ export const ddcBucketAbi  = {
                 'payable': true,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0xf7ea2c67',
             },
             {
                 'args': [],
                 'docs': [
-                    ' As user, move the unbonded tokens back to withdrawable balance state',
+                    ' As user, move the unbonded tokens back to withdrawable balance state.',
+                    '',
+                    ' This can be triggered after unbonded_timestamp',
                 ],
                 'mutates': true,
                 'name': [
@@ -2176,7 +2461,7 @@ export const ddcBucketAbi  = {
                 'payable': true,
                 'returnType': {
                     'displayName': [],
-                    'type': 33,
+                    'type': 44,
                 },
                 'selector': '0x98173716',
             },
@@ -2204,7 +2489,7 @@ export const ddcBucketAbi  = {
                     'displayName': [
                         'Result',
                     ],
-                    'type': 64,
+                    'type': 77,
                 },
                 'selector': '0x1d4220fa',
             },
@@ -2268,7 +2553,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Permission',
                             ],
-                            'type': 65,
+                            'type': 78,
                         },
                     },
                 ],
@@ -2306,7 +2591,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Permission',
                             ],
-                            'type': 65,
+                            'type': 78,
                         },
                     },
                 ],
@@ -2338,7 +2623,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'Permission',
                             ],
-                            'type': 65,
+                            'type': 78,
                         },
                     },
                 ],
@@ -2386,7 +2671,7 @@ export const ddcBucketAbi  = {
                             'displayName': [
                                 'FeeConfig',
                             ],
-                            'type': 66,
+                            'type': 79,
                         },
                     },
                 ],
@@ -2685,34 +2970,9 @@ export const ddcBucketAbi  = {
                             'fields': [
                                 {
                                     'layout': {
-                                        'struct': {
-                                            'fields': [
-                                                {
-                                                    'layout': {
-                                                        'cell': {
-                                                            'key': '0x0400000004000000000000000000000000000000000000000000000000000000',
-                                                            'ty': 1,
-                                                        },
-                                                    },
-                                                    'name': 'len',
-                                                },
-                                                {
-                                                    'layout': {
-                                                        'array': {
-                                                            'cellsPerElem': 1,
-                                                            'layout': {
-                                                                'cell': {
-                                                                    'key': '0x0400000005000000000000000000000000000000000000000000000000000000',
-                                                                    'ty': 16,
-                                                                },
-                                                            },
-                                                            'len': 4294967295,
-                                                            'offset': '0x0500000004000000000000000000000000000000000000000000000000000000',
-                                                        },
-                                                    },
-                                                    'name': 'elems',
-                                                },
-                                            ],
+                                        'cell': {
+                                            'key': '0x0400000004000000000000000000000000000000000000000000000000000000',
+                                            'ty': 16,
                                         },
                                     },
                                     'name': null,
@@ -2733,7 +2993,7 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x0400000005000000000000000000000000000000000000000000000000000000',
+                                                            'key': '0x0500000004000000000000000000000000000000000000000000000000000000',
                                                             'ty': 1,
                                                         },
                                                     },
@@ -2745,12 +3005,12 @@ export const ddcBucketAbi  = {
                                                             'cellsPerElem': 1,
                                                             'layout': {
                                                                 'cell': {
-                                                                    'key': '0x0400000006000000000000000000000000000000000000000000000000000000',
-                                                                    'ty': 19,
+                                                                    'key': '0x0500000005000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 23,
                                                                 },
                                                             },
                                                             'len': 4294967295,
-                                                            'offset': '0x0500000005000000000000000000000000000000000000000000000000000000',
+                                                            'offset': '0x0600000004000000000000000000000000000000000000000000000000000000',
                                                         },
                                                     },
                                                     'name': 'elems',
@@ -2776,7 +3036,7 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x0400000006000000000000000000000000000000000000000000000000000000',
+                                                            'key': '0x0500000005000000000000000000000000000000000000000000000000000000',
                                                             'ty': 1,
                                                         },
                                                     },
@@ -2788,12 +3048,12 @@ export const ddcBucketAbi  = {
                                                             'cellsPerElem': 1,
                                                             'layout': {
                                                                 'cell': {
-                                                                    'key': '0x0400000007000000000000000000000000000000000000000000000000000000',
+                                                                    'key': '0x0500000006000000000000000000000000000000000000000000000000000000',
                                                                     'ty': 15,
                                                                 },
                                                             },
                                                             'len': 4294967295,
-                                                            'offset': '0x0500000006000000000000000000000000000000000000000000000000000000',
+                                                            'offset': '0x0600000005000000000000000000000000000000000000000000000000000000',
                                                         },
                                                     },
                                                     'name': 'elems',
@@ -2819,7 +3079,7 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x0400000007000000000000000000000000000000000000000000000000000000',
+                                                            'key': '0x0500000006000000000000000000000000000000000000000000000000000000',
                                                             'ty': 1,
                                                         },
                                                     },
@@ -2831,12 +3091,12 @@ export const ddcBucketAbi  = {
                                                             'cellsPerElem': 1,
                                                             'layout': {
                                                                 'cell': {
-                                                                    'key': '0x0400000008000000000000000000000000000000000000000000000000000000',
-                                                                    'ty': 20,
+                                                                    'key': '0x0500000007000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 24,
                                                                 },
                                                             },
                                                             'len': 4294967295,
-                                                            'offset': '0x0500000007000000000000000000000000000000000000000000000000000000',
+                                                            'offset': '0x0600000006000000000000000000000000000000000000000000000000000000',
                                                         },
                                                     },
                                                     'name': 'elems',
@@ -2862,7 +3122,7 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x0400000008000000000000000000000000000000000000000000000000000000',
+                                                            'key': '0x0500000007000000000000000000000000000000000000000000000000000000',
                                                             'ty': 1,
                                                         },
                                                     },
@@ -2874,12 +3134,12 @@ export const ddcBucketAbi  = {
                                                             'cellsPerElem': 1,
                                                             'layout': {
                                                                 'cell': {
-                                                                    'key': '0x0400000009000000000000000000000000000000000000000000000000000000',
+                                                                    'key': '0x0500000008000000000000000000000000000000000000000000000000000000',
                                                                     'ty': 15,
                                                                 },
                                                             },
                                                             'len': 4294967295,
-                                                            'offset': '0x0500000008000000000000000000000000000000000000000000000000000000',
+                                                            'offset': '0x0600000007000000000000000000000000000000000000000000000000000000',
                                                         },
                                                     },
                                                     'name': 'elems',
@@ -2905,7 +3165,7 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x0400000009000000000000000000000000000000000000000000000000000000',
+                                                            'key': '0x0500000008000000000000000000000000000000000000000000000000000000',
                                                             'ty': 1,
                                                         },
                                                     },
@@ -2917,12 +3177,12 @@ export const ddcBucketAbi  = {
                                                             'cellsPerElem': 1,
                                                             'layout': {
                                                                 'cell': {
-                                                                    'key': '0x040000000a000000000000000000000000000000000000000000000000000000',
-                                                                    'ty': 21,
+                                                                    'key': '0x0500000009000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 25,
                                                                 },
                                                             },
                                                             'len': 4294967295,
-                                                            'offset': '0x0500000009000000000000000000000000000000000000000000000000000000',
+                                                            'offset': '0x0600000008000000000000000000000000000000000000000000000000000000',
                                                         },
                                                     },
                                                     'name': 'elems',
@@ -2948,7 +3208,7 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x040000000a000000000000000000000000000000000000000000000000000000',
+                                                            'key': '0x0500000009000000000000000000000000000000000000000000000000000000',
                                                             'ty': 1,
                                                         },
                                                     },
@@ -2960,12 +3220,12 @@ export const ddcBucketAbi  = {
                                                             'cellsPerElem': 1,
                                                             'layout': {
                                                                 'cell': {
-                                                                    'key': '0x040000000b000000000000000000000000000000000000000000000000000000',
+                                                                    'key': '0x050000000a000000000000000000000000000000000000000000000000000000',
                                                                     'ty': 15,
                                                                 },
                                                             },
                                                             'len': 4294967295,
-                                                            'offset': '0x050000000a000000000000000000000000000000000000000000000000000000',
+                                                            'offset': '0x0600000009000000000000000000000000000000000000000000000000000000',
                                                         },
                                                     },
                                                     'name': 'elems',
@@ -2995,7 +3255,7 @@ export const ddcBucketAbi  = {
                                                                 {
                                                                     'layout': {
                                                                         'cell': {
-                                                                            'key': '0x040000000b000000000000000000000000000000000000000000000000000000',
+                                                                            'key': '0x050000000a000000000000000000000000000000000000000000000000000000',
                                                                             'ty': 10,
                                                                         },
                                                                     },
@@ -3008,7 +3268,7 @@ export const ddcBucketAbi  = {
                                                                                 {
                                                                                     'layout': {
                                                                                         'cell': {
-                                                                                            'key': '0x050000000b000000000000000000000000000000000000000000000000000000',
+                                                                                            'key': '0x060000000a000000000000000000000000000000000000000000000000000000',
                                                                                             'ty': 1,
                                                                                         },
                                                                                     },
@@ -3020,12 +3280,12 @@ export const ddcBucketAbi  = {
                                                                                             'cellsPerElem': 1,
                                                                                             'layout': {
                                                                                                 'cell': {
-                                                                                                    'key': '0x050000000c000000000000000000000000000000000000000000000000000000',
-                                                                                                    'ty': 22,
+                                                                                                    'key': '0x060000000b000000000000000000000000000000000000000000000000000000',
+                                                                                                    'ty': 27,
                                                                                                 },
                                                                                             },
                                                                                             'len': 4294967295,
-                                                                                            'offset': '0x060000000b000000000000000000000000000000000000000000000000000000',
+                                                                                            'offset': '0x070000000a000000000000000000000000000000000000000000000000000000',
                                                                                         },
                                                                                     },
                                                                                     'name': 'elems',
@@ -3045,11 +3305,11 @@ export const ddcBucketAbi  = {
                                                         'hash': {
                                                             'layout': {
                                                                 'cell': {
-                                                                    'key': '0x060000000c000000000000000000000000000000000000000000000000000000',
-                                                                    'ty': 23,
+                                                                    'key': '0x070000000b000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 28,
                                                                 },
                                                             },
-                                                            'offset': '0x050000000c000000000000000000000000000000000000000000000000000000',
+                                                            'offset': '0x060000000b000000000000000000000000000000000000000000000000000000',
                                                             'strategy': {
                                                                 'hasher': 'Blake2x256',
                                                                 'postfix': '',
@@ -3071,7 +3331,7 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x060000000c000000000000000000000000000000000000000000000000000000',
+                                                            'key': '0x070000000b000000000000000000000000000000000000000000000000000000',
                                                             'ty': 8,
                                                         },
                                                     },
@@ -3102,7 +3362,7 @@ export const ddcBucketAbi  = {
                                                                 {
                                                                     'layout': {
                                                                         'cell': {
-                                                                            'key': '0x070000000c000000000000000000000000000000000000000000000000000000',
+                                                                            'key': '0x080000000b000000000000000000000000000000000000000000000000000000',
                                                                             'ty': 10,
                                                                         },
                                                                     },
@@ -3115,7 +3375,7 @@ export const ddcBucketAbi  = {
                                                                                 {
                                                                                     'layout': {
                                                                                         'cell': {
-                                                                                            'key': '0x080000000c000000000000000000000000000000000000000000000000000000',
+                                                                                            'key': '0x090000000b000000000000000000000000000000000000000000000000000000',
                                                                                             'ty': 1,
                                                                                         },
                                                                                     },
@@ -3127,12 +3387,12 @@ export const ddcBucketAbi  = {
                                                                                             'cellsPerElem': 1,
                                                                                             'layout': {
                                                                                                 'cell': {
-                                                                                                    'key': '0x080000000d000000000000000000000000000000000000000000000000000000',
-                                                                                                    'ty': 26,
+                                                                                                    'key': '0x090000000c000000000000000000000000000000000000000000000000000000',
+                                                                                                    'ty': 30,
                                                                                                 },
                                                                                             },
                                                                                             'len': 4294967295,
-                                                                                            'offset': '0x090000000c000000000000000000000000000000000000000000000000000000',
+                                                                                            'offset': '0x0a0000000b000000000000000000000000000000000000000000000000000000',
                                                                                         },
                                                                                     },
                                                                                     'name': 'elems',
@@ -3152,11 +3412,11 @@ export const ddcBucketAbi  = {
                                                         'hash': {
                                                             'layout': {
                                                                 'cell': {
-                                                                    'key': '0x090000000d000000000000000000000000000000000000000000000000000000',
-                                                                    'ty': 28,
+                                                                    'key': '0x0a0000000c000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 32,
                                                                 },
                                                             },
-                                                            'offset': '0x080000000d000000000000000000000000000000000000000000000000000000',
+                                                            'offset': '0x090000000c000000000000000000000000000000000000000000000000000000',
                                                             'strategy': {
                                                                 'hasher': 'Blake2x256',
                                                                 'postfix': '',
@@ -3187,7 +3447,7 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x090000000d000000000000000000000000000000000000000000000000000000',
+                                                            'key': '0x0a0000000c000000000000000000000000000000000000000000000000000000',
                                                             'ty': 8,
                                                         },
                                                     },
@@ -3196,7 +3456,7 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x0a0000000d000000000000000000000000000000000000000000000000000000',
+                                                            'key': '0x0b0000000c000000000000000000000000000000000000000000000000000000',
                                                             'ty': 3,
                                                         },
                                                     },
@@ -3205,7 +3465,7 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x0b0000000d000000000000000000000000000000000000000000000000000000',
+                                                            'key': '0x0c0000000c000000000000000000000000000000000000000000000000000000',
                                                             'ty': 8,
                                                         },
                                                     },
@@ -3228,7 +3488,7 @@ export const ddcBucketAbi  = {
                                 {
                                     'layout': {
                                         'cell': {
-                                            'key': '0x0c0000000d000000000000000000000000000000000000000000000000000000',
+                                            'key': '0x0d0000000c000000000000000000000000000000000000000000000000000000',
                                             'ty': 3,
                                         },
                                     },
@@ -3245,7 +3505,7 @@ export const ddcBucketAbi  = {
                                                                 {
                                                                     'layout': {
                                                                         'cell': {
-                                                                            'key': '0x0d0000000d000000000000000000000000000000000000000000000000000000',
+                                                                            'key': '0x0e0000000c000000000000000000000000000000000000000000000000000000',
                                                                             'ty': 10,
                                                                         },
                                                                     },
@@ -3258,7 +3518,7 @@ export const ddcBucketAbi  = {
                                                                                 {
                                                                                     'layout': {
                                                                                         'cell': {
-                                                                                            'key': '0x0e0000000d000000000000000000000000000000000000000000000000000000',
+                                                                                            'key': '0x0f0000000c000000000000000000000000000000000000000000000000000000',
                                                                                             'ty': 1,
                                                                                         },
                                                                                     },
@@ -3270,12 +3530,12 @@ export const ddcBucketAbi  = {
                                                                                             'cellsPerElem': 1,
                                                                                             'layout': {
                                                                                                 'cell': {
-                                                                                                    'key': '0x0e0000000e000000000000000000000000000000000000000000000000000000',
-                                                                                                    'ty': 22,
+                                                                                                    'key': '0x0f0000000d000000000000000000000000000000000000000000000000000000',
+                                                                                                    'ty': 27,
                                                                                                 },
                                                                                             },
                                                                                             'len': 4294967295,
-                                                                                            'offset': '0x0f0000000d000000000000000000000000000000000000000000000000000000',
+                                                                                            'offset': '0x100000000c000000000000000000000000000000000000000000000000000000',
                                                                                         },
                                                                                     },
                                                                                     'name': 'elems',
@@ -3295,11 +3555,11 @@ export const ddcBucketAbi  = {
                                                         'hash': {
                                                             'layout': {
                                                                 'cell': {
-                                                                    'key': '0x0f0000000e000000000000000000000000000000000000000000000000000000',
-                                                                    'ty': 29,
+                                                                    'key': '0x100000000d000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 33,
                                                                 },
                                                             },
-                                                            'offset': '0x0e0000000e000000000000000000000000000000000000000000000000000000',
+                                                            'offset': '0x0f0000000d000000000000000000000000000000000000000000000000000000',
                                                             'strategy': {
                                                                 'hasher': 'Blake2x256',
                                                                 'postfix': '',
@@ -3320,9 +3580,89 @@ export const ddcBucketAbi  = {
                                             'fields': [
                                                 {
                                                     'layout': {
+                                                        'struct': {
+                                                            'fields': [
+                                                                {
+                                                                    'layout': {
+                                                                        'cell': {
+                                                                            'key': '0x100000000d000000000000000000000000000000000000000000000000000000',
+                                                                            'ty': 10,
+                                                                        },
+                                                                    },
+                                                                    'name': 'header',
+                                                                },
+                                                                {
+                                                                    'layout': {
+                                                                        'struct': {
+                                                                            'fields': [
+                                                                                {
+                                                                                    'layout': {
+                                                                                        'cell': {
+                                                                                            'key': '0x110000000d000000000000000000000000000000000000000000000000000000',
+                                                                                            'ty': 1,
+                                                                                        },
+                                                                                    },
+                                                                                    'name': 'len',
+                                                                                },
+                                                                                {
+                                                                                    'layout': {
+                                                                                        'array': {
+                                                                                            'cellsPerElem': 1,
+                                                                                            'layout': {
+                                                                                                'cell': {
+                                                                                                    'key': '0x110000000e000000000000000000000000000000000000000000000000000000',
+                                                                                                    'ty': 11,
+                                                                                                },
+                                                                                            },
+                                                                                            'len': 4294967295,
+                                                                                            'offset': '0x120000000d000000000000000000000000000000000000000000000000000000',
+                                                                                        },
+                                                                                    },
+                                                                                    'name': 'elems',
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    'name': 'entries',
+                                                                },
+                                                            ],
+                                                        },
+                                                    },
+                                                    'name': 'keys',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'hash': {
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x120000000e000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 38,
+                                                                },
+                                                            },
+                                                            'offset': '0x110000000e000000000000000000000000000000000000000000000000000000',
+                                                            'strategy': {
+                                                                'hasher': 'Blake2x256',
+                                                                'postfix': '',
+                                                                'prefix': '0x696e6b20686173686d6170',
+                                                            },
+                                                        },
+                                                    },
+                                                    'name': 'values',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': 'validated_commits',
+                                },
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
                                                         'cell': {
-                                                            'key': '0x0f0000000e000000000000000000000000000000000000000000000000000000',
-                                                            'ty': 25,
+                                                            'key': '0x120000000e000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 22,
                                                         },
                                                     },
                                                     'name': 'start',
@@ -3330,8 +3670,8 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x100000000e000000000000000000000000000000000000000000000000000000',
-                                                            'ty': 25,
+                                                            'key': '0x130000000e000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 22,
                                                         },
                                                     },
                                                     'name': 'interval',
@@ -3339,8 +3679,8 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x110000000e000000000000000000000000000000000000000000000000000000',
-                                                            'ty': 25,
+                                                            'key': '0x140000000e000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 22,
                                                         },
                                                     },
                                                     'name': 'commit_duration',
@@ -3348,8 +3688,8 @@ export const ddcBucketAbi  = {
                                                 {
                                                     'layout': {
                                                         'cell': {
-                                                            'key': '0x120000000e000000000000000000000000000000000000000000000000000000',
-                                                            'ty': 25,
+                                                            'key': '0x150000000e000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 22,
                                                         },
                                                     },
                                                     'name': 'validation_duration',
@@ -3363,6 +3703,140 @@ export const ddcBucketAbi  = {
                         },
                     },
                     'name': 'committer_store',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'cell': {
+                                            'key': '0x160000000e000000000000000000000000000000000000000000000000000000',
+                                            'ty': 3,
+                                        },
+                                    },
+                                    'name': 'admin',
+                                },
+                                {
+                                    'layout': {
+                                        'cell': {
+                                            'key': '0x170000000e000000000000000000000000000000000000000000000000000000',
+                                            'ty': 1,
+                                        },
+                                    },
+                                    'name': 'fee_bp',
+                                },
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'cell': {
+                                                            'key': '0x180000000e000000000000000000000000000000000000000000000000000000',
+                                                            'ty': 8,
+                                                        },
+                                                    },
+                                                    'name': null,
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': 'revenues',
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'protocol_store',
+                },
+                {
+                    'layout': {
+                        'struct': {
+                            'fields': [
+                                {
+                                    'layout': {
+                                        'struct': {
+                                            'fields': [
+                                                {
+                                                    'layout': {
+                                                        'struct': {
+                                                            'fields': [
+                                                                {
+                                                                    'layout': {
+                                                                        'cell': {
+                                                                            'key': '0x190000000e000000000000000000000000000000000000000000000000000000',
+                                                                            'ty': 10,
+                                                                        },
+                                                                    },
+                                                                    'name': 'header',
+                                                                },
+                                                                {
+                                                                    'layout': {
+                                                                        'struct': {
+                                                                            'fields': [
+                                                                                {
+                                                                                    'layout': {
+                                                                                        'cell': {
+                                                                                            'key': '0x1a0000000e000000000000000000000000000000000000000000000000000000',
+                                                                                            'ty': 1,
+                                                                                        },
+                                                                                    },
+                                                                                    'name': 'len',
+                                                                                },
+                                                                                {
+                                                                                    'layout': {
+                                                                                        'array': {
+                                                                                            'cellsPerElem': 1,
+                                                                                            'layout': {
+                                                                                                'cell': {
+                                                                                                    'key': '0x1a0000000f000000000000000000000000000000000000000000000000000000',
+                                                                                                    'ty': 40,
+                                                                                                },
+                                                                                            },
+                                                                                            'len': 4294967295,
+                                                                                            'offset': '0x1b0000000e000000000000000000000000000000000000000000000000000000',
+                                                                                        },
+                                                                                    },
+                                                                                    'name': 'elems',
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    'name': 'entries',
+                                                                },
+                                                            ],
+                                                        },
+                                                    },
+                                                    'name': 'keys',
+                                                },
+                                                {
+                                                    'layout': {
+                                                        'hash': {
+                                                            'layout': {
+                                                                'cell': {
+                                                                    'key': '0x1b0000000f000000000000000000000000000000000000000000000000000000',
+                                                                    'ty': 42,
+                                                                },
+                                                            },
+                                                            'offset': '0x1a0000000f000000000000000000000000000000000000000000000000000000',
+                                                            'strategy': {
+                                                                'hasher': 'Blake2x256',
+                                                                'postfix': '',
+                                                                'prefix': '0x696e6b20686173686d6170',
+                                                            },
+                                                        },
+                                                    },
+                                                    'name': 'values',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    'name': null,
+                                },
+                            ],
+                        },
+                    },
+                    'name': 'topology_store',
                 },
             ],
         },
@@ -3635,17 +4109,19 @@ export const ddcBucketAbi  = {
         },
         {
             'def': {
+                'sequence': {
+                    'type': 17,
+                },
+            },
+        },
+        {
+            'def': {
                 'composite': {
                     'fields': [
                         {
                             'name': 'manager_id',
                             'type': 3,
                             'typeName': 'AccountId',
-                        },
-                        {
-                            'name': 'vnodes',
-                            'type': 17,
-                            'typeName': 'Vec<NodeId>',
                         },
                         {
                             'name': 'resource_per_vnode',
@@ -3663,6 +4139,16 @@ export const ddcBucketAbi  = {
                             'typeName': 'Cash',
                         },
                         {
+                            'name': 'node_ids',
+                            'type': 19,
+                            'typeName': 'Vec<NodeId>',
+                        },
+                        {
+                            'name': 'v_nodes',
+                            'type': 20,
+                            'typeName': 'Vec<Vec<u64>>',
+                        },
+                        {
                             'name': 'total_rent',
                             'type': 8,
                             'typeName': 'Balance',
@@ -3677,13 +4163,6 @@ export const ddcBucketAbi  = {
                 'entity',
                 'Cluster',
             ],
-        },
-        {
-            'def': {
-                'sequence': {
-                    'type': 1,
-                },
-            },
         },
         {
             'def': {
@@ -3706,6 +4185,32 @@ export const ddcBucketAbi  = {
         },
         {
             'def': {
+                'sequence': {
+                    'type': 1,
+                },
+            },
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 21,
+                },
+            },
+        },
+        {
+            'def': {
+                'sequence': {
+                    'type': 22,
+                },
+            },
+        },
+        {
+            'def': {
+                'primitive': 'u64',
+            },
+        },
+        {
+            'def': {
                 'composite': {
                     'fields': [
                         {
@@ -3715,7 +4220,7 @@ export const ddcBucketAbi  = {
                         },
                         {
                             'name': 'cdn_nodes',
-                            'type': 17,
+                            'type': 19,
                             'typeName': 'Vec<NodeId>',
                         },
                         {
@@ -3731,7 +4236,7 @@ export const ddcBucketAbi  = {
                         {
                             'name': 'usd_per_gb',
                             'type': 8,
-                            'typeName': 'u128',
+                            'typeName': 'Balance',
                         },
                     ],
                 },
@@ -3788,6 +4293,11 @@ export const ddcBucketAbi  = {
                             'type': 1,
                             'typeName': 'Resource',
                         },
+                        {
+                            'name': 'node_tag',
+                            'type': 26,
+                            'typeName': 'NodeTag',
+                        },
                     ],
                 },
             },
@@ -3797,6 +4307,37 @@ export const ddcBucketAbi  = {
                 'node',
                 'entity',
                 'Node',
+            ],
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'discriminant': 0,
+                            'name': 'ACTIVE',
+                        },
+                        {
+                            'discriminant': 1,
+                            'name': 'ADDING',
+                        },
+                        {
+                            'discriminant': 2,
+                            'name': 'DELETING',
+                        },
+                        {
+                            'discriminant': 3,
+                            'name': 'OFFLINE',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'node',
+                'entity',
+                'NodeTag',
             ],
         },
         {
@@ -3840,7 +4381,7 @@ export const ddcBucketAbi  = {
                     'fields': [
                         {
                             'name': 'value',
-                            'type': 24,
+                            'type': 29,
                             'typeName': 'V',
                         },
                         {
@@ -3852,7 +4393,7 @@ export const ddcBucketAbi  = {
                 },
             },
             'params': [
-                24,
+                29,
             ],
             'path': [
                 'ink_storage',
@@ -3887,7 +4428,7 @@ export const ddcBucketAbi  = {
                         },
                         {
                             'name': 'unbonded_timestamp',
-                            'type': 25,
+                            'type': 22,
                             'typeName': 'u64',
                         },
                         {
@@ -3908,11 +4449,6 @@ export const ddcBucketAbi  = {
         },
         {
             'def': {
-                'primitive': 'u64',
-            },
-        },
-        {
-            'def': {
                 'variant': {
                     'variants': [
                         {
@@ -3927,7 +4463,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 27,
+                                    'type': 31,
                                     'typeName': 'T',
                                 },
                             ],
@@ -3937,7 +4473,7 @@ export const ddcBucketAbi  = {
                 },
             },
             'params': [
-                27,
+                31,
             ],
             'path': [
                 'ink_storage',
@@ -3986,7 +4522,7 @@ export const ddcBucketAbi  = {
                     'fields': [
                         {
                             'name': 'value',
-                            'type': 30,
+                            'type': 34,
                             'typeName': 'V',
                         },
                         {
@@ -3998,7 +4534,7 @@ export const ddcBucketAbi  = {
                 },
             },
             'params': [
-                30,
+                34,
             ],
             'path': [
                 'ink_storage',
@@ -4009,26 +4545,41 @@ export const ddcBucketAbi  = {
         },
         {
             'def': {
+                'sequence': {
+                    'type': 35,
+                },
+            },
+        },
+        {
+            'def': {
+                'tuple': [
+                    1,
+                    36,
+                ],
+            },
+        },
+        {
+            'def': {
                 'composite': {
                     'fields': [
                         {
                             'name': 'hash',
-                            'type': 31,
+                            'type': 37,
                             'typeName': 'Hash',
                         },
                         {
-                            'name': 'total',
+                            'name': 'total_logs',
                             'type': 8,
                             'typeName': 'u128',
                         },
                         {
                             'name': 'from_timestamp',
-                            'type': 25,
+                            'type': 22,
                             'typeName': 'u64',
                         },
                         {
                             'name': 'to_timestamp',
-                            'type': 25,
+                            'type': 22,
                             'typeName': 'u64',
                         },
                     ],
@@ -4057,6 +4608,111 @@ export const ddcBucketAbi  = {
                 'ink_env',
                 'types',
                 'Hash',
+            ],
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'value',
+                            'type': 39,
+                            'typeName': 'V',
+                        },
+                        {
+                            'name': 'key_index',
+                            'type': 1,
+                            'typeName': 'KeyIndex',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                39,
+            ],
+            'path': [
+                'ink_storage',
+                'collections',
+                'hashmap',
+                'ValueEntry',
+            ],
+        },
+        {
+            'def': {
+                'tuple': [
+                    22,
+                    22,
+                ],
+            },
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'fields': [
+                                {
+                                    'type': 12,
+                                    'typeName': 'VacantEntry',
+                                },
+                            ],
+                            'name': 'Vacant',
+                        },
+                        {
+                            'fields': [
+                                {
+                                    'type': 41,
+                                    'typeName': 'T',
+                                },
+                            ],
+                            'name': 'Occupied',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                41,
+            ],
+            'path': [
+                'ink_storage',
+                'collections',
+                'stash',
+                'Entry',
+            ],
+        },
+        {
+            'def': {
+                'tuple': [
+                    1,
+                    22,
+                ],
+            },
+        },
+        {
+            'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'value',
+                            'type': 1,
+                            'typeName': 'V',
+                        },
+                        {
+                            'name': 'key_index',
+                            'type': 1,
+                            'typeName': 'KeyIndex',
+                        },
+                    ],
+                },
+            },
+            'params': [
+                1,
+            ],
+            'path': [
+                'ink_storage',
+                'collections',
+                'hashmap',
+                'ValueEntry',
             ],
         },
         {
@@ -4097,7 +4753,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 35,
+                                    'type': 46,
                                     'typeName': 'T',
                                 },
                             ],
@@ -4106,7 +4762,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 37,
+                                    'type': 48,
                                     'typeName': 'E',
                                 },
                             ],
@@ -4116,8 +4772,8 @@ export const ddcBucketAbi  = {
                 },
             },
             'params': [
-                35,
-                37,
+                46,
+                48,
             ],
             'path': [
                 'Result',
@@ -4134,7 +4790,7 @@ export const ddcBucketAbi  = {
                         },
                         {
                             'name': 'bucket',
-                            'type': 36,
+                            'type': 47,
                             'typeName': 'BucketInStatus',
                         },
                         {
@@ -4154,7 +4810,7 @@ export const ddcBucketAbi  = {
                         },
                         {
                             'name': 'rent_covered_until_ms',
-                            'type': 25,
+                            'type': 22,
                             'typeName': 'u64',
                         },
                     ],
@@ -4222,75 +4878,75 @@ export const ddcBucketAbi  = {
                         },
                         {
                             'discriminant': 2,
-                            'name': 'TooManyVNodes',
-                        },
-                        {
-                            'discriminant': 3,
                             'name': 'ParamsTooBig',
                         },
                         {
-                            'discriminant': 4,
+                            'discriminant': 3,
                             'name': 'VNodeDoesNotExist',
                         },
                         {
-                            'discriminant': 5,
+                            'discriminant': 4,
                             'name': 'BondingPeriodNotFinished',
                         },
                         {
-                            'discriminant': 6,
+                            'discriminant': 5,
                             'name': 'BucketClusterAlreadyConnected',
                         },
                         {
-                            'discriminant': 7,
+                            'discriminant': 6,
                             'name': 'BucketClusterNotSetup',
                         },
                         {
-                            'discriminant': 8,
+                            'discriminant': 7,
                             'name': 'NodeDoesNotExist',
                         },
                         {
-                            'discriminant': 9,
+                            'discriminant': 8,
                             'name': 'FlowDoesNotExist',
                         },
                         {
-                            'discriminant': 10,
+                            'discriminant': 9,
                             'name': 'AccountDoesNotExist',
                         },
                         {
-                            'discriminant': 11,
+                            'discriminant': 10,
                             'name': 'ParamsDoesNotExist',
                         },
                         {
-                            'discriminant': 12,
+                            'discriminant': 11,
                             'name': 'UnauthorizedProvider',
                         },
                         {
-                            'discriminant': 13,
+                            'discriminant': 12,
                             'name': 'UnauthorizedOwner',
                         },
                         {
-                            'discriminant': 14,
+                            'discriminant': 13,
                             'name': 'UnauthorizedClusterManager',
                         },
                         {
-                            'discriminant': 15,
+                            'discriminant': 14,
                             'name': 'ClusterManagerIsNotTrusted',
                         },
                         {
-                            'discriminant': 16,
+                            'discriminant': 15,
                             'name': 'TransferFailed',
                         },
                         {
-                            'discriminant': 17,
+                            'discriminant': 16,
                             'name': 'InsufficientBalance',
                         },
                         {
-                            'discriminant': 18,
+                            'discriminant': 17,
                             'name': 'InsufficientResources',
                         },
                         {
-                            'discriminant': 19,
+                            'discriminant': 18,
                             'name': 'Unauthorized',
+                        },
+                        {
+                            'discriminant': 19,
+                            'name': 'UnknownNode',
                         },
                     ],
                 },
@@ -4304,7 +4960,7 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'tuple': [
-                    39,
+                    50,
                     1,
                 ],
             },
@@ -4312,7 +4968,7 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'sequence': {
-                    'type': 35,
+                    'type': 46,
                 },
             },
         },
@@ -4330,7 +4986,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 42,
+                                    'type': 53,
                                     'typeName': 'T',
                                 },
                             ],
@@ -4339,7 +4995,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 37,
+                                    'type': 48,
                                     'typeName': 'E',
                                 },
                             ],
@@ -4349,8 +5005,8 @@ export const ddcBucketAbi  = {
                 },
             },
             'params': [
-                42,
-                37,
+                53,
+                48,
             ],
             'path': [
                 'Result',
@@ -4367,7 +5023,7 @@ export const ddcBucketAbi  = {
                         },
                         {
                             'name': 'cluster',
-                            'type': 16,
+                            'type': 17,
                             'typeName': 'Cluster',
                         },
                         {
@@ -4389,7 +5045,7 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'tuple': [
-                    44,
+                    55,
                     1,
                 ],
             },
@@ -4397,14 +5053,14 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'sequence': {
-                    'type': 42,
+                    'type': 53,
                 },
             },
         },
         {
             'def': {
                 'sequence': {
-                    'type': 46,
+                    'type': 57,
                 },
             },
         },
@@ -4419,7 +5075,7 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'sequence': {
-                    'type': 48,
+                    'type': 59,
                 },
             },
         },
@@ -4434,7 +5090,7 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'sequence': {
-                    'type': 50,
+                    'type': 61,
                 },
             },
         },
@@ -4453,7 +5109,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 52,
+                                    'type': 63,
                                     'typeName': 'T',
                                 },
                             ],
@@ -4462,7 +5118,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 37,
+                                    'type': 48,
                                     'typeName': 'E',
                                 },
                             ],
@@ -4472,8 +5128,8 @@ export const ddcBucketAbi  = {
                 },
             },
             'params': [
-                52,
-                37,
+                63,
+                48,
             ],
             'path': [
                 'Result',
@@ -4490,7 +5146,7 @@ export const ddcBucketAbi  = {
                         },
                         {
                             'name': 'cluster',
-                            'type': 19,
+                            'type': 23,
                             'typeName': 'CdnCluster',
                         },
                     ],
@@ -4507,7 +5163,7 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'tuple': [
-                    54,
+                    65,
                     1,
                 ],
             },
@@ -4515,7 +5171,7 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'sequence': {
-                    'type': 52,
+                    'type': 63,
                 },
             },
         },
@@ -4525,22 +5181,22 @@ export const ddcBucketAbi  = {
                     'fields': [
                         {
                             'name': 'start',
-                            'type': 25,
+                            'type': 22,
                             'typeName': 'u64',
                         },
                         {
                             'name': 'interval',
-                            'type': 25,
+                            'type': 22,
                             'typeName': 'u64',
                         },
                         {
                             'name': 'commit_duration',
-                            'type': 25,
+                            'type': 22,
                             'typeName': 'u64',
                         },
                         {
                             'name': 'validation_duration',
-                            'type': 25,
+                            'type': 22,
                             'typeName': 'u64',
                         },
                     ],
@@ -4556,12 +5212,79 @@ export const ddcBucketAbi  = {
         },
         {
             'def': {
+                'composite': {
+                    'fields': [
+                        {
+                            'name': 'current_era',
+                            'type': 22,
+                            'typeName': 'u64',
+                        },
+                        {
+                            'name': 'current_phase',
+                            'type': 68,
+                            'typeName': 'Phase',
+                        },
+                        {
+                            'name': 'previous_era',
+                            'type': 22,
+                            'typeName': 'u64',
+                        },
+                        {
+                            'name': 'prev_era_from_timestamp',
+                            'type': 22,
+                            'typeName': 'u64',
+                        },
+                        {
+                            'name': 'prev_era_to_timestamp',
+                            'type': 22,
+                            'typeName': 'u64',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'committer',
+                'store',
+                'EraStatus',
+            ],
+        },
+        {
+            'def': {
+                'variant': {
+                    'variants': [
+                        {
+                            'discriminant': 0,
+                            'name': 'Commit',
+                        },
+                        {
+                            'discriminant': 1,
+                            'name': 'Valiadation',
+                        },
+                        {
+                            'discriminant': 2,
+                            'name': 'Payout',
+                        },
+                    ],
+                },
+            },
+            'path': [
+                'ddc_bucket',
+                'ddc_bucket',
+                'committer',
+                'store',
+                'Phase',
+            ],
+        },
+        {
+            'def': {
                 'variant': {
                     'variants': [
                         {
                             'fields': [
                                 {
-                                    'type': 57,
+                                    'type': 70,
                                     'typeName': 'T',
                                 },
                             ],
@@ -4570,7 +5293,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 37,
+                                    'type': 48,
                                     'typeName': 'E',
                                 },
                             ],
@@ -4580,8 +5303,8 @@ export const ddcBucketAbi  = {
                 },
             },
             'params': [
-                57,
-                37,
+                70,
+                48,
             ],
             'path': [
                 'Result',
@@ -4598,7 +5321,7 @@ export const ddcBucketAbi  = {
                         },
                         {
                             'name': 'node',
-                            'type': 20,
+                            'type': 24,
                             'typeName': 'CdnNode',
                         },
                         {
@@ -4620,7 +5343,7 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'tuple': [
-                    59,
+                    72,
                     1,
                 ],
             },
@@ -4628,7 +5351,7 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'sequence': {
-                    'type': 57,
+                    'type': 70,
                 },
             },
         },
@@ -4639,7 +5362,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 61,
+                                    'type': 74,
                                     'typeName': 'T',
                                 },
                             ],
@@ -4648,7 +5371,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 37,
+                                    'type': 48,
                                     'typeName': 'E',
                                 },
                             ],
@@ -4658,8 +5381,8 @@ export const ddcBucketAbi  = {
                 },
             },
             'params': [
-                61,
-                37,
+                74,
+                48,
             ],
             'path': [
                 'Result',
@@ -4676,7 +5399,7 @@ export const ddcBucketAbi  = {
                         },
                         {
                             'name': 'node',
-                            'type': 21,
+                            'type': 25,
                             'typeName': 'Node',
                         },
                         {
@@ -4698,7 +5421,7 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'tuple': [
-                    63,
+                    76,
                     1,
                 ],
             },
@@ -4706,7 +5429,7 @@ export const ddcBucketAbi  = {
         {
             'def': {
                 'sequence': {
-                    'type': 61,
+                    'type': 74,
                 },
             },
         },
@@ -4717,7 +5440,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 24,
+                                    'type': 29,
                                     'typeName': 'T',
                                 },
                             ],
@@ -4726,7 +5449,7 @@ export const ddcBucketAbi  = {
                         {
                             'fields': [
                                 {
-                                    'type': 37,
+                                    'type': 48,
                                     'typeName': 'E',
                                 },
                             ],
@@ -4736,8 +5459,8 @@ export const ddcBucketAbi  = {
                 },
             },
             'params': [
-                24,
-                37,
+                29,
+                48,
             ],
             'path': [
                 'Result',

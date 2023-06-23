@@ -1,39 +1,40 @@
 {
-  "name": "@cere-ddc-sdk/proto",
-  "description": "Storage protocol buffer models",
-  "version": "1.7.5-RC2",
-  "type": "module",
-  "exports": {
-    ".": {
-      "browser": "./browser.js",
-      "require": "./index.cjs",
-      "import": "./index.js",
-      "default": "./index.js"
+    "name": "@cere-ddc-sdk/proto",
+    "description": "Storage protocol buffer models",
+    "version": "1.7.6-rc.1",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "types": "./dist/types",
+    "exports": {
+        ".": {
+            "browser": "./dist/browser.js",
+            "require": "./dist/index.cjs",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        }
+    },
+    "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+    "repository": {
+        "type": "git",
+        "directory": "packages/proto",
+        "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+    },
+    "license": "Apache-2.0",
+    "scripts": {
+        "protoc": "protoc --ts_out ./src --proto_path ../../ddc-schemas/storage/protobuf $(find ../../ddc-schemas/storage/protobuf -name '*.proto' -type f | sed 's/.*\\///' | sort)",
+        "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
+        "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
+        "build:browser": "BROWSERSLIST_ENV=browser npm run build:cjs && BROWSERSLIST_ENV=browser npm run build:mjs",
+        "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
+        "build": "npm run types && npm run build:browser && npm run build:node",
+        "push": "node scripts/publish.js",
+        "types": "tsc -p tsconfig.build.json --emitDeclarationOnly || exit 0",
+        "package": "npm run protoc && npm run clean && npm run build && clean-publish",
+        "clean": "rimraf dist package"
+    },
+    "devDependencies": {
+        "@protobuf-ts/plugin": "^2.2.2",
+        "clean-publish": "^4.0.1",
+        "rimraf": "^3.0.2"
     }
-  },
-  "types": "index.d.ts",
-  "repository": {
-    "type": "git",
-    "directory": "packages/proto",
-    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
-  },
-  "main": "index.cjs",
-  "author": "",
-  "license": "Apache-2.0",
-  "scripts": {
-    "protoc": "protoc --ts_out ./src --proto_path ../../ddc-schemas/storage/protobuf $(find ../../ddc-schemas/storage/protobuf -name '*.proto' -type f | sed 's/.*\\///' | sort)",
-    "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
-    "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
-    "build:browser": "BROWSERSLIST_ENV=browser npm run build:cjs && BROWSERSLIST_ENV=browser npm run build:mjs",
-    "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
-    "build": "npm run build:browser && npm run build:node",
-    "push": "node scripts/publish.js",
-    "types": "tsc -p tsconfig.build.json --emitDeclarationOnly || exit 0",
-    "package": "npm run protoc && rimraf build && clean-publish --temp-dir build && npm run types && npm run build"
-  },
-  "devDependencies": {
-    "@protobuf-ts/plugin": "^2.2.2",
-    "clean-publish": "^4.0.1",
-    "rimraf": "^3.0.2"
-  }
 }

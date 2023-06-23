@@ -1,5 +1,5 @@
 import {execSync} from 'node:child_process';
-import { createRequire } from 'module';
+import {createRequire} from 'module';
 import path from 'node:path';
 import fs from 'node:fs';
 import packages from './packages.js';
@@ -16,19 +16,19 @@ const require = createRequire(import.meta.url);
  */
 export function setVersions(root, options) {
     if (options.minor) {
-        execSync(`npm version minor --workspaces`, {
+        execSync(`npm version minor --workspaces --workspaces-update false`, {
             cwd: root,
             stdio: 'inherit',
         });
     }
     if (options.major) {
-        execSync(`npm version major --workspaces`, {
+        execSync(`npm version major --workspaces --workspaces-update false`, {
             cwd: root,
             stdio: 'inherit',
         });
     }
     if (options.patch) {
-        execSync(`npm version patch --workspaces`, {
+        execSync(`npm version patch --workspaces --workspaces-update false`, {
             cwd: root,
             stdio: 'inherit',
         });

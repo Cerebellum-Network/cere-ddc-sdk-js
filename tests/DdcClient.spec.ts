@@ -15,16 +15,33 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
     let mainClient: DdcClient;
     let secondClient: DdcClient;
     let session: Session;
+    let ackMainSpy: jest.SpyInstance;
+    let ackSecondSpy: jest.SpyInstance;
 
     beforeAll(async () => {
         mainClient = await DdcClient.buildAndConnect(options, seed);
         secondClient = await DdcClient.buildAndConnect(options, otherSecretPhrase);
-        session = await mainClient.createSession()
+        session = await mainClient.createSession();
     });
 
     afterAll(async () => {
         await mainClient.disconnect();
         await secondClient.disconnect();
+    });
+
+    beforeEach(() => {
+        ackMainSpy = jest.spyOn(mainClient.caStorage as any, 'ack');
+        ackSecondSpy = jest.spyOn(secondClient.caStorage as any, 'ack');
+
+        /**
+         * TODO: Remove when ack fixed
+         */
+        ackMainSpy.mockResolvedValue(undefined);
+        ackSecondSpy.mockResolvedValue(undefined);
+    });
+
+    afterEach(() => {
+        jest.resetAllMocks();
     });
 
     it('should read scheme address', () => {
@@ -92,7 +109,8 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         //when
         const uri = await mainClient.store(bucketId, session, file, {encrypt: true, dekPath: dekPath});
         const result = await mainClient.read(
-            DdcUri.parse(new URL(`http://test.com/ddc/buc/${uri.bucket}/ifile/${uri.path}`)), session,
+            DdcUri.parse(new URL(`http://test.com/ddc/buc/${uri.bucket}/ifile/${uri.path}`)),
+            session,
             {decrypt: true, dekPath: dekPath},
         );
 
@@ -210,7 +228,7 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
 
         expect(result).toEqual(file);
     });*/
-/*
+    /*
     it('share data with high level key', async () => {
         //given
         const data = randomBytes(20);

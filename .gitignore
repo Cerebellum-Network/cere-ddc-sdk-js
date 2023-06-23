@@ -3,6 +3,7 @@
 **/node_modules/
 **/dist/
 **/build/
+**/package/
 coverage/
 tsconfig.*buildinfo
 tests/temp.spec.ts

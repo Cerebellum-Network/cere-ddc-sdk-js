@@ -13,12 +13,7 @@ const browserslistEnv = process.env.BROWSERSLIST_ENV;
  * @param {string} [browserEntry]
  * @param {string} [browserEntryName]
  */
-export function createConfig(
-    metaUrl,
-    nodeEntry,
-    browserEntry,
-    browserEntryName
-) {
+export function createConfig(metaUrl, nodeEntry, browserEntry, browserEntryName) {
     const dirname = path.dirname(new URL(metaUrl).pathname);
     const folderName = path.basename(dirname);
     const nodeModules = path.join(dirname, 'node_modules');
@@ -44,26 +39,26 @@ export function createConfig(
             rules: [
                 {
                     test: /\.tsx?$/,
-                    use: "babel-loader",
+                    use: 'babel-loader',
                     exclude: /node_modules/,
                 },
                 {
                     test: /\.?js$/,
-                    use: "babel-loader",
+                    use: 'babel-loader',
                     include: [path.join(nodeModules, 'buffer')],
                 },
             ],
         },
         resolve: {
-            extensions: [".ts", ".js"],
+            extensions: ['.ts', '.js'],
         },
         output: {
             iife: false,
             library: {
-                type: "module",
+                type: 'module',
             },
-            filename: "[name].js",
-            path: path.join(dirname, "build"),
+            filename: '[name].js',
+            path: path.join(dirname, 'dist'),
         },
         externals: isBrowserModule ? {} : externals,
         plugins: [
@@ -73,13 +68,10 @@ export function createConfig(
         ],
     };
 
-    if (browserslistEnv === "node") {
+    if (browserslistEnv === 'node') {
         webpackConfig = merge(webpackConfig, {
             entry: {
-                [path.basename(nodeEntry).split(".").shift()]: path.resolve(
-                    dirname,
-                    nodeEntry
-                ),
+                [path.basename(nodeEntry).split('.').shift()]: path.resolve(dirname, nodeEntry),
             },
         });
     }
@@ -91,9 +83,9 @@ export function createConfig(
             },
             plugins: [
                 new webpack.ProvidePlugin({
-                    'crypto': ['node:crypto', 'webcrypto'],
-                    'URL': ['node:url', 'URL'],
-                    'URLSearchParams': ['node:url', 'URLSearchParams'],
+                    crypto: ['node:crypto', 'webcrypto'],
+                    URL: ['node:url', 'URL'],
+                    URLSearchParams: ['node:url', 'URLSearchParams'],
                 }),
             ],
         });
@@ -105,19 +97,19 @@ export function createConfig(
                 [folderName]: path.resolve(dirname, browserEntry || nodeEntry),
             },
         });
-    } else if (browserslistEnv === "browser") {
+    } else if (browserslistEnv === 'browser') {
         webpackConfig = merge(webpackConfig, {
             entry: {
                 [browserEntryName ||
                 path
                     .basename(browserEntry || nodeEntry)
-                    .split(".")
+                    .split('.')
                     .shift()]: path.resolve(dirname, browserEntry || nodeEntry),
             },
         });
     }
 
-    if (target === "build:cjs") {
+    if (target === 'build:cjs') {
         webpackConfig = merge(webpackConfig, {
             experiments: {
                 asyncWebAssembly: false,
@@ -126,9 +118,9 @@ export function createConfig(
             },
             output: {
                 library: {
-                    type: "commonjs",
+                    type: 'commonjs',
                 },
-                filename: "[name].cjs",
+                filename: '[name].cjs',
             },
         });
     }
