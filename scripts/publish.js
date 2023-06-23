@@ -11,13 +11,6 @@ const require = createRequire(import.meta.url);
 const dirname = path.dirname(new URL(import.meta.url).pathname);
 const root = path.join(dirname, '..');
 
-const packageJson = require(path.join(root, 'package.json'));
-const packageJsonCopy = {};
-Object.assign(packageJsonCopy, packageJson);
-
-delete packageJson.workspaces;
-fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify(packageJson, null, 2));
-
 execSync(`npm install`, {
     cwd: path.join(root),
     stdio: 'inherit',
@@ -26,10 +19,6 @@ execSync(`npm install`, {
 for (let i = 0; i < packages.length; i += 1) {
     const packageName = packages[i];
     const packageInfo = require(path.join(root, packageName, 'package.json'));
-    execSync(`npm install`, {
-        cwd: path.join(root, packageName),
-        stdio: 'inherit',
-    });
 
     execSync(`npm run package`, {
         cwd: path.join(root, packageName),
@@ -48,5 +37,3 @@ for (let i = 0; i < packages.length; i += 1) {
         stdio: 'inherit',
     });
 }
-
-fs.writeFileSync(path.join(root, 'package.json'), `${JSON.stringify(packageJsonCopy, null, 2)}\n`);
