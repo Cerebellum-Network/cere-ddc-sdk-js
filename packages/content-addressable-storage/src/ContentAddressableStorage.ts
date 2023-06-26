@@ -49,8 +49,8 @@ type AckParams = {
     response: Response;
     payload: PbResponse;
     session: Session;
+    piece: Piece;
     cid?: string;
-    chunks?: string[];
 };
 
 type Options = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
@@ -210,11 +210,11 @@ export class ContentAddressableStorage {
         }
 
         await this.ack({
+            piece,
             session,
             response,
             cid: request.cid,
             payload: protoResponse,
-            chunks: [request.cid],
         });
 
         return new PieceUri(bucketId, request.cid);
@@ -274,15 +274,16 @@ export class ContentAddressableStorage {
             );
         }
 
+        const piece = this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
+
         await this.ack({
-            cid,
+            piece,
             session,
             response,
             payload: protoResponse,
-            chunks: [cid],
         });
 
-        return this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
+        return piece;
     }
 
     async search(query: Query, session: Session): Promise<SearchResult> {
@@ -339,12 +340,16 @@ export class ContentAddressableStorage {
             .filter((p) => !!p.signedPiece)
             .map(({signedPiece, cid}) => this.toPiece(PbPiece.fromBinary(signedPiece!.piece), cid));
 
-        await this.ack({
-            session,
-            response,
-            payload: protoResponse,
-            chunks: pieces.map((piece) => piece.cid!),
-        });
+        await Promise.all(
+            pieces.map((piece) =>
+                this.ack({
+                    piece,
+                    session,
+                    response,
+                    payload: protoResponse,
+                }),
+            ),
+        );
 
         return new SearchResult(pieces);
     }
@@ -392,18 +397,23 @@ export class ContentAddressableStorage {
         );
     }
 
-    private ack = async ({session, response, payload, cid, chunks = []}: AckParams): Promise<void> => {
+    private ack = async ({piece, session, response, payload, cid}: AckParams): Promise<void> => {
         if (!response.headers.has(REQIEST_ID_HEADER) || (payload.responseCode !== 0 && payload.responseCode !== 1)) {
             return;
         }
 
         const requestId = response.headers.get(REQIEST_ID_HEADER)!!;
+        const finalCid = piece.cid || cid;
+
+        if (!finalCid) {
+            return;
+        }
 
         const ack = PbAck.create({
-            cid,
-            chunks,
             requestId,
             sessionId: session,
+            cid: finalCid,
+            chunks: [finalCid, ...piece.links.map((link) => link.cid)],
             timestamp: BigInt(Date.now()),
             publicKey: this.scheme.publicKey,
             gas: BigInt(payload.gas),

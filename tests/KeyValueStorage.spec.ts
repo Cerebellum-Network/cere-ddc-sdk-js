@@ -5,7 +5,6 @@ describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
     const url = 'http://localhost:8080';
     let storage: KeyValueStorage;
     let session: Session;
-    let ackSpy: jest.SpyInstance;
 
     beforeAll(async () => {
         storage = await KeyValueStorage.build(
@@ -17,12 +16,6 @@ describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
         );
 
         session = await storage.caStorage.createSession();
-        ackSpy = jest.spyOn(storage.caStorage as any, 'ack');
-
-        /**
-         * TODO: Remove when ack fixed
-         */
-        ackSpy.mockResolvedValue(undefined);
     });
 
     afterEach(() => {

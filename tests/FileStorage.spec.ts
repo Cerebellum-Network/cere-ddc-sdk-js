@@ -5,7 +5,6 @@ describe('packages/file-storage/src/index.ts', () => {
     const url = 'http://localhost:8080';
     let storage: FileStorage;
     let session: Session;
-    let ackSpy: jest.SpyInstance;
 
     beforeAll(async () => {
         storage = await FileStorage.build(
@@ -14,15 +13,6 @@ describe('packages/file-storage/src/index.ts', () => {
             '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03',
         );
         session = await storage.caStorage.createSession();
-    });
-
-    beforeEach(() => {
-        ackSpy = jest.spyOn(storage.caStorage as any, 'ack');
-
-        /**
-         * TODO: Remove when ack fixed
-         */
-        ackSpy.mockResolvedValue(undefined);
     });
 
     afterEach(() => {

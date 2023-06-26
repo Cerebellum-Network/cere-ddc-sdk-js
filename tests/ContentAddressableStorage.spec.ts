@@ -102,8 +102,6 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
     });
 
     test('search', async () => {
-        ackSpy.mockResolvedValue(undefined); // TODO: remove when search ack fixed
-
         //given
         const tags = [new Tag('testKey', 'testValue')];
         const bucketId = 1n;
@@ -122,8 +120,6 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
     });
 
     test('search not searchable', async () => {
-        ackSpy.mockResolvedValue(undefined); // TODO: remove when search ack fixed
-
         //given
         const tags = [new Tag('testKey2', 'testValue2', SearchType.NOT_SEARCHABLE)];
         const bucketId = 1n;
