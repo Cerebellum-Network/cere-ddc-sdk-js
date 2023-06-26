@@ -214,7 +214,7 @@ export class ContentAddressableStorage {
             response,
             cid: request.cid,
             payload: protoResponse,
-            chunks: [request.cid, ...piece.links.map((link) => link.cid)],
+            chunks: [request.cid],
         });
 
         return new PieceUri(bucketId, request.cid);
@@ -274,17 +274,15 @@ export class ContentAddressableStorage {
             );
         }
 
-        const piece = this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
-
         await this.ack({
             cid,
             session,
             response,
             payload: protoResponse,
-            chunks: [cid, ...piece.links.map((link) => link.cid)],
+            chunks: [cid],
         });
 
-        return piece;
+        return this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
     }
 
     async search(query: Query, session: Session): Promise<SearchResult> {
