@@ -31,11 +31,6 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         webcrypto.getRandomValues(randomPieceData);
         session = await storage.createSession();
         ackSpy = jest.spyOn(storage as any, 'ack');
-
-        /**
-         * TODO: Remove when ack fixed
-         */
-        ackSpy.mockResolvedValue(undefined);
     });
 
     afterEach(() => {
@@ -107,23 +102,28 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
     });
 
     test('search', async () => {
+        ackSpy.mockResolvedValue(undefined); // TODO: remove when search ack fixed
+
         //given
         const tags = [new Tag('testKey', 'testValue')];
         const bucketId = 1n;
         const piece = new Piece(new Uint8Array([1, 2, 3]), tags);
         await storage.store(bucketId, session, piece);
+        await delay(20);
 
         //when
         const searchResult = await storage.search(new Query(bucketId, tags), session);
 
         //then
         piece.cid = 'bafk2bzacechpzp7rzthbhnjyxmkt3qlcyc24ruzormtvmnvdp5dsvjubh7vcc';
-        await delay(20);
+
         expect(ackSpy).toBeCalled();
         expect(searchResult.pieces).toEqual([piece]);
     });
 
     test('search not searchable', async () => {
+        ackSpy.mockResolvedValue(undefined); // TODO: remove when search ack fixed
+
         //given
         const tags = [new Tag('testKey2', 'testValue2', SearchType.NOT_SEARCHABLE)];
         const bucketId = 1n;
