@@ -35,8 +35,29 @@ describe('packages/file-storage/src/index.ts', () => {
         const data = new Uint8Array([1, 2, 3, 4, 5]);
 
         //when
-        const headPieceUri = await storage.upload(bucketId, session, data, []);
-        const stream = storage.read(bucketId, session, headPieceUri.cid);
+        const headPieceUri = await storage.upload(bucketId, data, []);
+        const stream = storage.read(bucketId, headPieceUri.cid);
+
+        //then
+        let result = [];
+        const reader = stream.getReader();
+        let chunk;
+        while (!(chunk = await reader.read()).done) {
+            expect(1).toEqual(chunk.value.length);
+            result.push(...chunk.value);
+        }
+
+        expect(data).toEqual(new Uint8Array(result));
+    });
+
+    test('upload and read chunked data with explicit session', async () => {
+        //given
+        const bucketId = 1n;
+        const data = new Uint8Array([1, 2, 3, 4, 5]);
+
+        //when
+        const headPieceUri = await storage.upload(bucketId, data, [], {session});
+        const stream = storage.read(bucketId, headPieceUri.cid, {session});
 
         //then
         let result = [];

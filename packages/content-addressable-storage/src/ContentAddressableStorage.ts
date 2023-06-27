@@ -36,7 +36,16 @@ import {repeatableFetch} from './lib/repeatable-fetch';
 const BASE_PATH_PIECES = '/api/v1/rest/pieces';
 
 type HTTP_METHOD = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-export type Session = Uint8Array
+
+export type Session = Uint8Array;
+
+type SessionOptions = {
+    session?: Session;
+};
+
+export type ReadOptions = SessionOptions & {};
+export type StoreOptions = SessionOptions & {};
+export type SearchOptions = SessionOptions & {};
 
 type StoreRequest = {
     body: Uint8Array;
@@ -45,9 +54,10 @@ type StoreRequest = {
     path: string;
 };
 
-type Options = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
+export type ContentAddressableStorageOptions = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
 
 export class ContentAddressableStorage {
+    private defaultSession?: Session;
 
     private constructor(
         public readonly scheme: SchemeInterface,
@@ -56,10 +66,12 @@ export class ContentAddressableStorage {
         private readonly cidBuilder: CidBuilder,
         private readonly readAttempts: number = 1,
         private readonly writeAttempts: number = 1,
-    ) {
-    }
+    ) {}
 
-    static async build(options: Options, secretMnemonicOrSeed: string): Promise<ContentAddressableStorage> {
+    static async build(
+        options: ContentAddressableStorageOptions,
+        secretMnemonicOrSeed: string,
+    ): Promise<ContentAddressableStorage> {
         const caOptions = initDefaultOptions(options);
         const scheme = isSchemeName(caOptions.scheme)
             ? await Scheme.createScheme(caOptions.scheme, secretMnemonicOrSeed)
@@ -76,8 +88,7 @@ export class ContentAddressableStorage {
         );
     }
 
-    async disconnect(): Promise<void> {
-    }
+    async disconnect(): Promise<void> {}
 
     private static async getCdnAddress(
         smartContractOptions: SmartContractOptions,
@@ -140,7 +151,7 @@ export class ContentAddressableStorage {
         return this.scheme.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
     }
 
-    async buildStoreRequest(bucketId: bigint, session: Session, piece: Piece): Promise<StoreRequest> {
+    private async buildStoreRequest(bucketId: bigint, session: Session, piece: Piece): Promise<StoreRequest> {
         const pbPiece: PbPiece = piece.toProto(bucketId);
         // @ts-ignore
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
@@ -185,7 +196,8 @@ export class ContentAddressableStorage {
         return {body: PbRequest.toBinary(request), cid, method: 'PUT', path: BASE_PATH_PIECES};
     }
 
-    async store(bucketId: bigint, session: Session, piece: Piece): Promise<PieceUri> {
+    async store(bucketId: bigint, piece: Piece, options: StoreOptions = {}): Promise<PieceUri> {
+        const session = await this.useSession(options.session);
         const request = await this.buildStoreRequest(bucketId, session, piece);
 
         const response = await this.sendRequest(request.path, undefined, {
@@ -198,9 +210,9 @@ export class ContentAddressableStorage {
 
         if (!response.ok) {
             throw Error(
-                `Failed to store. Http response status: ${response.status} Response: status='${protoResponse.responseCode}' body=${u8aToString(
-                    protoResponse.body,
-                )}`,
+                `Failed to store. Http response status: ${response.status} Response: status='${
+                    protoResponse.responseCode
+                }' body=${u8aToString(protoResponse.body)}`,
             );
         }
 
@@ -209,10 +221,14 @@ export class ContentAddressableStorage {
         return new PieceUri(bucketId, request.cid);
     }
 
-    async read(bucketId: bigint, cid: string, session: Session): Promise<Piece> {
+    async read(bucketId: bigint, cid: string, options: ReadOptions = {}): Promise<Piece> {
+        const session = await this.useSession(options.session);
         const search = new URLSearchParams();
         search.set('bucketId', bucketId.toString());
-        const requestSignature = await this.signRequest(PbRequest.create({sessionId: session}), `${BASE_PATH_PIECES}/${cid}?${search.toString()}`);
+        const requestSignature = await this.signRequest(
+            PbRequest.create({sessionId: session}),
+            `${BASE_PATH_PIECES}/${cid}?${search.toString()}`,
+        );
         const pbRequest = PbRequest.create({
             scheme: this.scheme.name,
             sessionId: session,
@@ -240,7 +256,7 @@ export class ContentAddressableStorage {
                 // @ts-ignore
                 resolve(PbSignedPiece.fromBinary(protoResponse.body));
             } catch (e) {
-                throw new Error('Can\'t parse read response body to SignedPiece.');
+                throw new Error("Can't parse read response body to SignedPiece.");
             }
         });
 
@@ -265,7 +281,9 @@ export class ContentAddressableStorage {
         return this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
     }
 
-    async search(query: Query, session: Session): Promise<SearchResult> {
+    async search(query: Query, options: SearchOptions = {}): Promise<SearchResult> {
+        const session = await this.useSession(options.session);
+
         const pbQuery: PbQuery = {
             bucketId: Number(query.bucketId),
             tags: query.tags,
@@ -278,7 +296,10 @@ export class ContentAddressableStorage {
         const search = new URLSearchParams();
         search.append('query', queryBase58);
 
-        const requestSignature = await this.signRequest(PbRequest.create({sessionId: session}), `${BASE_PATH_PIECES}?${search.toString()}`);
+        const requestSignature = await this.signRequest(
+            PbRequest.create({sessionId: session}),
+            `${BASE_PATH_PIECES}?${search.toString()}`,
+        );
         const pbRequest = PbRequest.create({
             scheme: this.scheme.name,
             sessionId: session,
@@ -323,26 +344,42 @@ export class ContentAddressableStorage {
         return new SearchResult(pieces);
     }
 
-    async storeEncrypted(bucketId: bigint, session: Session, piece: Piece, encryptionOptions: EncryptionOptions): Promise<PieceUri> {
+    async storeEncrypted(
+        bucketId: bigint,
+        piece: Piece,
+        encryptionOptions: EncryptionOptions,
+        storeOptions: StoreOptions = {},
+    ): Promise<PieceUri> {
         const encryptedPiece = piece.clone();
+
         encryptedPiece.tags.push(new Tag(DEK_PATH_TAG, encryptionOptions.dekPath));
         encryptedPiece.data = this.cipher.encrypt(piece.data, encryptionOptions.dek);
-        return this.store(bucketId, session, encryptedPiece);
+
+        return this.store(bucketId, encryptedPiece, storeOptions);
     }
 
-    async readDecrypted(bucketId: bigint, session: Session, cid: string, dek: Uint8Array): Promise<Piece> {
-        const piece = await this.read(bucketId, cid, session);
+    async readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array, readOptions: ReadOptions = {}): Promise<Piece> {
+        const piece = await this.read(bucketId, cid, readOptions);
         piece.data = this.cipher.decrypt(piece.data, dek);
 
         return piece;
     }
 
     async createSession(session?: Session): Promise<Uint8Array> {
-        if (session == null) {
-            return randomAsU8a(DEFAULT_SESSION_ID_SIZE);
+        return session || randomAsU8a(DEFAULT_SESSION_ID_SIZE);
+    }
+
+    private async useSession(session?: Session) {
+        if (session) {
+            return session;
         }
 
-        return session
+        /**
+         * Create new default session once for an instance
+         */
+        this.defaultSession ||= await this.createSession();
+
+        return this.defaultSession;
     }
 
     private async verifySignedPiece(pbSignedPiece: PbSignedPiece, cid: string) {
@@ -362,11 +399,14 @@ export class ContentAddressableStorage {
     }
 
     private ack = async (response: Response, protoResponse: PbResponse): Promise<void> => {
-        if (!response.headers.has(REQIEST_ID_HEADER) || (protoResponse.responseCode !== 0 && protoResponse.responseCode !== 1)) {
-            return
+        if (
+            !response.headers.has(REQIEST_ID_HEADER) ||
+            (protoResponse.responseCode !== 0 && protoResponse.responseCode !== 1)
+        ) {
+            return;
         }
 
-        const requestId = response.headers.get(REQIEST_ID_HEADER)!!
+        const requestId = response.headers.get(REQIEST_ID_HEADER)!!;
 
         const ack = PbAck.create({
             timestamp: BigInt(Date.now()),
@@ -398,7 +438,9 @@ export class ContentAddressableStorage {
 
         if (!ackResponse.ok) {
             throw Error(
-                `Failed to send ack id='${requestId}. Http response status: ${ackResponse.status} Response: status='${pbAckResponse.responseCode}' body=${u8aToString(pbAckResponse.body)}`,
+                `Failed to send ack id='${requestId}. Http response status: ${ackResponse.status} Response: status='${
+                    pbAckResponse.responseCode
+                }' body=${u8aToString(pbAckResponse.body)}`,
             );
         }
     };
