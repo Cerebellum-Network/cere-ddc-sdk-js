@@ -62,7 +62,7 @@ export class ContentAddressableStorage {
         private readonly cidBuilder: CidBuilder,
         private readonly readAttempts: number = 1,
         private readonly writeAttempts: number = 1,
-        private defaultSession?: Session,
+        private defaultSession: Session | null = null,
     ) {}
 
     static async build(

@@ -6,5 +6,5 @@ export type CaCreateOptions = StorageOptionsInterface & {
     readAttempts: number;
     writeAttempts: number;
     ackTimeout?: number;
-    session?: Session;
+    session?: Session | null;
 };
