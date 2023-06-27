@@ -9,9 +9,9 @@ export {DEK_PATH_TAG} from './constants';
 
 export {
     ContentAddressableStorage,
-    ContentAddressableStorageOptions,
-    Session,
-    StoreOptions,
-    ReadOptions,
-    SearchOptions,
+    type ContentAddressableStorageOptions,
+    type Session,
+    type StoreOptions,
+    type ReadOptions,
+    type SearchOptions,
 } from './ContentAddressableStorage';
