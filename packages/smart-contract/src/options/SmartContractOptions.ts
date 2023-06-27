@@ -14,7 +14,7 @@ export const MAINNET: SmartContractOptions = {
 
 export const TESTNET: SmartContractOptions = {
     rpcUrl: 'wss://rpc.devnet.cere.network/ws',
-    contractAddress: '6So8eqxMyWAxJ4ZZ2wCcJym7Cy6BYkc4V8GZZD9wgdCqWMQB',
+    contractAddress: '6R2PF5gzKYbNkNLymTr8YNeQgWqNkE6azspwaMLZF2UHc1sg',
     abi: ddcBucketAbi,
 };
 
