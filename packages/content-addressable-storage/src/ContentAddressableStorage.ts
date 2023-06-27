@@ -27,7 +27,7 @@ import {PieceUri} from './models/PieceUri';
 import {Query} from './models/Query';
 import {Tag} from './models/Tag';
 import {EncryptionOptions} from './EncryptionOptions';
-import {CaCreateOptions} from './ca-create-options';
+import {CaCreateOptions, Session} from './ca-create-options';
 import {concatArrays} from './lib/concat-arrays';
 import {DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG, REQIEST_ID_HEADER} from './constants';
 import {initDefaultOptions} from './lib/init-default-options';
@@ -36,8 +36,6 @@ import {repeatableFetch} from './lib/repeatable-fetch';
 const BASE_PATH_PIECES = '/api/v1/rest/pieces';
 
 type HTTP_METHOD = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-
-export type Session = Uint8Array;
 
 type SessionOptions = {
     session?: Session;
@@ -57,8 +55,6 @@ type StoreRequest = {
 export type ContentAddressableStorageOptions = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
 
 export class ContentAddressableStorage {
-    private defaultSession?: Session;
-
     private constructor(
         public readonly scheme: SchemeInterface,
         public readonly cdnNodeUrl: string,
@@ -66,6 +62,7 @@ export class ContentAddressableStorage {
         private readonly cidBuilder: CidBuilder,
         private readonly readAttempts: number = 1,
         private readonly writeAttempts: number = 1,
+        private defaultSession?: Session,
     ) {}
 
     static async build(
@@ -85,6 +82,7 @@ export class ContentAddressableStorage {
             caOptions.cidBuilder,
             caOptions.readAttempts,
             caOptions.writeAttempts,
+            caOptions.session,
         );
     }
 
