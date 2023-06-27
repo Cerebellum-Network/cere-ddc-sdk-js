@@ -9,8 +9,8 @@ import {initDefaultClientOptions} from './lib/init-default-client-options';
 export {mnemonicGenerate} from '@polkadot/util-crypto';
 export type {DdcClientInterface} from './DdcClient.interface';
 export {ClientOptions} from './options/ClientOptions';
-export {ReadOptions} from './options/ReadOptions';
-export {StoreOptions} from './options/StoreOptions';
+export type {ReadOptions} from './options/ReadOptions';
+export type {StoreOptions} from './options/StoreOptions';
 export {File} from './model/File';
 
 export {TESTNET, DEVNET, Permission, BucketParams} from '@cere-ddc-sdk/smart-contract';

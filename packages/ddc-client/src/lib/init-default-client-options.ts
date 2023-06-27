@@ -9,13 +9,13 @@ type Options = RequiredSelected<Partial<ClientOptionsInterface>, 'clusterAddress
 
 export const initDefaultClientOptions = (options: Options): ClientOptionsInterface => {
     if (!options.clusterAddress && options.clusterAddress != 0) {
-        throw new Error(`invalid clusterAddress='${options.clusterAddress}'`)
+        throw new Error(`invalid clusterAddress='${options.clusterAddress}'`);
     }
 
     options.fileOptions = {
         parallel: options.fileOptions?.parallel || defaultFileOptions.parallel,
         pieceSizeInBytes: options.fileOptions?.pieceSizeInBytes || defaultFileOptions.pieceSizeInBytes,
-    }
+    };
 
     return {
         clusterAddress: options.clusterAddress,
@@ -30,5 +30,6 @@ export const initDefaultClientOptions = (options: Options): ClientOptionsInterfa
         readAttempts: options.readAttempts || defaultClientOptions.readAttempts,
         writeAttempts: options.writeAttempts || defaultClientOptions.writeAttempts,
         ackTimeout: options.ackTimeout || defaultClientOptions.ackTimeout,
-    }
-}
+        session: options.session || null,
+    };
+};

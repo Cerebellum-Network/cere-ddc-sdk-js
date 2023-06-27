@@ -5,6 +5,7 @@ import {
     Piece,
     PieceUri,
     Query,
+    SearchOptions,
     Session,
     Tag,
 } from '@cere-ddc-sdk/content-addressable-storage';
@@ -54,7 +55,9 @@ export class DdcClient implements DdcClientInterface {
         this.fileStorage = new FileStorage(caStorage, options.fileOptions);
 
         this.masterDek = blake2AsU8a(encryptionSecretPhrase);
-        this.boxKeypair = naclBoxPairFromSecret(nacl.box.keyPair.fromSecretKey(getNaclBoxSecret(encryptionSecretPhrase)).secretKey);
+        this.boxKeypair = naclBoxPairFromSecret(
+            nacl.box.keyPair.fromSecretKey(getNaclBoxSecret(encryptionSecretPhrase)).secretKey,
+        );
     }
 
     static async buildAndConnect(
@@ -81,10 +84,7 @@ export class DdcClient implements DdcClientInterface {
     }
 
     async disconnect() {
-        await Promise.all([
-            this.caStorage.disconnect(),
-            this.smartContract.disconnect(),
-        ]);
+        await Promise.all([this.caStorage.disconnect(), this.smartContract.disconnect()]);
     }
 
     async createBucket(
@@ -99,7 +99,11 @@ export class DdcClient implements DdcClientInterface {
             resource = 1n;
         }
 
-        const event = await this.smartContract.bucketCreate(this.caStorage.scheme.publicKeyHex, clusterId, bucketParams);
+        const event = await this.smartContract.bucketCreate(
+            this.caStorage.scheme.publicKeyHex,
+            clusterId,
+            bucketParams,
+        );
         if (balance > 0) {
             await this.smartContract.accountDeposit(balance);
         }
@@ -141,141 +145,154 @@ export class DdcClient implements DdcClientInterface {
         return this.caStorage.createSession(session);
     }
 
-    async store(bucketId: bigint, session: Session, fileOrPiece: File | Piece, options: StoreOptions = {}): Promise<DdcUri> {
+    async store(bucketId: bigint, fileOrPiece: File | Piece, options: StoreOptions = {}): Promise<DdcUri> {
         if (options.encrypt) {
-            return this.storeEncrypted(bucketId, session, fileOrPiece, options);
+            return this.storeEncrypted(bucketId, fileOrPiece, options);
         } else {
-            return this.storeUnencrypted(bucketId, session, fileOrPiece);
+            return this.storeUnencrypted(bucketId, fileOrPiece, options);
         }
     }
 
-    private async storeEncrypted(bucketId: bigint, session: Session, fileOrPiece: File | Piece, options: StoreOptions): Promise<DdcUri> {
+    private async storeEncrypted(
+        bucketId: bigint,
+        fileOrPiece: File | Piece,
+        options: StoreOptions = {},
+    ): Promise<DdcUri> {
         const dek = DdcClient.buildHierarchicalDekHex(this.masterDek, options.dekPath);
         const nonce = nacl.randomBytes(nacl.box.nonceLength);
         const edek = nacl.box(dek, nonce, this.boxKeypair.publicKey, this.boxKeypair.secretKey);
 
-        //ToDo need better structure to store keys
-        await this.caStorage.store(
-            bucketId,
-            session,
-            new Piece(edek, [
-                new Tag(NONCE_TAG, nonce),
-                new Tag(ENCRYPTOR_TAG, u8aToHex(this.boxKeypair.publicKey)),
-                new Tag('Key', `${bucketId}/${options.dekPath || ''}/${u8aToHex(this.boxKeypair.publicKey)}`),
-            ]),
-        );
+        //TODO: need better structure to store keys
+        const edekPiece = new Piece(edek, [
+            new Tag(NONCE_TAG, nonce),
+            new Tag(ENCRYPTOR_TAG, u8aToHex(this.boxKeypair.publicKey)),
+            new Tag('Key', `${bucketId}/${options.dekPath || ''}/${u8aToHex(this.boxKeypair.publicKey)}`),
+        ]);
+
+        await this.caStorage.store(bucketId, edekPiece, options);
 
         const encryptionOptions = {dekPath: options.dekPath || '', dek: dek};
+
         if (Piece.isPiece(fileOrPiece)) {
-            const pieceUri = await this.caStorage.storeEncrypted(bucketId, session, fileOrPiece, encryptionOptions);
+            const pieceUri = await this.caStorage.storeEncrypted(bucketId, fileOrPiece, encryptionOptions, options);
+
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
         } else {
             const pieceUri = await this.fileStorage.uploadEncrypted(
                 bucketId,
-                session,
                 fileOrPiece.data as any,
                 fileOrPiece.tags,
                 encryptionOptions,
+                options,
             );
+
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IFILE);
         }
     }
 
-    private async storeUnencrypted(bucketId: bigint, session: Session, fileOrPiece: File | Piece): Promise<DdcUri> {
+    private async storeUnencrypted(
+        bucketId: bigint,
+        fileOrPiece: File | Piece,
+        options: StoreOptions = {},
+    ): Promise<DdcUri> {
         if (Piece.isPiece(fileOrPiece)) {
-            const pieceUri = await this.caStorage.store(bucketId, session, fileOrPiece);
+            const pieceUri = await this.caStorage.store(bucketId, fileOrPiece, options);
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
         } else {
-            const pieceUri = await this.fileStorage.upload(bucketId, session, fileOrPiece.data as any, fileOrPiece.tags);
+            const pieceUri = await this.fileStorage.upload(
+                bucketId,
+                fileOrPiece.data as any,
+                fileOrPiece.tags,
+                options,
+            );
+
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IFILE);
         }
     }
 
-    async read(ddcUri: DdcUri, session: Session, options: ReadOptions = {}): Promise<File | Piece> {
+    async read(ddcUri: DdcUri, options: ReadOptions = {}): Promise<File | Piece> {
         if (ddcUri.protocol) {
             const pieceUri = new PieceUri(BigInt(ddcUri.bucket), ddcUri.path as string);
-            const piece = await this.caStorage.read(pieceUri.bucketId, pieceUri.cid, session);
+            const piece = await this.caStorage.read(pieceUri.bucketId, pieceUri.cid, options);
+
             if (ddcUri.protocol === IPIECE) {
                 if (options.decrypt) {
-                    const dek = await this.findDek(ddcUri, piece, options, session);
+                    const dek = await this.findDek(ddcUri, piece, options);
                     piece.data = this.caStorage.cipher.decrypt(piece.data, dek);
                 }
 
                 return piece;
             } else if (ddcUri.protocol === IFILE) {
-                return this.readByPieceUri(ddcUri, piece, options, session);
+                return this.readByPieceUri(ddcUri, piece, options);
             }
 
             throw new Error(`Unsupported URL for read: ${ddcUri.toString()}`);
         }
 
-        const headPiece = await this.caStorage.read(BigInt(ddcUri.bucket), ddcUri.path as string, session);
-        return this.readByPieceUri(ddcUri, headPiece, options, session);
+        const headPiece = await this.caStorage.read(BigInt(ddcUri.bucket), ddcUri.path as string, options);
+
+        return this.readByPieceUri(ddcUri, headPiece, options);
     }
 
-    async search(query: Query, session: Session): Promise<Array<Piece>> {
-        return await this.caStorage.search(query, session).then((s) => s.pieces);
+    async search(query: Query, options: SearchOptions = {}): Promise<Array<Piece>> {
+        return this.caStorage.search(query, options).then((result) => result.pieces);
     }
 
-    async shareData(bucketId: bigint, dekPath: string, partnerBoxPublicKey: string, session: Session): Promise<DdcUri> {
+    async shareData(
+        bucketId: bigint,
+        dekPath: string,
+        partnerBoxPublicKey: string,
+        options: StoreOptions = {},
+    ): Promise<DdcUri> {
         const dek = DdcClient.buildHierarchicalDekHex(this.masterDek, dekPath);
         const partnerEdek = nacl.box(dek, emptyNonce, hexToU8a(partnerBoxPublicKey), this.boxKeypair.secretKey);
+        const edekPiece = new Piece(partnerEdek, [
+            new Tag(ENCRYPTOR_TAG, u8aToHex(this.boxKeypair.publicKey)),
+            new Tag('Key', `${bucketId}/${dekPath}/${partnerBoxPublicKey}`),
+        ]);
 
-        const pieceUri = await this.caStorage.store(
-            bucketId,
-            session,
-            new Piece(partnerEdek, [
-                new Tag(ENCRYPTOR_TAG, u8aToHex(this.boxKeypair.publicKey)),
-                new Tag('Key', `${bucketId}/${dekPath}/${partnerBoxPublicKey}`),
-            ]),
-        );
+        const pieceUri = await this.caStorage.store(bucketId, edekPiece, options);
+
         return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
     }
 
-    private async readByPieceUri(
-        ddcUri: DdcUri,
-        headPiece: Piece,
-        options: ReadOptions,
-        session: Session,
-    ): Promise<File | Piece> {
+    private async readByPieceUri(ddcUri: DdcUri, headPiece: Piece, options: ReadOptions): Promise<File | Piece> {
         const isEncrypted = headPiece.tags.filter((t) => t.keyString == DEK_PATH_TAG).length > 0;
 
-        //TODO 4. put into DEK cache
-        const dek = await this.findDek(ddcUri, headPiece, options, session);
+        // TODO 4. put into DEK cache
+        const dek = await this.findDek(ddcUri, headPiece, options);
 
         if (headPiece.links.length > 0) {
             const data =
                 isEncrypted && options.decrypt
-                    ? this.fileStorage.readDecryptedLinks(ddcUri.bucket as bigint, session, headPiece.links, dek)
-                    : this.fileStorage.readLinks(ddcUri.bucket as bigint, session, headPiece.links);
+                    ? this.fileStorage.readDecryptedLinks(ddcUri.bucket as bigint, headPiece.links, dek, options)
+                    : this.fileStorage.readLinks(ddcUri.bucket as bigint, headPiece.links, options);
 
             return new File(data, headPiece.tags, ddcUri.path as string);
-        } else {
-            if (isEncrypted && options.decrypt) {
-                headPiece.data = this.caStorage.cipher.decrypt(headPiece.data, dek);
-            }
-
-            return headPiece;
         }
+
+        if (isEncrypted && options.decrypt) {
+            headPiece.data = this.caStorage.cipher.decrypt(headPiece.data, dek);
+        }
+
+        return headPiece;
     }
 
-    private async findDek(
-        ddcUri: DdcUri,
-        piece: Piece,
-        options: ReadOptions,
-        session: Session,
-    ): Promise<Uint8Array> {
+    private async findDek(ddcUri: DdcUri, piece: Piece, options: ReadOptions): Promise<Uint8Array> {
         if (options.decrypt) {
             const dekPath = piece.tags.find((t) => t.keyString == DEK_PATH_TAG)?.valueString;
+
             if (dekPath == null) {
                 throw new Error(`Piece=${ddcUri} doesn't have dekPath`);
-            } else if (!dekPath.startsWith(options.dekPath! + '/') && dekPath !== options.dekPath!) {
+            }
+
+            if (!dekPath.startsWith(options.dekPath! + '/') && dekPath !== options.dekPath!) {
                 throw new Error(
                     `Provided dekPath='${options.dekPath}' doesn't correct for piece with dekPath='${dekPath}'`,
                 );
             }
 
-            const clientDek = await this.downloadDek(ddcUri.bucket as bigint, options.dekPath!, session);
+            const clientDek = await this.downloadDek(ddcUri.bucket as bigint, options.dekPath!, options);
 
             return DdcClient.buildHierarchicalDekHex(
                 clientDek,
@@ -286,9 +303,12 @@ export class DdcClient implements DdcClientInterface {
         return new Uint8Array();
     }
 
-    private async downloadDek(bucketId: bigint, dekPath: string, session: Session): Promise<Uint8Array> {
+    private async downloadDek(bucketId: bigint, dekPath: string, options: ReadOptions = {}): Promise<Uint8Array> {
         const piece = await this.kvStorage
-            .read(bucketId, session, `${bucketId}/${dekPath}/${u8aToHex(this.boxKeypair.publicKey)}`, undefined)
+            .read(bucketId, `${bucketId}/${dekPath}/${u8aToHex(this.boxKeypair.publicKey)}`, {
+                ...options,
+                skipData: false,
+            })
             .then((values) => {
                 if (values.length == 0) {
                     return Promise.reject('Client EDEK not found');
@@ -298,13 +318,14 @@ export class DdcClient implements DdcClientInterface {
             });
 
         const encryptor = piece.tags.find((e) => e.keyString === ENCRYPTOR_TAG)?.valueString;
+
         if (!encryptor) {
             throw new Error("EDEK doesn't contains encryptor public key");
         }
 
         const nonce = piece.tags.find((t) => t.keyString === NONCE_TAG)?.value ?? emptyNonce;
-
         const result = nacl.box.open(piece.data, nonce, hexToU8a(encryptor), this.boxKeypair.secretKey);
+
         if (result == null) {
             throw new Error('Unable to decrypt dek');
         }

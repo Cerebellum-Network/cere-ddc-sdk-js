@@ -4,7 +4,9 @@ import {
     Piece,
     PieceUri,
     Tag,
-    EncryptionOptions, Session,
+    EncryptionOptions,
+    StoreOptions,
+    ReadOptions,
 } from '@cere-ddc-sdk/content-addressable-storage';
 import type {UnderlyingSource} from 'stream/web';
 import {FileStorageConfig} from './FileStorageConfig';
@@ -23,12 +25,12 @@ export class CoreFileStorage {
 
     async uploadFromStreamReader(
         bucketId: bigint,
-        session: Session,
         reader: ReadableStreamDefaultReader<Uint8Array>,
         tags: Array<Tag> = [],
         encryptionOptions?: EncryptionOptions,
+        storeOptions: StoreOptions = {},
     ): Promise<PieceUri> {
-        const indexedLinks = await this.storeChunks(bucketId, session, reader, encryptionOptions);
+        const indexedLinks = await this.storeChunks(bucketId, reader, encryptionOptions, storeOptions);
 
         if (indexedLinks.length === 0) {
             throw new Error('Upload data is empty');
@@ -38,22 +40,22 @@ export class CoreFileStorage {
 
         const piece = new Piece(new Uint8Array(), tags, links);
         if (encryptionOptions) {
-            return await this.caStorage.storeEncrypted(bucketId, session, piece, encryptionOptions);
+            return await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions, storeOptions);
         } else {
-            return await this.caStorage.store(bucketId, session, piece);
+            return await this.caStorage.store(bucketId, piece, storeOptions);
         }
     }
 
     createReadUnderlyingSource(
         bucketId: bigint,
-        session: Session,
         address?: string | Array<Link>,
         dek?: Uint8Array,
+        readOptions: ReadOptions = {},
     ): UnderlyingSource<Uint8Array> {
         let linksPromise =
-            address instanceof Array<Link>
+            address instanceof Array
                 ? Promise.resolve(address)
-                : this.caStorage.read(bucketId, address as string, session).then((value) => value.links);
+                : this.caStorage.read(bucketId, address as string, readOptions).then((value) => value.links);
 
         let index = 0;
         const runReadPieceTask = () =>
@@ -62,8 +64,9 @@ export class CoreFileStorage {
                 const link = (await linksPromise)[current];
 
                 const promisePiece: Promise<Piece> = dek
-                    ? this.caStorage.readDecrypted(bucketId, session, link.cid, dek)
-                    : this.caStorage.read(bucketId, link.cid, session);
+                    ? this.caStorage.readDecrypted(bucketId, link.cid, dek, readOptions)
+                    : this.caStorage.read(bucketId, link.cid, readOptions);
+
                 promisePiece.then((piece) => resolve(piece.data));
             });
 
@@ -80,7 +83,7 @@ export class CoreFileStorage {
             async pull(controller) {
                 const tasks = await tasksPromise;
                 const currentTask = tasks.shift();
-                const taskResult = currentTask ? await currentTask : new Uint8Array;
+                const taskResult = currentTask ? await currentTask : new Uint8Array();
                 controller.enqueue(taskResult);
                 if (index < (await linksPromise).length) {
                     tasks.push(runReadPieceTask());
@@ -130,9 +133,9 @@ export class CoreFileStorage {
 
     private async storeChunks(
         bucketId: bigint,
-        session: Session,
         reader: ReadableStreamDefaultReader<Uint8Array>,
         encryptionOptions?: EncryptionOptions,
+        storeOptions: StoreOptions = {},
     ): Promise<Array<IndexedLink>> {
         const indexedLinks: Array<IndexedLink> = [];
         const tasks = new Array<Promise<void>>();
@@ -147,8 +150,8 @@ export class CoreFileStorage {
                         const piece = new Piece(result.value);
                         piece.tags.push(new Tag(multipartTag, 'true'));
                         const pieceUri = encryptionOptions
-                            ? await this.caStorage.storeEncrypted(bucketId, session, piece, encryptionOptions)
-                            : await this.caStorage.store(bucketId, session, piece);
+                            ? await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions, storeOptions)
+                            : await this.caStorage.store(bucketId, piece, storeOptions);
 
                         indexedLinks.push(
                             new IndexedLink(current, new Link(pieceUri.cid, BigInt(result.value.length))),

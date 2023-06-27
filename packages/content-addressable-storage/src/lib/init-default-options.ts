@@ -7,7 +7,7 @@ type Options = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
 
 export const initDefaultOptions = (options: Options): CaCreateOptions => {
     if (!options.clusterAddress && options.clusterAddress != 0) {
-        throw new Error(`invalid clusterAddress='${options.clusterAddress}'`)
+        throw new Error(`invalid clusterAddress='${options.clusterAddress}'`);
     }
 
     return {
@@ -19,5 +19,6 @@ export const initDefaultOptions = (options: Options): CaCreateOptions => {
         readAttempts: options.readAttempts || 1,
         writeAttempts: options.writeAttempts || 1,
         ackTimeout: options.ackTimeout,
-    }
-}
+        session: options.session || null,
+    };
+};
