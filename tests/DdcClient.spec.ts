@@ -1,6 +1,5 @@
 import {randomBytes} from 'tweetnacl';
 import {randomUUID} from 'crypto';
-import {u8aToHex} from '@polkadot/util';
 import {DdcClient, File, Session} from '@cere-ddc-sdk/ddc-client';
 import {DdcUri} from '@cere-ddc-sdk/core';
 import {Piece, Query, Tag} from '@cere-ddc-sdk/content-addressable-storage';
@@ -42,8 +41,24 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         const piece = new Piece(data, tags);
 
         //when
-        const uri = await mainClient.store(bucketId, session, piece, {encrypt: false});
-        const result = await mainClient.read(uri, session, {decrypt: false});
+        const uri = await mainClient.store(bucketId, piece, {encrypt: false});
+        const result = await mainClient.read(uri, {decrypt: false});
+
+        //then
+        piece.cid = uri.path as string;
+        expect(result).toEqual(piece);
+        expect(Piece.isPiece(result)).toBeTruthy();
+    });
+
+    it('store and read unencrypted small data with explicit session', async () => {
+        //given
+        const data = randomBytes(20);
+        const tags = [new Tag('some-key', 'some-value')];
+        const piece = new Piece(data, tags);
+
+        //when
+        const uri = await mainClient.store(bucketId, piece, {encrypt: false, session});
+        const result = await mainClient.read(uri, {decrypt: false, session});
 
         //then
         piece.cid = uri.path as string;
@@ -59,8 +74,8 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         const dekPath = 'test/piece';
 
         //when
-        const uri = await mainClient.store(bucketId, session, piece, {encrypt: true, dekPath});
-        const result = await mainClient.read(uri, session, {decrypt: true, dekPath});
+        const uri = await mainClient.store(bucketId, piece, {encrypt: true, dekPath});
+        const result = await mainClient.read(uri, {decrypt: true, dekPath});
 
         //then
         piece.cid = uri.path as string;
@@ -75,8 +90,8 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         const piece = new Piece(data, tags);
 
         //when
-        const uri = await mainClient.store(bucketId, session, piece, {encrypt: false});
-        const result = await mainClient.read(DdcUri.parse(`/ddc/buc/${uri.bucket}/ipiece/${uri.path}`), session, {
+        const uri = await mainClient.store(bucketId, piece, {encrypt: false});
+        const result = await mainClient.read(DdcUri.parse(`/ddc/buc/${uri.bucket}/ipiece/${uri.path}`), {
             decrypt: false,
         });
 
@@ -94,10 +109,9 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         const dekPath = 'test/piece/url';
 
         //when
-        const uri = await mainClient.store(bucketId, session, file, {encrypt: true, dekPath: dekPath});
+        const uri = await mainClient.store(bucketId, file, {encrypt: true, dekPath: dekPath});
         const result = await mainClient.read(
             DdcUri.parse(new URL(`http://test.com/ddc/buc/${uri.bucket}/ifile/${uri.path}`)),
-            session,
             {decrypt: true, dekPath: dekPath},
         );
 
@@ -122,8 +136,8 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         const file = new File(data, tags);
 
         //when
-        const uri = await mainClient.store(bucketId, session, file, {encrypt: false});
-        const result = await mainClient.read(uri, session, {decrypt: false});
+        const uri = await mainClient.store(bucketId, file, {encrypt: false});
+        const result = await mainClient.read(uri, {decrypt: false});
 
         //then
         expect(File.isFile(result)).toBeTruthy();
@@ -148,8 +162,8 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         const dekPath = 'test/piece';
 
         //when
-        const uri = await mainClient.store(bucketId, session, file, {encrypt: true, dekPath: dekPath});
-        const result = await mainClient.read(uri, session, {decrypt: true, dekPath: dekPath});
+        const uri = await mainClient.store(bucketId, file, {encrypt: true, dekPath: dekPath});
+        const result = await mainClient.read(uri, {decrypt: true, dekPath: dekPath});
 
         //then
         expect(File.isFile(result)).toBeTruthy();
@@ -172,17 +186,37 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         const key = randomUUID();
         const value = randomUUID();
         const file = new File(data, [new Tag(key, value)]);
-        await mainClient.store(bucketId, session, file, {encrypt: true});
+        await mainClient.store(bucketId, file, {encrypt: true});
 
         //when
-        const result = await mainClient.search(new Query(bucketId, [new Tag(key, value)], false), session);
+        const result = await mainClient.search(new Query(bucketId, [new Tag(key, value)], false));
 
         //then
         result.forEach((p) => (p.cid = undefined));
 
-        const expectPiece = new Piece(
-            (await mainClient).caStorage.cipher.encrypt(new Uint8Array([]), (await mainClient).masterDek),
-        );
+        const expectPiece = new Piece(mainClient.caStorage.cipher.encrypt(new Uint8Array([]), mainClient.masterDek));
+
+        expectPiece.tags = [new Tag(key, value), new Tag('dekPath', '')];
+        expectPiece.links = result[0].links;
+        expect(result).toEqual([expectPiece]);
+    });
+
+    it('search data encrypted with explicit session', async () => {
+        //given
+        const data = randomBytes(20);
+        const key = randomUUID();
+        const value = randomUUID();
+        const file = new File(data, [new Tag(key, value)]);
+        await mainClient.store(bucketId, file, {encrypt: true, session});
+
+        //when
+        const result = await mainClient.search(new Query(bucketId, [new Tag(key, value)], false), {session});
+
+        //then
+        result.forEach((p) => (p.cid = undefined));
+
+        const expectPiece = new Piece(mainClient.caStorage.cipher.encrypt(new Uint8Array([]), mainClient.masterDek));
+
         expectPiece.tags = [new Tag(key, value), new Tag('dekPath', '')];
         expectPiece.links = result[0].links;
         expect(result).toEqual([expectPiece]);
@@ -252,10 +286,10 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         const value = randomUUID();
         const tags = [new Tag(key, value)];
         const piece = new Piece(data, tags);
-        const uri = await mainClient.store(bucketId, session, piece, {encrypt: false});
+        const uri = await mainClient.store(bucketId, piece, {encrypt: false});
 
         //when
-        const result = await mainClient.search(new Query(bucketId, tags, true), session);
+        const result = await mainClient.search(new Query(bucketId, tags, true));
 
         //then
         expect(result).toEqual([new Piece(new Uint8Array([]), tags, [], uri.path as string)]);
@@ -269,16 +303,20 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
             const tags = [new Tag(key, value)];
             const piece = new Piece(data, tags);
             const dekPath = 'test/piece';
-            const uri = await saveWithEmptyNonce(mainClient, bucketId, session, piece, {
+            const uri = await saveWithEmptyNonce(mainClient, bucketId, piece, {
                 encrypt: true,
                 dekPath,
             });
-            const result = await mainClient.read(uri, session, {decrypt: true, dekPath});
+
+            const result = await mainClient.read(uri, {decrypt: true, dekPath});
+
             result.tags.forEach((tag) => {
                 console.log(tag.keyString);
                 console.log(tag.valueString);
             });
+
             const tag = tags.find((t) => t.keyString === key);
+
             expect(tag).toBeDefined();
             expect(unwrap(tag).valueString).toBe(value);
             expect(piece.data).toEqual(piece.data);

@@ -27,7 +27,7 @@ import {PieceUri} from './models/PieceUri';
 import {Query} from './models/Query';
 import {Tag} from './models/Tag';
 import {EncryptionOptions} from './EncryptionOptions';
-import {CaCreateOptions} from './ca-create-options';
+import {CaCreateOptions, Session} from './ca-create-options';
 import {concatArrays} from './lib/concat-arrays';
 import {DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG, REQIEST_ID_HEADER} from './constants';
 import {initDefaultOptions} from './lib/init-default-options';
@@ -36,7 +36,14 @@ import {repeatableFetch} from './lib/repeatable-fetch';
 const BASE_PATH_PIECES = '/api/v1/rest/pieces';
 
 type HTTP_METHOD = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-export type Session = Uint8Array;
+
+type SessionOptions = {
+    session?: Session;
+};
+
+export type ReadOptions = SessionOptions & {};
+export type StoreOptions = SessionOptions & {};
+export type SearchOptions = SessionOptions & {};
 
 type StoreRequest = {
     body: Uint8Array;
@@ -53,7 +60,7 @@ type AckParams = {
     cid?: string;
 };
 
-type Options = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
+export type ContentAddressableStorageOptions = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
 
 export class ContentAddressableStorage {
     private constructor(
@@ -63,9 +70,13 @@ export class ContentAddressableStorage {
         private readonly cidBuilder: CidBuilder,
         private readonly readAttempts: number = 1,
         private readonly writeAttempts: number = 1,
+        private defaultSession: Session | null = null,
     ) {}
 
-    static async build(options: Options, secretMnemonicOrSeed: string): Promise<ContentAddressableStorage> {
+    static async build(
+        options: ContentAddressableStorageOptions,
+        secretMnemonicOrSeed: string,
+    ): Promise<ContentAddressableStorage> {
         const caOptions = initDefaultOptions(options);
         const scheme = isSchemeName(caOptions.scheme)
             ? await Scheme.createScheme(caOptions.scheme, secretMnemonicOrSeed)
@@ -79,6 +90,7 @@ export class ContentAddressableStorage {
             caOptions.cidBuilder,
             caOptions.readAttempts,
             caOptions.writeAttempts,
+            caOptions.session,
         );
     }
 
@@ -145,7 +157,7 @@ export class ContentAddressableStorage {
         return this.scheme.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
     }
 
-    async buildStoreRequest(bucketId: bigint, session: Session, piece: Piece): Promise<StoreRequest> {
+    private async buildStoreRequest(bucketId: bigint, session: Session, piece: Piece): Promise<StoreRequest> {
         const pbPiece: PbPiece = piece.toProto(bucketId);
         // @ts-ignore
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
@@ -190,7 +202,8 @@ export class ContentAddressableStorage {
         };
     }
 
-    async store(bucketId: bigint, session: Session, piece: Piece): Promise<PieceUri> {
+    async store(bucketId: bigint, piece: Piece, options: StoreOptions = {}): Promise<PieceUri> {
+        const session = await this.useSession(options.session);
         const request = await this.buildStoreRequest(bucketId, session, piece);
 
         const response = await this.sendRequest(request.path, undefined, {
@@ -220,7 +233,8 @@ export class ContentAddressableStorage {
         return new PieceUri(bucketId, request.cid);
     }
 
-    async read(bucketId: bigint, cid: string, session: Session): Promise<Piece> {
+    async read(bucketId: bigint, cid: string, options: ReadOptions = {}): Promise<Piece> {
+        const session = await this.useSession(options.session);
         const search = new URLSearchParams();
         search.set('bucketId', bucketId.toString());
         const requestSignature = await this.signRequest(
@@ -286,7 +300,9 @@ export class ContentAddressableStorage {
         return piece;
     }
 
-    async search(query: Query, session: Session): Promise<SearchResult> {
+    async search(query: Query, options: SearchOptions = {}): Promise<SearchResult> {
+        const session = await this.useSession(options.session);
+
         const pbQuery: PbQuery = {
             bucketId: Number(query.bucketId),
             tags: query.tags,
@@ -356,29 +372,40 @@ export class ContentAddressableStorage {
 
     async storeEncrypted(
         bucketId: bigint,
-        session: Session,
         piece: Piece,
         encryptionOptions: EncryptionOptions,
+        storeOptions: StoreOptions = {},
     ): Promise<PieceUri> {
         const encryptedPiece = piece.clone();
+
         encryptedPiece.tags.push(new Tag(DEK_PATH_TAG, encryptionOptions.dekPath));
         encryptedPiece.data = this.cipher.encrypt(piece.data, encryptionOptions.dek);
-        return this.store(bucketId, session, encryptedPiece);
+
+        return this.store(bucketId, encryptedPiece, storeOptions);
     }
 
-    async readDecrypted(bucketId: bigint, session: Session, cid: string, dek: Uint8Array): Promise<Piece> {
-        const piece = await this.read(bucketId, cid, session);
+    async readDecrypted(bucketId: bigint, cid: string, dek: Uint8Array, readOptions: ReadOptions = {}): Promise<Piece> {
+        const piece = await this.read(bucketId, cid, readOptions);
         piece.data = this.cipher.decrypt(piece.data, dek);
 
         return piece;
     }
 
     async createSession(session?: Session): Promise<Uint8Array> {
-        if (session == null) {
-            return randomAsU8a(DEFAULT_SESSION_ID_SIZE);
+        return session || randomAsU8a(DEFAULT_SESSION_ID_SIZE);
+    }
+
+    private async useSession(session?: Session) {
+        if (session) {
+            return session;
         }
 
-        return session;
+        /**
+         * Create new default session once for an instance
+         */
+        this.defaultSession ||= await this.createSession();
+
+        return this.defaultSession;
     }
 
     private async verifySignedPiece(pbSignedPiece: PbSignedPiece, cid: string) {
