@@ -1,4 +1,4 @@
-import {webcrypto} from 'node:crypto';
+import {webcrypto, randomBytes} from 'node:crypto';
 import {
     ContentAddressableStorage,
     Piece,
@@ -31,11 +31,6 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         webcrypto.getRandomValues(randomPieceData);
         session = await storage.createSession();
         ackSpy = jest.spyOn(storage as any, 'ack');
-
-        /**
-         * TODO: Remove when ack fixed
-         */
-        ackSpy.mockResolvedValue(undefined);
     });
 
     afterEach(() => {
@@ -110,32 +105,37 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         //given
         const tags = [new Tag('testKey', 'testValue')];
         const bucketId = 1n;
-        const piece = new Piece(new Uint8Array([1, 2, 3]), tags);
-        await storage.store(bucketId, piece);
+        const piece1 = new Piece(new Uint8Array(randomBytes(3)), tags);
+        const piece2 = new Piece(new Uint8Array(randomBytes(3)), tags);
+
+        const {cid: cid1} = await storage.store(bucketId, piece1);
+        const {cid: cid2} = await storage.store(bucketId, piece2);
 
         //when
+        await delay(20);
         const searchResult = await storage.search(new Query(bucketId, tags));
 
         //then
-        piece.cid = 'bafk2bzacechpzp7rzthbhnjyxmkt3qlcyc24ruzormtvmnvdp5dsvjubh7vcc';
-        await delay(20);
-        expect(ackSpy).toBeCalled();
-        expect(searchResult.pieces).toEqual([piece]);
+        piece1.cid = cid1;
+        piece2.cid = cid2;
+
+        expect(ackSpy).toBeCalledTimes(4);
+        expect(searchResult.pieces).toEqual(expect.arrayContaining([piece1, piece2]));
     });
 
     test('search with explicit session', async () => {
         //given
-        const tags = [new Tag('testKey', 'testValue')];
+        const tags = [new Tag('testKeyWithSession', 'testValueWithSession')];
         const bucketId = 1n;
-        const piece = new Piece(new Uint8Array([1, 2, 3]), tags);
-        await storage.store(bucketId, piece, {session});
+        const piece = new Piece(new Uint8Array(randomBytes(3)), tags);
+        const {cid} = await storage.store(bucketId, piece, {session});
 
         //when
         const searchResult = await storage.search(new Query(bucketId, tags), {session});
 
         //then
-        piece.cid = 'bafk2bzacechpzp7rzthbhnjyxmkt3qlcyc24ruzormtvmnvdp5dsvjubh7vcc';
-        await delay(20);
+        piece.cid = cid;
+
         expect(ackSpy).toBeCalled();
         expect(searchResult.pieces).toEqual([piece]);
     });

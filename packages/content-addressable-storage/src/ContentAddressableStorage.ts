@@ -18,7 +18,7 @@ import {
 } from '@cere-ddc-sdk/core';
 import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
 import {base58Encode, mnemonicGenerate, randomAsU8a} from '@polkadot/util-crypto';
-import {stringToU8a, u8aToString} from '@polkadot/util';
+import {stringToU8a, u8aToString, bnToU8a} from '@polkadot/util';
 import {fetch} from 'cross-fetch';
 import {encode} from 'varint';
 import {SearchResult} from './models/SearchResult';
@@ -50,6 +50,14 @@ type StoreRequest = {
     cid: string;
     method: string;
     path: string;
+};
+
+type AckParams = {
+    response: Response;
+    payload: PbResponse;
+    session: Session;
+    piece: Piece;
+    cid?: string;
 };
 
 export type ContentAddressableStorageOptions = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
@@ -170,13 +178,9 @@ export class ContentAddressableStorage {
             },
         };
 
-        // @ts-ignore
         const signedPieceSerial = PbSignedPiece.toBinary(pbSignedPiece);
         const requestSignature = await this.signRequest(
-            PbRequest.create({
-                body: signedPieceSerial,
-                sessionId: session,
-            }),
+            PbRequest.create({body: signedPieceSerial, sessionId: session}),
             BASE_PATH_PIECES,
             'PUT',
         );
@@ -190,8 +194,12 @@ export class ContentAddressableStorage {
             sessionId: session,
         });
 
-        // @ts-ignore
-        return {body: PbRequest.toBinary(request), cid, method: 'PUT', path: BASE_PATH_PIECES};
+        return {
+            cid,
+            body: PbRequest.toBinary(request),
+            method: 'PUT',
+            path: BASE_PATH_PIECES,
+        };
     }
 
     async store(bucketId: bigint, piece: Piece, options: StoreOptions = {}): Promise<PieceUri> {
@@ -214,7 +222,13 @@ export class ContentAddressableStorage {
             );
         }
 
-        await this.ack(response, protoResponse);
+        await this.ack({
+            piece,
+            session,
+            response,
+            cid: request.cid,
+            payload: protoResponse,
+        });
 
         return new PieceUri(bucketId, request.cid);
     }
@@ -267,16 +281,23 @@ export class ContentAddressableStorage {
         }
 
         const pieceVerifyResult = await this.verifySignedPiece(pbSignedPiece, cid);
+
         if (!pieceVerifyResult) {
             throw new Error(
                 `Incorrect response. The cid [${cid}] provided in the request doesn't corresponds to expected`,
             );
         }
 
-        await this.ack(response, protoResponse);
+        const piece = this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
 
-        // @ts-ignore
-        return this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
+        await this.ack({
+            piece,
+            session,
+            response,
+            payload: protoResponse,
+        });
+
+        return piece;
     }
 
     async search(query: Query, options: SearchOptions = {}): Promise<SearchResult> {
@@ -331,13 +352,20 @@ export class ContentAddressableStorage {
             }
         });
 
-        const isPiece = (val: Uint8Array | undefined): val is Uint8Array => val != null;
-        let pieces: Piece[] = pbSearchResult.searchedPieces
-            .filter((p) => isPiece(p.signedPiece?.piece))
-            // @ts-ignore
-            .map((e) => this.toPiece(PbPiece.fromBinary(e.signedPiece!.piece!), e.cid));
+        const pieces = pbSearchResult.searchedPieces
+            .filter((p) => !!p.signedPiece)
+            .map(({signedPiece, cid}) => this.toPiece(PbPiece.fromBinary(signedPiece!.piece), cid));
 
-        await this.ack(response, protoResponse);
+        await Promise.all(
+            pieces.map((piece) =>
+                this.ack({
+                    piece,
+                    session,
+                    response,
+                    payload: protoResponse,
+                }),
+            ),
+        );
 
         return new SearchResult(pieces);
     }
@@ -396,42 +424,53 @@ export class ContentAddressableStorage {
         );
     }
 
-    private ack = async (response: Response, protoResponse: PbResponse): Promise<void> => {
-        if (
-            !response.headers.has(REQIEST_ID_HEADER) ||
-            (protoResponse.responseCode !== 0 && protoResponse.responseCode !== 1)
-        ) {
+    private ack = async ({piece, session, response, payload, cid}: AckParams): Promise<void> => {
+        if (!response.headers.has(REQIEST_ID_HEADER) || (payload.responseCode !== 0 && payload.responseCode !== 1)) {
             return;
         }
 
         const requestId = response.headers.get(REQIEST_ID_HEADER)!!;
+        const finalCid = piece.cid || cid;
+
+        if (!finalCid) {
+            return;
+        }
 
         const ack = PbAck.create({
+            requestId,
+            sessionId: session,
+            cid: finalCid,
+            chunks: [finalCid, ...piece.links.map((link) => link.cid)],
             timestamp: BigInt(Date.now()),
             publicKey: this.scheme.publicKey,
-            requestId,
-            gas: BigInt(protoResponse.gas),
+            gas: BigInt(payload.gas),
             nonce: randomAsU8a(32),
         });
+
+        const ackSignature = await this.signAck(ack);
+
+        if (ackSignature) {
+            ack.signature = ackSignature;
+        }
+
         const request = PbRequest.create({
-            // @ts-ignore
             body: PbAck.toBinary(ack),
             publicKey: this.scheme.publicKey,
             scheme: this.scheme.name,
             multiHashType: 0n,
         });
-        const ackSignature = await this.signRequest(request, '/api/rest/ack', 'POST');
-        if (ackSignature) {
-            request.signature = ackSignature;
+
+        const requestSignature = await this.signRequest(request, '/api/rest/ack', 'POST');
+
+        if (requestSignature) {
+            request.signature = requestSignature;
         }
 
         const ackResponse = await this.sendRequest('/api/rest/ack', undefined, {
             method: 'POST',
-            // @ts-ignore
             body: PbRequest.toBinary(request).buffer,
         });
 
-        // @ts-ignore
         const pbAckResponse = PbResponse.fromBinary(new Uint8Array(await ackResponse.arrayBuffer()));
 
         if (!ackResponse.ok) {
@@ -442,6 +481,20 @@ export class ContentAddressableStorage {
             );
         }
     };
+
+    private async signAck(ack: PbAck) {
+        const cid = await this.cidBuilder.build(
+            concatArrays(
+                stringToU8a(ack.requestId),
+                bnToU8a(ack.timestamp),
+                bnToU8a(ack.gas),
+                ack.nonce,
+                ack.sessionId,
+            ),
+        );
+
+        return this.scheme.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
+    }
 
     private sendRequest(pathname: string, query?: string, init?: RequestInit): Promise<Response> {
         const url = new URL(this.cdnNodeUrl);
