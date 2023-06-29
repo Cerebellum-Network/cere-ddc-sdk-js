@@ -1,6 +1,15 @@
 version: "3"
 
 services:
+  cere-chain:
+    platform: linux/amd64
+    container_name: cere-chain
+    image: "cerebellumnetwork/pos-node:v4.3.0"
+    command: bash -c "/usr/local/bin/cere --dev --alice --ws-external --rpc-external"
+    ports:
+      - "9944:9944"
+      - "9933:9933"
+
   ddc-cdn-node:
     container_name: "ddc-cdn-node"
     image: 'cerebellumnetwork/ddc-cdn-node:dev-latest'
