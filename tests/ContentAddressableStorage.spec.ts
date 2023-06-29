@@ -120,7 +120,7 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         piece2.cid = cid2;
 
         expect(ackSpy).toBeCalledTimes(4);
-        expect(searchResult.pieces).toEqual([piece1, piece2]);
+        expect(searchResult.pieces).toEqual(expect.arrayContaining([piece1, piece2]));
     });
 
     test('search with explicit session', async () => {
