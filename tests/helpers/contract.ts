@@ -1,8 +1,10 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import {ApiPromise, WsProvider} from '@polkadot/api';
+import {ApiPromise} from '@polkadot/api';
 import {CodePromise, ContractPromise, Abi} from '@polkadot/api-contract';
 import {KeyringPair} from '@polkadot/keyring/types';
+
+import {getGasLimit, signAndSend} from './blockchain';
 
 const readContract = async () => {
     const contractDir = path.resolve(__dirname, '../fixtures/contract');
@@ -18,35 +20,16 @@ const readContract = async () => {
 };
 
 const deployContract = async (api: ApiPromise, signer: KeyringPair, abi: Abi, wasm: string) => {
-    const blockWeights = api.consts.system.blockWeights.toString();
-    const gasLimit = JSON.parse(blockWeights).maxBlock / 10;
-
     const codePromise = new CodePromise(api, abi, wasm);
     const tx = codePromise.tx.new({
-        gasLimit,
-        storageDepositLimit: 750000000000,
-        value: 0,
+        gasLimit: await getGasLimit(api),
     });
 
-    return new Promise<string>((resolve, reject) =>
-        tx.signAndSend(signer, ({events = [], status}) => {
-            if (status.isInvalid) {
-                return reject('Transaction invalid');
-            }
+    const {events} = await signAndSend(tx, signer);
+    const foundEvent = events.find(({event}) => api.events.contracts.Instantiated.is(event));
+    const [, address] = foundEvent?.event.toHuman().data as string[];
 
-            if (status.isFinalized) {
-                const contractInstantiatedEvent = events.find(({event}) => api.events.contracts.Instantiated.is(event));
-
-                if (!contractInstantiatedEvent) {
-                    return reject('The contract has not been instantiated');
-                }
-
-                const [, address] = contractInstantiatedEvent.event.toHuman().data as string[];
-
-                resolve(address);
-            }
-        }),
-    );
+    return address;
 };
 
 export const bootstrapContract = async (api: ApiPromise, signer: KeyringPair) => {
