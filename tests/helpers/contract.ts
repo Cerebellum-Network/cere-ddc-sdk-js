@@ -22,7 +22,9 @@ const readContract = async () => {
 const deployContract = async (api: ApiPromise, signer: KeyringPair, abi: Abi, wasm: string) => {
     const codePromise = new CodePromise(api, abi, wasm);
     const tx = codePromise.tx.new({
+        value: 0,
         gasLimit: await getGasLimit(api),
+        storageDepositLimit: 750_000_000_000,
     });
 
     const {events} = await signAndSend(tx, signer);

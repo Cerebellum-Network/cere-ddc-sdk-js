@@ -1,11 +1,16 @@
 import {ApiPromise, WsProvider} from '@polkadot/api';
+import {DecodedEvent} from '@polkadot/api-contract/types';
 import {AddressOrPair, SubmittableExtrinsic, SubmittableResultValue} from '@polkadot/api/types';
+import {mnemonicGenerate} from '@polkadot/util-crypto';
 import {Keyring} from '@polkadot/keyring';
 
 import types from '../fixtures/blockchain/types.json';
 
-export type SignAndSendResult = {
-    events: Required<SubmittableResultValue>['events'];
+type TxResult = SubmittableResultValue & {
+    contractEvents?: DecodedEvent[];
+};
+
+export type SignAndSendResult = Required<Pick<TxResult, 'events' | 'contractEvents'>> & {
     blockHash: string;
 };
 
@@ -16,10 +21,22 @@ export const createBlockhainApi = async () => {
     return api.isReady;
 };
 
-export const createSigner = async (uri = '//Alice') => {
+export const getAccount = async (uri = '//Alice') => {
     const keyring = new Keyring({type: 'sr25519'});
 
     return keyring.addFromUri(uri);
+};
+
+export const createAccount = () => {
+    const keyring = new Keyring({type: 'sr25519'});
+    const mnemonic = mnemonicGenerate(12);
+    const account = keyring.addFromMnemonic(mnemonic);
+
+    return {
+        account,
+        mnemonic,
+        address: account.address,
+    };
 };
 
 export const getGasLimit = async (api: ApiPromise) => {
@@ -28,9 +45,11 @@ export const getGasLimit = async (api: ApiPromise) => {
     return JSON.parse(blockWeights).maxBlock / 10;
 };
 
-export const signAndSend = (tx: SubmittableExtrinsic<any>, signer: AddressOrPair) =>
+export const signAndSend = (tx: SubmittableExtrinsic<'promise'>, signer: AddressOrPair) =>
     new Promise<SignAndSendResult>((resolve, reject) =>
-        tx.signAndSend(signer, ({events = [], status}) => {
+        tx.signAndSend(signer, (result) => {
+            const {events = [], status, contractEvents = []} = result as TxResult;
+
             console.log(`Transaction (${tx.hash.toHex()}) is ${status.type}`);
 
             if (status.isInvalid) {
@@ -40,6 +59,7 @@ export const signAndSend = (tx: SubmittableExtrinsic<any>, signer: AddressOrPair
             if (status.isFinalized) {
                 return resolve({
                     events,
+                    contractEvents,
                     blockHash: status.asFinalized.toHex(),
                 });
             }

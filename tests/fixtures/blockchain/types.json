@@ -16,6 +16,6 @@
         "id": "TokenId",
         "metadata": "Vec<u8>"
     },
-    "Address": "MultiAddress",
-    "LookupSource": "MultiAddress"
+    "Address": "IndicesLookupSource",
+    "LookupSource": "IndicesLookupSource"
 }

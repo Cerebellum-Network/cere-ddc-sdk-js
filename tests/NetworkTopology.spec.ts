@@ -3,141 +3,110 @@ import {ContractPromise} from '@polkadot/api-contract';
 import {ContractOptions} from '@polkadot/api-contract/types';
 import {KeyringPair} from '@polkadot/keyring/types';
 
-import {bootstrapContract, createBlockhainApi, createSigner, getGasLimit, signAndSend, CERE} from './helpers';
+import {bootstrapContract, createBlockhainApi, getAccount, getGasLimit, signAndSend, CERE} from './helpers';
 
 describe('Network topology', () => {
     let api: ApiPromise;
-    let signer: KeyringPair;
+    let alice: KeyringPair;
     let contract: ContractPromise;
-    let contractOption: ContractOptions;
+    let contractOptions: ContractOptions;
+    let contractOptionsPay: ContractOptions;
 
     beforeAll(async () => {
         api = await createBlockhainApi();
-        signer = await createSigner();
-        contract = await bootstrapContract(api, signer);
-        contractOption = {
+        alice = await getAccount('//Alice');
+        contract = await bootstrapContract(api, alice);
+        contractOptions = {
+            value: 0n,
             gasLimit: await getGasLimit(api),
         };
+
+        contractOptionsPay = {...contractOptions, value: 10n * CERE};
     });
 
     afterAll(async () => {
         await api.disconnect();
     });
 
-    it('should have no cdn clusters', async () => {
+    it('should have clusters', async () => {
         const offset = 0;
         const limit = 100;
         const filterManagerId = undefined;
 
-        const result = await contract.query.cdnClusterList(
-            signer.address,
-            contractOption,
-            offset,
-            limit,
-            filterManagerId,
-        );
-        const [list] = result.output?.toHuman() as [any[], number];
+        const result = await contract.query.clusterList(alice.address, contractOptions, offset, limit, filterManagerId);
+        const [list, count] = result.output?.toHuman() as [any[], string];
 
+        expect(count).toEqual('0');
         expect(list).toEqual([]);
     });
 
-    it.skip('should have no storage clusters', async () => {
+    it('should have no CDN nodes', async () => {
         const offset = 0;
         const limit = 100;
         const filterManagerId = undefined;
 
-        const result = await contract.query.clusterList(signer.address, contractOption, offset, limit, filterManagerId);
-        const [list] = result.output?.toHuman() as [any[], number];
+        const result = await contract.query.cdnNodeList(alice.address, contractOptions, offset, limit, filterManagerId);
+        const [list, count] = result.output?.toHuman() as [any[], string];
 
+        expect(count).toEqual('0');
         expect(list).toEqual([]);
     });
 
-    it.skip('should have no CDN nodes', async () => {
+    it('should have no storage nodes', async () => {
         const offset = 0;
         const limit = 100;
         const filterManagerId = undefined;
 
-        const result = await contract.query.cdnNodeList(signer.address, contractOption, offset, limit, filterManagerId);
-        const [list] = result.output?.toHuman() as [any[], number];
+        const result = await contract.query.nodeList(alice.address, contractOptions, offset, limit, filterManagerId);
+        const [list, count] = result.output?.toHuman() as [any[], string];
 
+        expect(count).toEqual('0');
         expect(list).toEqual([]);
     });
 
-    it.skip('should have one default storage nodes', async () => {
-        const offset = 0;
-        const limit = 100;
-        const filterManagerId = undefined;
+    describe('Cluster management', () => {
+        let clusterId: number;
 
-        const result = await contract.query.nodeList(signer.address, contractOption, offset, limit, filterManagerId);
-        const [list] = result.output?.toHuman() as [any[], number];
-
-        expect(list).toEqual([]);
-    });
-
-    describe('Storage cluster management', () => {
-        let clusterId: string;
-
-        test('add storage cluster', async () => {
-            const vNodes: BigInt[][] = [];
-            const nodeIds: string[][] = [];
-            const jsonParams = JSON.stringify({
-                replicationFactor: 1,
-                status: 'CREATED',
-            });
-
-            const clusterQueryResult = await contract.query.clusterCreate(
-                signer.address,
-                contractOption,
-                signer.address, // TODO: What is the address argument? Unused?
-                vNodes,
-                nodeIds,
-                jsonParams,
-            );
-
-            clusterId = clusterQueryResult.output?.toHuman() as string; // TODO: Optimistic clusterId? Like auto-increment?
+        test('add cluster', async () => {
+            const clusterParams = {};
+            const resourcePerVNode = 10;
 
             const createTx = contract.tx.clusterCreate(
-                {
-                    ...contractOption,
-                    value: 10n * CERE,
-                },
-                signer.address,
-                vNodes,
-                nodeIds,
-                jsonParams,
+                contractOptionsPay,
+                JSON.stringify(clusterParams),
+                resourcePerVNode,
             );
 
-            await signAndSend(createTx, signer);
+            const {contractEvents} = await signAndSend(createTx, alice);
+            const createdEvent = contractEvents.find(({event}) => event.identifier === 'ClusterCreated');
 
-            const listResult = await contract.query.clusterList(signer.address, contractOption, 0, 10, undefined);
-            const [list] = listResult.output?.toHuman() as [any[], number];
+            clusterId = createdEvent?.args[0].toJSON() as number;
+            expect(clusterId).toEqual(0);
 
-            expect(clusterId).toBeTruthy();
-            expect(list).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        clusterId,
-                    }),
-                ]),
-            );
+            const listResult = await contract.query.clusterList(alice.address, contractOptions, 0, 10, null);
+            const [list] = listResult.output?.toHuman() as [any[]];
+
+            expect(list).toEqual([
+                expect.objectContaining({
+                    clusterId: clusterId.toString(),
+                }),
+            ]);
         });
 
         test.todo('add storage node');
         test.todo('remove storage node');
-        test.todo('remove storage cluster');
-    });
+        test('remove storage cluster', async () => {
+            const removeTx = contract.tx.clusterRemove(contractOptionsPay, clusterId);
+            const {contractEvents} = await signAndSend(removeTx, alice);
+            const removedEvent = contractEvents.find(({event}) => event.identifier === 'ClusterRemoved');
 
-    describe('CDN cluster management', () => {
-        test.todo('add CDN cluster');
-        test.todo('add CDN node');
-        test.todo('remove CDN node');
-        test.todo('remove CDN cluster');
+            expect(removedEvent).toBeTruthy();
+        });
     });
 
     describe('Storage & CDN topology', () => {
         test.todo('setup network topology');
-        it.todo('should list storage clusters');
-        it.todo('should list CDN clusters');
+        it.todo('should list clusters');
         it.todo('should list CDN nodes in a cluster');
         it.todo('should list storage nodes in a cluster');
         it.todo('should react to topology update events');
