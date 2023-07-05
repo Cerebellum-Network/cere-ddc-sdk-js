@@ -1,8 +1,8 @@
 import {SmartContract as CoreSmartContract} from './SmartContract';
-import {SmartContractOptions, TESTNET} from './options/SmartContractOptions';
+import {SmartContractOptions} from './options/SmartContractOptions';
 import {InjectedAccount} from '@polkadot/extension-inject/types';
 import {web3Enable, web3FromAddress} from '@polkadot/extension-dapp';
-import {Signer as InjectedSigner} from '@polkadot/api/types';
+import {Keyring} from '@polkadot/keyring';
 
 export {DEVNET, TESTNET, MAINNET} from './options/SmartContractOptions';
 export type {SmartContractOptions} from './options/SmartContractOptions';
@@ -15,15 +15,6 @@ export {BucketStatus} from './model/BucketStatus';
 export {BucketParams} from './options/BucketParams';
 
 export class SmartContract extends CoreSmartContract {
-    constructor(secretPhraseOrAddress: string, options?: SmartContractOptions, signer?: InjectedSigner) {
-        super(secretPhraseOrAddress, options);
-        if (!!signer) {
-            this.signAndSend = (tx, statusCb) => tx.signAndSend(secretPhraseOrAddress, {signer: signer}, statusCb as any);
-        }
-    }
-
-    static async buildAndConnect(account: InjectedAccount, options?: SmartContractOptions): Promise<CoreSmartContract>;
-    static async buildAndConnect(secretPhrase: string, options?: SmartContractOptions): Promise<CoreSmartContract>;
     static async buildAndConnect(
         accountOrSecretPhrase: InjectedAccount | string,
         options?: SmartContractOptions,
@@ -32,12 +23,10 @@ export class SmartContract extends CoreSmartContract {
             return super.buildAndConnect(accountOrSecretPhrase, options);
         } else {
             await web3Enable('ddc');
-            const injector = await web3FromAddress(accountOrSecretPhrase.address);
-            return new SmartContract(
-                accountOrSecretPhrase.address,
-                options,
-                injector.signer as InjectedSigner,
-            ).connect();
+            const {address} = accountOrSecretPhrase;
+            const {signer} = await web3FromAddress(address);
+
+            return super.buildAndConnect(address, options, signer);
         }
     }
 }

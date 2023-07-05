@@ -4,15 +4,13 @@ import {ApiPromise, WsProvider} from '@polkadot/api';
 import {ContractPromise} from '@polkadot/api-contract';
 import {Keyring} from '@polkadot/keyring';
 import {KeyringPair} from '@polkadot/keyring/types';
-import {SubmittableExtrinsic, SubmittableResultSubscription} from '@polkadot/api/submittable/types';
-import {Callback, ISubmittableResult} from '@polkadot/types/types';
+import {SubmittableExtrinsic, SubmittableResultValue, Signer} from '@polkadot/api/types';
 import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
 import {find, get} from 'lodash';
 import {NodeStatus} from './model/NodeStatus';
 import {cereTypes} from './types/cere_types';
 import {BucketStatus} from './model/BucketStatus';
 import {BucketStatusList} from './model/BucketStatusList';
-import {ApiTypes} from '@polkadot/api/types';
 import {BucketParams, initDefaultBucketParams} from './options/BucketParams';
 import {waitReady} from '@polkadot/wasm-crypto';
 import {CdnClusterGetResult, CdnNodeGetResult, ClusterGetResult} from './types/smart-contract-responses';
@@ -30,18 +28,12 @@ const txOptionsPay = {
 };
 
 export class SmartContract {
-    signAndSend: (
-        tx: SubmittableExtrinsic<any>,
-        statusCb: Callback<ISubmittableResult>,
-    ) => SubmittableResultSubscription<ApiTypes>;
-
-    constructor(private account: KeyringPair, private contract: ContractPromise) {
-        this.signAndSend = (tx, statusCb): any => tx.signAndSend(account, statusCb as any);
-    }
+    constructor(private account: KeyringPair, private contract: ContractPromise, private signer?: Signer) {}
 
     static async buildAndConnect(
         secretPhraseOrAddress: string,
         options: SmartContractOptions = TESTNET,
+        signer?: Signer,
     ): Promise<SmartContract> {
         await waitReady();
         await cryptoWaitReady();
@@ -56,7 +48,7 @@ export class SmartContract {
             ? keyring.addFromAddress(secretPhraseOrAddress)
             : keyring.addFromMnemonic(secretPhraseOrAddress);
 
-        return new SmartContract(account, contract);
+        return new SmartContract(account, contract, signer);
     }
 
     async connect(): Promise<SmartContract> {
@@ -238,14 +230,14 @@ export class SmartContract {
         return output.toJSON().ok as NodeStatus;
     }
 
-    async sendTx(tx: SubmittableExtrinsic<any>): Promise<ISubmittableResult> {
-        return await new Promise(async (resolve) => {
-            await this.signAndSend(tx, (result: any) => {
+    private async sendTx(tx: SubmittableExtrinsic<'promise'>) {
+        return new Promise<SubmittableResultValue>((resolve) =>
+            tx.signAndSend(this.account, {signer: this.signer}, (result) => {
                 if (result.status.isInBlock || result.status.isFinalized) {
                     resolve(result);
                 }
-            });
-        });
+            }),
+        );
     }
 
     private static findCreatedBucketId(events: Array<any>): string {
