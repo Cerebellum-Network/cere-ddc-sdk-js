@@ -45,9 +45,9 @@ export const getGasLimit = async (api: ApiPromise) => {
     return JSON.parse(blockWeights).maxBlock / 10;
 };
 
-export const signAndSend = (tx: SubmittableExtrinsic<'promise'>, signer: AddressOrPair) =>
+export const signAndSend = (tx: SubmittableExtrinsic<'promise'>, account: AddressOrPair) =>
     new Promise<SignAndSendResult>((resolve, reject) =>
-        tx.signAndSend(signer, (result) => {
+        tx.signAndSend(account, (result) => {
             const {events = [], status, contractEvents = []} = result as TxResult;
 
             console.log(`Transaction (${tx.hash.toHex()}) is ${status.type}`);

@@ -1,12 +1,12 @@
 {
   "source": {
-    "hash": "0x06fde8f8c765086c37ac76cf2167b0dab74f32aaee99ba11527543b05abaad88",
+    "hash": "0x17173e6d800d4555fa6b27c1cb7a5bf509796c993c1ed7e1206e8ef27c21fb48",
     "language": "ink! 3.4.0",
     "compiler": "rustc 1.69.0-nightly"
   },
   "contract": {
     "name": "ddc_bucket",
-    "version": "1.0.0",
+    "version": "0.5.2",
     "authors": [
       "Aurélien Nicolas <aurel@cere.network>"
     ],
@@ -40,7 +40,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -51,7 +51,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             }
           ],
@@ -70,7 +70,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -81,7 +81,7 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -92,7 +92,7 @@
                 "displayName": [
                   "Resource"
                 ],
-                "type": 6
+                "type": 9
               }
             }
           ],
@@ -111,7 +111,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -122,7 +122,7 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
+                "type": 9
               }
             }
           ],
@@ -141,7 +141,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -166,51 +166,23 @@
             {
               "docs": [],
               "indexed": true,
-              "label": "bucket_id",
-              "type": {
-                "displayName": [
-                  "BucketId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "docs": [],
-              "indexed": false,
-              "label": "bucket_params",
-              "type": {
-                "displayName": [
-                  "BucketParams"
-                ],
-                "type": 13
-              }
-            }
-          ],
-          "docs": [],
-          "label": "BucketParamsSet"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
               "label": "cluster_id",
               "type": {
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
               "docs": [],
               "indexed": true,
-              "label": "manager_id",
+              "label": "manager",
               "type": {
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             },
             {
@@ -221,11 +193,13 @@
                 "displayName": [
                   "ClusterParams"
                 ],
-                "type": 13
+                "type": 16
               }
             }
           ],
-          "docs": [],
+          "docs": [
+            " A new cluster was created."
+          ],
           "label": "ClusterCreated"
         },
         {
@@ -238,275 +212,18 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
-              }
-            },
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
-                "type": 9
-              }
-            },
-            {
-              "docs": [],
-              "indexed": false,
-              "label": "v_nodes",
-              "type": {
-                "displayName": [
-                  "Vec"
-                ],
-                "type": 27
-              }
-            }
-          ],
-          "docs": [],
-          "label": "ClusterNodeAdded"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [],
-          "label": "ClusterNodeRemoved"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cdn_node_key",
-              "type": {
-                "displayName": [
-                  "CdnNodeKey"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [],
-          "label": "ClusterCdnNodeAdded"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cdn_node_key",
-              "type": {
-                "displayName": [
-                  "CdnNodeKey"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [],
-          "label": "ClusterCdnNodeRemoved"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "docs": [],
-              "indexed": false,
-              "label": "cluster_params",
-              "type": {
-                "displayName": [
-                  "ClusterParams"
-                ],
-                "type": 13
-              }
-            }
-          ],
-          "docs": [],
-          "label": "ClusterParamsSet"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            }
-          ],
-          "docs": [],
-          "label": "ClusterRemoved"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
                 "type": 9
               }
             },
             {
               "docs": [],
               "indexed": true,
-              "label": "cluster_id",
+              "label": "node_id",
               "type": {
                 "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "docs": [],
-              "indexed": false,
-              "label": "status",
-              "type": {
-                "displayName": [
-                  "NodeStatusInCluster"
-                ],
-                "type": 23
-              }
-            }
-          ],
-          "docs": [],
-          "label": "ClusterNodeStatusSet"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cdn_node_key",
-              "type": {
-                "displayName": [
-                  "CdnNodeKey"
+                  "NodeId"
                 ],
                 "type": 9
-              }
-            },
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "docs": [],
-              "indexed": false,
-              "label": "status",
-              "type": {
-                "displayName": [
-                  "NodeStatusInCluster"
-                ],
-                "type": 23
-              }
-            }
-          ],
-          "docs": [],
-          "label": "ClusterCdnNodeStatusSet"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
-                "type": 9
-              }
-            },
-            {
-              "docs": [],
-              "indexed": false,
-              "label": "v_nodes",
-              "type": {
-                "displayName": [
-                  "Vec"
-                ],
-                "type": 27
               }
             }
           ],
@@ -525,48 +242,7 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
-              }
-            },
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
                 "type": 9
-              }
-            },
-            {
-              "docs": [],
-              "indexed": false,
-              "label": "v_nodes",
-              "type": {
-                "displayName": [
-                  "Vec"
-                ],
-                "type": 27
-              }
-            }
-          ],
-          "docs": [
-            " A vnode was re-assigned to new node."
-          ],
-          "label": "ClusterNodeReset"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
               }
             },
             {
@@ -577,7 +253,7 @@
                 "displayName": [
                   "Resource"
                 ],
-                "type": 6
+                "type": 9
               }
             }
           ],
@@ -596,7 +272,7 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -607,7 +283,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             }
           ],
@@ -626,33 +302,35 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
               "docs": [],
               "indexed": true,
-              "label": "provider_id",
+              "label": "manager",
               "type": {
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             }
           ],
-          "docs": [],
-          "label": "ClusterDistributeCdnRevenues"
+          "docs": [
+            " A new cluster was created."
+          ],
+          "label": "CdnClusterCreated"
         },
         {
           "args": [
             {
               "docs": [],
               "indexed": true,
-              "label": "cdn_node_key",
+              "label": "cluster_id",
               "type": {
                 "displayName": [
-                  "CdnNodeKey"
+                  "ClusterId"
                 ],
                 "type": 9
               }
@@ -665,18 +343,37 @@
                 "displayName": [
                   "AccountId"
                 ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " The respective share of revenues of a CDN cluster for a provider was distributed."
+          ],
+          "label": "CdnClusterDistributeRevenues"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
                 "type": 9
               }
             },
             {
               "docs": [],
-              "indexed": false,
-              "label": "cdn_node_params",
+              "indexed": true,
+              "label": "provider_id",
               "type": {
                 "displayName": [
-                  "CdnNodeParams"
+                  "AccountId"
                 ],
-                "type": 13
+                "type": 8
               }
             },
             {
@@ -701,55 +398,10 @@
             {
               "docs": [],
               "indexed": true,
-              "label": "cdn_node_key",
+              "label": "node_id",
               "type": {
                 "displayName": [
-                  "CdnNodeKey"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [],
-          "label": "CdnNodeRemoved"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cdn_node_key",
-              "type": {
-                "displayName": [
-                  "CdnNodeKey"
-                ],
-                "type": 9
-              }
-            },
-            {
-              "docs": [],
-              "indexed": false,
-              "label": "cdn_node_params",
-              "type": {
-                "displayName": [
-                  "CdnNodeParams"
-                ],
-                "type": 13
-              }
-            }
-          ],
-          "docs": [],
-          "label": "CdnNodeParamsSet"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
+                  "NodeId"
                 ],
                 "type": 9
               }
@@ -762,13 +414,13 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             },
             {
               "docs": [],
               "indexed": false,
-              "label": "rent_v_node_per_month",
+              "label": "rent_per_month",
               "type": {
                 "displayName": [
                   "Balance"
@@ -784,7 +436,7 @@
                 "displayName": [
                   "NodeParams"
                 ],
-                "type": 13
+                "type": 16
               }
             }
           ],
@@ -798,57 +450,12 @@
             {
               "docs": [],
               "indexed": true,
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [],
-          "label": "NodeRemoved"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
-                "type": 9
-              }
-            },
-            {
-              "docs": [],
-              "indexed": false,
-              "label": "node_params",
-              "type": {
-                "displayName": [
-                  "NodeParams"
-                ],
-                "type": 13
-              }
-            }
-          ],
-          "docs": [],
-          "label": "NodeParamsSet"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
               "label": "account_id",
               "type": {
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             },
             {
@@ -878,7 +485,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             },
             {
@@ -889,14 +496,14 @@
                 "displayName": [
                   "Permission"
                 ],
-                "type": 75
+                "type": 77
               }
             }
           ],
           "docs": [
             " A permission was granted to the account."
           ],
-          "label": "PermissionGranted"
+          "label": "GrantPermission"
         },
         {
           "args": [
@@ -908,7 +515,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             },
             {
@@ -919,70 +526,14 @@
                 "displayName": [
                   "Permission"
                 ],
-                "type": 75
+                "type": 77
               }
             }
           ],
           "docs": [
             " A permission was revoked from the account."
           ],
-          "label": "PermissionRevoked"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "account_id",
-              "type": {
-                "displayName": [
-                  "AccountId"
-                ],
-                "type": 9
-              }
-            },
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [],
-          "label": "NodeOwnershipTransferred"
-        },
-        {
-          "args": [
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "account_id",
-              "type": {
-                "displayName": [
-                  "AccountId"
-                ],
-                "type": 9
-              }
-            },
-            {
-              "docs": [],
-              "indexed": true,
-              "label": "cdn_node_key",
-              "type": {
-                "displayName": [
-                  "CdnNodeKey"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [],
-          "label": "CdnNodeOwnershipTransferred"
+          "label": "RevokePermission"
         }
       ],
       "messages": [
@@ -994,7 +545,7 @@
                 "displayName": [
                   "BucketParams"
                 ],
-                "type": 13
+                "type": 16
               }
             },
             {
@@ -1003,7 +554,7 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1012,7 +563,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 41
+                "type": 43
               }
             }
           ],
@@ -1030,9 +581,9 @@
           "payable": true,
           "returnType": {
             "displayName": [
-              "Result"
+              "BucketId"
             ],
-            "type": 42
+            "type": 9
           },
           "selector": "0x0aeb2379"
         },
@@ -1044,7 +595,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1053,7 +604,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             }
           ],
@@ -1066,9 +617,7 @@
           "mutates": true,
           "payable": true,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0xc7d0c2cd"
@@ -1081,7 +630,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1090,7 +639,7 @@
                 "displayName": [
                   "Resource"
                 ],
-                "type": 6
+                "type": 9
               }
             }
           ],
@@ -1103,9 +652,7 @@
           "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0x4c482d19"
@@ -1118,7 +665,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             }
           ],
@@ -1128,12 +675,7 @@
           "label": "bucket_settle_payment",
           "mutates": true,
           "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
+          "returnType": null,
           "selector": "0x15974555"
         },
         {
@@ -1144,7 +686,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1153,7 +695,7 @@
                 "displayName": [
                   "BucketParams"
                 ],
-                "type": 13
+                "type": 16
               }
             }
           ],
@@ -1165,12 +707,7 @@
           "label": "bucket_change_params",
           "mutates": true,
           "payable": true,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
+          "returnType": null,
           "selector": "0x9f2d075b"
         },
         {
@@ -1181,7 +718,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             }
           ],
@@ -1195,7 +732,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 46
+            "type": 45
           },
           "selector": "0x3802cb77"
         },
@@ -1207,7 +744,7 @@
                 "displayName": [
                   "u32"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1216,7 +753,7 @@
                 "displayName": [
                   "u32"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1225,7 +762,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 41
+                "type": 43
               }
             }
           ],
@@ -1254,7 +791,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             }
           ],
@@ -1270,7 +807,7 @@
             "displayName": [
               "Vec"
             ],
-            "type": 51
+            "type": 6
           },
           "selector": "0xc434cf57"
         },
@@ -1282,7 +819,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1302,9 +839,7 @@
           "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0x053eb3ce"
@@ -1317,7 +852,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1326,7 +861,7 @@
                 "displayName": [
                   "Resource"
                 ],
-                "type": 6
+                "type": 9
               }
             }
           ],
@@ -1337,9 +872,7 @@
           "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0x85010c6d"
@@ -1352,7 +885,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             }
           ],
@@ -1366,7 +899,7 @@
             "displayName": [
               "Vec"
             ],
-            "type": 15
+            "type": 14
           },
           "selector": "0x499cd4b7"
         },
@@ -1378,7 +911,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1387,7 +920,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             }
           ],
@@ -1398,9 +931,7 @@
           "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0xea2e477a"
@@ -1413,7 +944,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1422,7 +953,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             }
           ],
@@ -1433,9 +964,7 @@
           "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0x2b3d8dd1"
@@ -1448,7 +977,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             }
           ],
@@ -1462,7 +991,7 @@
             "displayName": [
               "Vec"
             ],
-            "type": 15
+            "type": 14
           },
           "selector": "0xb9a7cc1c"
         },
@@ -1474,7 +1003,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1483,7 +1012,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             }
           ],
@@ -1494,9 +1023,7 @@
           "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0xfc0e94ea"
@@ -1509,7 +1036,7 @@
                 "displayName": [
                   "BucketId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1518,7 +1045,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             }
           ],
@@ -1529,9 +1056,7 @@
           "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0xe9bfed5a"
@@ -1539,55 +1064,141 @@
         {
           "args": [
             {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "node_ids",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 20
+              }
+            },
+            {
+              "label": "v_nodes",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 21
+              }
+            }
+          ],
+          "docs": [
+            " Removes a node to an existing cluster",
+            "",
+            " The caller will be its first manager."
+          ],
+          "label": "cluster_remove_node",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0x793e0778"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "node_ids",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 20
+              }
+            },
+            {
+              "label": "v_nodes",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 21
+              }
+            }
+          ],
+          "docs": [
+            " Adds node to an existing cluster",
+            "",
+            " The caller will be its first manager."
+          ],
+          "label": "cluster_add_node",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0xf7496bdc"
+        },
+        {
+          "args": [
+            {
+              "label": "_unused",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "label": "v_nodes",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 21
+              }
+            },
+            {
+              "label": "node_ids",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 20
+              }
+            },
+            {
               "label": "cluster_params",
               "type": {
                 "displayName": [
                   "ClusterParams"
                 ],
-                "type": 13
-              }
-            },
-            {
-              "label": "resource_per_v_node",
-              "type": {
-                "displayName": [
-                  "Resource"
-                ],
-                "type": 6
+                "type": 16
               }
             }
           ],
           "docs": [
-            " Creates a cluster of Storage nodes and CDN nodes.",
+            " Create a new cluster and return its `cluster_id`.",
             "",
-            " This endpoint creates a cluster of Storage nodes and CDN nodes with specific parameters.",
-            " The caller will be the cluster manager (cluster owner). In order to add a Storage or CDN node, the manager must be authorized by the node owner using the `trust_manager` endpoint or be the node owner.",
+            " The caller will be its first manager.",
             "",
-            " # Parameters",
+            " The cluster is split in a number of vnodes. The vnodes are assigned to the given physical nodes in a round-robin. Only nodes of providers that trust the cluster manager can be used (see `node_trust_manager`). The assignment can be changed with the function `cluster_replace_node`.",
             "",
-            " * `cluster_params` - [Cluster parameters](https://docs.cere.network/ddc/protocols/contract-params-schema#cluster-parameters) in protobuf format.",
-            " * `resource_per_v_node` - Resource value that will be allocated for every virtual node in the cluster.",
-            "",
-            " # Output",
-            "",
-            " Returns ID of the created cluster.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterCreated` event on successful cluster creation.",
-            "",
-            " # Errors",
-            "",
-            " * `InvalidClusterParams` error if there is an invalid cluster parameter."
+            " `cluster_params` is configuration used by clients and nodes. In particular, this describes the semantics of vnodes. See the [data structure of ClusterParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
           ],
           "label": "cluster_create",
           "mutates": true,
           "payable": true,
           "returnType": {
             "displayName": [
-              "Result"
+              "ClusterId"
             ],
-            "type": 42
+            "type": 9
           },
           "selector": "0x4c0f21f6"
         },
@@ -1599,127 +1210,65 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
-              }
-            },
-            {
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
                 "type": 9
               }
             },
             {
-              "label": "v_nodes",
+              "label": "amount",
               "type": {
                 "displayName": [
-                  "Vec"
-                ],
-                "type": 27
-              }
-            }
-          ],
-          "docs": [
-            " Adds a Storage node to the targeting cluster.",
-            "",
-            " This endpoint adds a physical Storage node along with its virtual nodes to the targeting cluster.",
-            " Virtual nodes determines a token (position) on the ring in terms of Consistent Hashing.",
-            " The Storage node can be added to the cluster by cluster manager only.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            " * `node_key` - Public Key associated with the Storage node.",
-            " * `v_nodes` - List of tokens (positions) related to the Storage node.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterNodeAdded` event on successful Storage node addition.",
-            "",
-            " # Errors",
-            "",
-            " * `ClusterDoesNotExist` error if the cluster does not exist.",
-            " * `OnlyTrustedClusterManager` error if the caller is not a trusted cluster manager.",
-            " * `NodeDoesNotExist` error if the adding Storage node does not exist.",
-            " * `NodeIsAddedToCluster(ClusterId)` error if the adding Storage node is already added to this or another cluster.",
-            " * `AtLeastOneVNodeHasToBeAssigned(ClusterId, NodeKey)` error if there is a Storage node without any virtual nodes in the cluster.",
-            " * `VNodesSizeExceedsLimit` error if virtual nodes length exceeds storage capacity.",
-            " * `InsufficientNodeResources` - error if there is not enough resources in a physical node."
-          ],
-          "label": "cluster_add_node",
-          "mutates": true,
-          "payable": true,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0xf7496bdc"
-        },
-        {
-          "args": [
-            {
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
+                  "Resource"
                 ],
                 "type": 9
               }
             }
           ],
           "docs": [
-            " Removes a Storage node from the targeting cluster.",
+            " As manager, reserve more resources for the cluster from the free capacity of nodes.",
             "",
-            " This endpoint removes a physical Storage node along with its virtual nodes from the targeting cluster.",
-            " The Storage node can be removed from the cluster either by cluster manager or by the node owner.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            " * `node_key` - Public Key associated with the Storage node.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterNodeRemoved` event on successful Storage node removal.",
-            "",
-            " # Errors",
-            "",
-            " * `ClusterDoesNotExist` error if the cluster does not exist.",
-            " * `OnlyClusterManagerOrNodeProvider` error if the caller is not the cluster manager or node owner.",
-            " * `NodeDoesNotExist` error if the removing Storage node does not exist.",
-            " * `NodeIsNotAddedToCluster(ClusterId)` error if the removing Storage node is not in this cluster."
+            " The amount of resources is given per vnode (total resources will be `resource` times the number of vnodes)."
           ],
-          "label": "cluster_remove_node",
+          "label": "cluster_reserve_resource",
           "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
-          "selector": "0x793e0778"
+          "selector": "0xb5e38125"
+        },
+        {
+          "args": [
+            {
+              "label": "node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "new_tag",
+              "type": {
+                "displayName": [
+                  "NodeTag"
+                ],
+                "type": 31
+              }
+            }
+          ],
+          "docs": [
+            " As manager, change a node tag"
+          ],
+          "label": "cluster_change_node_tag",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x9640d48e"
         },
         {
           "args": [
@@ -1729,7 +1278,7 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -1738,58 +1287,29 @@
                 "displayName": [
                   "Vec"
                 ],
-                "type": 27
+                "type": 22
               }
             },
             {
-              "label": "new_node_key",
+              "label": "new_node_id",
               "type": {
                 "displayName": [
-                  "NodeKey"
+                  "NodeId"
                 ],
                 "type": 9
               }
             }
           ],
           "docs": [
-            " Reasignes existing virtual nodes in the targeting cluster.",
+            " As manager, re-assign a vnode to another physical node.",
             "",
-            " This endpoint reasignes existing virtual nodes to another physical Storage node within the same cluster.",
-            " All specifying virtual nodes must pre-exist in the cluster and the new physical Storage node must be added to the cluster preliminary.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            " * `v_nodes` - List of tokens (positions) to reasign for the new physical Storage node.",
-            " * `new_node_key` - Public Key associated with the Storage node that is being reasigned to the specified virtual nodes.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterNodeReplaced` event on successful virtual node reassignment.",
-            "",
-            " # Errors",
-            "",
-            " * `ClusterDoesNotExist` error if the cluster does not exist.",
-            " * `OnlyClusterManager` error if the caller is not the cluster manager.",
-            " * `NodeDoesNotExist` error if the new Storage node does not exist.",
-            " * `NodeIsNotAddedToCluster(ClusterId)` error if the new Storage node is not added to this cluster.",
-            " * `NodeIsAddedToCluster(ClusterId)` error if the new Storage node is in another cluster.",
-            " * `VNodeIsNotAssignedToNode(ClusterId, VNodeToken)` error if the there is some virtual node that is being reasigned, but this virtual node is not assigned to any physical node.",
-            " * `VNodeIsAlreadyAssignedToNode(NodeKey)` - error if there is some virtual node that is already assigned to other physical node within the same cluster.",
-            " * `AtLeastOneVNodeHasToBeAssigned(ClusterId, NodeKey)` error if there is a Storage node without any virtual nodes in the cluster.",
-            " * `VNodesSizeExceedsLimit` error if virtual nodes length exceeds storage capacity."
+            " The cluster manager can only use nodes of providers that trust him (see `node_trust_manager`), or any nodes if he is also SuperAdmin."
           ],
           "label": "cluster_replace_node",
           "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0x48194ab1"
@@ -1802,69 +1322,18 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
-              }
-            },
-            {
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
                 "type": 9
-              }
-            },
-            {
-              "label": "new_v_nodes",
-              "type": {
-                "displayName": [
-                  "Vec"
-                ],
-                "type": 27
               }
             }
           ],
           "docs": [
-            " Reeset a Storage node in the targeting cluster.",
-            "",
-            " This endpoint resets virtual nodes on a physical Storage node in the targeting cluster.",
-            " Virtual nodes determines a token (position) on the ring in terms of Consistent Hashing.",
-            " The Storage node can be reset in the cluster by cluster manager only.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            " * `node_key` - Public Key associated with the Storage node.",
-            " * `new_v_nodes` - List of tokens (positions) related to the Storage node to reset.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterNodeAdded` event on successful Storage node addition.",
-            "",
-            " # Errors",
-            "",
-            " * `ClusterDoesNotExist` error if the cluster does not exist.",
-            " * `OnlyTrustedClusterManager` error if the caller is not a trusted cluster manager.",
-            " * `NodeDoesNotExist` error if the adding Storage node does not exist.",
-            " * `NodeIsAddedToCluster(ClusterId)` error if the adding Storage node is already added to this or another cluster.",
-            " * `AtLeastOneVNodeHasToBeAssigned(ClusterId, NodeKey)` error if there is a Storage node without any virtual nodes in the cluster.",
-            " * `VNodesSizeExceedsLimit` error if virtual nodes length exceeds storage capacity.",
-            " * `InsufficientNodeResources` - error if there is not enough resources in a physical node."
+            " Trigger the distribution of revenues from the cluster to the providers."
           ],
-          "label": "cluster_reset_node",
+          "label": "cluster_distribute_revenues",
           "mutates": true,
           "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0xa78b2e19"
+          "returnType": null,
+          "selector": "0xe71e66fc"
         },
         {
           "args": [
@@ -1873,170 +1342,30 @@
               "type": {
                 "displayName": [
                   "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "label": "cdn_node_key",
-              "type": {
-                "displayName": [
-                  "CdnNodeKey"
                 ],
                 "type": 9
               }
-            }
-          ],
-          "docs": [
-            " Adds a CDN node to the targeting cluster.",
-            "",
-            " This endpoint adds a CDN node to the targeting cluster.",
-            " The CDN node can be added to the cluster by cluster manager only.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            " * `cdn_node_key` - Public Key associated with the CDN node.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterCdnNodeAdded` event on successful CDN node addition.",
-            "",
-            " # Errors",
-            "",
-            " * `ClusterDoesNotExist` error if the cluster does not exist.",
-            " * `OnlyTrustedClusterManager` error if the caller is not a trusted cluster manager.",
-            " * `CdnNodeDoesNotExist` error if the adding CDN node does not exist.",
-            " * `CdnNodeIsAddedToCluster(ClusterId)` error if the adding CDN node is already added to this or another cluster."
-          ],
-          "label": "cluster_add_cdn_node",
-          "mutates": true,
-          "payable": true,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0x0b4199f3"
-        },
-        {
-          "args": [
-            {
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
             },
             {
-              "label": "cdn_node_key",
-              "type": {
-                "displayName": [
-                  "CdnNodeKey"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [
-            " Removes a CDN node from the targeting cluster.",
-            "",
-            " This endpoint removes a CDN node the targeting cluster.",
-            " The CDN node can be removed from the cluster either by cluster manager or by the node owner.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            " * `cdn_node_key` - Public Key associated with the CDN node.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterCdnNodeRemoved` event on successful CDN node removal.",
-            "",
-            " # Errors",
-            "",
-            " * `ClusterDoesNotExist` error if the cluster does not exist.",
-            " * `OnlyClusterManagerOrCdnNodeProvider` error if the caller is not the cluster manager or node owner.",
-            " * `CdnNodeDoesNotExist` error if the removing CDN node does not exist.",
-            " * `CdnNodeIsNotAddedToCluster(ClusterId)` error if the removing CDN node is not in this cluster."
-          ],
-          "label": "cluster_remove_cdn_node",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0xff8531d8"
-        },
-        {
-          "args": [
-            {
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "label": "cluster_params",
+              "label": "params",
               "type": {
                 "displayName": [
                   "ClusterParams"
                 ],
-                "type": 13
+                "type": 16
               }
             }
           ],
           "docs": [
-            " Sets parameters for the targeting cluster.",
+            " Change the `cluster_params`, which is configuration used by clients and nodes.",
             "",
-            " This endpoint updates [cluster parameters](https://docs.cere.network/ddc/protocols/contract-params-schema#cluster-parameters) in protobuf format.",
-            " All cluster parameters must be specified as the endpoint works using SET approach.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            " * `cluster_params` - [Cluster parameters](https://docs.cere.network/ddc/protocols/contract-params-schema#cluster-parameters) in protobuf format.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterParamsSet` event on successful cluster params setting.",
-            "",
-            " # Errors",
-            "",
-            " * `OnlyClusterManager` error if the caller is not the cluster manager.",
-            " * `ClusterDoesNotExist` error if the cluster does not exist."
+            " See the [data structure of ClusterParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
           ],
-          "label": "cluster_set_params",
+          "label": "cluster_change_params",
           "mutates": true,
           "payable": true,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0x7dac5f9a"
+          "returnType": null,
+          "selector": "0x1207912c"
         },
         {
           "args": [
@@ -2045,266 +1374,13 @@
               "type": {
                 "displayName": [
                   "ClusterId"
-                ],
-                "type": 6
-              }
-            }
-          ],
-          "docs": [
-            " Removes a cluster.",
-            "",
-            " This endpoint removes the cluster if it does not contain any nodes.",
-            " Only an empty cluster can be removed.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterRemoved` event on successful cluster removal.",
-            "",
-            " # Errors",
-            "",
-            " * `OnlyClusterManager` error if the caller is not the cluster manager.",
-            " * `ClusterDoesNotExist` error if the cluster does not exist.",
-            " * `ClusterIsNotEmpty` error if the removing cluster contains some Storage or CDN nodes."
-          ],
-          "label": "cluster_remove",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0x2248742a"
-        },
-        {
-          "args": [
-            {
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
                 ],
                 "type": 9
               }
-            },
-            {
-              "label": "status_in_cluster",
-              "type": {
-                "displayName": [
-                  "NodeStatusInCluster"
-                ],
-                "type": 23
-              }
             }
           ],
           "docs": [
-            " Changes Storage node status.",
-            "",
-            " This endpoint changes Storage node status in a cluster.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            " * `node_key` - Public Key associated with the Storage node.",
-            " * `status` - Status for the targeting Storage node, can be one of the following: ACTIVE, ADDING, DELETING, OFFLINE.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterNodeStatusSet` event on successful Storage status change.",
-            "",
-            " # Errors",
-            "",
-            " * `OnlyClusterManager` error if the caller is not the cluster manager.",
-            " * `ClusterDoesNotExist` error if the cluster does not exist.",
-            " * `NodeIsNotAddedToCluster(ClusterId)` error if the Storage node is not in this cluster."
-          ],
-          "label": "cluster_set_node_status",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0x8078df7f"
-        },
-        {
-          "args": [
-            {
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "label": "cdn_node_key",
-              "type": {
-                "displayName": [
-                  "CdnNodeKey"
-                ],
-                "type": 9
-              }
-            },
-            {
-              "label": "status_in_cluster",
-              "type": {
-                "displayName": [
-                  "NodeStatusInCluster"
-                ],
-                "type": 23
-              }
-            }
-          ],
-          "docs": [
-            " Changes CDN node status.",
-            "",
-            " This endpoint changes CDN node status in a cluster.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            " * `cdn_node_key` - Public Key associated with the CDN node.",
-            " * `status` - Status for the targeting CDN node, can be one of the following: ACTIVE, ADDING, DELETING, OFFLINE.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterCdnNodeStatusSet` event on successful CDN status change.",
-            "",
-            " # Errors",
-            "",
-            " * `OnlyClusterManager` error if the caller is not the cluster manager.",
-            " * `ClusterDoesNotExist` error if the cluster does not exist.",
-            " * `CdnNodeIsNotAddedToCluster(ClusterId)` error if the CDN node is not in this cluster."
-          ],
-          "label": "cluster_set_cdn_node_status",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0x577027ba"
-        },
-        {
-          "args": [
-            {
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "label": "new_resource_per_v_node",
-              "type": {
-                "displayName": [
-                  "Resource"
-                ],
-                "type": 6
-              }
-            }
-          ],
-          "docs": [
-            " Sets the resource used per virual node in cluster.",
-            "",
-            " This endpoint sets the resource value that is being used by each virtual node in the cluster.",
-            " If there are existing virtual nodes in the cluster the resource for its physical nodes will be recalculated.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            " * `new_resource_per_v_node` - Resource value that will be allocated for every virtual node in the cluster.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `ClusterNodeReplaced` event on successful virtual node reassignment.",
-            "",
-            " # Errors",
-            "",
-            " * `ClusterDoesNotExist` error if the cluster does not exist.",
-            " * `OnlyClusterManager` error if the caller is not the cluster manager.",
-            " * `NodeDoesNotExist` error if the new Storage node does not exist.",
-            " * `VNodeIsNotAssignedToNode(ClusterId, VNodeToken)` error if the there is some virtual node that is being reasigned, but this virtual node is not assigned to any physical node.",
-            " * `InsufficientClusterResources` - error if there is not enough resources in the cluster.",
-            " * `InsufficientNodeResources` - error if there is not enough resources in a physical node."
-          ],
-          "label": "cluster_set_resource_per_v_node",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0xbca5ef71"
-        },
-        {
-          "args": [
-            {
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            }
-          ],
-          "docs": [
-            " Gets a cluster.",
-            "",
-            " This endpoint gets the targeting cluster along with its parameters, Storage and CDN nodes.",
-            "",
-            " # Parameters",
-            "",
-            " * `cluster_id` - ID of the targeting cluster.",
-            "",
-            " # Output",
-            "",
-            " Returns `ClusterInfo` data transfer object.",
-            "",
-            " # Errors",
-            "",
-            " * `ClusterDoesNotExist` error if the cluster does not exist."
+            " Get the current status of a cluster."
           ],
           "label": "cluster_get",
           "mutates": false,
@@ -2313,7 +1389,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 52
+            "type": 51
           },
           "selector": "0xe75411f5"
         },
@@ -2325,7 +1401,7 @@
                 "displayName": [
                   "u32"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -2334,7 +1410,7 @@
                 "displayName": [
                   "u32"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -2343,61 +1419,56 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 41
+                "type": 43
               }
             }
           ],
           "docs": [
-            " Gets a paginated list of clusters.",
+            " Iterate through all clusters.",
             "",
-            " This endpoint gets a paginated list of clusters along with their parameters, Storage and CDN nodes.",
             " The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.",
             " The optimal `limit` depends on the size of params.",
             "",
-            " # Parameters",
-            "",
-            " * `offset` - starting offset.",
-            " * `limit` - page limit.",
-            " * `filter_manager_id` - optional filter by cluster manager.",
-            "",
-            " # Errors",
-            "",
-            " No errors. In case a pagination param is out of bounds, an empty list will be returned."
+            " The results can be filtered by manager. Note that paging must still be completed fully."
           ],
           "label": "cluster_list",
           "mutates": false,
           "payable": false,
           "returnType": {
             "displayName": [],
-            "type": 54
+            "type": 53
           },
           "selector": "0xd9db9d44"
         },
         {
           "args": [
             {
-              "label": "cluster_id",
+              "label": "cdn_node_ids",
               "type": {
                 "displayName": [
-                  "ClusterId"
+                  "Vec"
                 ],
-                "type": 6
+                "type": 20
               }
             }
           ],
           "docs": [
-            " Trigger the distribution of revenues from the cluster to the providers."
+            " Create a new cluster and return its `cluster_id`.",
+            "",
+            " The caller will be its first manager.",
+            "",
+            " The CDN node ids are provided, which will form a cluster."
           ],
-          "label": "cluster_distribute_revenues",
+          "label": "cdn_cluster_create",
           "mutates": true,
-          "payable": false,
+          "payable": true,
           "returnType": {
             "displayName": [
-              "Result"
+              "ClusterId"
             ],
-            "type": 44
+            "type": 9
           },
-          "selector": "0xe71e66fc"
+          "selector": "0x4344cd7e"
         },
         {
           "args": [
@@ -2407,7 +1478,7 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -2427,9 +1498,7 @@
           "mutates": true,
           "payable": true,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0x7578922a"
@@ -2442,7 +1511,7 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
+                "type": 9
               }
             }
           ],
@@ -2454,9 +1523,9 @@
           "payable": true,
           "returnType": {
             "displayName": [
-              "Result"
+              "Balance"
             ],
-            "type": 56
+            "type": 12
           },
           "selector": "0xa1e3ea8a"
         },
@@ -2468,7 +1537,7 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -2477,7 +1546,7 @@
                 "displayName": [
                   "Vec"
                 ],
-                "type": 57
+                "type": 55
               }
             },
             {
@@ -2504,7 +1573,7 @@
                 "displayName": [
                   "u64"
                 ],
-                "type": 28
+                "type": 23
               }
             }
           ],
@@ -2513,16 +1582,14 @@
             "",
             " As a result CDN cluster revenue increases, which can be distributed between CDN node providers via method cdn_cluster_distribute_revenues."
           ],
-          "label": "cluster_put_cdn_revenue",
+          "label": "cdn_cluster_put_revenue",
           "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
-          "selector": "0xeb8ec51c"
+          "selector": "0x7219be3f"
         },
         {
           "args": [
@@ -2532,7 +1599,7 @@
                 "displayName": [
                   "ClusterId"
                 ],
-                "type": 6
+                "type": 9
               }
             }
           ],
@@ -2543,16 +1610,84 @@
             "",
             " Undistributed payments will be trasnferred, CDN cluster revenue will decrease."
           ],
-          "label": "cluster_distribute_cdn_revenue",
+          "label": "cdn_cluster_distribute_revenues",
           "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0xfa8d570d"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Get the current status of a cluster."
+          ],
+          "label": "cdn_cluster_get",
+          "mutates": false,
           "payable": false,
           "returnType": {
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 61
           },
-          "selector": "0x804ac6e0"
+          "selector": "0x4b22fbf1"
+        },
+        {
+          "args": [
+            {
+              "label": "offset",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "limit",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "filter_manager_id",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 43
+              }
+            }
+          ],
+          "docs": [
+            " Iterate through all clusters.",
+            "",
+            " The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.",
+            " The optimal `limit` depends on the size of params.",
+            "",
+            " The results can be filtered by manager. Note that paging must still be completed fully."
+          ],
+          "label": "cdn_cluster_list",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 63
+          },
+          "selector": "0xb242a64f"
         },
         {
           "args": [
@@ -2562,14 +1697,14 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             },
             {
-              "label": "cdn_node_key",
+              "label": "node_id",
               "type": {
                 "displayName": [
-                  "CdnNodeKey"
+                  "NodeId"
                 ],
                 "type": 9
               }
@@ -2590,12 +1725,7 @@
           "label": "set_commit",
           "mutates": true,
           "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
+          "returnType": null,
           "selector": "0xe445e1fd"
         },
         {
@@ -2606,7 +1736,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             }
           ],
@@ -2627,10 +1757,10 @@
         {
           "args": [
             {
-              "label": "cdn_node_key",
+              "label": "node",
               "type": {
                 "displayName": [
-                  "CdnNodeKey"
+                  "NodeId"
                 ],
                 "type": 9
               }
@@ -2658,7 +1788,7 @@
                 "displayName": [
                   "EraConfig"
                 ],
-                "type": 61
+                "type": 65
               }
             }
           ],
@@ -2669,9 +1799,7 @@
           "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0x49a5b8f7"
@@ -2688,7 +1816,7 @@
             "displayName": [
               "EraStatus"
             ],
-            "type": 62
+            "type": 66
           },
           "selector": "0x617f696b"
         },
@@ -2704,197 +1832,128 @@
             "displayName": [
               "EraConfig"
             ],
-            "type": 61
+            "type": 65
           },
           "selector": "0x84b61468"
         },
         {
           "args": [
             {
-              "label": "cdn_node_key",
+              "label": "manager",
               "type": {
                 "displayName": [
-                  "CdnNodeKey"
+                  "AccountId"
                 ],
-                "type": 9
-              }
-            },
-            {
-              "label": "cdn_node_params",
-              "type": {
-                "displayName": [
-                  "CdnNodeParams"
-                ],
-                "type": 13
+                "type": 8
               }
             }
           ],
           "docs": [
-            " Creates a CDN node",
+            " As node provider, authorize a cluster manager to use his nodes."
+          ],
+          "label": "cdn_node_trust_manager",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0x372daa96"
+        },
+        {
+          "args": [
+            {
+              "label": "manager",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " As node provider, revoke the authorization of a cluster manager to use his nodes."
+          ],
+          "label": "cdn_node_distrust_manager",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0xf67f5438"
+        },
+        {
+          "args": [
+            {
+              "label": "node_params",
+              "type": {
+                "displayName": [
+                  "Params"
+                ],
+                "type": 16
+              }
+            }
+          ],
+          "docs": [
+            " Create a new node and return its `node_id`.",
             "",
-            " This endpoint creates a CDN node with specific parameters.",
-            " The caller will be the node owner (node provider).",
+            " The caller will be its owner.",
             "",
-            " # Parameters",
-            "",
-            " * `cdn_node_key` - Public Keys of the CDN node that should be treated as node identifier.",
-            " * `cdn_node_params` - [CDN node parameters](https://docs.cere.network/ddc/protocols/contract-params-schema#node-params.proto) in protobuf format.",
-            "",
-            " # Output",
-            "",
-            " Returns Public Key of the created CDN node.",
-            "",
-            " # Events",
-            "",
-            " * `CdnNodeCreated` event on successful CDN node creation.",
-            "",
-            " # Errors",
-            "",
-            " * `CdnNodeAlreadyExists` error if a CDN node with the same Public Key is already created.",
-            " * `InvalidParams(message)` error if there is some invalid configuration parameter."
+            " `node_params` is configuration used by clients and nodes. In particular, this contains the URL to the service. See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
           ],
           "label": "cdn_node_create",
           "mutates": true,
           "payable": true,
           "returnType": {
             "displayName": [
-              "Result"
+              "NodeId"
             ],
-            "type": 64
+            "type": 9
           },
           "selector": "0xe8aa4ade"
         },
         {
           "args": [
             {
-              "label": "cdn_node_key",
+              "label": "node_id",
               "type": {
                 "displayName": [
-                  "CdnNodeKey"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [
-            " Removes a CDN node.",
-            "",
-            " This endpoint removes the targeting CDN Node if it is not added to some cluster.",
-            " Only a node that is not a member of some cluster can be removed.",
-            "",
-            " # Parameters",
-            "",
-            " * `cdn_node_key` - Public Key associated with the CDN node.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `CdnNodeRemoved` event on successful CDN node removal.",
-            "",
-            " # Errors",
-            "",
-            " * `OnlyCdnNodeProvider` error if the caller is not the CDN node owner.",
-            " * `CdnNodeDoesNotExist` error if the CDN node does not exist.",
-            " * `CdnNodeIsAddedToCluster(ClusterId)` error if the removing CDN node is added to some cluster."
-          ],
-          "label": "cdn_node_remove",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0xe068fb34"
-        },
-        {
-          "args": [
-            {
-              "label": "cdn_node_key",
-              "type": {
-                "displayName": [
-                  "CdnNodeKey"
+                  "NodeId"
                 ],
                 "type": 9
               }
             },
             {
-              "label": "cdn_node_params",
+              "label": "params",
               "type": {
                 "displayName": [
-                  "CdnNodeParams"
+                  "NodeParams"
                 ],
-                "type": 13
+                "type": 16
               }
             }
           ],
           "docs": [
-            " Sets parameters for the targeting CDN node.",
+            " Change the `node_params`, which is configuration used by clients and nodes.",
             "",
-            " This endpoint updates [CDN node parameters](https://docs.cere.network/ddc/protocols/contract-params-schema#node-params.proto) in protobuf format.",
-            " All CDN node parameters must be specified as the endpoint works using SET approach.",
-            "",
-            " # Parameters",
-            "",
-            " * `cdn_node_key` - Public Key associated with the CDN node.",
-            " * `cdn_node_params` - [CDN node parameters](https://docs.cere.network/ddc/protocols/contract-params-schema#node-params.proto) in protobuf format.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `CdnNodeParamsSet` event on successful CDN node params setting.",
-            "",
-            " # Errors",
-            "",
-            " * `OnlyCdnNodeProvider` error if the caller is not the CDN node owner.",
-            " * `CdnNodeDoesNotExist` error if the CDN node does not exist."
+            " See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
           ],
-          "label": "cdn_node_set_params",
+          "label": "cdn_node_change_params",
           "mutates": true,
           "payable": true,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0xdf8b696e"
+          "returnType": null,
+          "selector": "0xf52c20f5"
         },
         {
           "args": [
             {
-              "label": "cdn_node_key",
+              "label": "node_id",
               "type": {
                 "displayName": [
-                  "CdnNodeKey"
+                  "NodeId"
                 ],
                 "type": 9
               }
             }
           ],
           "docs": [
-            " Gets a CDN node.",
-            "",
-            " This endpoint gets the targeting CDN node along with its parameters.",
-            "",
-            " # Parameters",
-            "",
-            " * `cdn_node_key` - Public Key associated with the CDN node.",
-            "",
-            " # Output",
-            "",
-            " Returns `CdnNodeInfo` data transfer object.",
-            "",
-            " # Errors",
-            "",
-            " * `CdnNodeDoesNotExist` error if the CDN node does not exist."
+            " Get the current state of the cdn node"
           ],
           "label": "cdn_node_get",
           "mutates": false,
@@ -2903,7 +1962,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 65
+            "type": 68
           },
           "selector": "0xf9a5a813"
         },
@@ -2915,7 +1974,7 @@
                 "displayName": [
                   "u32"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -2924,7 +1983,7 @@
                 "displayName": [
                   "u32"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -2933,45 +1992,78 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 41
+                "type": 43
               }
             }
           ],
           "docs": [
-            " Gets a paginated list of CDN nodes.",
+            " Iterate through all nodes.",
             "",
-            " This endpoint gets a paginated list of CDN nodes along with their parameters.",
             " The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.",
             " The optimal `limit` depends on the size of params.",
             "",
-            " # Parameters",
-            "",
-            " * `offset` - starting offset.",
-            " * `limit` - page limit.",
-            " * `filter_provider_id` - optional filter by CDN node owner.",
-            "",
-            " # Errors",
-            "",
-            " No errors. In case a pagination param is out of bounds, an empty list will be returned."
+            " The results can be filtered by owner. Note that paging must still be completed fully."
           ],
           "label": "cdn_node_list",
           "mutates": false,
           "payable": false,
           "returnType": {
             "displayName": [],
-            "type": 67
+            "type": 70
           },
           "selector": "0xf8589aae"
         },
         {
           "args": [
             {
-              "label": "node_key",
+              "label": "manager",
               "type": {
                 "displayName": [
-                  "NodeKey"
+                  "AccountId"
                 ],
-                "type": 9
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " As node provider, authorize a cluster manager to use his nodes."
+          ],
+          "label": "node_trust_manager",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0x6fd54a01"
+        },
+        {
+          "args": [
+            {
+              "label": "manager",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " As node provider, revoke the authorization of a cluster manager to use his nodes."
+          ],
+          "label": "node_distrust_manager",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0x40912279"
+        },
+        {
+          "args": [
+            {
+              "label": "rent_per_month",
+              "type": {
+                "displayName": [
+                  "Balance"
+                ],
+                "type": 12
               }
             },
             {
@@ -2980,7 +2072,7 @@
                 "displayName": [
                   "NodeParams"
                 ],
-                "type": 13
+                "type": 16
               }
             },
             {
@@ -2989,187 +2081,92 @@
                 "displayName": [
                   "Resource"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
-              "label": "rent_v_node_per_month",
+              "label": "node_tag",
               "type": {
                 "displayName": [
-                  "Balance"
+                  "NodeTag"
                 ],
-                "type": 12
+                "type": 31
+              }
+            },
+            {
+              "label": "pubkey",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
               }
             }
           ],
           "docs": [
-            " Creates a Storage node",
+            " Create a new node and return its `node_id`.",
             "",
-            " This endpoint creates a Storage node with specific parameters.",
-            " The caller will be the node owner (node provider).",
+            " The caller will be its owner.",
             "",
-            " # Parameters",
-            "",
-            " * `node_key` - Public Keys of the Storage node that should be treated as node identifier.",
-            " * `node_params` - [Storage node parameters](https://docs.cere.network/ddc/protocols/contract-params-schema#node-params.proto) in protobuf format.",
-            " * `capacity` - Measure used to evaluate physical node hardware resources.",
-            " * `rent_v_node_per_month` - Renting per month.",
-            "",
-            " # Output",
-            "",
-            " Returns Public Key of the created Storage node.",
-            "",
-            " # Events",
-            "",
-            " * `NodeCreated` event on successful Storage node creation.",
-            "",
-            " # Errors",
-            "",
-            " * `NodeAlreadyExists` error if a Storage node with the same Public Key is already created.",
-            " * `InvalidParams(message)` error if there is some invalid configuration parameter."
+            " `node_params` is configuration used by clients and nodes. In particular, this contains the URL to the service. See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
           ],
           "label": "node_create",
           "mutates": true,
           "payable": true,
           "returnType": {
             "displayName": [
-              "Result"
+              "NodeId"
             ],
-            "type": 64
+            "type": 9
           },
           "selector": "0xb77ac1bb"
         },
         {
           "args": [
             {
-              "label": "node_key",
+              "label": "node_id",
               "type": {
                 "displayName": [
-                  "NodeKey"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [
-            " Removes a Storage node.",
-            "",
-            " This endpoint removes the targeting Storage Node if it is not added to some cluster.",
-            " Only a node that is not a member of some cluster can be removed.",
-            "",
-            " # Parameters",
-            "",
-            " * `node_key` - Public Key associated with the Storage node.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `NodeRemoved` event on successful Storage node removal.",
-            "",
-            " # Errors",
-            "",
-            " * `OnlyNodeProvider` error if the caller is not the Storage node owner.",
-            " * `NodeDoesNotExist` error if the Storage node does not exist.",
-            " * `NodeIsAddedToCluster(ClusterId)` error if the removing Storage node is added to some cluster."
-          ],
-          "label": "node_remove",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0x42e5f273"
-        },
-        {
-          "args": [
-            {
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
+                  "NodeId"
                 ],
                 "type": 9
               }
             },
             {
-              "label": "node_params",
+              "label": "params",
               "type": {
                 "displayName": [
                   "NodeParams"
                 ],
-                "type": 13
+                "type": 16
               }
             }
           ],
           "docs": [
-            " Sets parameters for the targeting Storage node.",
+            " Change the `node_params`, which is configuration used by clients and nodes.",
             "",
-            " This endpoint updates [Storage node parameters](https://docs.cere.network/ddc/protocols/contract-params-schema#node-params.proto) in protobuf format.",
-            " All Storage node parameters must be specified as the endpoint works using SET approach.",
-            "",
-            " # Parameters",
-            "",
-            " * `node_key` - Public Key associated with the Storage node.",
-            " * `node_params` - [Storage node parameters](https://docs.cere.network/ddc/protocols/contract-params-schema#node-params.proto) in protobuf format.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `NodeParamsSet` event on successful Storage node params setting.",
-            "",
-            " # Errors",
-            "",
-            " * `OnlyNodeProvider` error if the caller is not the Storage node owner.",
-            " * `NodeDoesNotExist` error if the Storage node does not exist."
+            " See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
           ],
-          "label": "node_set_params",
+          "label": "node_change_params",
           "mutates": true,
           "payable": true,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0xfb74fd2e"
+          "returnType": null,
+          "selector": "0x258ccb2a"
         },
         {
           "args": [
             {
-              "label": "node_key",
+              "label": "node_id",
               "type": {
                 "displayName": [
-                  "NodeKey"
+                  "NodeId"
                 ],
                 "type": 9
               }
             }
           ],
           "docs": [
-            " Gets a Storage node.",
-            "",
-            " This endpoint gets the targeting Storage node along with its parameters.",
-            "",
-            " # Parameters",
-            "",
-            " * `node_key` - Public Key associated with the Storage node.",
-            "",
-            " # Output",
-            "",
-            " Returns `NodeInfo` data transfer object.",
-            "",
-            " # Errors",
-            "",
-            " * `NodeDoesNotExist` error if the Storage node does not exist."
+            " Get the current status of a node."
           ],
           "label": "node_get",
           "mutates": false,
@@ -3178,9 +2175,35 @@
             "displayName": [
               "Result"
             ],
-            "type": 69
+            "type": 72
           },
           "selector": "0x847f3997"
+        },
+        {
+          "args": [
+            {
+              "label": "pubkey",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " Get the current status of a node by a public key."
+          ],
+          "label": "node_get_by_pubkey",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 72
+          },
+          "selector": "0x7f6c82d4"
         },
         {
           "args": [
@@ -3190,7 +2213,7 @@
                 "displayName": [
                   "u32"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -3199,7 +2222,7 @@
                 "displayName": [
                   "u32"
                 ],
-                "type": 6
+                "type": 9
               }
             },
             {
@@ -3208,33 +2231,24 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 41
+                "type": 43
               }
             }
           ],
           "docs": [
-            " Gets a paginated list of Storage nodes.",
+            " Iterate through all nodes.",
             "",
-            " This endpoint gets a paginated list of Storage nodes along with their parameters.",
             " The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.",
             " The optimal `limit` depends on the size of params.",
             "",
-            " # Parameters",
-            "",
-            " * `offset` - starting offset.",
-            " * `limit` - page limit.",
-            " * `filter_provider_id` - optional filter by Storage node owner.",
-            "",
-            " # Errors",
-            "",
-            " No errors. In case a pagination param is out of bounds, an empty list will be returned."
+            " The results can be filtered by owner. Note that paging must still be completed fully."
           ],
           "label": "node_list",
           "mutates": false,
           "payable": false,
           "returnType": {
             "displayName": [],
-            "type": 71
+            "type": 74
           },
           "selector": "0x423286d6"
         },
@@ -3243,16 +2257,40 @@
           "docs": [
             " Get the Fee Percentage Basis Points that will be charged by the protocol"
           ],
-          "label": "get_protocol_fee_bp",
+          "label": "get_fee_bp",
           "mutates": false,
           "payable": false,
           "returnType": {
             "displayName": [
-              "u128"
+              "u32"
             ],
-            "type": 12
+            "type": 9
           },
-          "selector": "0x650857a8"
+          "selector": "0x0d5daf5f"
+        },
+        {
+          "args": [
+            {
+              "label": "fee_bp",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Return the last commit submitted by CDN node operator"
+          ],
+          "label": "set_fee_bp",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0xc5e3e2ca"
         },
         {
           "args": [],
@@ -3266,25 +2304,33 @@
             "displayName": [
               "Cash"
             ],
-            "type": 18
+            "type": 19
           },
           "selector": "0x07c63885"
         },
         {
-          "args": [],
-          "docs": [
-            " Get the Fee Percentage Basis Points that will be charged by the protocol"
+          "args": [
+            {
+              "label": "amount",
+              "type": {
+                "displayName": [
+                  "u128"
+                ],
+                "type": 12
+              }
+            }
           ],
-          "label": "get_network_fee_config",
-          "mutates": false,
+          "docs": [
+            " Pay the revenues accumulated by the protocol"
+          ],
+          "label": "protocol_withdraw_revenues",
+          "mutates": true,
           "payable": false,
           "returnType": {
-            "displayName": [
-              "NetworkFeeConfig"
-            ],
-            "type": 73
+            "displayName": [],
+            "type": 44
           },
-          "selector": "0xd1503f07"
+          "selector": "0x85c6fa6d"
         },
         {
           "args": [],
@@ -3296,9 +2342,7 @@
           "mutates": true,
           "payable": true,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0xc311af62"
@@ -3322,9 +2366,7 @@
           "mutates": true,
           "payable": true,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0xe9fad0bf"
@@ -3337,7 +2379,7 @@
                 "displayName": [
                   "Cash"
                 ],
-                "type": 18
+                "type": 19
               }
             }
           ],
@@ -3348,9 +2390,7 @@
           "mutates": true,
           "payable": true,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0xf7ea2c67"
@@ -3366,9 +2406,7 @@
           "mutates": true,
           "payable": true,
           "returnType": {
-            "displayName": [
-              "Result"
-            ],
+            "displayName": [],
             "type": 44
           },
           "selector": "0x98173716"
@@ -3381,7 +2419,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             }
           ],
@@ -3395,7 +2433,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 74
+            "type": 76
           },
           "selector": "0x1d4220fa"
         },
@@ -3435,23 +2473,18 @@
           "label": "account_set_usd_per_cere",
           "mutates": true,
           "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
+          "returnType": null,
           "selector": "0x48d45ee8"
         },
         {
           "args": [
             {
-              "label": "account_id",
+              "label": "grantee",
               "type": {
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             },
             {
@@ -3460,28 +2493,13 @@
                 "displayName": [
                   "Permission"
                 ],
-                "type": 75
+                "type": 77
               }
             }
           ],
           "docs": [
-            " Checks for permission existence.",
-            "",
-            " This endpoint checks whether the given account has the given permission.",
-            " Super-admin will always have all permissions.",
-            "",
-            " # Parameters",
-            "",
-            " * `account_id` - account to check permissions.",
-            " * `permission` - permission to check.",
-            "",
-            " # Output",
-            "",
-            " Returns true if the account has permissions, false otherwise.",
-            "",
-            " # Errors",
-            "",
-            " No errors."
+            " Check whether the given account has the given permission currently,",
+            " or the SuperAdmin permission."
           ],
           "label": "has_permission",
           "mutates": false,
@@ -3497,104 +2515,12 @@
         {
           "args": [
             {
-              "label": "manager_id",
-              "type": {
-                "displayName": [
-                  "AccountId"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [
-            " Grants permissions for a cluster manager.",
-            "",
-            " This endpoint grants permissions for a cluster manager ro manage Storage or CDN node owner.",
-            " After the permission is granted, the cluster manager can add nodes to the cluster.",
-            " Permissions can be granted by Storage or CDN node owner.",
-            "",
-            " # Parameters",
-            "",
-            " * `manager_id` - cluster manager account.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `PermissionGranted` event on successful manager permissions granting",
-            "",
-            " # Errors",
-            "",
-            " No errors. The endpoint is idempotent."
-          ],
-          "label": "grant_trusted_manager_permission",
-          "mutates": true,
-          "payable": true,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0xea0cbdcd"
-        },
-        {
-          "args": [
-            {
-              "label": "manager_id",
-              "type": {
-                "displayName": [
-                  "AccountId"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [
-            " Revokes permissions from cluster manager.",
-            "",
-            " This endpoint revokes permissions from a cluster manager to manage Storage or CDN node owner.",
-            " After the permission is revoked, the cluster manager can add nodes to the cluster.",
-            " Permissions can be revoked by Storage or CDN node owner.",
-            "",
-            " # Parameters",
-            "",
-            " * `manager_id` - cluster manager account.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `PermissionRevoked` event on successful manager permissions revoking",
-            "",
-            " # Errors",
-            "",
-            " No errors. The endpoint is idempotent."
-          ],
-          "label": "revoke_trusted_manager_permission",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0x83532355"
-        },
-        {
-          "args": [
-            {
               "label": "grantee",
               "type": {
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             },
             {
@@ -3603,41 +2529,17 @@
                 "displayName": [
                   "Permission"
                 ],
-                "type": 75
+                "type": 77
               }
             }
           ],
           "docs": [
-            " Grants any permission.",
-            "",
-            " This endpoint grants any permissions for any account by the Super-admin.",
-            "",
-            " # Parameters",
-            "",
-            " * `grantee` - account to grant permission.",
-            " * `permission` - permission type.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `PermissionGranted` event on successful permissions granting",
-            "",
-            " # Errors",
-            "",
-            " Returns `OnlySuperAdmin` error if the caller is not the Super-admin."
+            " As SuperAdmin, grant any permission to any account."
           ],
           "label": "admin_grant_permission",
           "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
+          "payable": true,
+          "returnType": null,
           "selector": "0xbe41ea55"
         },
         {
@@ -3648,7 +2550,7 @@
                 "displayName": [
                   "AccountId"
                 ],
-                "type": 9
+                "type": 8
               }
             },
             {
@@ -3657,156 +2559,18 @@
                 "displayName": [
                   "Permission"
                 ],
-                "type": 75
+                "type": 77
               }
             }
           ],
           "docs": [
-            " Revokes any permission.",
-            "",
-            " This endpoint revokes any permissions from any account by the Super-admin.",
-            "",
-            " # Parameters",
-            "",
-            " * `grantee` - account to revoke permission.",
-            " * `permission` - permission type.",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `PermissionRevoked` event on successful permissions revoking",
-            "",
-            " # Errors",
-            "",
-            " Returns `OnlySuperAdmin` error if the caller is not the Super-admin."
+            " As SuperAdmin, revoke any permission to any account."
           ],
           "label": "admin_revoke_permission",
           "mutates": true,
           "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
+          "returnType": null,
           "selector": "0x6b150666"
-        },
-        {
-          "args": [
-            {
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
-                "type": 9
-              }
-            },
-            {
-              "label": "new_owner",
-              "type": {
-                "displayName": [
-                  "AccountId"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [
-            " Transfers Storage node ownership.",
-            "",
-            " This endpoint transfers Storage node ownership from Super-admin account to the targeting account forever.",
-            " This action is usually required only once after the Storage node certification process.",
-            "",
-            " # Parameters",
-            "",
-            " * `node_key` - Public Key associated with the Storage node.",
-            " * `new_owner` - New Storage node owner",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `NodeOwnershipTransferred` event on successful Storage node ownership transfer",
-            "",
-            " # Errors",
-            "",
-            " * `OnlySuperAdmin` error if the caller is not the Super-admin.",
-            " * `NodeDoesNotExist` error if the Storage node does not exist.",
-            " * `NodeProviderIsNotSuperAdmin` error if the owner of the targeting node is not the Super-admin."
-          ],
-          "label": "admin_transfer_node_ownership",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0x783b382d"
-        },
-        {
-          "args": [
-            {
-              "label": "cdn_node_key",
-              "type": {
-                "displayName": [
-                  "CdnNodeKey"
-                ],
-                "type": 9
-              }
-            },
-            {
-              "label": "new_owner",
-              "type": {
-                "displayName": [
-                  "AccountId"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [
-            " Transfers CDN node ownership.",
-            "",
-            " This endpoint transfers CDN node ownership from Super-admin account to the targeting account forever.",
-            " This action is usually required only once after the CDN node certification process.",
-            "",
-            " # Parameters",
-            "",
-            " * `cdn_node_key` - Public Key associated with the CDN node.",
-            " * `new_owner` - CDN node owner",
-            "",
-            " # Output",
-            "",
-            " Returns nothing.",
-            "",
-            " # Events",
-            "",
-            " * `CdnNodeOwnershipTransferred` event on successful CDN node ownership transfer",
-            "",
-            " # Errors",
-            "",
-            " * `OnlySuperAdmin` error if the caller is not the Super-admin.",
-            " * `CdnNodeDoesNotExist` error if the Storage node does not exist.",
-            " * `CdnNodeOwnerIsNotSuperAdmin` error if the owner of the targeting node is not the Super-admin."
-          ],
-          "label": "admin_transfer_cdn_node_ownership",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0xcd9821be"
         },
         {
           "args": [
@@ -3828,39 +2592,8 @@
           "label": "admin_withdraw",
           "mutates": true,
           "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
+          "returnType": null,
           "selector": "0x2f6e0868"
-        },
-        {
-          "args": [
-            {
-              "label": "amount",
-              "type": {
-                "displayName": [
-                  "Balance"
-                ],
-                "type": 12
-              }
-            }
-          ],
-          "docs": [
-            " Pay the revenues accumulated by the protocol"
-          ],
-          "label": "admin_withdraw_protocol_revenues",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0xa781da48"
         },
         {
           "args": [
@@ -3868,49 +2601,20 @@
               "label": "config",
               "type": {
                 "displayName": [
-                  "NetworkFeeConfig"
+                  "FeeConfig"
                 ],
-                "type": 73
+                "type": 78
               }
             }
           ],
           "docs": [
             " As SuperAdmin, set the network and cluster fee configuration."
           ],
-          "label": "admin_set_network_fee_config",
+          "label": "admin_set_fee_config",
           "mutates": true,
           "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0x14649395"
-        },
-        {
-          "args": [
-            {
-              "label": "protocol_fee_bp",
-              "type": {
-                "displayName": [
-                  "BasisPoints"
-                ],
-                "type": 12
-              }
-            }
-          ],
-          "docs": [],
-          "label": "admin_set_protocol_fee_bp",
-          "mutates": true,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 44
-          },
-          "selector": "0x00e00535"
+          "returnType": null,
+          "selector": "0x00d441e7"
         },
         {
           "args": [],
@@ -3924,90 +2628,9 @@
             "displayName": [
               "Vec"
             ],
-            "type": 15
+            "type": 14
           },
           "selector": "0xef03ead7"
-        },
-        {
-          "args": [
-            {
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            }
-          ],
-          "docs": [],
-          "label": "get_v_nodes_by_cluster",
-          "mutates": false,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Vec"
-            ],
-            "type": 27
-          },
-          "selector": "0x94eb8da6"
-        },
-        {
-          "args": [
-            {
-              "label": "node_key",
-              "type": {
-                "displayName": [
-                  "NodeKey"
-                ],
-                "type": 9
-              }
-            }
-          ],
-          "docs": [],
-          "label": "get_v_nodes_by_node",
-          "mutates": false,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Vec"
-            ],
-            "type": 27
-          },
-          "selector": "0xf0dfbd13"
-        },
-        {
-          "args": [
-            {
-              "label": "cluster_id",
-              "type": {
-                "displayName": [
-                  "ClusterId"
-                ],
-                "type": 6
-              }
-            },
-            {
-              "label": "v_node",
-              "type": {
-                "displayName": [
-                  "VNodeToken"
-                ],
-                "type": 28
-              }
-            }
-          ],
-          "docs": [],
-          "label": "get_node_by_v_node",
-          "mutates": false,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "Result"
-            ],
-            "type": 64
-          },
-          "selector": "0xea47048e"
         }
       ]
     },
@@ -4025,7 +2648,7 @@
                         "ty": 0
                       }
                     },
-                    "name": "perms"
+                    "name": null
                   }
                 ]
               }
@@ -4043,34 +2666,7 @@
                         "ty": 6
                       }
                     },
-                    "name": "next_bucket_id"
-                  },
-                  {
-                    "layout": {
-                      "cell": {
-                        "key": "0x0200000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 7
-                      }
-                    },
-                    "name": "buckets"
-                  },
-                  {
-                    "layout": {
-                      "cell": {
-                        "key": "0x0300000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 14
-                      }
-                    },
-                    "name": "writers"
-                  },
-                  {
-                    "layout": {
-                      "cell": {
-                        "key": "0x0400000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 14
-                      }
-                    },
-                    "name": "readers"
+                    "name": null
                   }
                 ]
               }
@@ -4084,20 +2680,56 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0500000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 6
+                        "key": "0x0200000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 13
                       }
                     },
-                    "name": "next_cluster_id"
+                    "name": "writers"
                   },
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0600000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 16
+                        "key": "0x0300000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 13
                       }
                     },
-                    "name": "clusters"
+                    "name": "readers"
+                  }
+                ]
+              }
+            },
+            "name": "buckets_perms"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0400000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 15
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "bucket_params"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0500000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 17
+                      }
+                    },
+                    "name": null
                   }
                 ]
               }
@@ -4111,20 +2743,47 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0700000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 19
+                        "key": "0x0600000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 24
                       }
                     },
-                    "name": "cdn_nodes"
-                  },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "cdn_clusters"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0700000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 15
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "cluster_params"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
                   {
                     "layout": {
                       "cell": {
                         "key": "0x0800000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 15
+                        "ty": 26
                       }
                     },
-                    "name": "keys"
+                    "name": null
                   }
                 ]
               }
@@ -4139,19 +2798,37 @@
                     "layout": {
                       "cell": {
                         "key": "0x0900000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 24
+                        "ty": 15
                       }
                     },
-                    "name": "nodes"
-                  },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "cdn_node_params"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
                   {
                     "layout": {
                       "cell": {
                         "key": "0x0a00000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 15
+                        "ty": 28
                       }
                     },
-                    "name": "keys"
+                    "name": "account_node"
+                  },
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0b00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 29
+                      }
+                    },
+                    "name": "nodes"
                   }
                 ]
               }
@@ -4165,34 +2842,16 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0b00000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 26
-                      }
-                    },
-                    "name": "v_nodes_map"
-                  },
-                  {
-                    "layout": {
-                      "cell": {
                         "key": "0x0c00000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 29
+                        "ty": 15
                       }
                     },
-                    "name": "nodes_map"
-                  },
-                  {
-                    "layout": {
-                      "cell": {
-                        "key": "0x0d00000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 31
-                      }
-                    },
-                    "name": "cluster_v_nodes_map"
+                    "name": null
                   }
                 ]
               }
             },
-            "name": "topology"
+            "name": "node_params"
           },
           {
             "layout": {
@@ -4201,20 +2860,38 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0e00000000000000000000000000000000000000000000000000000000000000",
+                        "key": "0x0d00000000000000000000000000000000000000000000000000000000000000",
                         "ty": 32
                       }
                     },
-                    "name": "accounts"
+                    "name": null
+                  },
+                  {
+                    "layout": {
+                      "struct": {
+                        "fields": [
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x0e00000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 12
+                              }
+                            },
+                            "name": null
+                          }
+                        ]
+                      }
+                    },
+                    "name": null
                   },
                   {
                     "layout": {
                       "cell": {
                         "key": "0x0f00000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 15
+                        "ty": 14
                       }
                     },
-                    "name": "accounts_keys"
+                    "name": null
                   }
                 ]
               }
@@ -4227,9 +2904,54 @@
                 "fields": [
                   {
                     "layout": {
+                      "struct": {
+                        "fields": [
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x1000000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 12
+                              }
+                            },
+                            "name": "network_fee_bp"
+                          },
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x1100000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 8
+                              }
+                            },
+                            "name": "network_fee_destination"
+                          },
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x1200000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 12
+                              }
+                            },
+                            "name": "cluster_management_fee_bp"
+                          }
+                        ]
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "network_fee"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
                       "cell": {
-                        "key": "0x1000000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 9
+                        "key": "0x1300000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 8
                       }
                     },
                     "name": "operator_id"
@@ -4237,7 +2959,7 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x1100000000000000000000000000000000000000000000000000000000000000",
+                        "key": "0x1400000000000000000000000000000000000000000000000000000000000000",
                         "ty": 34
                       }
                     },
@@ -4246,7 +2968,7 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x1200000000000000000000000000000000000000000000000000000000000000",
+                        "key": "0x1500000000000000000000000000000000000000000000000000000000000000",
                         "ty": 39
                       }
                     },
@@ -4259,8 +2981,8 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1300000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 28
+                                "key": "0x1600000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 23
                               }
                             },
                             "name": "start"
@@ -4268,8 +2990,8 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1400000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 28
+                                "key": "0x1700000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 23
                               }
                             },
                             "name": "interval"
@@ -4277,8 +2999,8 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1500000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 28
+                                "key": "0x1800000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 23
                               }
                             },
                             "name": "commit_duration"
@@ -4286,8 +3008,8 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1600000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 28
+                                "key": "0x1900000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 23
                               }
                             },
                             "name": "validation_duration"
@@ -4300,7 +3022,7 @@
                 ]
               }
             },
-            "name": "committer"
+            "name": "committer_store"
           },
           {
             "layout": {
@@ -4309,20 +3031,20 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x1700000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 12
+                        "key": "0x1a00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 8
                       }
                     },
-                    "name": "protocol_fee_bp"
+                    "name": "admin"
                   },
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x1800000000000000000000000000000000000000000000000000000000000000",
+                        "key": "0x1b00000000000000000000000000000000000000000000000000000000000000",
                         "ty": 9
                       }
                     },
-                    "name": "protocol_fee_destination"
+                    "name": "fee_bp"
                   },
                   {
                     "layout": {
@@ -4331,7 +3053,7 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1900000000000000000000000000000000000000000000000000000000000000",
+                                "key": "0x1c00000000000000000000000000000000000000000000000000000000000000",
                                 "ty": 12
                               }
                             },
@@ -4341,65 +3063,29 @@
                       }
                     },
                     "name": "revenues"
-                  },
-                  {
-                    "layout": {
-                      "struct": {
-                        "fields": [
-                          {
-                            "layout": {
-                              "cell": {
-                                "key": "0x1a00000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 12
-                              }
-                            },
-                            "name": "rate"
-                          }
-                        ]
-                      }
-                    },
-                    "name": "curr_converter"
-                  },
-                  {
-                    "layout": {
-                      "struct": {
-                        "fields": [
-                          {
-                            "layout": {
-                              "cell": {
-                                "key": "0x1b00000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 12
-                              }
-                            },
-                            "name": "network_fee_bp"
-                          },
-                          {
-                            "layout": {
-                              "cell": {
-                                "key": "0x1c00000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 9
-                              }
-                            },
-                            "name": "network_fee_destination"
-                          },
-                          {
-                            "layout": {
-                              "cell": {
-                                "key": "0x1d00000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 12
-                              }
-                            },
-                            "name": "cluster_management_fee_bp"
-                          }
-                        ]
-                      }
-                    },
-                    "name": "network_fee_config"
                   }
                 ]
               }
             },
-            "name": "protocol"
+            "name": "protocol_store"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x1d00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 41
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "topology_store"
           }
         ]
       }
@@ -4497,7 +3183,9 @@
         "id": 6,
         "type": {
           "def": {
-            "primitive": "u32"
+            "sequence": {
+              "type": 7
+            }
           }
         }
       },
@@ -4508,45 +3196,13 @@
             "composite": {
               "fields": [
                 {
-                  "name": "offset_key",
-                  "type": 4,
-                  "typeName": "Key"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "K",
-              "type": 6
-            },
-            {
-              "name": "V",
-              "type": 8
-            }
-          ],
-          "path": [
-            "ink_storage",
-            "lazy",
-            "mapping",
-            "Mapping"
-          ]
-        }
-      },
-      {
-        "id": 8,
-        "type": {
-          "def": {
-            "composite": {
-              "fields": [
-                {
                   "name": "owner_id",
-                  "type": 9,
+                  "type": 8,
                   "typeName": "AccountId"
                 },
                 {
                   "name": "cluster_id",
-                  "type": 6,
+                  "type": 9,
                   "typeName": "ClusterId"
                 },
                 {
@@ -4556,7 +3212,7 @@
                 },
                 {
                   "name": "resource_reserved",
-                  "type": 6,
+                  "type": 9,
                   "typeName": "Resource"
                 },
                 {
@@ -4566,13 +3222,8 @@
                 },
                 {
                   "name": "resource_consumption_cap",
-                  "type": 6,
+                  "type": 9,
                   "typeName": "Resource"
-                },
-                {
-                  "name": "bucket_params",
-                  "type": 13,
-                  "typeName": "BucketParams"
                 }
               ]
             }
@@ -4587,7 +3238,7 @@
         }
       },
       {
-        "id": 9,
+        "id": 8,
         "type": {
           "def": {
             "composite": {
@@ -4607,6 +3258,14 @@
         }
       },
       {
+        "id": 9,
+        "type": {
+          "def": {
+            "primitive": "u32"
+          }
+        }
+      },
+      {
         "id": 10,
         "type": {
           "def": {
@@ -4614,7 +3273,7 @@
               "fields": [
                 {
                   "name": "from",
-                  "type": 9,
+                  "type": 8,
                   "typeName": "AccountId"
                 },
                 {
@@ -4672,14 +3331,6 @@
         "id": 13,
         "type": {
           "def": {
-            "primitive": "str"
-          }
-        }
-      },
-      {
-        "id": 14,
-        "type": {
-          "def": {
             "composite": {
               "fields": [
                 {
@@ -4693,11 +3344,11 @@
           "params": [
             {
               "name": "K",
-              "type": 6
+              "type": 9
             },
             {
               "name": "V",
-              "type": 15
+              "type": 14
             }
           ],
           "path": [
@@ -4709,11 +3360,21 @@
         }
       },
       {
+        "id": 14,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 8
+            }
+          }
+        }
+      },
+      {
         "id": 15,
         "type": {
           "def": {
             "sequence": {
-              "type": 9
+              "type": 16
             }
           }
         }
@@ -4722,87 +3383,58 @@
         "id": 16,
         "type": {
           "def": {
-            "composite": {
-              "fields": [
-                {
-                  "name": "offset_key",
-                  "type": 4,
-                  "typeName": "Key"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "K",
-              "type": 6
-            },
-            {
-              "name": "V",
-              "type": 17
-            }
-          ],
-          "path": [
-            "ink_storage",
-            "lazy",
-            "mapping",
-            "Mapping"
-          ]
+            "primitive": "str"
+          }
         }
       },
       {
         "id": 17,
         "type": {
           "def": {
+            "sequence": {
+              "type": 18
+            }
+          }
+        }
+      },
+      {
+        "id": 18,
+        "type": {
+          "def": {
             "composite": {
               "fields": [
                 {
                   "name": "manager_id",
-                  "type": 9,
+                  "type": 8,
                   "typeName": "AccountId"
                 },
                 {
-                  "name": "cluster_params",
-                  "type": 13,
-                  "typeName": "ClusterParams"
-                },
-                {
-                  "name": "nodes_keys",
-                  "type": 15,
-                  "typeName": "Vec<NodeKey>"
-                },
-                {
-                  "name": "resource_per_v_node",
-                  "type": 6,
+                  "name": "resource_per_vnode",
+                  "type": 9,
                   "typeName": "Resource"
                 },
                 {
                   "name": "resource_used",
-                  "type": 6,
+                  "type": 9,
                   "typeName": "Resource"
                 },
                 {
                   "name": "revenues",
-                  "type": 18,
+                  "type": 19,
                   "typeName": "Cash"
+                },
+                {
+                  "name": "node_ids",
+                  "type": 20,
+                  "typeName": "Vec<NodeId>"
+                },
+                {
+                  "name": "v_nodes",
+                  "type": 21,
+                  "typeName": "Vec<Vec<u64>>"
                 },
                 {
                   "name": "total_rent",
-                  "type": 12,
-                  "typeName": "Balance"
-                },
-                {
-                  "name": "cdn_nodes_keys",
-                  "type": 15,
-                  "typeName": "Vec<CdnNodeKey>"
-                },
-                {
-                  "name": "cdn_revenues",
-                  "type": 18,
-                  "typeName": "Cash"
-                },
-                {
-                  "name": "cdn_usd_per_gb",
                   "type": 12,
                   "typeName": "Balance"
                 }
@@ -4819,7 +3451,7 @@
         }
       },
       {
-        "id": 18,
+        "id": 19,
         "type": {
           "def": {
             "composite": {
@@ -4841,67 +3473,121 @@
         }
       },
       {
-        "id": 19,
+        "id": 20,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 9
+            }
+          }
+        }
+      },
+      {
+        "id": 21,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 22
+            }
+          }
+        }
+      },
+      {
+        "id": 22,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 23
+            }
+          }
+        }
+      },
+      {
+        "id": 23,
+        "type": {
+          "def": {
+            "primitive": "u64"
+          }
+        }
+      },
+      {
+        "id": 24,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 25
+            }
+          }
+        }
+      },
+      {
+        "id": 25,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
-                  "name": "offset_key",
-                  "type": 4,
-                  "typeName": "Key"
+                  "name": "manager_id",
+                  "type": 8,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "cdn_nodes",
+                  "type": 20,
+                  "typeName": "Vec<NodeId>"
+                },
+                {
+                  "name": "resources_used",
+                  "type": 9,
+                  "typeName": "Resource"
+                },
+                {
+                  "name": "revenues",
+                  "type": 19,
+                  "typeName": "Cash"
+                },
+                {
+                  "name": "usd_per_gb",
+                  "type": 12,
+                  "typeName": "Balance"
                 }
               ]
             }
           },
-          "params": [
-            {
-              "name": "K",
-              "type": 9
-            },
-            {
-              "name": "V",
-              "type": 20
-            }
-          ],
           "path": [
-            "ink_storage",
-            "lazy",
-            "mapping",
-            "Mapping"
+            "ddc_bucket",
+            "ddc_bucket",
+            "cdn_cluster",
+            "entity",
+            "CdnCluster"
           ]
         }
       },
       {
-        "id": 20,
+        "id": 26,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 27
+            }
+          }
+        }
+      },
+      {
+        "id": 27,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "provider_id",
-                  "type": 9,
+                  "type": 8,
                   "typeName": "ProviderId"
                 },
                 {
                   "name": "undistributed_payment",
                   "type": 12,
                   "typeName": "Balance"
-                },
-                {
-                  "name": "cdn_node_params",
-                  "type": 13,
-                  "typeName": "CdnNodeParams"
-                },
-                {
-                  "name": "cluster_id",
-                  "type": 21,
-                  "typeName": "Option<ClusterId>"
-                },
-                {
-                  "name": "status_in_cluster",
-                  "type": 22,
-                  "typeName": "Option<NodeStatusInCluster>"
                 }
               ]
             }
@@ -4916,107 +3602,7 @@
         }
       },
       {
-        "id": 21,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "index": 0,
-                  "name": "None"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 6
-                    }
-                  ],
-                  "index": 1,
-                  "name": "Some"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "T",
-              "type": 6
-            }
-          ],
-          "path": [
-            "Option"
-          ]
-        }
-      },
-      {
-        "id": 22,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "index": 0,
-                  "name": "None"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 23
-                    }
-                  ],
-                  "index": 1,
-                  "name": "Some"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "T",
-              "type": 23
-            }
-          ],
-          "path": [
-            "Option"
-          ]
-        }
-      },
-      {
-        "id": 23,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "index": 0,
-                  "name": "ADDING"
-                },
-                {
-                  "index": 1,
-                  "name": "ACTIVE"
-                },
-                {
-                  "index": 2,
-                  "name": "DELETING"
-                },
-                {
-                  "index": 3,
-                  "name": "OFFLINE"
-                }
-              ]
-            }
-          },
-          "path": [
-            "ddc_bucket",
-            "ddc_bucket",
-            "node",
-            "entity",
-            "NodeStatusInCluster"
-          ]
-        }
-      },
-      {
-        "id": 24,
+        "id": 28,
         "type": {
           "def": {
             "composite": {
@@ -5032,11 +3618,11 @@
           "params": [
             {
               "name": "K",
-              "type": 9
+              "type": 8
             },
             {
               "name": "V",
-              "type": 25
+              "type": 9
             }
           ],
           "path": [
@@ -5048,40 +3634,40 @@
         }
       },
       {
-        "id": 25,
+        "id": 29,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 30
+            }
+          }
+        }
+      },
+      {
+        "id": 30,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "provider_id",
-                  "type": 9,
+                  "type": 8,
                   "typeName": "ProviderId"
                 },
                 {
-                  "name": "rent_v_node_per_month",
+                  "name": "rent_per_month",
                   "type": 12,
                   "typeName": "Balance"
                 },
                 {
                   "name": "free_resource",
-                  "type": 6,
+                  "type": 9,
                   "typeName": "Resource"
                 },
                 {
-                  "name": "node_params",
-                  "type": 13,
-                  "typeName": "NodeParams"
-                },
-                {
-                  "name": "cluster_id",
-                  "type": 21,
-                  "typeName": "Option<ClusterId>"
-                },
-                {
-                  "name": "status_in_cluster",
-                  "type": 22,
-                  "typeName": "Option<NodeStatusInCluster>"
+                  "name": "node_tag",
+                  "type": 31,
+                  "typeName": "NodeTag"
                 }
               ]
             }
@@ -5096,127 +3682,40 @@
         }
       },
       {
-        "id": 26,
-        "type": {
-          "def": {
-            "composite": {
-              "fields": [
-                {
-                  "name": "offset_key",
-                  "type": 4,
-                  "typeName": "Key"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "K",
-              "type": 9
-            },
-            {
-              "name": "V",
-              "type": 27
-            }
-          ],
-          "path": [
-            "ink_storage",
-            "lazy",
-            "mapping",
-            "Mapping"
-          ]
-        }
-      },
-      {
-        "id": 27,
-        "type": {
-          "def": {
-            "sequence": {
-              "type": 28
-            }
-          }
-        }
-      },
-      {
-        "id": 28,
-        "type": {
-          "def": {
-            "primitive": "u64"
-          }
-        }
-      },
-      {
-        "id": 29,
-        "type": {
-          "def": {
-            "composite": {
-              "fields": [
-                {
-                  "name": "offset_key",
-                  "type": 4,
-                  "typeName": "Key"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "K",
-              "type": 30
-            },
-            {
-              "name": "V",
-              "type": 9
-            }
-          ],
-          "path": [
-            "ink_storage",
-            "lazy",
-            "mapping",
-            "Mapping"
-          ]
-        }
-      },
-      {
-        "id": 30,
-        "type": {
-          "def": {
-            "tuple": [
-              6,
-              28
-            ]
-          }
-        }
-      },
-      {
         "id": 31,
         "type": {
           "def": {
-            "composite": {
-              "fields": [
+            "variant": {
+              "variants": [
                 {
-                  "name": "offset_key",
-                  "type": 4,
-                  "typeName": "Key"
+                  "index": 0,
+                  "name": "UNKNOWN"
+                },
+                {
+                  "index": 1,
+                  "name": "ACTIVE"
+                },
+                {
+                  "index": 2,
+                  "name": "ADDING"
+                },
+                {
+                  "index": 3,
+                  "name": "DELETING"
+                },
+                {
+                  "index": 4,
+                  "name": "OFFLINE"
                 }
               ]
             }
           },
-          "params": [
-            {
-              "name": "K",
-              "type": 6
-            },
-            {
-              "name": "V",
-              "type": 27
-            }
-          ],
           "path": [
-            "ink_storage",
-            "lazy",
-            "mapping",
-            "Mapping"
+            "ddc_bucket",
+            "ddc_bucket",
+            "node",
+            "entity",
+            "NodeTag"
           ]
         }
       },
@@ -5237,7 +3736,7 @@
           "params": [
             {
               "name": "K",
-              "type": 9
+              "type": 8
             },
             {
               "name": "V",
@@ -5260,27 +3759,27 @@
               "fields": [
                 {
                   "name": "deposit",
-                  "type": 18,
+                  "type": 19,
                   "typeName": "Cash"
                 },
                 {
                   "name": "bonded",
-                  "type": 18,
+                  "type": 19,
                   "typeName": "Cash"
                 },
                 {
                   "name": "negative",
-                  "type": 18,
+                  "type": 19,
                   "typeName": "Cash"
                 },
                 {
                   "name": "unbonded_amount",
-                  "type": 18,
+                  "type": 19,
                   "typeName": "Cash"
                 },
                 {
                   "name": "unbonded_timestamp",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 },
                 {
@@ -5317,7 +3816,7 @@
           "params": [
             {
               "name": "K",
-              "type": 9
+              "type": 8
             },
             {
               "name": "V",
@@ -5371,12 +3870,12 @@
                 },
                 {
                   "name": "from_timestamp",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 },
                 {
                   "name": "to_timestamp",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 }
               ]
@@ -5448,14 +3947,57 @@
         "type": {
           "def": {
             "tuple": [
-              28,
-              28
+              23,
+              23
             ]
           }
         }
       },
       {
         "id": 41,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 4,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 42
+            },
+            {
+              "name": "V",
+              "type": 9
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 42,
+        "type": {
+          "def": {
+            "tuple": [
+              9,
+              23
+            ]
+          }
+        }
+      },
+      {
+        "id": 43,
         "type": {
           "def": {
             "variant": {
@@ -5467,7 +4009,7 @@
                 {
                   "fields": [
                     {
-                      "type": 9
+                      "type": 8
                     }
                   ],
                   "index": 1,
@@ -5479,7 +4021,7 @@
           "params": [
             {
               "name": "T",
-              "type": 9
+              "type": 8
             }
           ],
           "path": [
@@ -5488,337 +4030,7 @@
         }
       },
       {
-        "id": 42,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "fields": [
-                    {
-                      "type": 6
-                    }
-                  ],
-                  "index": 0,
-                  "name": "Ok"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 43
-                    }
-                  ],
-                  "index": 1,
-                  "name": "Err"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "T",
-              "type": 6
-            },
-            {
-              "name": "E",
-              "type": 43
-            }
-          ],
-          "path": [
-            "Result"
-          ]
-        }
-      },
-      {
-        "id": 43,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "index": 0,
-                  "name": "NodeDoesNotExist"
-                },
-                {
-                  "index": 1,
-                  "name": "CdnNodeDoesNotExist"
-                },
-                {
-                  "index": 2,
-                  "name": "NodeAlreadyExists"
-                },
-                {
-                  "index": 3,
-                  "name": "CdnNodeAlreadyExists"
-                },
-                {
-                  "index": 4,
-                  "name": "AccountDoesNotExist"
-                },
-                {
-                  "index": 5,
-                  "name": "ParamsDoesNotExist"
-                },
-                {
-                  "index": 6,
-                  "name": "ParamsSizeExceedsLimit"
-                },
-                {
-                  "index": 7,
-                  "name": "OnlyOwner"
-                },
-                {
-                  "index": 8,
-                  "name": "OnlyNodeProvider"
-                },
-                {
-                  "index": 9,
-                  "name": "OnlyCdnNodeProvider"
-                },
-                {
-                  "index": 10,
-                  "name": "OnlyClusterManager"
-                },
-                {
-                  "index": 11,
-                  "name": "OnlyTrustedClusterManager"
-                },
-                {
-                  "index": 12,
-                  "name": "OnlyValidator"
-                },
-                {
-                  "index": 13,
-                  "name": "OnlySuperAdmin"
-                },
-                {
-                  "index": 14,
-                  "name": "OnlyClusterManagerOrNodeProvider"
-                },
-                {
-                  "index": 15,
-                  "name": "OnlyClusterManagerOrCdnNodeProvider"
-                },
-                {
-                  "index": 16,
-                  "name": "Unauthorized"
-                },
-                {
-                  "index": 17,
-                  "name": "ClusterDoesNotExist"
-                },
-                {
-                  "index": 18,
-                  "name": "ClusterIsNotEmpty"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 6,
-                      "typeName": "ClusterId"
-                    }
-                  ],
-                  "index": 19,
-                  "name": "TopologyIsNotCreated"
-                },
-                {
-                  "index": 20,
-                  "name": "TopologyAlreadyExists"
-                },
-                {
-                  "index": 21,
-                  "name": "NodesSizeExceedsLimit"
-                },
-                {
-                  "index": 22,
-                  "name": "CdnNodesSizeExceedsLimit"
-                },
-                {
-                  "index": 23,
-                  "name": "VNodesSizeExceedsLimit"
-                },
-                {
-                  "index": 24,
-                  "name": "AccountsSizeExceedsLimit"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 6,
-                      "typeName": "ClusterId"
-                    }
-                  ],
-                  "index": 25,
-                  "name": "NodeIsNotAddedToCluster"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 6,
-                      "typeName": "ClusterId"
-                    }
-                  ],
-                  "index": 26,
-                  "name": "NodeIsAddedToCluster"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 6,
-                      "typeName": "ClusterId"
-                    }
-                  ],
-                  "index": 27,
-                  "name": "CdnNodeIsNotAddedToCluster"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 6,
-                      "typeName": "ClusterId"
-                    }
-                  ],
-                  "index": 28,
-                  "name": "CdnNodeIsAddedToCluster"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 6,
-                      "typeName": "ClusterId"
-                    }
-                  ],
-                  "index": 29,
-                  "name": "VNodeDoesNotExistsInCluster"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 6,
-                      "typeName": "ClusterId"
-                    },
-                    {
-                      "type": 28,
-                      "typeName": "VNodeToken"
-                    }
-                  ],
-                  "index": 30,
-                  "name": "VNodeIsNotAssignedToNode"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 9,
-                      "typeName": "NodeKey"
-                    }
-                  ],
-                  "index": 31,
-                  "name": "VNodeIsAlreadyAssignedToNode"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 6,
-                      "typeName": "ClusterId"
-                    },
-                    {
-                      "type": 9,
-                      "typeName": "NodeKey"
-                    }
-                  ],
-                  "index": 32,
-                  "name": "AtLeastOneVNodeHasToBeAssigned"
-                },
-                {
-                  "index": 33,
-                  "name": "NodeProviderIsNotSuperAdmin"
-                },
-                {
-                  "index": 34,
-                  "name": "CdnNodeOwnerIsNotSuperAdmin"
-                },
-                {
-                  "index": 35,
-                  "name": "BucketDoesNotExist"
-                },
-                {
-                  "index": 36,
-                  "name": "BondingPeriodNotFinished"
-                },
-                {
-                  "index": 37,
-                  "name": "TransferFailed"
-                },
-                {
-                  "index": 38,
-                  "name": "InsufficientBalance"
-                },
-                {
-                  "index": 39,
-                  "name": "InsufficientNodeResources"
-                },
-                {
-                  "index": 40,
-                  "name": "InsufficientClusterResources"
-                },
-                {
-                  "index": 41,
-                  "name": "EraSettingFailed"
-                }
-              ]
-            }
-          },
-          "path": [
-            "ddc_bucket",
-            "ddc_bucket",
-            "Error"
-          ]
-        }
-      },
-      {
         "id": 44,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "fields": [
-                    {
-                      "type": 45
-                    }
-                  ],
-                  "index": 0,
-                  "name": "Ok"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 43
-                    }
-                  ],
-                  "index": 1,
-                  "name": "Err"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "T",
-              "type": 45
-            },
-            {
-              "name": "E",
-              "type": 43
-            }
-          ],
-          "path": [
-            "Result"
-          ]
-        }
-      },
-      {
-        "id": 45,
         "type": {
           "def": {
             "tuple": []
@@ -5826,7 +4038,7 @@
         }
       },
       {
-        "id": 46,
+        "id": 45,
         "type": {
           "def": {
             "variant": {
@@ -5834,7 +4046,7 @@
                 {
                   "fields": [
                     {
-                      "type": 47
+                      "type": 46
                     }
                   ],
                   "index": 0,
@@ -5843,7 +4055,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 48
                     }
                   ],
                   "index": 1,
@@ -5855,11 +4067,11 @@
           "params": [
             {
               "name": "T",
-              "type": 47
+              "type": 46
             },
             {
               "name": "E",
-              "type": 43
+              "type": 48
             }
           ],
           "path": [
@@ -5868,39 +4080,39 @@
         }
       },
       {
-        "id": 47,
+        "id": 46,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "bucket_id",
-                  "type": 6,
+                  "type": 9,
                   "typeName": "BucketId"
                 },
                 {
                   "name": "bucket",
-                  "type": 48,
+                  "type": 47,
                   "typeName": "BucketInStatus"
                 },
                 {
                   "name": "params",
-                  "type": 13,
+                  "type": 16,
                   "typeName": "BucketParams"
                 },
                 {
                   "name": "writer_ids",
-                  "type": 15,
+                  "type": 14,
                   "typeName": "Vec<AccountId>"
                 },
                 {
                   "name": "reader_ids",
-                  "type": 15,
+                  "type": 14,
                   "typeName": "Vec<AccountId>"
                 },
                 {
                   "name": "rent_covered_until_ms",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 }
               ]
@@ -5916,24 +4128,24 @@
         }
       },
       {
-        "id": 48,
+        "id": 47,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "owner_id",
-                  "type": 9,
+                  "type": 8,
                   "typeName": "AccountId"
                 },
                 {
                   "name": "cluster_id",
-                  "type": 6,
+                  "type": 9,
                   "typeName": "ClusterId"
                 },
                 {
                   "name": "resource_reserved",
-                  "type": 6,
+                  "type": 9,
                   "typeName": "Resource"
                 },
                 {
@@ -5943,7 +4155,7 @@
                 },
                 {
                   "name": "resource_consumption_cap",
-                  "type": 6,
+                  "type": 9,
                   "typeName": "Resource"
                 }
               ]
@@ -5959,12 +4171,112 @@
         }
       },
       {
+        "id": 48,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "BucketDoesNotExist"
+                },
+                {
+                  "index": 1,
+                  "name": "ClusterDoesNotExist"
+                },
+                {
+                  "index": 2,
+                  "name": "ParamsTooBig"
+                },
+                {
+                  "index": 3,
+                  "name": "VNodeDoesNotExist"
+                },
+                {
+                  "index": 4,
+                  "name": "BondingPeriodNotFinished"
+                },
+                {
+                  "index": 5,
+                  "name": "BucketClusterAlreadyConnected"
+                },
+                {
+                  "index": 6,
+                  "name": "BucketClusterNotSetup"
+                },
+                {
+                  "index": 7,
+                  "name": "NodeDoesNotExist"
+                },
+                {
+                  "index": 8,
+                  "name": "NodeAlreadyExists"
+                },
+                {
+                  "index": 9,
+                  "name": "FlowDoesNotExist"
+                },
+                {
+                  "index": 10,
+                  "name": "AccountDoesNotExist"
+                },
+                {
+                  "index": 11,
+                  "name": "ParamsDoesNotExist"
+                },
+                {
+                  "index": 12,
+                  "name": "UnauthorizedProvider"
+                },
+                {
+                  "index": 13,
+                  "name": "UnauthorizedOwner"
+                },
+                {
+                  "index": 14,
+                  "name": "UnauthorizedClusterManager"
+                },
+                {
+                  "index": 15,
+                  "name": "ClusterManagerIsNotTrusted"
+                },
+                {
+                  "index": 16,
+                  "name": "TransferFailed"
+                },
+                {
+                  "index": 17,
+                  "name": "InsufficientBalance"
+                },
+                {
+                  "index": 18,
+                  "name": "InsufficientResources"
+                },
+                {
+                  "index": 19,
+                  "name": "Unauthorized"
+                },
+                {
+                  "index": 20,
+                  "name": "UnknownNode"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "Error"
+          ]
+        }
+      },
+      {
         "id": 49,
         "type": {
           "def": {
             "tuple": [
               50,
-              6
+              9
             ]
           }
         }
@@ -5974,7 +4286,7 @@
         "type": {
           "def": {
             "sequence": {
-              "type": 47
+              "type": 46
             }
           }
         }
@@ -5983,22 +4295,12 @@
         "id": 51,
         "type": {
           "def": {
-            "sequence": {
-              "type": 8
-            }
-          }
-        }
-      },
-      {
-        "id": 52,
-        "type": {
-          "def": {
             "variant": {
               "variants": [
                 {
                   "fields": [
                     {
-                      "type": 53
+                      "type": 52
                     }
                   ],
                   "index": 0,
@@ -6007,7 +4309,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 48
                     }
                   ],
                   "index": 1,
@@ -6019,11 +4321,11 @@
           "params": [
             {
               "name": "T",
-              "type": 53
+              "type": 52
             },
             {
               "name": "E",
-              "type": 43
+              "type": 48
             }
           ],
           "path": [
@@ -6032,25 +4334,25 @@
         }
       },
       {
-        "id": 53,
+        "id": 52,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "cluster_id",
-                  "type": 6,
+                  "type": 9,
                   "typeName": "ClusterId"
                 },
                 {
                   "name": "cluster",
-                  "type": 17,
+                  "type": 18,
                   "typeName": "Cluster"
                 },
                 {
-                  "name": "cluster_v_nodes",
-                  "type": 27,
-                  "typeName": "Vec<VNodeToken>"
+                  "name": "params",
+                  "type": 16,
+                  "typeName": "Params"
                 }
               ]
             }
@@ -6060,18 +4362,28 @@
             "ddc_bucket",
             "cluster",
             "entity",
-            "ClusterInfo"
+            "ClusterStatus"
           ]
+        }
+      },
+      {
+        "id": 53,
+        "type": {
+          "def": {
+            "tuple": [
+              54,
+              9
+            ]
+          }
         }
       },
       {
         "id": 54,
         "type": {
           "def": {
-            "tuple": [
-              55,
-              6
-            ]
+            "sequence": {
+              "type": 52
+            }
           }
         }
       },
@@ -6080,7 +4392,7 @@
         "type": {
           "def": {
             "sequence": {
-              "type": 53
+              "type": 56
             }
           }
         }
@@ -6089,42 +4401,11 @@
         "id": 56,
         "type": {
           "def": {
-            "variant": {
-              "variants": [
-                {
-                  "fields": [
-                    {
-                      "type": 12
-                    }
-                  ],
-                  "index": 0,
-                  "name": "Ok"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 43
-                    }
-                  ],
-                  "index": 1,
-                  "name": "Err"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "T",
-              "type": 12
-            },
-            {
-              "name": "E",
-              "type": 43
-            }
-          ],
-          "path": [
-            "Result"
-          ]
+            "tuple": [
+              8,
+              12
+            ]
+          }
         }
       },
       {
@@ -6163,8 +4444,8 @@
         "type": {
           "def": {
             "tuple": [
-              6,
-              6
+              9,
+              9
             ]
           }
         }
@@ -6173,26 +4454,117 @@
         "id": 61,
         "type": {
           "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 62
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 48
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 62
+            },
+            {
+              "name": "E",
+              "type": 48
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 62,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "cluster_id",
+                  "type": 9,
+                  "typeName": "ClusterId"
+                },
+                {
+                  "name": "cluster",
+                  "type": 25,
+                  "typeName": "CdnCluster"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "cdn_cluster",
+            "entity",
+            "CdnClusterStatus"
+          ]
+        }
+      },
+      {
+        "id": 63,
+        "type": {
+          "def": {
+            "tuple": [
+              64,
+              9
+            ]
+          }
+        }
+      },
+      {
+        "id": 64,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 62
+            }
+          }
+        }
+      },
+      {
+        "id": 65,
+        "type": {
+          "def": {
             "composite": {
               "fields": [
                 {
                   "name": "start",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 },
                 {
                   "name": "interval",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 },
                 {
                   "name": "commit_duration",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 },
                 {
                   "name": "validation_duration",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 }
               ]
@@ -6208,34 +4580,34 @@
         }
       },
       {
-        "id": 62,
+        "id": 66,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "current_era",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 },
                 {
                   "name": "current_phase",
-                  "type": 63,
+                  "type": 67,
                   "typeName": "Phase"
                 },
                 {
                   "name": "previous_era",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 },
                 {
                   "name": "prev_era_from_timestamp",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 },
                 {
                   "name": "prev_era_to_timestamp",
-                  "type": 28,
+                  "type": 23,
                   "typeName": "u64"
                 }
               ]
@@ -6251,7 +4623,7 @@
         }
       },
       {
-        "id": 63,
+        "id": 67,
         "type": {
           "def": {
             "variant": {
@@ -6281,7 +4653,7 @@
         }
       },
       {
-        "id": 64,
+        "id": 68,
         "type": {
           "def": {
             "variant": {
@@ -6289,7 +4661,7 @@
                 {
                   "fields": [
                     {
-                      "type": 9
+                      "type": 69
                     }
                   ],
                   "index": 0,
@@ -6298,7 +4670,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 48
                     }
                   ],
                   "index": 1,
@@ -6310,11 +4682,11 @@
           "params": [
             {
               "name": "T",
-              "type": 9
+              "type": 69
             },
             {
               "name": "E",
-              "type": 43
+              "type": 48
             }
           ],
           "path": [
@@ -6323,62 +4695,25 @@
         }
       },
       {
-        "id": 65,
-        "type": {
-          "def": {
-            "variant": {
-              "variants": [
-                {
-                  "fields": [
-                    {
-                      "type": 66
-                    }
-                  ],
-                  "index": 0,
-                  "name": "Ok"
-                },
-                {
-                  "fields": [
-                    {
-                      "type": 43
-                    }
-                  ],
-                  "index": 1,
-                  "name": "Err"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "T",
-              "type": 66
-            },
-            {
-              "name": "E",
-              "type": 43
-            }
-          ],
-          "path": [
-            "Result"
-          ]
-        }
-      },
-      {
-        "id": 66,
+        "id": 69,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
-                  "name": "cdn_node_key",
+                  "name": "node_id",
                   "type": 9,
-                  "typeName": "CdnNodeKey"
+                  "typeName": "NodeId"
                 },
                 {
-                  "name": "cdn_node",
-                  "type": 20,
+                  "name": "node",
+                  "type": 27,
                   "typeName": "CdnNode"
+                },
+                {
+                  "name": "params",
+                  "type": 16,
+                  "typeName": "Params"
                 }
               ]
             }
@@ -6388,33 +4723,33 @@
             "ddc_bucket",
             "cdn_node",
             "entity",
-            "CdnNodeInfo"
+            "CdnNodeStatus"
           ]
         }
       },
       {
-        "id": 67,
+        "id": 70,
         "type": {
           "def": {
             "tuple": [
-              68,
-              6
+              71,
+              9
             ]
           }
         }
       },
       {
-        "id": 68,
+        "id": 71,
         "type": {
           "def": {
             "sequence": {
-              "type": 66
+              "type": 69
             }
           }
         }
       },
       {
-        "id": 69,
+        "id": 72,
         "type": {
           "def": {
             "variant": {
@@ -6422,7 +4757,7 @@
                 {
                   "fields": [
                     {
-                      "type": 70
+                      "type": 73
                     }
                   ],
                   "index": 0,
@@ -6431,7 +4766,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 48
                     }
                   ],
                   "index": 1,
@@ -6443,70 +4778,16 @@
           "params": [
             {
               "name": "T",
-              "type": 70
+              "type": 73
             },
             {
               "name": "E",
-              "type": 43
+              "type": 48
             }
           ],
           "path": [
             "Result"
           ]
-        }
-      },
-      {
-        "id": 70,
-        "type": {
-          "def": {
-            "composite": {
-              "fields": [
-                {
-                  "name": "node_key",
-                  "type": 9,
-                  "typeName": "NodeKey"
-                },
-                {
-                  "name": "node",
-                  "type": 25,
-                  "typeName": "Node"
-                },
-                {
-                  "name": "v_nodes",
-                  "type": 27,
-                  "typeName": "Vec<VNodeToken>"
-                }
-              ]
-            }
-          },
-          "path": [
-            "ddc_bucket",
-            "ddc_bucket",
-            "node",
-            "entity",
-            "NodeInfo"
-          ]
-        }
-      },
-      {
-        "id": 71,
-        "type": {
-          "def": {
-            "tuple": [
-              72,
-              6
-            ]
-          }
-        }
-      },
-      {
-        "id": 72,
-        "type": {
-          "def": {
-            "sequence": {
-              "type": 70
-            }
-          }
         }
       },
       {
@@ -6516,19 +4797,19 @@
             "composite": {
               "fields": [
                 {
-                  "name": "network_fee_bp",
-                  "type": 12,
-                  "typeName": "BasisPoints"
-                },
-                {
-                  "name": "network_fee_destination",
+                  "name": "node_id",
                   "type": 9,
-                  "typeName": "AccountId"
+                  "typeName": "NodeId"
                 },
                 {
-                  "name": "cluster_management_fee_bp",
-                  "type": 12,
-                  "typeName": "BasisPoints"
+                  "name": "node",
+                  "type": 30,
+                  "typeName": "Node"
+                },
+                {
+                  "name": "params",
+                  "type": 16,
+                  "typeName": "Params"
                 }
               ]
             }
@@ -6536,14 +4817,35 @@
           "path": [
             "ddc_bucket",
             "ddc_bucket",
-            "protocol",
-            "store",
-            "NetworkFeeConfig"
+            "node",
+            "entity",
+            "NodeStatus"
           ]
         }
       },
       {
         "id": 74,
+        "type": {
+          "def": {
+            "tuple": [
+              75,
+              9
+            ]
+          }
+        }
+      },
+      {
+        "id": 75,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 73
+            }
+          }
+        }
+      },
+      {
+        "id": 76,
         "type": {
           "def": {
             "variant": {
@@ -6560,7 +4862,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 48
                     }
                   ],
                   "index": 1,
@@ -6576,7 +4878,7 @@
             },
             {
               "name": "E",
-              "type": 43
+              "type": 48
             }
           ],
           "path": [
@@ -6585,7 +4887,7 @@
         }
       },
       {
-        "id": 75,
+        "id": 77,
         "type": {
           "def": {
             "variant": {
@@ -6593,12 +4895,12 @@
                 {
                   "fields": [
                     {
-                      "type": 9,
+                      "type": 8,
                       "typeName": "AccountId"
                     }
                   ],
                   "index": 0,
-                  "name": "ClusterManagerTrustedBy"
+                  "name": "ManagerTrustedBy"
                 },
                 {
                   "index": 1,
@@ -6607,10 +4909,6 @@
                 {
                   "index": 2,
                   "name": "SuperAdmin"
-                },
-                {
-                  "index": 3,
-                  "name": "Validator"
                 }
               ]
             }
@@ -6621,6 +4919,38 @@
             "perm",
             "entity",
             "Permission"
+          ]
+        }
+      },
+      {
+        "id": 78,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "network_fee_bp",
+                  "type": 12,
+                  "typeName": "BasisPoints"
+                },
+                {
+                  "name": "network_fee_destination",
+                  "type": 8,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "cluster_management_fee_bp",
+                  "type": 12,
+                  "typeName": "BasisPoints"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "network_fee",
+            "FeeConfig"
           ]
         }
       }
