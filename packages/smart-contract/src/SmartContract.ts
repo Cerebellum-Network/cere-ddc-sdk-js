@@ -3,8 +3,8 @@ import {SmartContractOptions, TESTNET} from './options/SmartContractOptions';
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {ContractPromise} from '@polkadot/api-contract';
 import {Keyring} from '@polkadot/keyring';
-import {KeyringPair} from '@polkadot/keyring/types';
-import {SubmittableExtrinsic, SubmittableResultValue, Signer} from '@polkadot/api/types';
+import {isKeyringPair} from '@polkadot/api/util';
+import {SubmittableExtrinsic, SubmittableResultValue, Signer, AddressOrPair} from '@polkadot/api/types';
 import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
 import {find, get} from 'lodash';
 import {NodeStatus} from './model/NodeStatus';
@@ -28,7 +28,11 @@ const txOptionsPay = {
 };
 
 export class SmartContract {
-    constructor(private account: KeyringPair, private contract: ContractPromise, private signer?: Signer) {}
+    private address: string;
+
+    constructor(private account: AddressOrPair, private contract: ContractPromise, private signer?: Signer) {
+        this.address = isKeyringPair(this.account) ? this.account.address : this.account.toString();
+    }
 
     static async buildAndConnect(
         secretPhraseOrAddress: string,
@@ -44,11 +48,11 @@ export class SmartContract {
 
         const contract = new ContractPromise(api, options.abi, options.contractAddress);
         const keyring = new Keyring({type: 'sr25519'});
-        const account = isAddress(secretPhraseOrAddress)
-            ? keyring.addFromAddress(secretPhraseOrAddress)
+        const addressOrPair = isAddress(secretPhraseOrAddress)
+            ? secretPhraseOrAddress
             : keyring.addFromMnemonic(secretPhraseOrAddress);
 
-        return new SmartContract(account, contract, signer);
+        return new SmartContract(addressOrPair, contract, signer);
     }
 
     async connect(): Promise<SmartContract> {
@@ -149,7 +153,7 @@ export class SmartContract {
     }
 
     async bucketGet(bucketId: bigint): Promise<BucketStatus> {
-        const {result, output} = await this.contract.query.bucketGet(this.account.address, txOptions, bucketId);
+        const {result, output} = await this.contract.query.bucketGet(this.address, txOptions, bucketId);
         if (!result.isOk) throw result.asErr;
 
         const bucketStatus = (output as any).toJSON().ok;
@@ -160,7 +164,7 @@ export class SmartContract {
 
     async bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList> {
         const {result, output} = await this.contract.query.bucketList(
-            this.account.address,
+            this.address,
             txOptions,
             offset,
             limit,
@@ -173,7 +177,7 @@ export class SmartContract {
     }
 
     async clusterGet(clusterId: number): Promise<ClusterGetResult> {
-        let {result, output} = await this.contract.query.clusterGet(this.account.address, txOptions, clusterId);
+        let {result, output} = await this.contract.query.clusterGet(this.address, txOptions, clusterId);
         if (!result.isOk) {
             throw result.asErr;
         }
@@ -181,7 +185,7 @@ export class SmartContract {
     }
 
     async cdnClusterGet(clusterId: number): Promise<CdnClusterGetResult> {
-        let {result, output} = await this.contract.query.cdnClusterGet(this.account.address, txOptions, clusterId);
+        let {result, output} = await this.contract.query.cdnClusterGet(this.address, txOptions, clusterId);
         if (!result.isOk) {
             throw result.asErr;
         }
@@ -189,7 +193,7 @@ export class SmartContract {
     }
 
     async cdnNodeGet(clusterId: number): Promise<CdnNodeGetResult> {
-        let {result, output} = await this.contract.query.cdnNodeGet(this.account.address, txOptions, clusterId);
+        let {result, output} = await this.contract.query.cdnNodeGet(this.address, txOptions, clusterId);
         if (!result.isOk) {
             throw result.asErr;
         }
@@ -224,7 +228,7 @@ export class SmartContract {
     }
 
     async nodeGet(nodeId: number): Promise<NodeStatus> {
-        let {result, output} = await this.contract.query.nodeGet(this.account.address, txOptions, nodeId);
+        let {result, output} = await this.contract.query.nodeGet(this.address, txOptions, nodeId);
         if (!result.isOk) throw result.asErr;
         // @ts-ignore
         return output.toJSON().ok as NodeStatus;

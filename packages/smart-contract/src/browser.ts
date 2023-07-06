@@ -2,7 +2,6 @@ import {SmartContract as CoreSmartContract} from './SmartContract';
 import {SmartContractOptions} from './options/SmartContractOptions';
 import {InjectedAccount} from '@polkadot/extension-inject/types';
 import {web3Enable, web3FromAddress} from '@polkadot/extension-dapp';
-import {Keyring} from '@polkadot/keyring';
 
 export {DEVNET, TESTNET, MAINNET} from './options/SmartContractOptions';
 export type {SmartContractOptions} from './options/SmartContractOptions';
