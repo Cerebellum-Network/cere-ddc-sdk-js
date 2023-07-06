@@ -53,25 +53,25 @@ describe('Smart Contract', () => {
             expect(cluster).toBeTruthy();
         });
 
-        test('get storage cluster list', async () => {
+        test('get all storage clusters', async () => {
             const clusters = await adminContract.clusterList();
 
             expect(clusters).toEqual(expect.any(Array));
         });
 
-        test('get CDN cluster list', async () => {
+        test('get all CDN clusters', async () => {
             const clusters = await adminContract.cdnClusterList();
 
             expect(clusters).toEqual(expect.any(Array));
         });
 
-        test('get CDN node list', async () => {
+        test('get all CDN nodes', async () => {
             const nodes = await adminContract.cdnNodeGet(1);
 
             expect(nodes).toEqual(expect.any(Array));
         });
 
-        test('get storage node list', async () => {
+        test('get all storage nodes', async () => {
             const nodes = await adminContract.cdnNodeList();
 
             expect(nodes).toEqual(expect.any(Array));
@@ -115,7 +115,7 @@ describe('Smart Contract', () => {
     });
 
     describe('Buckets', () => {
-        test('get all bucket list', async () => {
+        test('get all buckets', async () => {
             const buckets = await adminContract.bucketList(0n, 10n);
 
             expect(buckets).toEqual(expect.any(Array));
@@ -127,7 +127,7 @@ describe('Smart Contract', () => {
             expect(bucket).toBeTruthy();
         });
 
-        test('get user bucket list', async () => {
+        test('get all user buckets', async () => {
             const buckets = await userContract.bucketList(0n, 10n, user.address);
 
             expect(buckets).toEqual(expect.any(Array));
