@@ -14,6 +14,7 @@ import {BucketStatusList} from './model/BucketStatusList';
 import {BucketParams, initDefaultBucketParams} from './options/BucketParams';
 import {waitReady} from '@polkadot/wasm-crypto';
 import {CdnClusterGetResult, CdnNodeGetResult, ClusterGetResult} from './types/smart-contract-responses';
+import {ContractQuery} from '@polkadot/api-contract/base/types';
 
 const CERE = 10_000_000_000n;
 
@@ -65,6 +66,24 @@ export class SmartContract {
     async disconnect() {
         return this.contract.api.disconnect();
     }
+
+    private async query<T>(query: ContractQuery<'promise'>, ...args: unknown[]) {
+        const {output, result} = await query(this.address, txOptions, ...args);
+
+        if (!result.isOk) {
+            throw result.asErr;
+        }
+
+        return output!.toJSON() as T;
+    }
+
+    private async queryOne<T>(query: ContractQuery<'promise'>, ...args: unknown[]) {
+        const result = await this.query<{ok: T}>(query, ...args);
+
+        return result.ok;
+    }
+
+    private async queryList(query: ContractQuery<'promise'>, ...args: unknown[]) {}
 
     async clusterList() {
         throw new Error('Not implemented');
@@ -134,6 +153,22 @@ export class SmartContract {
         throw new Error('Not implemented');
     }
 
+    clusterGet(clusterId: number) {
+        return this.queryOne<ClusterGetResult>(this.contract.query.clusterGet, clusterId);
+    }
+
+    async bucketGet(bucketId: bigint) {
+        const {result, output} = await this.contract.query.bucketGet(this.address, txOptions, bucketId);
+        if (!result.isOk) throw result.asErr;
+
+        const bucketStatus = (output as any).toJSON().ok;
+        bucketStatus.params = JSON.parse(bucketStatus.params);
+
+        return bucketStatus as BucketStatus;
+    }
+
+    // Old API
+
     async bucketCreate(
         owner: string,
         clusterId: bigint,
@@ -152,16 +187,6 @@ export class SmartContract {
         return new BucketCreatedEvent(BigInt(bucketId));
     }
 
-    async bucketGet(bucketId: bigint): Promise<BucketStatus> {
-        const {result, output} = await this.contract.query.bucketGet(this.address, txOptions, bucketId);
-        if (!result.isOk) throw result.asErr;
-
-        const bucketStatus = (output as any).toJSON().ok;
-        bucketStatus.params = JSON.parse(bucketStatus.params);
-
-        return bucketStatus as BucketStatus;
-    }
-
     async bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList> {
         const {result, output} = await this.contract.query.bucketList(
             this.address,
@@ -174,14 +199,6 @@ export class SmartContract {
 
         const [statuses, length] = (output as any).toJSON();
         return new BucketStatusList(statuses, length);
-    }
-
-    async clusterGet(clusterId: number): Promise<ClusterGetResult> {
-        let {result, output} = await this.contract.query.clusterGet(this.address, txOptions, clusterId);
-        if (!result.isOk) {
-            throw result.asErr;
-        }
-        return (output as any).toJSON().ok as ClusterGetResult;
     }
 
     async cdnClusterGet(clusterId: number): Promise<CdnClusterGetResult> {
