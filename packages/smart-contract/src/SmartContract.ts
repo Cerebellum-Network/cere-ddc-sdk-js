@@ -1,19 +1,18 @@
-import {BucketCreatedEvent} from "./event/BucketCreatedEvent";
-import {SmartContractOptions, TESTNET} from "./options/SmartContractOptions";
-import {ApiPromise, WsProvider} from "@polkadot/api";
-import {ContractPromise} from "@polkadot/api-contract";
+import {BucketCreatedEvent} from './event/BucketCreatedEvent';
+import {SmartContractOptions, TESTNET} from './options/SmartContractOptions';
+import {ApiPromise, WsProvider} from '@polkadot/api';
+import {ContractPromise} from '@polkadot/api-contract';
 import {Keyring} from '@polkadot/keyring';
-import {AddressOrPair, SubmittableExtrinsic, SubmittableResultSubscription} from "@polkadot/api/submittable/types";
-import {Callback, ISubmittableResult } from "@polkadot/types/types";
+import {AddressOrPair, SubmittableExtrinsic, SubmittableResultSubscription} from '@polkadot/api/submittable/types';
+import {Callback, ISubmittableResult} from '@polkadot/types/types';
 import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
-import {find, get} from "lodash";
-import {NodeStatus} from "./model/NodeStatus";
-import {cereTypes} from "./types/cere_types";
-import {BucketStatus} from "./model/BucketStatus";
-import {BucketStatusList} from "./model/BucketStatusList";
-import {ApiTypes} from "@polkadot/api/types";
-import {BucketParams, initDefaultBucketParams} from "./options/BucketParams";
-import {waitReady} from "@polkadot/wasm-crypto";
+import {find, get} from 'lodash';
+import {NodeStatus} from './model/NodeStatus';
+import {cereTypes} from './types/cere_types';
+import {BucketStatus} from './model/BucketStatus';
+import {BucketStatusList} from './model/BucketStatusList';
+import {ApiTypes} from '@polkadot/api/types';
+import {BucketParams, initDefaultBucketParams} from './options/BucketParams';
 import {CdnClusterGetResult, CdnNodeGetResult, ClusterGetResult} from './types/smart-contract-responses';
 
 const CERE = 10_000_000_000n;
@@ -26,7 +25,7 @@ const txOptions = {
 const txOptionsPay = {
     value: 10n * CERE,
     gasLimit: -1, //100_000n * MGAS,
-}
+};
 
 export class SmartContract {
     readonly options: SmartContractOptions;
@@ -36,7 +35,10 @@ export class SmartContract {
 
     contract!: ContractPromise;
 
-    signAndSend: (tx: SubmittableExtrinsic<any>, statusCb: Callback<ISubmittableResult>) => SubmittableResultSubscription<ApiTypes>;
+    signAndSend: (
+        tx: SubmittableExtrinsic<any>,
+        statusCb: Callback<ISubmittableResult>,
+    ) => SubmittableResultSubscription<ApiTypes>;
 
     constructor(secretPhraseOrAddress: string, options: SmartContractOptions = TESTNET) {
         const keyring = new Keyring({type: 'sr25519'});
@@ -52,13 +54,16 @@ export class SmartContract {
         this.options = options;
     }
 
-    static async buildAndConnect(secretPhraseOrAddress: string, options: SmartContractOptions = TESTNET): Promise<SmartContract> {
-        await waitReady();
+    static async buildAndConnect(
+        secretPhraseOrAddress: string,
+        options: SmartContractOptions = TESTNET,
+    ): Promise<SmartContract> {
+        await cryptoWaitReady();
+
         return new SmartContract(secretPhraseOrAddress, options).connect();
     }
 
     async connect(): Promise<SmartContract> {
-        await cryptoWaitReady();
         const provider = new WsProvider(this.options.rpcUrl);
         this.api = await ApiPromise.create({provider, types: cereTypes});
         await this.api.isReady;
@@ -70,9 +75,18 @@ export class SmartContract {
         return await this.contract.api.disconnect();
     }
 
-    async bucketCreate(owner: string, clusterId: bigint, bucketParams: BucketParams = new BucketParams()): Promise<BucketCreatedEvent> {
+    async bucketCreate(
+        owner: string,
+        clusterId: bigint,
+        bucketParams: BucketParams = new BucketParams(),
+    ): Promise<BucketCreatedEvent> {
         const createBucketParams = initDefaultBucketParams(bucketParams);
-        const tx = await this.contract.tx.bucketCreate(txOptionsPay, JSON.stringify(createBucketParams), clusterId, owner);
+        const tx = await this.contract.tx.bucketCreate(
+            txOptionsPay,
+            JSON.stringify(createBucketParams),
+            clusterId,
+            owner,
+        );
         const result = await this.sendTx(tx);
         const events = (result as any).contractEvents || [];
         const bucketId = SmartContract.findCreatedBucketId(events);
@@ -90,8 +104,13 @@ export class SmartContract {
     }
 
     async bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList> {
-        const {result, output} =
-            await this.contract.query.bucketList(this.address, txOptions, offset, limit, filterOwnerId);
+        const {result, output} = await this.contract.query.bucketList(
+            this.address,
+            txOptions,
+            offset,
+            limit,
+            filterOwnerId,
+        );
         if (!result.isOk) throw result.asErr;
 
         const [statuses, length] = (output as any).toJSON();
@@ -127,7 +146,7 @@ export class SmartContract {
         const tx = await this.contract.tx.accountBond(txOptions, value * CERE);
         const result = await this.sendTx(tx);
         if (result.dispatchError) {
-            throw new Error("Unable to deposit account");
+            throw new Error('Unable to deposit account');
         }
     }
 
@@ -135,13 +154,13 @@ export class SmartContract {
         const tx = await this.contract.tx.accountDeposit({...txOptions, value: value * CERE});
         const result = await this.sendTx(tx);
         if (result.dispatchError) {
-            throw new Error("Unable to deposit account");
+            throw new Error('Unable to deposit account');
         }
     }
 
     async bucketAllocIntoCluster(bucketId: bigint, resource: bigint) {
         if (resource <= 0) {
-            throw new Error("Invalid bucket size")
+            throw new Error('Invalid bucket size');
         }
 
         const tx = await this.contract.tx.bucketAllocIntoCluster(txOptions, bucketId, resource);
@@ -167,10 +186,10 @@ export class SmartContract {
     }
 
     private static findCreatedBucketId(events: Array<any>): string {
-        const eventName = "BucketCreated";
+        const eventName = 'BucketCreated';
 
-        const event = find(events, ["event.identifier", eventName]);
-        const id = get(event, "args[0]");
+        const event = find(events, ['event.identifier', eventName]);
+        const id = get(event, 'args[0]');
         return id && id.toString();
     }
 }
