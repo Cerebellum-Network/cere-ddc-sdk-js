@@ -9,6 +9,10 @@ local function is_empty(s)
     return s == nil or s == ''
 end
 
+local function is_number(v)
+    return type(v) == 'number'
+end
+
 local function timestamp_to_era(timestamp, args)
     -- Hardcode era setting
     local year_start = 1672531200
@@ -25,7 +29,7 @@ end
 
 redis.register_function('timestamp_to_era', timestamp_to_era)
 
-local function update_node_aggregates(node_aggregation_redis_key, node_public_key, log_type, acked, bytes_sent, bytes_received, response_time_ms)
+local function update_node_aggregates(node_aggregation_redis_key, node_public_key, request_id, log_type, acked, bytes_sent, bytes_received, response_time_ms)
     assert(log_type ~= nil, 'log_type cannot be nil');
 
     local has_aggregate_redis_key =  redis.call('EXISTS', node_aggregation_redis_key);
@@ -46,8 +50,21 @@ local function update_node_aggregates(node_aggregation_redis_key, node_public_ke
             ['totalQueriesAcked'] = (acked and log_type == 3) and 1 or 0,
             ['totalBytesSent'] = bytes_sent,
             ['totalBytesReceived'] = bytes_received,
-            ['averageResponseTimeMs'] = response_time_ms
+            ['averageResponseTimeMs'] = response_time_ms,
+            ['averageResponseTimeMsSamples'] = 1,
+            ['requestIds'] = 1,
+            ['cpuUsedPercent'] = 0,
+            ['cpuTotal'] = 0,
+            ['memoryUsedPercent'] = 0,
+            ['memoryTotalBytes'] = 0,
+            ['storageUsedPercent'] = 0,
+            ['storageTotalBytes'] = 0,
+            ['resourceSamples'] = 0,
         }));
+        if request_id then
+            redis.call('JSON.SET', node_aggregation_redis_key, aggregate_json_path..'.requestIds', '[]')
+        end
+
     else
         if log_type == 1 then --write
             if acked == true then
@@ -82,19 +99,20 @@ local function update_node_aggregates(node_aggregation_redis_key, node_public_ke
         end
         assert(response_time_ms ~= nil, 'response_time_ms cannot be nil');
         if (response_time_ms > 0) then
-            local response_time_ms_sum = response_time_ms;
-            local number_of_response_times = 1
-            local response_times_ms = redis.call("JSON.GET", node_aggregation_redis_key, aggregate_json_path .. '.responseTimesMs'):gsub('[\]\[]', '');
-            if is_empty(response_times_ms) then
-                redis.call("JSON.SET", node_aggregation_redis_key, aggregate_json_path .. '.responseTimesMs', '[]');
-            else
-                for response_time_ms_i in string.gmatch(response_times_ms, "([^\,]+)") do
-                    response_time_ms_sum = response_time_ms_sum + (response_time_ms_i + 0);
-                    number_of_response_times = number_of_response_times + 1;
-                end
+            local existing_response_times_ms = redis.call("JSON.GET", node_aggregation_redis_key, aggregate_json_path .. '.averageResponseTimeMs'):gsub('[\]\[]', '') + 0;
+            local response_time_ms_samples = redis.call("JSON.GET", node_aggregation_redis_key, aggregate_json_path .. '.averageResponseTimeMsSamples'):gsub('[\]\[]', '') + 0;
+            local next_response_time_ms_samples = response_time_ms_samples + 1;
+            local next_response_time_ms = ((existing_response_times_ms * response_time_ms_samples) + response_time_ms) / next_response_time_ms_samples;
+            redis.call("JSON.SET", node_aggregation_redis_key, aggregate_json_path .. '.averageResponseTimeMs', next_response_time_ms);
+            redis.call("JSON.NUMINCRBY", node_aggregation_redis_key, aggregate_json_path .. '.averageResponseTimeMsSamples', 1);
+        end
+        --add request_id in requestIds
+        if request_id then
+            local has_request_id = redis.call('JSON.ARRINDEX', node_aggregation_redis_key, aggregate_json_path..'.requestIds', '"'..request_id..'"')
+            if has_request_id[1] == -1 then
+                redis.call('JSON.ARRAPPEND', node_aggregation_redis_key, aggregate_json_path..'.requestIds', '"'..request_id..'"')
             end
-            redis.call("JSON.SET", node_aggregation_redis_key, aggregate_json_path .. '.averageResponseTimeMs', response_time_ms_sum / number_of_response_times);
-            redis.call("JSON.ARRAPPEND", node_aggregation_redis_key, aggregate_json_path .. '.responseTimesMs', response_time_ms);
+
         end
     end
 end
@@ -129,8 +147,8 @@ local function update_aggregates_by_request_id(request_id)
             local log_node_public_key = redis.call('JSON.GET', data_key, '$.chunks.' .. chunk_key .. '.log.nodePublicKey'):gsub('[\]\[\""]', '');
             assert(log_node_public_key ~= nil, 'log.nodePublicKey is nil for request_id ' .. request_id .. ' chunk_key ' .. chunk_key);
 
-            update_node_aggregates(era_aggregate_key, log_node_public_key,  log_type, false, 0, 0, 0)
-            update_node_aggregates(node_aggregate_key, log_node_public_key, log_type, false, 0, 0, 0)
+            update_node_aggregates(era_aggregate_key, log_node_public_key, request_id,  log_type, false, 0, 0, 0)
+            update_node_aggregates(node_aggregate_key, log_node_public_key, nil, log_type, false, 0, 0, 0)
 
             redis.call('JSON.SET', data_key, '$.chunks.' .. chunk_key .. '.log.aggregated', 1);
         end
@@ -169,8 +187,8 @@ local function update_aggregates_by_request_id(request_id)
                     bytes_sent = ack_bytes_received
                 end
 
-                update_node_aggregates(era_aggregate_key, ack_node_public_key, log_type, true, bytes_sent, bytes_received, response_time_ms)
-                update_node_aggregates(node_aggregate_key, ack_node_public_key, log_type, true, bytes_sent, bytes_received, response_time_ms)
+                update_node_aggregates(era_aggregate_key, ack_node_public_key, request_id, log_type, true, bytes_sent, bytes_received, response_time_ms)
+                update_node_aggregates(node_aggregate_key, ack_node_public_key, nil, log_type, true, bytes_sent, bytes_received, response_time_ms)
 
                 redis.call('JSON.SET', data_key, '$.chunks.' .. chunk_key .. '.ack.aggregated', 1);
 
@@ -446,3 +464,170 @@ local function save_validation_result_by_node(validationKeys, validationResults)
 end
 
 redis.register_function('save_validation_result_by_node', save_validation_result_by_node)
+
+local function save_storage_request_log(keys)
+    local result = {}
+
+    for _, key in ipairs(keys) do
+        local data = cjson.decode(key);
+
+        -- validate arguments
+
+        local timestamp = data['timestamp']
+        assert(is_number(timestamp) == true, "timestamp parameter should be a number ("..key..")")
+
+        local storage_node_public_key = data['storageNodePublicKey']
+        assert(is_empty(storage_node_public_key) == false, "please set storageNodePublicKey parameter in JSON argument ("..key..")")
+
+        local type = data['type']
+        assert(is_empty(type) == false, "please set type parameter in JSON argument ("..key..")")
+        assert(type == 1 or type == 2 or type == 3, "type parameter should be 1 or 2 or 3 ("..key..")")
+
+        local bytes = data['bytes']
+        assert(is_empty(bytes) == false, "please set bytes parameter in JSON argument ("..key..")")
+        assert(is_number(bytes) == true and bytes >= 0, "bytes parameter should be a non-negative number ("..key..")")
+
+        local bucket_id = data['bucketId']
+        assert(is_number(bucket_id) == true, "bucketId parameter should be a number ("..key..")")
+
+        local cid = data['cid']
+        assert(is_empty(cid) == false, "please set cid parameter in JSON argument ("..key..")")
+
+        local era = timestamp_to_era(timestamp)
+
+        --check is redis_key exists
+        local redis_key = node_aggregate_key_prefix .. era;
+        local redis_key_exists = redis.call('EXISTS', redis_key)
+        if redis_key_exists == 0 then
+            redis.call("JSON.SET", redis_key, '$', cjson.encode({}))
+        end
+
+        --check that storage_node_public_key path exists
+        local node_path = '$.' .. storage_node_public_key
+        local node_path_exists = redis.call('JSON.OBJLEN', redis_key, node_path)
+
+        -- create new node aggregate
+        if next(node_path_exists) == nil then
+            redis.call("JSON.SET", redis_key, node_path, cjson.encode({
+                ['totalReads'] = type == 2 and 1 or 0,
+                ['totalWrites'] = type == 1 and 1 or 0,
+                ['totalQueries'] = type == 3 and 1 or 0,
+                ['totalBytesSent'] = (type == 2 or type== 3) and bytes or 0,
+                ['totalBytesReceived'] = type == 1 and bytes or 0,
+                -- other aggregates
+                ['cpuUsedPercent'] = 0,
+                ['cpuTotal'] = 0,
+                ['memoryUsedPercent'] = 0,
+                ['memoryTotalBytes'] = 0,
+                ['storageUsedPercent'] = 0,
+                ['storageTotalBytes'] = 0,
+                ['resourceSamples'] = 0
+            }))
+        else -- update existing aggregate
+            if type == 1 then
+                redis.call('JSON.NUMINCRBY', redis_key, node_path..'.totalWrites', 1)
+                redis.call('JSON.NUMINCRBY', redis_key, node_path..'.totalBytesReceived', bytes)
+            elseif type == 2 then
+                redis.call('JSON.NUMINCRBY', redis_key, node_path..'.totalReads', 1)
+                redis.call('JSON.NUMINCRBY', redis_key, node_path..'.totalBytesSent', bytes)
+            elseif type == 3 then
+                redis.call('JSON.NUMINCRBY', redis_key, node_path..'.totalQueries', 1)
+                redis.call('JSON.NUMINCRBY', redis_key, node_path..'.totalBytesSent', bytes)
+            end
+        end
+
+        table.insert(result, redis_key)
+    end
+
+    return result
+end
+
+redis.register_function('save_storage_request_log', save_storage_request_log)
+
+local function save_node_resources_used(keys)
+    local result = {}
+
+    for _, key in ipairs(keys) do
+        local data = cjson.decode(key);
+
+        -- validate arguments
+        local node_public_key = data['nodePublicKey']
+        assert(is_empty(node_public_key) == false, "please set nodePublicKey parameter in JSON argument ("..key..")")
+
+        local timestamp = data['timestamp']
+        assert(is_number(timestamp) == true, "timestamp parameter should be a number ("..key..")")
+
+        local cpu_used_percent = data['cpuUsedPercent']
+        assert(is_number(cpu_used_percent) == true, "cpuUsedPercent parameter should be a number ("..key..")")
+
+        local cpu_total = data['cpuTotal']
+        assert(is_number(cpu_total) == true, "cpuTotal parameter should be a number ("..key..")")
+
+        local memory_used_percent = data['memoryUsedPercent']
+        assert(is_number(memory_used_percent) == true, "memoryUsedPercent parameter should be a number ("..key..")")
+
+        local memory_total_bytes = data['memoryTotalBytes']
+        assert(is_number(memory_total_bytes) == true, "memoryBytesTotal parameter should be a number ("..key..")")
+
+        local storage_used_percent = data['storageUsedPercent']
+        assert(is_number(storage_used_percent) == true, "storageUsedPercent parameter should be a number ("..key..")")
+
+        local storage_total_bytes = data['storageTotalBytes']
+        assert(is_number(storage_total_bytes) == true, "storageBytesTotal parameter should be a number ("..key..")")
+
+        local era = timestamp_to_era(timestamp)
+
+        --check is redis_key exists
+        local redis_key = node_aggregate_key_prefix .. era;
+        local redis_key_exists = redis.call('EXISTS', redis_key)
+        if redis_key_exists == 0 then
+            redis.call("JSON.SET", redis_key, '$', cjson.encode({}))
+        end
+
+        --check that storage_node_public_key path exists
+        local node_path = '$.' .. node_public_key
+        local node_path_exists = redis.call('JSON.OBJLEN', redis_key, node_path)
+
+        -- create new node aggregate
+        if next(node_path_exists) == nil then
+            redis.call("JSON.SET", redis_key, node_path, cjson.encode({
+                ['cpuUsedPercent'] = cpu_used_percent,
+                ['cpuTotal'] = cpu_total,
+                ['memoryUsedPercent'] = memory_used_percent,
+                ['memoryTotalBytes'] = memory_total_bytes,
+                ['storageUsedPercent'] = storage_used_percent,
+                ['storageTotalBytes'] = storage_total_bytes,
+                ['resourceSamples'] = 1,
+                -- other aggregates
+                ['totalReads'] = 0,
+                ['totalReadsAcked'] = 0,
+                ['totalWrites'] = 0,
+                ['totalWritesAcked'] = 0,
+                ['totalQueries'] = 0,
+                ['totalQueriesAcked'] = 0,
+                ['totalBytesSent'] = 0,
+                ['totalBytesReceived'] = 0,
+                ['averageResponseTimeMs'] = 0,
+                ['averageResponseTimeMsSamples'] = 0,
+            }))
+        else -- update existing node aggregate
+            local aggregate = cjson.decode(redis.call('JSON.GET', redis_key, node_path))[1]
+            local resource_samples = aggregate['resourceSamples']
+            local next_resource_samples = resource_samples + 1
+            aggregate['cpuUsedPercent'] = (aggregate['cpuUsedPercent'] * resource_samples + cpu_used_percent) / next_resource_samples
+            aggregate['cpuTotal'] = cpu_total
+            aggregate['memoryUsedPercent'] = (aggregate['memoryUsedPercent'] * resource_samples + memory_used_percent) / next_resource_samples
+            aggregate['memoryTotalBytes'] = memory_total_bytes
+            aggregate['storageUsedPercent'] = (aggregate['storageUsedPercent'] * resource_samples + storage_used_percent) / next_resource_samples
+            aggregate['storageTotalBytes'] = storage_total_bytes
+            aggregate['resourceSamples'] = next_resource_samples
+            redis.call('JSON.SET', redis_key, node_path, cjson.encode(aggregate))
+        end
+
+        table.insert(result, redis_key)
+    end
+
+    return result
+end
+
+redis.register_function('save_node_resources_used', save_node_resources_used)
