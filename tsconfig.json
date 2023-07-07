@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "baseUrl": ".",
+        "outDir": "dist",
         "target": "esnext",
         "module": "esnext",
         "esModuleInterop": true,
@@ -30,5 +31,5 @@
         }
     },
     "include": ["packages/", "tests/"],
-    "exclude": ["**/*.test.ts", "**/*.stub.ts", "node_modules", "build"]
+    "exclude": ["**/*.test.ts", "**/*.stub.ts", "node_modules", "dist", "package"]
 }

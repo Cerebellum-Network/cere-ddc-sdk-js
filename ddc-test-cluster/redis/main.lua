@@ -251,7 +251,7 @@ local function save_log_v2(keys, args)
 
         -- check if this key exists
         local redisKeyExists = redis.call('EXISTS', redisKey)
-        local fileAllChunkCids = {}
+        local fileAllChunkCids
         if redisKeyExists == 0 then
             -- then it's a "head chunk" and file data(like size and count of chunks) should be in data
             fileAllChunkCids = data['allChunkCids']
@@ -285,7 +285,6 @@ local function save_log_v2(keys, args)
                 ['type'] = type,
                 ['bucketId'] = bucketId,
                 ['era'] = era,
-                ['chunkCids'] = fileAllChunkCids,
                 ['aggregated'] = 0
             }
         }
@@ -447,4 +446,3 @@ local function save_validation_result_by_node(validationKeys, validationResults)
 end
 
 redis.register_function('save_validation_result_by_node', save_validation_result_by_node)
-

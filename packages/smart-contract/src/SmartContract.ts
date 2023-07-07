@@ -1,5 +1,3 @@
-import {BucketCreatedEvent} from './event/BucketCreatedEvent';
-import {SmartContractOptions, TESTNET} from './options/SmartContractOptions';
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {ContractPromise} from '@polkadot/api-contract';
 import {Keyring} from '@polkadot/keyring';
@@ -7,14 +5,16 @@ import {isKeyringPair} from '@polkadot/api/util';
 import {SubmittableExtrinsic, SubmittableResultValue, Signer, AddressOrPair} from '@polkadot/api/types';
 import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
 import {find, get} from 'lodash';
+import {ContractQuery} from '@polkadot/api-contract/base/types';
+
+import {BucketCreatedEvent} from './event/BucketCreatedEvent';
+import {SmartContractOptions, TESTNET} from './options/SmartContractOptions';
 import {NodeStatus} from './model/NodeStatus';
 import {cereTypes} from './types/cere_types';
 import {BucketStatus} from './model/BucketStatus';
 import {BucketStatusList} from './model/BucketStatusList';
 import {BucketParams, initDefaultBucketParams} from './options/BucketParams';
-import {waitReady} from '@polkadot/wasm-crypto';
 import {CdnClusterGetResult, CdnNodeGetResult, ClusterGetResult} from './types/smart-contract-responses';
-import {ContractQuery} from '@polkadot/api-contract/base/types';
 
 const CERE = 10_000_000_000n;
 
@@ -40,7 +40,6 @@ export class SmartContract {
         options: SmartContractOptions = TESTNET,
         signer?: Signer,
     ): Promise<SmartContract> {
-        await waitReady();
         await cryptoWaitReady();
 
         const provider = new WsProvider(options.rpcUrl);
