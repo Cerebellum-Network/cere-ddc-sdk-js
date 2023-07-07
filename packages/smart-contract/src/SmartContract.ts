@@ -66,7 +66,7 @@ export class SmartContract {
         return this.contract.api.disconnect();
     }
 
-    private async query<T>(query: ContractQuery<'promise'>, ...args: unknown[]) {
+    private async query<T extends any>(query: ContractQuery<'promise'>, ...args: unknown[]) {
         const {output, result} = await query(this.address, txOptions, ...args);
 
         if (!result.isOk) {
@@ -76,7 +76,7 @@ export class SmartContract {
         return output!.toJSON() as T;
     }
 
-    private async queryOne<T>(query: ContractQuery<'promise'>, ...args: unknown[]) {
+    private async queryOne<T extends any>(query: ContractQuery<'promise'>, ...args: unknown[]) {
         const result = await this.query<{ok: T}>(query, ...args);
 
         return result.ok;

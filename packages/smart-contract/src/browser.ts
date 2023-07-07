@@ -2,6 +2,7 @@ import {SmartContract as CoreSmartContract} from './SmartContract';
 import {SmartContractOptions} from './options/SmartContractOptions';
 import {InjectedAccount} from '@polkadot/extension-inject/types';
 import {web3Enable, web3FromAddress} from '@polkadot/extension-dapp';
+import {Signer} from '@polkadot/api/types';
 
 export {DEVNET, TESTNET, MAINNET} from './options/SmartContractOptions';
 export type {SmartContractOptions} from './options/SmartContractOptions';
@@ -25,7 +26,7 @@ export class SmartContract extends CoreSmartContract {
             const {address} = accountOrSecretPhrase;
             const {signer} = await web3FromAddress(address);
 
-            return super.buildAndConnect(address, options, signer);
+            return super.buildAndConnect(address, options, signer as Signer);
         }
     }
 }
