@@ -99,6 +99,7 @@ export function createConfig(metaUrl, nodeEntry, browserEntry, browserEntryName)
         });
     } else if (browserslistEnv === 'browser') {
         webpackConfig = merge(webpackConfig, {
+            target: 'web', // TODO: Figure out how to use `browserslist` target here
             entry: {
                 [browserEntryName ||
                 path
