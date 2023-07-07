@@ -1,20 +1,27 @@
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {ContractPromise} from '@polkadot/api-contract';
 import {Keyring} from '@polkadot/keyring';
-import {isKeyringPair} from '@polkadot/api/util';
-import {SubmittableExtrinsic, SubmittableResultValue, Signer, AddressOrPair} from '@polkadot/api/types';
+import {SubmittableExtrinsic, SubmittableResultValue, Signer} from '@polkadot/api/types';
 import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
-import {find, get} from 'lodash';
-import {ContractQuery} from '@polkadot/api-contract/base/types';
 
-import {BucketCreatedEvent} from './event/BucketCreatedEvent';
+import {SmartContractBase} from './SmartContractBase';
 import {SmartContractOptions, TESTNET} from './options/SmartContractOptions';
 import {NodeStatus} from './model/NodeStatus';
 import {cereTypes} from './types/cere_types';
-import {BucketStatus} from './model/BucketStatus';
-import {BucketStatusList} from './model/BucketStatusList';
-import {BucketParams, initDefaultBucketParams} from './options/BucketParams';
-import {CdnClusterGetResult, CdnNodeGetResult, ClusterGetResult} from './types/smart-contract-responses';
+import {CdnNodeGetResult} from './types/smart-contract-responses';
+import {
+    Account,
+    AccountId,
+    BucketId,
+    BucketStatus,
+    CdnClusterStatus,
+    ClusterId,
+    ClusterStatus,
+    NodeId,
+    Resource,
+    VNode,
+    BucketParams,
+} from './types';
 
 const CERE = 10_000_000_000n;
 
@@ -23,18 +30,7 @@ const txOptions = {
     gasLimit: -1,
 };
 
-const txOptionsPay = {
-    value: 10n * CERE,
-    gasLimit: -1, //100_000n * MGAS,
-};
-
-export class SmartContract {
-    private address: string;
-
-    constructor(private account: AddressOrPair, private contract: ContractPromise, private signer?: Signer) {
-        this.address = isKeyringPair(this.account) ? this.account.address : this.account.toString();
-    }
-
+export class SmartContract extends SmartContractBase {
     static async buildAndConnect(
         secretPhraseOrAddress: string,
         options: SmartContractOptions = TESTNET,
@@ -66,38 +62,30 @@ export class SmartContract {
         return this.contract.api.disconnect();
     }
 
-    private async query<T extends any>(query: ContractQuery<'promise'>, ...args: unknown[]) {
-        const {output, result} = await query(this.address, txOptions, ...args);
-
-        if (!result.isOk) {
-            throw result.asErr;
-        }
-
-        return output!.toJSON() as T;
+    async clusterList(offset?: number | null, limit?: number | null, filterManagerId?: AccountId) {
+        return this.queryList<ClusterStatus>(this.contract.query.clusterList, offset, limit, filterManagerId);
     }
 
-    private async queryOne<T extends any>(query: ContractQuery<'promise'>, ...args: unknown[]) {
-        const result = await this.query<{ok: T}>(query, ...args);
-
-        return result.ok;
+    async cdnClusterList(offset?: number | null, limit?: number | null, filterManagerId?: AccountId) {
+        return this.queryList<CdnClusterStatus>(this.contract.query.clusterList, offset, limit, filterManagerId);
     }
 
-    private async queryList(query: ContractQuery<'promise'>, ...args: unknown[]) {}
+    async clusterCreate(vNodes: VNode[] = [], nodeIds: NodeId[] = [], clusterParams: Record<string, unknown> = {}) {
+        const {contractEvents} = await this.submit(
+            this.contract.tx.clusterCreate,
+            this.address,
+            vNodes,
+            nodeIds,
+            JSON.stringify(clusterParams),
+        );
 
-    async clusterList() {
-        throw new Error('Not implemented');
+        return this.getContractEventArgs(contractEvents, 'ClusterCreated').clusterId;
     }
 
-    async cdnClusterList() {
-        throw new Error('Not implemented');
-    }
+    async cdnClusterCreate(cdnNodesIds: NodeId[] = []) {
+        const {contractEvents} = await this.submit(this.contract.tx.cdnClusterCreate, cdnNodesIds);
 
-    async clusterCreate() {
-        throw new Error('Not implemented');
-    }
-
-    async cdnClusterCreate() {
-        throw new Error('Not implemented');
+        return this.getContractEventArgs(contractEvents, 'CdnClusterCreated').clusterId;
     }
 
     async clusterRemoveNode() {
@@ -149,64 +137,45 @@ export class SmartContract {
     }
 
     async accountGet(address: string) {
-        throw new Error('Not implemented');
+        return this.queryOne<Account>(this.contract.query.accountGet, address);
     }
 
-    clusterGet(clusterId: number) {
-        return this.queryOne<ClusterGetResult>(this.contract.query.clusterGet, clusterId);
+    async clusterGet(clusterId: number) {
+        return this.queryOne<ClusterStatus>(this.contract.query.clusterGet, clusterId);
     }
 
-    async bucketGet(bucketId: bigint) {
-        const {result, output} = await this.contract.query.bucketGet(this.address, txOptions, bucketId);
-        if (!result.isOk) throw result.asErr;
+    async cdnClusterGet(clusterId: number) {
+        return this.queryOne<CdnClusterStatus>(this.contract.query.cdnClusterGet, clusterId);
+    }
 
-        const bucketStatus = (output as any).toJSON().ok;
-        bucketStatus.params = JSON.parse(bucketStatus.params);
+    async bucketList(offset?: number | null, limit?: number | null, filterOwnerId?: AccountId) {
+        return this.queryList<BucketStatus>(this.contract.query.bucketList, offset, limit, filterOwnerId);
+    }
 
-        return bucketStatus as BucketStatus;
+    async bucketGet(bucketId: BucketId) {
+        return this.queryOne<BucketStatus>(this.contract.query.bucketGet, bucketId);
+    }
+
+    async bucketCreate(owner: AccountId, clusterId: ClusterId, bucketParams: BucketParams = {replication: 1}) {
+        if (bucketParams.replication > 3) {
+            throw new Error(`Exceed bucket limits: ${JSON.stringify(bucketParams)}`);
+        }
+
+        const params = JSON.stringify(bucketParams);
+        const {contractEvents} = await this.submit(this.contract.tx.bucketCreate, params, clusterId, owner);
+
+        return this.getContractEventArgs(contractEvents, 'BucketCreated').bucketId;
+    }
+
+    async bucketAllocIntoCluster(bucketId: BucketId, resource: Resource) {
+        if (resource <= 0) {
+            throw new Error('Invalid bucket size');
+        }
+
+        await this.submit(this.contract.tx.bucketAllocIntoCluster, bucketId, resource);
     }
 
     // Old API
-
-    async bucketCreate(
-        owner: string,
-        clusterId: bigint,
-        bucketParams: BucketParams = new BucketParams(),
-    ): Promise<BucketCreatedEvent> {
-        const createBucketParams = initDefaultBucketParams(bucketParams);
-        const tx = await this.contract.tx.bucketCreate(
-            txOptionsPay,
-            JSON.stringify(createBucketParams),
-            clusterId,
-            owner,
-        );
-        const result = await this.sendTx(tx);
-        const events = (result as any).contractEvents || [];
-        const bucketId = SmartContract.findCreatedBucketId(events);
-        return new BucketCreatedEvent(BigInt(bucketId));
-    }
-
-    async bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList> {
-        const {result, output} = await this.contract.query.bucketList(
-            this.address,
-            txOptions,
-            offset,
-            limit,
-            filterOwnerId,
-        );
-        if (!result.isOk) throw result.asErr;
-
-        const [statuses, length] = (output as any).toJSON();
-        return new BucketStatusList(statuses, length);
-    }
-
-    async cdnClusterGet(clusterId: number): Promise<CdnClusterGetResult> {
-        let {result, output} = await this.contract.query.cdnClusterGet(this.address, txOptions, clusterId);
-        if (!result.isOk) {
-            throw result.asErr;
-        }
-        return (output as any).toJSON().ok as CdnClusterGetResult;
-    }
 
     async cdnNodeGet(clusterId: number): Promise<CdnNodeGetResult> {
         let {result, output} = await this.contract.query.cdnNodeGet(this.address, txOptions, clusterId);
@@ -233,16 +202,6 @@ export class SmartContract {
         }
     }
 
-    async bucketAllocIntoCluster(bucketId: bigint, resource: bigint) {
-        if (resource <= 0) {
-            throw new Error('Invalid bucket size');
-        }
-
-        const tx = await this.contract.tx.bucketAllocIntoCluster(txOptions, bucketId, resource);
-        const result = await this.sendTx(tx);
-        if (result.dispatchError) throw new Error(`Unable to allocate in cluster. Bucket: ${bucketId}`);
-    }
-
     async nodeGet(nodeId: number): Promise<NodeStatus> {
         let {result, output} = await this.contract.query.nodeGet(this.address, txOptions, nodeId);
         if (!result.isOk) throw result.asErr;
@@ -258,13 +217,5 @@ export class SmartContract {
                 }
             }),
         );
-    }
-
-    private static findCreatedBucketId(events: Array<any>): string {
-        const eventName = 'BucketCreated';
-
-        const event = find(events, ['event.identifier', eventName]);
-        const id = get(event, 'args[0]');
-        return id && id.toString();
     }
 }

@@ -48,13 +48,9 @@ export const getGasLimit = async (api: ApiPromise) => {
 export const signAndSend = (tx: SubmittableExtrinsic<'promise'>, account: AddressOrPair) =>
     new Promise<SignAndSendResult>((resolve, reject) =>
         tx.signAndSend(account, (result) => {
-            const {events = [], status, contractEvents = []} = result as TxResult;
+            const {events = [], status, contractEvents = [], dispatchError} = result as TxResult;
 
             console.log(`Transaction (${tx.hash.toHex()}) is ${status.type}`);
-
-            if (status.isInvalid) {
-                return reject('Invalid transaction');
-            }
 
             if (status.isFinalized) {
                 return resolve({
@@ -62,6 +58,10 @@ export const signAndSend = (tx: SubmittableExtrinsic<'promise'>, account: Addres
                     contractEvents,
                     blockHash: status.asFinalized.toHex(),
                 });
+            }
+
+            if (dispatchError) {
+                return reject(new Error(dispatchError.toString()));
             }
         }),
     );

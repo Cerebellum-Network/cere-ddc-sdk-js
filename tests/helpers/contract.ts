@@ -19,7 +19,7 @@ const readContract = async () => {
     };
 };
 
-const deployContract = async (api: ApiPromise, signer: KeyringPair, abi: Abi, wasm: string) => {
+const deployContract = async (api: ApiPromise, account: KeyringPair, abi: Abi, wasm: string) => {
     const codePromise = new CodePromise(api, abi, wasm);
     const tx = codePromise.tx.new({
         value: 0,
@@ -27,9 +27,9 @@ const deployContract = async (api: ApiPromise, signer: KeyringPair, abi: Abi, wa
         storageDepositLimit: 750_000_000_000,
     });
 
-    const {events} = await signAndSend(tx, signer);
+    const {events} = await signAndSend(tx, account);
     const foundEvent = events.find(({event}) => api.events.contracts.Instantiated.is(event));
-    const [, address] = foundEvent?.event.toHuman().data as string[];
+    const [, address] = foundEvent?.event.toJSON().data as string[];
 
     return address;
 };

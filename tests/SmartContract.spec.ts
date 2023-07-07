@@ -5,7 +5,7 @@ import {SmartContract} from '@cere-ddc-sdk/smart-contract';
 
 import {bootstrapContract, createBlockhainApi, getAccount} from './helpers';
 
-describe.skip('Smart Contract', () => {
+describe('Smart Contract', () => {
     let api: ApiPromise;
     let admin: KeyringPair;
     let deployedContract: ContractPromise;
@@ -42,37 +42,69 @@ describe.skip('Smart Contract', () => {
         });
 
         test('create storage cluster', async () => {
-            const cluster = await adminContract.clusterCreate();
+            const createdClusterId = await adminContract.clusterCreate();
 
-            expect(cluster).toBeTruthy();
+            expect(createdClusterId).toEqual(expect.any(Number));
         });
 
         test('create CDN cluster', async () => {
-            const cluster = await adminContract.cdnClusterCreate();
+            const createdClusterId = await adminContract.cdnClusterCreate();
 
-            expect(cluster).toBeTruthy();
+            expect(createdClusterId).toEqual(expect.any(Number));
+        });
+
+        test('get storage cluster', async () => {
+            const createdClusterId = await adminContract.clusterCreate();
+            const foundCluster = await adminContract.clusterGet(createdClusterId);
+
+            expect(foundCluster.clusterId).toEqual(createdClusterId);
+        });
+
+        test('get CDN cluster', async () => {
+            const createdClusterId = await adminContract.cdnClusterCreate();
+            const foundCluster = await adminContract.cdnClusterGet(createdClusterId);
+
+            expect(foundCluster.clusterId).toEqual(createdClusterId);
         });
 
         test('get all storage clusters', async () => {
-            const clusters = await adminContract.clusterList();
+            const clusterId1 = await adminContract.clusterCreate();
+            const clusterId2 = await adminContract.clusterCreate();
 
-            expect(clusters).toEqual(expect.any(Array));
+            const [clusters, totalCount] = await adminContract.clusterList();
+
+            expect(totalCount).toBeGreaterThanOrEqual(2);
+            expect(clusters).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({clusterId: clusterId1}),
+                    expect.objectContaining({clusterId: clusterId2}),
+                ]),
+            );
         });
 
         test('get all CDN clusters', async () => {
-            const clusters = await adminContract.cdnClusterList();
+            const clusterId1 = await adminContract.cdnClusterCreate();
+            const clusterId2 = await adminContract.cdnClusterCreate();
 
-            expect(clusters).toEqual(expect.any(Array));
+            const [clusters, totalCount] = await adminContract.cdnClusterList();
+
+            expect(totalCount).toBeGreaterThanOrEqual(2);
+            expect(clusters).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({clusterId: clusterId1}),
+                    expect.objectContaining({clusterId: clusterId2}),
+                ]),
+            );
         });
 
         test('get all CDN nodes', async () => {
-            const nodes = await adminContract.cdnNodeGet(1);
+            const nodes = await adminContract.cdnNodeList();
 
             expect(nodes).toEqual(expect.any(Array));
         });
 
         test('get all storage nodes', async () => {
-            const nodes = await adminContract.cdnNodeList();
+            const nodes = await adminContract.nodeList();
 
             expect(nodes).toEqual(expect.any(Array));
         });
@@ -99,48 +131,66 @@ describe.skip('Smart Contract', () => {
     });
 
     describe('Accounts', () => {
-        test('get account status', async () => {
+        test('deposit account balance', async () => {
+            await userContract.accountDeposit(10n);
             const account = await adminContract.accountGet(user.address);
 
-            expect(account).toBeTruthy();
-        });
-
-        test('deposit account balance', async () => {
-            await userContract.accountDeposit(100n);
+            expect(account.deposit.value).toBeTruthy();
         });
 
         test('bond account balance', async () => {
-            await userContract.accountBond(50n);
+            await userContract.accountBond(5n);
+            const account = await adminContract.accountGet(user.address);
+
+            expect(account.bonded.value).toBeTruthy();
         });
     });
 
     describe('Buckets', () => {
-        test('get all buckets', async () => {
-            const buckets = await adminContract.bucketList(0n, 10n);
-
-            expect(buckets).toEqual(expect.any(Array));
-        });
-
         test('create bucket', async () => {
-            const bucket = await adminContract.bucketCreate(user.address, 1n);
+            const createdBucketId = await adminContract.bucketCreate(admin.address, 1);
 
-            expect(bucket).toBeTruthy();
-        });
-
-        test('get all user buckets', async () => {
-            const buckets = await userContract.bucketList(0n, 10n, user.address);
-
-            expect(buckets).toEqual(expect.any(Array));
+            expect(createdBucketId).toEqual(expect.any(Number));
         });
 
         test('get bucket', async () => {
-            const bucket = await userContract.bucketGet(0n);
+            const createdBucketId = await adminContract.bucketCreate(admin.address, 1);
+            const foundBucket = await adminContract.bucketGet(createdBucketId);
 
-            expect(bucket).toBeTruthy();
+            expect(foundBucket.bucketId).toEqual(createdBucketId);
+        });
+
+        test('get all buckets', async () => {
+            const createdBucketId = await adminContract.bucketCreate(admin.address, 1);
+            const [buckets, totalCount] = await adminContract.bucketList();
+
+            expect(totalCount).toBeGreaterThanOrEqual(1);
+            expect(buckets).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        bucketId: createdBucketId,
+                    }),
+                ]),
+            );
+        });
+
+        test('get all user buckets', async () => {
+            const createdBucketId = await userContract.bucketCreate(user.address, 1);
+            const [buckets, totalCount] = await userContract.bucketList(null, null, user.address);
+
+            expect(totalCount).toBeGreaterThanOrEqual(1);
+            expect(buckets).toEqual([
+                expect.objectContaining({
+                    bucketId: createdBucketId,
+                }),
+            ]);
         });
 
         test('allocate bucket in a cluster', async () => {
-            await userContract.bucketAllocIntoCluster(0n, 1n);
+            const clusterId = await adminContract.clusterCreate();
+            const createdBucketId = await userContract.bucketCreate(user.address, clusterId);
+
+            await userContract.bucketAllocIntoCluster(createdBucketId, clusterId);
         });
     });
 });
