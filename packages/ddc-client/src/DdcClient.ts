@@ -23,7 +23,7 @@ import nacl, {BoxKeyPair} from 'tweetnacl';
 import {hexToU8a, stringToU8a, u8aToHex} from '@polkadot/util';
 
 import {DdcClientInterface} from './DdcClient.interface';
-import {ClientOptionsInterface} from './options/ClientOptions';
+import {ClientOptionsInterface, CreateClientOptions} from './options/ClientOptions';
 import {StoreOptions} from './options/StoreOptions';
 import {ReadOptions} from './options/ReadOptions';
 import {File} from './model/File';
@@ -35,8 +35,6 @@ const emptyNonce = new Uint8Array(nacl.box.nonceLength);
 const ENCRYPTOR_TAG = 'encryptor';
 const NONCE_TAG = 'nonce';
 const MAX_BUCKET_SIZE = 5n;
-
-type Options = RequiredSelected<Partial<ClientOptionsInterface>, 'clusterAddress'>;
 
 export class DdcClient implements DdcClientInterface {
     readonly kvStorage: KeyValueStorage;
@@ -61,7 +59,7 @@ export class DdcClient implements DdcClientInterface {
     }
 
     static async buildAndConnect(
-        options: Options,
+        options: CreateClientOptions,
         secretPhrase: string,
         encryptionSecretPhrase?: string,
     ): Promise<DdcClient> {
