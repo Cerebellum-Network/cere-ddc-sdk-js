@@ -24,6 +24,7 @@ import {
     Balance,
     NodeTag,
     NodeParams,
+    CdnNodeParams,
 } from './types';
 
 const CERE = 10_000_000_000n;
@@ -95,10 +96,6 @@ export class SmartContract extends SmartContractBase {
         throw new Error('Not implemented');
     }
 
-    async cdnNodeCreate() {
-        throw new Error('Not implemented');
-    }
-
     async nodeCreate(
         rentPerMonth: Balance,
         nodeParams: NodeParams,
@@ -118,6 +115,15 @@ export class SmartContract extends SmartContractBase {
         );
 
         return this.getContractEventArgs(contractEvents, 'NodeCreated').nodeId;
+    }
+
+    async cdnNodeCreate(nodeParams: CdnNodeParams) {
+        const params = JSON.stringify(nodeParams);
+        const nodeId = await this.query<NodeId>(this.contract.query.cdnNodeCreate, params); // Dry run
+
+        await this.submit(this.contract.tx.cdnNodeCreate, params);
+
+        return nodeId;
     }
 
     async clusterAddNode() {
@@ -223,6 +229,7 @@ export class SmartContract extends SmartContractBase {
     async accountDeposit(value: bigint) {
         const tx = await this.contract.tx.accountDeposit({...txOptions, value: value * CERE});
         const result = await this.sendTx(tx);
+
         if (result.dispatchError) {
             throw new Error('Unable to deposit account');
         }

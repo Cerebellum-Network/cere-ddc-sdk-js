@@ -42,9 +42,14 @@ describe('Smart Contract', () => {
         });
 
         test('create CDN node', async () => {
-            const node = await adminContract.cdnNodeCreate();
+            const createdCdnNodeId = await adminContract.cdnNodeCreate({
+                location: 'US',
+                size: 1,
+                url: 'http://localhost:8080',
+                publicKey: '0x6937f1b9092e110fb3756b65e5453bc63af676557a72f3aac12ded3944f623c2',
+            });
 
-            expect(node).toBeTruthy();
+            expect(createdCdnNodeId).toEqual(expect.any(Number));
         });
 
         test('create storage cluster', async () => {

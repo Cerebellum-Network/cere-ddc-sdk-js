@@ -87,7 +87,7 @@ export class SmartContractBase {
                 const {status, dispatchError} = result;
                 const {events = [], contractEvents = []} = result as SubmitResult;
 
-                if (status.isInBlock || status.isFinalized) {
+                if (status.isFinalized) {
                     return resolve({events, contractEvents});
                 }
 

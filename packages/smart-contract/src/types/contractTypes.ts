@@ -37,6 +37,13 @@ export type NodeParams = {
     url: string;
 };
 
+export type CdnNodeParams = {
+    url: string;
+    size: number;
+    location: string;
+    publicKey: string;
+};
+
 export type Cluster = {
     managerId: AccountId;
     resourcePerVnode: Resource;
