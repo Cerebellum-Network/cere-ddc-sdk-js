@@ -5,6 +5,7 @@ export type NodeId = number;
 export type Resource = number;
 export type VNode = bigint[];
 export type Balance = bigint;
+export type Params = string;
 
 type Schedule = {
     rate: Balance;
@@ -20,8 +21,20 @@ type Flow = {
     schedule: Schedule;
 };
 
+export enum NodeTag {
+    UNKNOWN = 'UNKNOWN',
+    ACTIVE = 'ACTIVE',
+    ADDING = 'ADDING',
+    DELETING = 'DELETING',
+    OFFLINE = 'OFFLINE',
+}
+
 export type BucketParams = {
     replication: number;
+};
+
+export type NodeParams = {
+    url: string;
 };
 
 export type Cluster = {
@@ -36,7 +49,7 @@ export type Cluster = {
 
 export type ClusterStatus = {
     clusterId: ClusterId;
-    params: string;
+    params: Params;
     cluster: Cluster;
 };
 
@@ -74,7 +87,7 @@ export type Bucket = {
 export type BucketStatus = {
     bucketId: BucketId;
     bucket: Bucket;
-    params: string;
+    params: Params;
     writerIds: AccountId[];
     readerIds: AccountId[];
     rentCoveredUntilMs: bigint;

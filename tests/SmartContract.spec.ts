@@ -30,9 +30,15 @@ describe('Smart Contract', () => {
 
     describe('Network topology', () => {
         test('create storage node', async () => {
-            const node = await adminContract.nodeCreate();
+            const createdNodeId = await adminContract.nodeCreate(
+                1n,
+                {url: 'http://localhost:8090'},
+                100000000,
+                'ACTIVE' as any,
+                admin.address,
+            );
 
-            expect(node).toBeTruthy();
+            expect(createdNodeId).toEqual(expect.any(Number));
         });
 
         test('create CDN node', async () => {

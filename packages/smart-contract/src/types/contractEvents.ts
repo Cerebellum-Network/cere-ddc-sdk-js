@@ -1,4 +1,4 @@
-import {AccountId, BucketId, ClusterId} from './contractTypes';
+import {AccountId, Balance, BucketId, ClusterId, NodeId, Params} from './contractTypes';
 
 export type ContractEventArgsMap = {
     ClusterCreated: {
@@ -14,6 +14,13 @@ export type ContractEventArgsMap = {
     BucketCreated: {
         bucketId: BucketId;
         ownerId: AccountId;
+    };
+
+    NodeCreated: {
+        nodeId: NodeId;
+        providerId: AccountId;
+        rentPerMonth: Balance;
+        nodeParams: Params;
     };
 };
 

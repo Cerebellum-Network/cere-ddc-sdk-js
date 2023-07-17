@@ -2,19 +2,15 @@ import {ContractPromise} from '@polkadot/api-contract';
 import {isKeyringPair} from '@polkadot/api/util';
 import {SubmittableResultValue, Signer, AddressOrPair} from '@polkadot/api/types';
 import {ContractQuery, ContractTx} from '@polkadot/api-contract/base/types';
-import {DecodedEvent} from '@polkadot/api-contract/types';
+import {DecodedEvent, ContractOptions} from '@polkadot/api-contract/types';
 import {ContractEvent, ContractEventArgs} from './types';
 
 const CERE = 10_000_000_000n;
 
-const txOptions = {
+const defaultOptions: ContractOptions = {
+    value: 0n,
     storageDepositLimit: null,
     gasLimit: -1,
-};
-
-const txOptionsPay = {
-    value: 10n * CERE,
-    gasLimit: -1, //100_000n * MGAS,
 };
 
 type SubmitResult = Pick<SubmittableResultValue, 'events'> & {
@@ -59,7 +55,7 @@ export class SmartContractBase {
     }
 
     protected async query<T extends unknown>(query: ContractQuery<'promise'>, ...params: unknown[]) {
-        const {output, result} = await query(this.address, txOptions, ...params);
+        const {output, result} = await query(this.address, defaultOptions, ...params);
 
         if (!result.isOk) {
             throw result.asErr;
@@ -83,8 +79,8 @@ export class SmartContractBase {
         return drainList<T>(offset || 0, limit || 10, (...slice) => this.query(query, ...slice, ...params));
     }
 
-    protected async submit(tx: ContractTx<'promise'>, ...params: unknown[]) {
-        const extrinsic = tx(txOptionsPay, ...params);
+    protected async submitWithOptions(tx: ContractTx<'promise'>, options: ContractOptions, ...params: unknown[]) {
+        const extrinsic = tx({...defaultOptions, ...options}, ...params);
 
         return new Promise<Required<SubmitResult>>((resolve, reject) =>
             extrinsic.signAndSend(this.account, {signer: this.signer}, (result) => {
@@ -110,6 +106,10 @@ export class SmartContractBase {
                 }
             }),
         );
+    }
+
+    protected submit(tx: ContractTx<'promise'>, ...params: unknown[]) {
+        return this.submitWithOptions(tx, defaultOptions, ...params);
     }
 
     protected getContractEventArgs<T extends ContractEvent>(contractEvents: DecodedEvent[], eventName: T) {

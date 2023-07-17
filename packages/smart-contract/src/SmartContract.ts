@@ -21,6 +21,9 @@ import {
     Resource,
     VNode,
     BucketParams,
+    Balance,
+    NodeTag,
+    NodeParams,
 } from './types';
 
 const CERE = 10_000_000_000n;
@@ -96,8 +99,25 @@ export class SmartContract extends SmartContractBase {
         throw new Error('Not implemented');
     }
 
-    async nodeCreate() {
-        throw new Error('Not implemented');
+    async nodeCreate(
+        rentPerMonth: Balance,
+        nodeParams: NodeParams,
+        capacity: Resource,
+        nodeTag: NodeTag,
+        pubkey: AccountId,
+    ) {
+        const params = JSON.stringify(nodeParams);
+
+        const {contractEvents} = await this.submit(
+            this.contract.tx.nodeCreate,
+            rentPerMonth,
+            params,
+            capacity,
+            nodeTag,
+            pubkey,
+        );
+
+        return this.getContractEventArgs(contractEvents, 'NodeCreated').nodeId;
     }
 
     async clusterAddNode() {
@@ -162,7 +182,13 @@ export class SmartContract extends SmartContractBase {
         }
 
         const params = JSON.stringify(bucketParams);
-        const {contractEvents} = await this.submit(this.contract.tx.bucketCreate, params, clusterId, owner);
+        const {contractEvents} = await this.submitWithOptions(
+            this.contract.tx.bucketCreate,
+            {value: 5n * CERE},
+            params,
+            clusterId,
+            owner,
+        );
 
         return this.getContractEventArgs(contractEvents, 'BucketCreated').bucketId;
     }
