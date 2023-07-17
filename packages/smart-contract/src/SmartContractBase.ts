@@ -5,12 +5,14 @@ import {ContractQuery, ContractTx} from '@polkadot/api-contract/base/types';
 import {DecodedEvent, ContractOptions} from '@polkadot/api-contract/types';
 import {ContractEvent, ContractEventArgs} from './types';
 
-const CERE = 10_000_000_000n;
-
 const defaultOptions: ContractOptions = {
-    value: 0n,
-    storageDepositLimit: null,
     gasLimit: -1,
+};
+
+const dryRunOptions: ContractOptions = {
+    ...defaultOptions,
+
+    storageDepositLimit: null,
 };
 
 type SubmitResult = Pick<SubmittableResultValue, 'events'> & {
@@ -55,7 +57,7 @@ export class SmartContractBase {
     }
 
     protected async query<T extends unknown>(query: ContractQuery<'promise'>, ...params: unknown[]) {
-        const {output, result} = await query(this.address, defaultOptions, ...params);
+        const {output, result} = await query(this.address, dryRunOptions, ...params);
 
         if (!result.isOk) {
             throw result.asErr;
@@ -109,7 +111,7 @@ export class SmartContractBase {
     }
 
     protected submit(tx: ContractTx<'promise'>, ...params: unknown[]) {
-        return this.submitWithOptions(tx, defaultOptions, ...params);
+        return this.submitWithOptions(tx, dryRunOptions, ...params);
     }
 
     protected getContractEventArgs<T extends ContractEvent>(contractEvents: DecodedEvent[], eventName: T) {

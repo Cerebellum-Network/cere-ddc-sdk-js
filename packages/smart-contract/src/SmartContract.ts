@@ -1,14 +1,13 @@
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {ContractPromise} from '@polkadot/api-contract';
 import {Keyring} from '@polkadot/keyring';
-import {SubmittableExtrinsic, SubmittableResultValue, Signer} from '@polkadot/api/types';
+import {Signer} from '@polkadot/api/types';
 import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
 
 import {SmartContractBase} from './SmartContractBase';
 import {SmartContractOptions, TESTNET} from './options/SmartContractOptions';
-import {NodeStatus} from './model/NodeStatus';
 import {cereTypes} from './types/cere_types';
-import {CdnNodeGetResult} from './types/smart-contract-responses';
+
 import {
     Account,
     AccountId,
@@ -25,14 +24,11 @@ import {
     NodeTag,
     NodeParams,
     CdnNodeParams,
+    CdnNodeStatus,
+    NodeStatus,
 } from './types';
 
 const CERE = 10_000_000_000n;
-
-const txOptions = {
-    storageDepositLimit: null,
-    gasLimit: -1,
-};
 
 export class SmartContract extends SmartContractBase {
     static async buildAndConnect(
@@ -126,40 +122,20 @@ export class SmartContract extends SmartContractBase {
         return nodeId;
     }
 
-    async clusterAddNode() {
-        throw new Error('Not implemented');
+    async nodeList(offset?: number | null, limit?: number | null, filterProviderId?: AccountId) {
+        return this.queryList<NodeStatus>(this.contract.query.nodeList, offset, limit, filterProviderId);
     }
 
-    async cdnClusterAddNode() {
-        throw new Error('Not implemented');
+    async cdnNodeList(offset?: number | null, limit?: number | null, filterProviderId?: AccountId) {
+        return this.queryList<CdnNodeStatus>(this.contract.query.cdnNodeList, offset, limit, filterProviderId);
     }
 
-    async nodeList() {
-        throw new Error('Not implemented');
+    async cdnNodeGet(nodeId: NodeId) {
+        return this.queryOne<CdnNodeStatus>(this.contract.query.cdnNodeGet, nodeId);
     }
 
-    async cdnNodeList() {
-        throw new Error('Not implemented');
-    }
-
-    async nodeChangeParams() {
-        throw new Error('Not implemented');
-    }
-
-    async clusterChangeNodeTag() {
-        throw new Error('Not implemented');
-    }
-
-    async cdnClusterChangeNodeTag() {
-        throw new Error('Not implemented');
-    }
-
-    async clusterChangeParams() {
-        throw new Error('Not implemented');
-    }
-
-    async cdnClusterRemoveNode() {
-        throw new Error('Not implemented');
+    async nodeGet(nodeId: NodeId) {
+        return this.queryOne<NodeStatus>(this.contract.query.nodeGet, nodeId);
     }
 
     async accountGet(address: string) {
@@ -190,7 +166,7 @@ export class SmartContract extends SmartContractBase {
         const params = JSON.stringify(bucketParams);
         const {contractEvents} = await this.submitWithOptions(
             this.contract.tx.bucketCreate,
-            {value: 5n * CERE},
+            {value: 10n * CERE},
             params,
             clusterId,
             owner,
@@ -207,48 +183,41 @@ export class SmartContract extends SmartContractBase {
         await this.submit(this.contract.tx.bucketAllocIntoCluster, bucketId, resource);
     }
 
-    // Old API
-
-    async cdnNodeGet(clusterId: number): Promise<CdnNodeGetResult> {
-        let {result, output} = await this.contract.query.cdnNodeGet(this.address, txOptions, clusterId);
-        if (!result.isOk) {
-            throw result.asErr;
-        }
-        // @ts-ignore
-        return output.toJSON().ok as CdnNodeGetResult;
+    async accountDeposit(value: bigint) {
+        await this.submitWithOptions(this.contract.tx.accountDeposit, {value: value * CERE});
     }
 
     async accountBond(value: bigint) {
-        const tx = await this.contract.tx.accountBond(txOptions, value * CERE);
-        const result = await this.sendTx(tx);
-        if (result.dispatchError) {
-            throw new Error('Unable to deposit account');
-        }
+        await this.submit(this.contract.tx.accountBond, value * CERE);
     }
 
-    async accountDeposit(value: bigint) {
-        const tx = await this.contract.tx.accountDeposit({...txOptions, value: value * CERE});
-        const result = await this.sendTx(tx);
+    // Not yet implemented
 
-        if (result.dispatchError) {
-            throw new Error('Unable to deposit account');
-        }
+    async clusterAddNode() {
+        throw new Error('Not implemented');
     }
 
-    async nodeGet(nodeId: number): Promise<NodeStatus> {
-        let {result, output} = await this.contract.query.nodeGet(this.address, txOptions, nodeId);
-        if (!result.isOk) throw result.asErr;
-        // @ts-ignore
-        return output.toJSON().ok as NodeStatus;
+    async cdnClusterAddNode() {
+        throw new Error('Not implemented');
     }
 
-    private async sendTx(tx: SubmittableExtrinsic<'promise'>) {
-        return new Promise<SubmittableResultValue>((resolve) =>
-            tx.signAndSend(this.account, {signer: this.signer}, (result) => {
-                if (result.status.isInBlock || result.status.isFinalized) {
-                    resolve(result);
-                }
-            }),
-        );
+    async nodeChangeParams() {
+        throw new Error('Not implemented');
+    }
+
+    async clusterChangeNodeTag() {
+        throw new Error('Not implemented');
+    }
+
+    async cdnClusterChangeNodeTag() {
+        throw new Error('Not implemented');
+    }
+
+    async clusterChangeParams() {
+        throw new Error('Not implemented');
+    }
+
+    async cdnClusterRemoveNode() {
+        throw new Error('Not implemented');
     }
 }

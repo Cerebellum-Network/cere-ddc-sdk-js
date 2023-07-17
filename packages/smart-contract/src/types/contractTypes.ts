@@ -99,3 +99,27 @@ export type BucketStatus = {
     readerIds: AccountId[];
     rentCoveredUntilMs: bigint;
 };
+
+export type Node = {
+    providerId: AccountId;
+    rentPerMonth: Balance;
+    freeResource: Resource;
+    nodeTag: NodeTag;
+};
+
+export type NodeStatus = {
+    nodeId: NodeId;
+    node: Node;
+    params: Params;
+};
+
+export type CdnNode = {
+    providerId: AccountId;
+    undistributedPayment: Balance;
+};
+
+export type CdnNodeStatus = {
+    nodeId: NodeId;
+    node: CdnNode;
+    params: Params;
+};
