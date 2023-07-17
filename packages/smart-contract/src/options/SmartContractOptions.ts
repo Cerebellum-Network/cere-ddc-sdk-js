@@ -14,7 +14,7 @@ export const MAINNET: SmartContractOptions = {
 
 export const TESTNET: SmartContractOptions = {
     rpcUrl: 'wss://rpc.devnet.cere.network/ws',
-    contractAddress: '6R2PF5gzKYbNkNLymTr8YNeQgWqNkE6azspwaMLZF2UHc1sg',
+    contractAddress: '6SfBsKbfPUTN35GCcqAHSMY4MemedK2A73VeJ34Z2FV6PB4r',
     abi: ddcBucketAbi,
 };
 
@@ -26,6 +26,6 @@ export const DEVNET: SmartContractOptions = {
 
 export const STAGENET: SmartContractOptions = {
     rpcUrl: 'wss://archive.devnet.cere.network/ws',
-    contractAddress: '6TfcHJxGnkPHgDSjmrEcghZS8vMbMfp2BRnSKGYaKa9zD437',
+    contractAddress: '6SfBsKbfPUTN35GCcqAHSMY4MemedK2A73VeJ34Z2FV6PB4r',
     abi: ddcBucketAbi,
 };
