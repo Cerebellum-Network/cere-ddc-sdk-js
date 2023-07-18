@@ -12,6 +12,7 @@ const require = createRequire(import.meta.url);
  * @param {Boolean} [options.minor]
  * @param {Boolean} [options.major]
  * @param {Boolean} [options.patch]
+ * @param {String} [options.version]
  * @returns {Object}
  */
 export function setVersions(root, options) {
@@ -29,6 +30,12 @@ export function setVersions(root, options) {
     }
     if (options.patch) {
         execSync(`npm version patch --workspaces --workspaces-update false`, {
+            cwd: root,
+            stdio: 'inherit',
+        });
+    }
+    if (options.version) {
+        execSync(`npm version ${options.version} --workspaces --workspaces-update false`, {
             cwd: root,
             stdio: 'inherit',
         });
