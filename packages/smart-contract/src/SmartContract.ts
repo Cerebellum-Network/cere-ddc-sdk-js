@@ -26,6 +26,7 @@ import {
     CdnNodeParams,
     CdnNodeStatus,
     NodeStatus,
+    ClusterParams,
 } from './types';
 
 const CERE = 10_000_000_000n;
@@ -70,7 +71,7 @@ export class SmartContract extends SmartContractBase {
         return this.queryList<CdnClusterStatus>(this.contract.query.clusterList, offset, limit, filterManagerId);
     }
 
-    async clusterCreate(vNodes: VNode[] = [], nodeIds: NodeId[] = [], clusterParams: Record<string, unknown> = {}) {
+    async clusterCreate(vNodes: VNode[] = [], nodeIds: NodeId[] = [], clusterParams: ClusterParams = {}) {
         const {contractEvents} = await this.submit(
             this.contract.tx.clusterCreate,
             this.address,
@@ -86,10 +87,6 @@ export class SmartContract extends SmartContractBase {
         const {contractEvents} = await this.submit(this.contract.tx.cdnClusterCreate, cdnNodesIds);
 
         return this.getContractEventArgs(contractEvents, 'CdnClusterCreated').clusterId;
-    }
-
-    async clusterRemoveNode() {
-        throw new Error('Not implemented');
     }
 
     async nodeCreate(
@@ -143,7 +140,11 @@ export class SmartContract extends SmartContractBase {
     }
 
     async clusterGet(clusterId: number) {
-        return this.queryOne<ClusterStatus>(this.contract.query.clusterGet, clusterId);
+        const output = await this.queryOne<ClusterStatus>(this.contract.query.clusterGet, clusterId);
+
+        output.cluster.vNodes = output.cluster.vNodes.map((vNode) => vNode.map(BigInt));
+
+        return output;
     }
 
     async cdnClusterGet(clusterId: number) {
@@ -191,33 +192,29 @@ export class SmartContract extends SmartContractBase {
         await this.submit(this.contract.tx.accountBond, value * CERE);
     }
 
-    // Not yet implemented
-
-    async clusterAddNode() {
-        throw new Error('Not implemented');
+    async clusterAddNode(clusterId: ClusterId, nodeIds: NodeId[], vNodes: VNode[]) {
+        await this.submit(this.contract.tx.clusterAddNode, clusterId, nodeIds, vNodes);
     }
 
-    async cdnClusterAddNode() {
-        throw new Error('Not implemented');
+    async clusterRemoveNode(clusterId: ClusterId, nodeId: NodeId) {
+        const {cluster} = await this.clusterGet(clusterId);
+        const nodeIndex = cluster.nodeIds.indexOf(nodeId);
+
+        if (nodeIndex < 0) {
+            throw new Error(`Node ${nodeId} is not found in cluster ${clusterId}`);
+        }
+
+        cluster.nodeIds.splice(nodeIndex, 1);
+        cluster.vNodes.splice(nodeIndex, 1);
+
+        await this.submit(this.contract.tx.clusterRemoveNode, clusterId, cluster.nodeIds, cluster.vNodes);
     }
 
-    async nodeChangeParams() {
-        throw new Error('Not implemented');
+    async clusterReserveResource(clusterId: ClusterId, amount: Resource) {
+        await this.submit(this.contract.tx.clusterReserveResource, clusterId, amount);
     }
 
-    async clusterChangeNodeTag() {
-        throw new Error('Not implemented');
-    }
-
-    async cdnClusterChangeNodeTag() {
-        throw new Error('Not implemented');
-    }
-
-    async clusterChangeParams() {
-        throw new Error('Not implemented');
-    }
-
-    async cdnClusterRemoveNode() {
-        throw new Error('Not implemented');
+    async clusterChangeNodeTag(nodeId: NodeId, nodeTag: NodeTag) {
+        await this.submit(this.contract.tx.clusterChangeNodeTag, nodeId, nodeTag);
     }
 }

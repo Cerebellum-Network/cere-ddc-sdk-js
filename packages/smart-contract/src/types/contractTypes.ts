@@ -37,6 +37,10 @@ export type NodeParams = {
     url: string;
 };
 
+export type ClusterParams = {
+    replicationFactor?: number;
+};
+
 export type CdnNodeParams = {
     url: string;
     size: number;
