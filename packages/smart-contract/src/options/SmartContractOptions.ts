@@ -7,25 +7,26 @@ export type SmartContractOptions = {
 };
 
 export const MAINNET: SmartContractOptions = {
-    rpcUrl: 'NOT_DEPLOYED_YET',
-    contractAddress: 'NOT_DEPLOYED_YET',
+    rpcUrl: 'wss://rpc.qanet.cere.network/ws',
+    contractAddress: '6Q7C6G3Hpz43tSDPotqT1wYHupTpEJ54oAv3QrAM7TnCF2oY',
     abi: ddcBucketAbi,
 };
 
 export const TESTNET: SmartContractOptions = {
     rpcUrl: 'wss://rpc.devnet.cere.network/ws',
-    contractAddress: '6R2PF5gzKYbNkNLymTr8YNeQgWqNkE6azspwaMLZF2UHc1sg',
+    contractAddress: '6U4v33M7LmJ8ZPXBtcYRvF5cuttLvZqQQEcfpbfzBrqTSUbg',
     abi: ddcBucketAbi,
 };
 
 export const DEVNET: SmartContractOptions = {
     rpcUrl: 'wss://archive.devnet.cere.network/ws',
-    contractAddress: '6SfBsKbfPUTN35GCcqAHSMY4MemedK2A73VeJ34Z2FV6PB4r',
+    contractAddress: '6SrAzgZBdn7aeoXZzXS6jkbNmnN18fQUHUWeN21NB7yLEt3U',
     abi: ddcBucketAbi,
 };
 
-export const STAGENET: SmartContractOptions = {
-    rpcUrl: 'wss://archive.devnet.cere.network/ws',
-    contractAddress: '6TfcHJxGnkPHgDSjmrEcghZS8vMbMfp2BRnSKGYaKa9zD437',
-    abi: ddcBucketAbi,
-};
+/**
+ * TODO: Remove if not used
+ *
+ * @deprecated
+ */
+export const STAGENET = TESTNET;
