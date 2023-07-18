@@ -13,7 +13,7 @@ const browserslistEnv = process.env.BROWSERSLIST_ENV;
  * @param {string} [browserEntry]
  * @param {string} [browserEntryName]
  */
-export function createConfig(metaUrl, nodeEntry, browserEntry, browserEntryName) {
+export function createConfig(metaUrl, nodeEntry, browserEntry, browserEntryName, typesEntry) {
     const dirname = path.dirname(new URL(metaUrl).pathname);
     const folderName = path.basename(dirname);
     const nodeModules = path.join(dirname, 'node_modules');
@@ -29,6 +29,9 @@ export function createConfig(metaUrl, nodeEntry, browserEntry, browserEntryName)
     let webpackConfig = {
         mode: process.env.NODE_ENV || 'production',
         target: 'browserslist',
+        entry: typesEntry && {
+            types: path.resolve(dirname, typesEntry),
+        },
         experiments: {
             asyncWebAssembly: true,
             outputModule: true,

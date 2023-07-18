@@ -6,13 +6,6 @@ import {Signer} from '@polkadot/api/types';
 
 export {DEVNET, TESTNET, MAINNET} from './options/SmartContractOptions';
 export type {SmartContractOptions} from './options/SmartContractOptions';
-export {BucketCreatedEvent} from './event/BucketCreatedEvent';
-export {BucketPermissionGrantedEvent} from './event/BucketPermissionGrantedEvent';
-export {BucketPermissionRevokedEvent} from './event/BucketPermissionRevokedEvent';
-export {Permission} from './model/Permission';
-export {BucketStatusList} from './model/BucketStatusList';
-export {BucketStatus} from './model/BucketStatus';
-export {BucketParams} from './options/BucketParams';
 
 export class SmartContract extends CoreSmartContract {
     static async buildAndConnect(

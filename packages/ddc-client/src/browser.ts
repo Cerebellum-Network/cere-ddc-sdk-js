@@ -13,7 +13,7 @@ export type {ReadOptions} from './options/ReadOptions';
 export type {StoreOptions} from './options/StoreOptions';
 export {File} from './model/File';
 
-export {TESTNET, DEVNET, Permission, BucketParams} from '@cere-ddc-sdk/smart-contract';
+export {TESTNET, DEVNET} from '@cere-ddc-sdk/smart-contract';
 export type {SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
 export {DdcUri, IPIECE, IFILE, FILE, PIECE} from '@cere-ddc-sdk/core';
 export {Piece, Query, Tag, SearchType, EncryptionOptions, Session} from '@cere-ddc-sdk/content-addressable-storage';

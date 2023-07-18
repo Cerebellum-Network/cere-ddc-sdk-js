@@ -184,11 +184,11 @@ export class SmartContract extends SmartContractBase {
         await this.submit(this.contract.tx.bucketAllocIntoCluster, bucketId, resource);
     }
 
-    async accountDeposit(value: bigint) {
+    async accountDeposit(value: Balance) {
         await this.submitWithOptions(this.contract.tx.accountDeposit, {value: value * CERE});
     }
 
-    async accountBond(value: bigint) {
+    async accountBond(value: Balance) {
         await this.submit(this.contract.tx.accountBond, value * CERE);
     }
 

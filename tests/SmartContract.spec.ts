@@ -16,7 +16,7 @@ describe('Smart Contract', () => {
     const createStorageNode = (index = 0) => {
         const publicKey = createAccount().address;
 
-        return adminContract.nodeCreate(1n, {url: `http://localhost:809${index}`}, 10000, 'ACTIVE' as any, publicKey);
+        return adminContract.nodeCreate(1n, {url: `http://localhost:809${index}`}, 10000n, 'ACTIVE' as any, publicKey);
     };
 
     const createCdnNode = (index = 0) => {
@@ -149,7 +149,7 @@ describe('Smart Contract', () => {
         });
 
         test('reserve cluster resource', async () => {
-            await adminContract.clusterReserveResource(createdStorageClusterId, 500);
+            await adminContract.clusterReserveResource(createdStorageClusterId, 500n);
         });
 
         test('change storage node tag', async () => {
@@ -197,7 +197,7 @@ describe('Smart Contract', () => {
 
             createdClusterId = await adminContract.clusterCreate([[1n]], [nodeId]);
 
-            await adminContract.clusterReserveResource(createdClusterId, 500);
+            await adminContract.clusterReserveResource(createdClusterId, 500n);
         });
 
         test('create bucket', async () => {
@@ -230,7 +230,7 @@ describe('Smart Contract', () => {
         test('allocate bucket in a cluster', async () => {
             expect(createdBucketId).toBeDefined();
 
-            await userContract.bucketAllocIntoCluster(createdBucketId, 10);
+            await userContract.bucketAllocIntoCluster(createdBucketId, 10n);
         });
     });
 });

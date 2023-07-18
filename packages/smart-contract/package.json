@@ -21,12 +21,20 @@
             "require": "./dist/browser.cjs",
             "import": "./dist/browser.js",
             "default": "./dist/browser.js"
+        },
+        "./types": {
+            "require": "./dist/types.cjs",
+            "import": "./dist/types.js",
+            "default": "./dist/types.js"
         }
     },
     "typesVersions": {
         "*": {
             "browser": [
                 "./dist/types/browser.d.ts"
+            ],
+            "types": [
+                "./dist/types/types/index.d.ts"
             ]
         }
     },

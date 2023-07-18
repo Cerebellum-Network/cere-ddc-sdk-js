@@ -3,7 +3,7 @@ import {isKeyringPair} from '@polkadot/api/util';
 import {SubmittableResultValue, Signer, AddressOrPair} from '@polkadot/api/types';
 import {ContractQuery, ContractTx} from '@polkadot/api-contract/base/types';
 import {DecodedEvent, ContractOptions} from '@polkadot/api-contract/types';
-import {ContractEvent, ContractEventArgs} from './types';
+import {ContractEvent, ContractEventArgs, Offset} from './types';
 
 const defaultOptions: ContractOptions = {
     gasLimit: -1,
@@ -20,13 +20,13 @@ type SubmitResult = Pick<SubmittableResultValue, 'events'> & {
 };
 
 const drainList = async <T extends unknown>(
-    offset: number,
-    limit: number,
-    iterate: (offset: number, limit: number) => Promise<[unknown[], number]>,
+    offset: Offset,
+    limit: Offset,
+    iterate: (offset: Offset, limit: Offset) => Promise<[unknown[], Offset]>,
 ) => {
     let cursor = offset;
-    let total = 0;
-    const chunkSize = 10;
+    let total: Offset = 0;
+    const chunkSize: Offset = 10;
     const list: unknown[] = [];
 
     while (true) {
@@ -74,8 +74,8 @@ export class SmartContractBase {
 
     protected async queryList<T extends unknown>(
         query: ContractQuery<'promise'>,
-        offset?: number | null,
-        limit?: number | null,
+        offset?: Offset | null,
+        limit?: Offset | null,
         ...params: unknown[]
     ) {
         return drainList<T>(offset || 0, limit || 10, (...slice) => this.query(query, ...slice, ...params));

@@ -1,3 +1,2 @@
-export type * from './contractTypes';
-export type * from './contractEvents';
-export {NodeTag} from './contractTypes';
+export * from './contractTypes';
+export * from './contractEvents';

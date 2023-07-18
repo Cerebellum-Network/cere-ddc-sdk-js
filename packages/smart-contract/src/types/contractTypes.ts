@@ -1,11 +1,12 @@
 export type ClusterId = number;
-export type BucketId = number;
+export type BucketId = bigint;
 export type AccountId = string;
 export type NodeId = number;
-export type Resource = number;
+export type Resource = bigint;
 export type VNode = bigint[];
 export type Balance = bigint;
 export type Params = string;
+export type Offset = number;
 
 type Schedule = {
     rate: Balance;
@@ -101,7 +102,7 @@ export type BucketStatus = {
     params: Params;
     writerIds: AccountId[];
     readerIds: AccountId[];
-    rentCoveredUntilMs: bigint;
+    rentCoveredUntilMs: Balance;
 };
 
 export type Node = {
