@@ -1,4 +1,4 @@
-version: "3"
+version: "3.4"
 
 services:
   cere-chain:
@@ -11,8 +11,9 @@ services:
       - "9933:9933"
 
   ddc-cdn-node:
+    platform: linux/amd64
     container_name: "ddc-cdn-node"
-    image: 'cerebellumnetwork/ddc-cdn-node:dev-latest'
+    image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/ddc-cdn-node:dev-latest"
     environment:
       - 'HTTP_PORT=8080'
       - 'HTTP_ADDRESS=http://localhost:8080'
@@ -26,10 +27,14 @@ services:
       interval: 3s
       timeout: 1s
       retries: 5
+    depends_on:
+      redis:
+        condition: service_healthy
 
   ddc-storage-node-0:
+    platform: linux/amd64
     container_name: "ddc-storage-node-0"
-    image: 'cerebellumnetwork/ddc-storage-node:dev-latest'
+    image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/ddc-storage-node:dev-latest"
     environment:
       - 'HTTP_PORT=8090'
       - 'HTTP_ADDRESS=http://localhost:8090'
@@ -43,10 +48,14 @@ services:
       interval: 3s
       timeout: 1s
       retries: 5
+    depends_on:
+      redis:
+        condition: service_healthy
 
   ddc-storage-node-1:
+    platform: linux/amd64
     container_name: "ddc-storage-node-1"
-    image: 'cerebellumnetwork/ddc-storage-node:dev-latest'
+    image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/ddc-storage-node:dev-latest"
     environment:
       - 'HTTP_PORT=8091'
       - 'HTTP_ADDRESS=http://localhost:8091'
@@ -60,10 +69,14 @@ services:
       interval: 3s
       timeout: 1s
       retries: 5
+    depends_on:
+      redis:
+        condition: service_healthy
 
   ddc-storage-node-2:
+    platform: linux/amd64
     container_name: "ddc-storage-node-2"
-    image: 'cerebellumnetwork/ddc-storage-node:dev-latest'
+    image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/ddc-storage-node:dev-latest"
     environment:
       - 'HTTP_PORT=8092'
       - 'HTTP_ADDRESS=http://localhost:8092'
@@ -77,10 +90,14 @@ services:
       interval: 3s
       timeout: 1s
       retries: 5
+    depends_on:
+      redis:
+        condition: service_healthy
 
   ddc-storage-node-3:
+    platform: linux/amd64
     container_name: "ddc-storage-node-3"
-    image: 'cerebellumnetwork/ddc-storage-node:dev-latest'
+    image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/ddc-storage-node:dev-latest"
     environment:
       - 'HTTP_PORT=8093'
       - 'HTTP_ADDRESS=http://localhost:8093'
@@ -94,10 +111,14 @@ services:
       interval: 3s
       timeout: 1s
       retries: 5
+    depends_on:
+      redis:
+        condition: service_healthy
 
   ddc-storage-node-6:
+    platform: linux/amd64
     container_name: "ddc-storage-node-6"
-    image: 'cerebellumnetwork/ddc-storage-node:dev-latest'
+    image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/ddc-storage-node:dev-latest"
     environment:
       - 'HTTP_PORT=8096'
       - 'HTTP_ADDRESS=http://localhost:8096'
@@ -111,16 +132,26 @@ services:
       interval: 3s
       timeout: 1s
       retries: 5
+    depends_on:
+      redis:
+        condition: service_healthy
 
   redis:
-    build: redis
-    container_name: dac-redis
+    image: 625402836641.dkr.ecr.us-west-2.amazonaws.com/dac-redis:dev-latest
+    container_name: redis
+    healthcheck:
+      test: ["CMD-SHELL", "/healthchecker-runner.sh || exit 1"]
+      interval: 10s
+      timeout: 10s
+      start_period: 10s
+      retries: 5
     ports:
-      - 6379:6379
+      - "6379:6379"
 
-  redis-setup:
-    build: redis
-    restart: 'no'
-    depends_on:
-      - redis
-    entrypoint: ["bash", "-c", "cat mylib.lua | redis-cli -h redis -x FUNCTION LOAD REPLACE"]
+  webdis:
+    image: nicolas/webdis:0.1.21
+    container_name: webdis
+    environment:
+      REDIS_HOST: redis
+    ports:
+      - "7379:7379"

@@ -1,48 +1,60 @@
 name: 'CD release'
 on:
-  release:
-    types: [prereleased, released]
+    release:
+        types: [prereleased, released]
 
 env:
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+permissions:
+    id-token: write
+    contents: read
 
 jobs:
-  continuous-deployment:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: "true"
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16.20.1'
-          registry-url: 'https://registry.npmjs.org'
-          submodules: "true"
-      - name: Install packages
-        run: npm install
-      - name: NPM set register
-        run: npm set registry https://registry.npmjs.org
-      - name: Install protoc
-        run: sudo apt-get install -y protobuf-compiler
-      - name: Check protoc version
-        run: protoc --version
-      - name: Compile proto
-        run: npm run compile
-      - name: NPM whoami
-        run: npm whoami
-      - name: Run tests
-        run: npm run test
-      - name: Publish
-        run: node scripts/publish.js
-      - name: Build artifacts
-        run: node scripts/release-artifacts.js
-      - name: Upload content-addressable-storage browser module
-        uses: actions/upload-artifact@v3.1.1
-        with:
-          name: "content-addressable-storage.js"
-          path: ./packages/content-addressable-storage/build/content-addressable-storage.js
-      - name: Upload ddc-client browser module
-        uses: actions/upload-artifact@v3.1.1
-        with:
-          name: "ddc-client.js"
-          path: .packages/ddc-client/build/ddc-client.js
+    continuous-deployment:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  submodules: 'true'
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: '16.20.1'
+                  registry-url: 'https://registry.npmjs.org'
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with:
+                  role-to-assume: arn:aws:iam::${{ vars.DEV_NETWORK_AWS_ACCOUNT_ID }}:role/github
+                  role-session-name: ${{ github.event.repository.name }}
+                  aws-region: us-west-2
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v1
+            - name: Install packages
+              run: npm install
+            - name: NPM set register
+              run: npm set registry https://registry.npmjs.org
+            - name: Install protoc
+              run: sudo apt-get install -y protobuf-compiler
+            - name: Check protoc version
+              run: protoc --version
+            - name: Compile proto
+              run: npm run compile
+            - name: NPM whoami
+              run: npm whoami
+            - name: Run tests
+              run: npm run test
+            - name: Publish
+              run: node scripts/publish.js
+            - name: Build artifacts
+              run: node scripts/release-artifacts.js
+            - name: Upload content-addressable-storage browser module
+              uses: actions/upload-artifact@v3.1.1
+              with:
+                  name: 'content-addressable-storage.js'
+                  path: ./packages/content-addressable-storage/build/content-addressable-storage.js
+            - name: Upload ddc-client browser module
+              uses: actions/upload-artifact@v3.1.1
+              with:
+                  name: 'ddc-client.js'
+                  path: .packages/ddc-client/build/ddc-client.js
