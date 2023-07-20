@@ -1,5 +1,12 @@
 export const optionsDefinitions = [
     {
+        name: 'version',
+        type: String,
+        alias: 'v',
+        description: 'Set version',
+        typeLabel: ' ',
+    },
+    {
         name: 'patch',
         type: Boolean,
         description: 'Increase patch version',

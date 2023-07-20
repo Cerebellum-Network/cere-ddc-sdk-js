@@ -1,5 +1,4 @@
 import { merge } from "webpack-merge";
-import webpack from "webpack";
 import { createRequire } from "node:module";
 import { createConfig } from "../../shared.config.js";
 
