@@ -3,6 +3,10 @@ on:
     push:
     workflow_call:
 
+permissions:
+    id-token: write
+    contents: read
+
 jobs:
     ci:
         runs-on: ubuntu-latest

@@ -6,6 +6,10 @@ on:
 env:
     NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+permissions:
+    id-token: write
+    contents: read
+
 jobs:
     continuous-deployment:
         runs-on: ubuntu-latest
