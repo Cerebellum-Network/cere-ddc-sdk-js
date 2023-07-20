@@ -1,32 +1,45 @@
 name: 'CI'
 on:
-  push:
-  workflow_call:
+    push:
+    workflow_call:
+
+permissions:
+    id-token: write
+    contents: read
 
 jobs:
-  ci:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: "true"
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16.15.0'
-          registry-url: 'https://registry.npmjs.org'
-      - name: Install packages
-        run: npm install
-      - name: Install protoc
-        run: sudo apt-get install -y protobuf-compiler
-      - name: Check protoc version
-        run: protoc --version
-      - name: Compile proto
-        run: npm run compile
-      - name: Integration tests
-        run: npm test
-      - name: Increase version
-        run: node scripts/release.js --major
-      - name: NPM set register
-        run: npm set registry http://localhost:4873/
-      - name: Publishing dry-run
-        run: node scripts/ci-test.mjs
+    ci:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  submodules: 'true'
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: '16.15.0'
+                  registry-url: 'https://registry.npmjs.org'
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with:
+                  role-to-assume: arn:aws:iam::${{ vars.DEV_NETWORK_AWS_ACCOUNT_ID }}:role/github
+                  role-session-name: ${{ github.event.repository.name }}
+                  aws-region: us-west-2
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v1
+            - name: Install packages
+              run: npm install
+            - name: Install protoc
+              run: sudo apt-get install -y protobuf-compiler
+            - name: Check protoc version
+              run: protoc --version
+            - name: Compile proto
+              run: npm run compile
+            - name: Integration tests
+              run: npm test
+            - name: Increase version
+              run: node scripts/release.js --major
+            - name: NPM set register
+              run: npm set registry http://localhost:4873/
+            - name: Publishing dry-run
+              run: node scripts/ci-test.mjs
