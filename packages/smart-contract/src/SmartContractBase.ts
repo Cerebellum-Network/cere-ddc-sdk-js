@@ -3,7 +3,7 @@ import {isKeyringPair} from '@polkadot/api/util';
 import {SubmittableResultValue, Signer, AddressOrPair} from '@polkadot/api/types';
 import {ContractQuery, ContractTx} from '@polkadot/api-contract/base/types';
 import {DecodedEvent, ContractOptions} from '@polkadot/api-contract/types';
-import {ContractEvent, ContractEventArgs, Offset} from './types';
+import {ContractEvent, ContractEventArgs, Offset, toJs} from './types';
 
 const defaultOptions: ContractOptions = {
     gasLimit: -1,
@@ -22,27 +22,28 @@ type SubmitResult = Pick<SubmittableResultValue, 'events'> & {
 const drainList = async <T extends unknown>(
     offset: Offset,
     limit: Offset,
-    iterate: (offset: Offset, limit: Offset) => Promise<[unknown[], Offset]>,
-) => {
+    iterate: (offset: Offset, limit: Offset) => Promise<[T[], bigint | number | string]>,
+): Promise<[T[], Offset]> => {
     let cursor = offset;
-    let total: Offset = 0;
-    const chunkSize: Offset = 10;
+    let total: Offset = 0n;
+    const chunkSize: Offset = 10n;
     const list: unknown[] = [];
 
     while (true) {
-        const [chunk, totalCount] = await iterate(offset + list.length, list.length + chunkSize);
+        const length = BigInt(list.length);
+        const [chunk, totalCount] = await iterate(offset + length, length + chunkSize);
 
-        total = totalCount;
+        total = BigInt(totalCount);
         list.push(...chunk);
 
         cursor += chunkSize;
 
-        if (cursor > limit || cursor > totalCount) {
+        if (cursor > limit || cursor > total) {
             break;
         }
     }
 
-    return [list as T[], total] as const;
+    return [list as T[], total];
 };
 
 export class SmartContractBase {
@@ -63,7 +64,7 @@ export class SmartContractBase {
             throw result.asErr;
         }
 
-        return output!.toJSON() as T;
+        return toJs(output!) as T;
     }
 
     protected async queryOne<T extends unknown>(query: ContractQuery<'promise'>, ...params: unknown[]) {
@@ -78,7 +79,7 @@ export class SmartContractBase {
         limit?: Offset | null,
         ...params: unknown[]
     ) {
-        return drainList<T>(offset || 0, limit || 10, (...slice) => this.query(query, ...slice, ...params));
+        return drainList<T>(offset || 0n, limit || 10n, (...slice) => this.query(query, ...slice, ...params));
     }
 
     protected async submitWithOptions(tx: ContractTx<'promise'>, options: ContractOptions, ...params: unknown[]) {
@@ -122,7 +123,7 @@ export class SmartContractBase {
         }
 
         const args: ContractEventArgs<T> = result.event.args.reduce<any>(
-            (args, {name}, index) => ({...args, [name]: result.args[index].toJSON()}),
+            (args, {name}, index) => ({...args, [name]: toJs(result.args[index])}),
             {},
         );
 

@@ -16,7 +16,13 @@ describe('Smart Contract', () => {
     const createStorageNode = (index = 0) => {
         const publicKey = createAccount().address;
 
-        return adminContract.nodeCreate(1n, {url: `http://localhost:809${index}`}, 10000n, 'ACTIVE' as any, publicKey);
+        return adminContract.nodeCreate(
+            1n,
+            {url: `http://localhost:809${index}`, nodeCountryISOCode: 'US'},
+            10000n,
+            'ACTIVE' as any,
+            publicKey,
+        );
     };
 
     const createCdnNode = (index = 0) => {
@@ -50,6 +56,10 @@ describe('Smart Contract', () => {
         let createdCdnNodeId: any;
         let createdStorageClusterId: any;
         let createdCdnClusterId: any;
+
+        test('add trusted manager', async () => {
+            await adminContract.nodeTrustManager(user.address);
+        });
 
         test('create storage node', async () => {
             createdStorageNodeId = await createStorageNode();
@@ -138,10 +148,10 @@ describe('Smart Contract', () => {
         });
 
         test('add storage node to a cluster', async () => {
-            const vNodes = [[1n, 2n, 3n]];
+            const vNodes = [1n, 2n, 3n];
             const nodeIds = [createdStorageNodeId];
 
-            await adminContract.clusterAddNode(createdStorageClusterId, [createdStorageNodeId], vNodes);
+            await adminContract.clusterAddNode(createdStorageClusterId, createdStorageNodeId, vNodes);
             const {cluster} = await adminContract.clusterGet(createdStorageClusterId);
 
             expect(cluster.nodeIds).toEqual(nodeIds);
@@ -158,6 +168,23 @@ describe('Smart Contract', () => {
             const {node} = await adminContract.nodeGet(createdStorageNodeId);
 
             expect(node.nodeTag).toEqual('OFFLINE');
+        });
+
+        test('change storage node params', async () => {
+            const {params: origParams} = await adminContract.nodeGet(createdStorageNodeId);
+            const parsedOrigParams = JSON.parse(origParams);
+
+            expect(parsedOrigParams.nodeCountryISOCode).toEqual('US');
+
+            await adminContract.nodeChangeParams(createdStorageNodeId, {
+                ...parsedOrigParams,
+                nodeCountryISOCode: 'EU',
+            });
+
+            const {params: newParams} = await adminContract.nodeGet(createdStorageNodeId);
+            const parsedNewParams = JSON.parse(newParams);
+
+            expect(parsedNewParams.nodeCountryISOCode).toEqual('US');
         });
 
         test('remove storage node from a cluster', async () => {

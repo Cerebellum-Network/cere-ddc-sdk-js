@@ -1,12 +1,14 @@
+import {Codec} from '@polkadot/types/types';
+
 export type ClusterId = number;
 export type BucketId = bigint;
 export type AccountId = string;
 export type NodeId = number;
 export type Resource = bigint;
-export type VNode = bigint[];
+export type VNodeId = bigint;
 export type Balance = bigint;
 export type Params = string;
-export type Offset = number;
+export type Offset = bigint;
 
 type Schedule = {
     rate: Balance;
@@ -35,27 +37,32 @@ export type BucketParams = {
 };
 
 export type NodeParams = {
-    url: string;
+    publicKey?: string;
+    url?: string;
+    email?: string;
+    nodeCountryISOCode?: string;
+    status?: string;
 };
 
 export type ClusterParams = {
     replicationFactor?: number;
+    status?: string;
 };
 
 export type CdnNodeParams = {
-    url: string;
-    size: number;
-    location: string;
-    publicKey: string;
+    url?: string;
+    size?: number;
+    location?: string;
+    publicKey?: string;
 };
 
 export type Cluster = {
     managerId: AccountId;
     resourcePerVnode: Resource;
     resourceUsed: Resource;
-    revenues: Balance;
+    revenues: Cash;
     nodeIds: NodeId[];
-    vNodes: VNode[];
+    vNodes: VNodeId[][];
     totalRent: Balance;
 };
 
@@ -127,4 +134,13 @@ export type CdnNodeStatus = {
     nodeId: NodeId;
     node: CdnNode;
     params: Params;
+};
+
+/**
+ * Converts Codec instance to primitive js representation
+ *
+ * TODO: figure out how to auto-map u64 to bigint instead of hex string
+ */
+export const toJs = (codec: Codec) => {
+    return codec.toJSON();
 };
