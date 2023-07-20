@@ -1,4 +1,10 @@
+import {blake2AsU8a, naclBoxPairFromSecret} from '@polkadot/util-crypto';
+import nacl, {BoxKeyPair} from 'tweetnacl';
+import {hexToU8a, stringToU8a, u8aToHex} from '@polkadot/util';
 import {DdcUri, IFILE, IPIECE, isSchemeName, RequiredSelected, Scheme} from '@cere-ddc-sdk/core';
+import {SmartContract} from '@cere-ddc-sdk/smart-contract';
+import {FileStorage} from '@cere-ddc-sdk/file-storage';
+import {KeyValueStorage} from '@cere-ddc-sdk/key-value-storage';
 import {
     ContentAddressableStorage,
     DEK_PATH_TAG,
@@ -9,18 +15,16 @@ import {
     Session,
     Tag,
 } from '@cere-ddc-sdk/content-addressable-storage';
-import {FileStorage} from '@cere-ddc-sdk/file-storage';
 import {
-    BucketCreatedEvent,
     BucketParams,
     BucketStatus,
-    BucketStatusList,
-    SmartContract,
-} from '@cere-ddc-sdk/smart-contract';
-import {KeyValueStorage} from '@cere-ddc-sdk/key-value-storage';
-import {blake2AsU8a, naclBoxPairFromSecret} from '@polkadot/util-crypto';
-import nacl, {BoxKeyPair} from 'tweetnacl';
-import {hexToU8a, stringToU8a, u8aToHex} from '@polkadot/util';
+    ClusterId,
+    Balance,
+    Resource,
+    BucketId,
+    AccountId,
+    Offset,
+} from '@cere-ddc-sdk/smart-contract/types';
 
 import {DdcClientInterface} from './DdcClient.interface';
 import {ClientOptionsInterface, CreateClientOptions} from './options/ClientOptions';
@@ -86,43 +90,43 @@ export class DdcClient implements DdcClientInterface {
     }
 
     async createBucket(
-        balance: bigint,
-        resource: bigint,
-        clusterId: bigint,
+        balance: Balance,
+        resource: Resource,
+        clusterId: ClusterId,
         bucketParams?: BucketParams,
-    ): Promise<BucketCreatedEvent> {
+    ): Promise<Pick<BucketStatus, 'bucketId'>> {
         if (resource > MAX_BUCKET_SIZE) {
             throw new Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
         } else if (resource <= 0) {
             resource = 1n;
         }
 
-        const event = await this.smartContract.bucketCreate(
+        const bucketId = await this.smartContract.bucketCreate(
             this.caStorage.scheme.publicKeyHex,
             clusterId,
             bucketParams,
         );
+
         if (balance > 0) {
             await this.smartContract.accountDeposit(balance);
         }
 
         const clusterStatus = await this.smartContract.clusterGet(Number(clusterId));
         const bucketSize = BigInt(Math.round(Number(resource * 1000n) / clusterStatus.cluster.nodeIds.length));
-        await this.smartContract.bucketAllocIntoCluster(event.bucketId, bucketSize);
+        await this.smartContract.bucketAllocIntoCluster(bucketId, bucketSize);
 
-        return event;
+        return {bucketId};
     }
 
-    async accountDeposit(balance: bigint) {
+    async accountDeposit(balance: Balance) {
         await this.smartContract.accountDeposit(balance);
     }
 
-    async bucketAllocIntoCluster(bucketId: bigint, resource: bigint) {
-        const bucketStatus = await this.bucketGet(bucketId);
-        const clusterStatus = await this.smartContract.clusterGet(bucketStatus.bucket.cluster_id);
+    async bucketAllocIntoCluster(bucketId: BucketId, resource: Resource) {
+        const {bucket} = await this.bucketGet(bucketId);
+        const clusterStatus = await this.smartContract.clusterGet(bucket.clusterId);
+        const total = (bucket.resourceReserved * BigInt(clusterStatus.cluster.nodeIds.length)) / 1000n + resource;
 
-        const total =
-            BigInt(bucketStatus.bucket.resource_reserved * clusterStatus.cluster.nodeIds.length) / 1000n + resource;
         if (total > MAX_BUCKET_SIZE) {
             throw new Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
         }
@@ -131,11 +135,11 @@ export class DdcClient implements DdcClientInterface {
         await this.smartContract.bucketAllocIntoCluster(bucketId, resourceToAlloc);
     }
 
-    async bucketGet(bucketId: bigint): Promise<BucketStatus> {
+    async bucketGet(bucketId: BucketId): Promise<BucketStatus> {
         return this.smartContract.bucketGet(bucketId);
     }
 
-    async bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList> {
+    async bucketList(offset: Offset, limit: Offset, filterOwnerId?: AccountId): Promise<[BucketStatus[], Offset]> {
         return this.smartContract.bucketList(offset, limit, filterOwnerId);
     }
 
@@ -143,7 +147,7 @@ export class DdcClient implements DdcClientInterface {
         return this.caStorage.createSession(session);
     }
 
-    async store(bucketId: bigint, fileOrPiece: File | Piece, options: StoreOptions = {}): Promise<DdcUri> {
+    async store(bucketId: BucketId, fileOrPiece: File | Piece, options: StoreOptions = {}): Promise<DdcUri> {
         if (options.encrypt) {
             return this.storeEncrypted(bucketId, fileOrPiece, options);
         } else {
@@ -152,7 +156,7 @@ export class DdcClient implements DdcClientInterface {
     }
 
     private async storeEncrypted(
-        bucketId: bigint,
+        bucketId: BucketId,
         fileOrPiece: File | Piece,
         options: StoreOptions = {},
     ): Promise<DdcUri> {
@@ -189,7 +193,7 @@ export class DdcClient implements DdcClientInterface {
     }
 
     private async storeUnencrypted(
-        bucketId: bigint,
+        bucketId: BucketId,
         fileOrPiece: File | Piece,
         options: StoreOptions = {},
     ): Promise<DdcUri> {
@@ -237,7 +241,7 @@ export class DdcClient implements DdcClientInterface {
     }
 
     async shareData(
-        bucketId: bigint,
+        bucketId: BucketId,
         dekPath: string,
         partnerBoxPublicKey: string,
         options: StoreOptions = {},
@@ -263,8 +267,8 @@ export class DdcClient implements DdcClientInterface {
         if (headPiece.links.length > 0) {
             const data =
                 isEncrypted && options.decrypt
-                    ? this.fileStorage.readDecryptedLinks(ddcUri.bucket as bigint, headPiece.links, dek, options)
-                    : this.fileStorage.readLinks(ddcUri.bucket as bigint, headPiece.links, options);
+                    ? this.fileStorage.readDecryptedLinks(BigInt(ddcUri.bucket), headPiece.links, dek, options)
+                    : this.fileStorage.readLinks(BigInt(ddcUri.bucket), headPiece.links, options);
 
             return new File(data, headPiece.tags, ddcUri.path as string);
         }
@@ -290,7 +294,7 @@ export class DdcClient implements DdcClientInterface {
                 );
             }
 
-            const clientDek = await this.downloadDek(ddcUri.bucket as bigint, options.dekPath!, options);
+            const clientDek = await this.downloadDek(BigInt(ddcUri.bucket), options.dekPath!, options);
 
             return DdcClient.buildHierarchicalDekHex(
                 clientDek,
@@ -301,7 +305,7 @@ export class DdcClient implements DdcClientInterface {
         return new Uint8Array();
     }
 
-    private async downloadDek(bucketId: bigint, dekPath: string, options: ReadOptions = {}): Promise<Uint8Array> {
+    private async downloadDek(bucketId: BucketId, dekPath: string, options: ReadOptions = {}): Promise<Uint8Array> {
         const piece = await this.kvStorage
             .read(bucketId, `${bucketId}/${dekPath}/${u8aToHex(this.boxKeypair.publicKey)}`, {
                 ...options,

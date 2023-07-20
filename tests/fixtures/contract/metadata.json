@@ -1,0 +1,4959 @@
+{
+  "source": {
+    "hash": "0x17173e6d800d4555fa6b27c1cb7a5bf509796c993c1ed7e1206e8ef27c21fb48",
+    "language": "ink! 3.4.0",
+    "compiler": "rustc 1.69.0-nightly"
+  },
+  "contract": {
+    "name": "ddc_bucket",
+    "version": "0.5.2",
+    "authors": [
+      "Aurélien Nicolas <aurel@cere.network>"
+    ],
+    "description": "DDC v2 Smart Contracts -- Orchestrate the network around clusters and buckets",
+    "license": "Apache-2.0"
+  },
+  "V3": {
+    "spec": {
+      "constructors": [
+        {
+          "args": [],
+          "docs": [
+            "Create a new contract.",
+            "",
+            "The caller will be admin of the contract."
+          ],
+          "label": "new",
+          "payable": false,
+          "selector": "0x9bae9d5e"
+        }
+      ],
+      "docs": [],
+      "events": [
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "owner_id",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " A bucket was created. The given account is its first owner and payer of resources."
+          ],
+          "label": "BucketCreated"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "resource",
+              "type": {
+                "displayName": [
+                  "Resource"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Some amount of resources of a cluster were allocated to a bucket."
+          ],
+          "label": "BucketAllocated"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " The due costs of a bucket was settled from the bucket payer to the cluster."
+          ],
+          "label": "BucketSettlePayment"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "public_availability",
+              "type": {
+                "displayName": [
+                  "bool"
+                ],
+                "type": 3
+              }
+            }
+          ],
+          "docs": [
+            " The availiablity of the bucket was updated."
+          ],
+          "label": "BucketAvailabilityUpdated"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "manager",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "cluster_params",
+              "type": {
+                "displayName": [
+                  "ClusterParams"
+                ],
+                "type": 16
+              }
+            }
+          ],
+          "docs": [
+            " A new cluster was created."
+          ],
+          "label": "ClusterCreated"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " A vnode was re-assigned to new node."
+          ],
+          "label": "ClusterNodeReplaced"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "resource",
+              "type": {
+                "displayName": [
+                  "Resource"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Some resources were reserved for the cluster from the nodes."
+          ],
+          "label": "ClusterReserveResource"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "provider_id",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " The share of revenues of a cluster for a provider was distributed."
+          ],
+          "label": "ClusterDistributeRevenues"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "manager",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " A new cluster was created."
+          ],
+          "label": "CdnClusterCreated"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "provider_id",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " The respective share of revenues of a CDN cluster for a provider was distributed."
+          ],
+          "label": "CdnClusterDistributeRevenues"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "provider_id",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "undistributed_payment",
+              "type": {
+                "displayName": [
+                  "Balance"
+                ],
+                "type": 12
+              }
+            }
+          ],
+          "docs": [
+            " A node was created. The given account is its owner and recipient of revenues."
+          ],
+          "label": "CdnNodeCreated"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "provider_id",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "rent_per_month",
+              "type": {
+                "displayName": [
+                  "Balance"
+                ],
+                "type": 12
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "node_params",
+              "type": {
+                "displayName": [
+                  "NodeParams"
+                ],
+                "type": 16
+              }
+            }
+          ],
+          "docs": [
+            " A node was created. The given account is its owner and recipient of revenues."
+          ],
+          "label": "NodeCreated"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "account_id",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "value",
+              "type": {
+                "displayName": [
+                  "Balance"
+                ],
+                "type": 12
+              }
+            }
+          ],
+          "docs": [
+            " Tokens were deposited on an account."
+          ],
+          "label": "Deposit"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "account_id",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "permission",
+              "type": {
+                "displayName": [
+                  "Permission"
+                ],
+                "type": 77
+              }
+            }
+          ],
+          "docs": [
+            " A permission was granted to the account."
+          ],
+          "label": "GrantPermission"
+        },
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": true,
+              "label": "account_id",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "permission",
+              "type": {
+                "displayName": [
+                  "Permission"
+                ],
+                "type": 77
+              }
+            }
+          ],
+          "docs": [
+            " A permission was revoked from the account."
+          ],
+          "label": "RevokePermission"
+        }
+      ],
+      "messages": [
+        {
+          "args": [
+            {
+              "label": "bucket_params",
+              "type": {
+                "displayName": [
+                  "BucketParams"
+                ],
+                "type": 16
+              }
+            },
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "owner_id",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 43
+              }
+            }
+          ],
+          "docs": [
+            " Create a new bucket and return its `bucket_id`.",
+            "",
+            " The caller will be its first owner and payer of resources.",
+            "",
+            " `bucket_params` is configuration used by clients and nodes. See the [data structure of BucketParams](https://docs.cere.network/ddc/protocols/contract-params-schema)",
+            "",
+            " The bucket can be connected to a single cluster (currently). Allocate cluster resources with the function `bucket_alloc_into_cluster`"
+          ],
+          "label": "bucket_create",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [
+              "BucketId"
+            ],
+            "type": 9
+          },
+          "selector": "0x0aeb2379"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "owner_id",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " Change owner of the bucket",
+            "",
+            " Provide the account of new owner"
+          ],
+          "label": "bucket_change_owner",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0xc7d0c2cd"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "resource",
+              "type": {
+                "displayName": [
+                  "Resource"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Allocate some resources of a cluster to a bucket.",
+            "",
+            " The amount of resources is given per vnode (total resources will be `resource` times the number of vnodes)."
+          ],
+          "label": "bucket_alloc_into_cluster",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x4c482d19"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Settle the due costs of a bucket from its payer account to the cluster account."
+          ],
+          "label": "bucket_settle_payment",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0x15974555"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "params",
+              "type": {
+                "displayName": [
+                  "BucketParams"
+                ],
+                "type": 16
+              }
+            }
+          ],
+          "docs": [
+            " Change the `bucket_params`, which is configuration used by clients and nodes.",
+            "",
+            " See the [data structure of BucketParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
+          ],
+          "label": "bucket_change_params",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0x9f2d075b"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Get the current status of a bucket."
+          ],
+          "label": "bucket_get",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 45
+          },
+          "selector": "0x3802cb77"
+        },
+        {
+          "args": [
+            {
+              "label": "offset",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "limit",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "filter_owner_id",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 43
+              }
+            }
+          ],
+          "docs": [
+            " Iterate through all buckets.",
+            "",
+            " The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.",
+            " The optimal `limit` depends on the size of params.",
+            "",
+            " The results can be filtered by owner. Note that paging must still be completed fully."
+          ],
+          "label": "bucket_list",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 49
+          },
+          "selector": "0x417ab584"
+        },
+        {
+          "args": [
+            {
+              "label": "owner_id",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " Iterate through all buckets and return only those owned by owner",
+            "",
+            " This method returns bucket struct, not the status"
+          ],
+          "label": "bucket_list_for_account",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Vec"
+            ],
+            "type": 6
+          },
+          "selector": "0xc434cf57"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "public_availability",
+              "type": {
+                "displayName": [
+                  "bool"
+                ],
+                "type": 3
+              }
+            }
+          ],
+          "docs": [
+            " Set availiablity of the bucket"
+          ],
+          "label": "bucket_set_availability",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x053eb3ce"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "new_resource_cap",
+              "type": {
+                "displayName": [
+                  "Resource"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Set max resource cap to be charged by CDN for public bucket"
+          ],
+          "label": "bucket_set_resource_cap",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x85010c6d"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Set permission for the reader of the bucket"
+          ],
+          "label": "get_bucket_writers",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Vec"
+            ],
+            "type": 14
+          },
+          "selector": "0x499cd4b7"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "writer",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " Set permission for the writer of the bucket"
+          ],
+          "label": "bucket_set_writer_perm",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0xea2e477a"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "writer",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " Revoke permission for the writer of the bucket"
+          ],
+          "label": "bucket_revoke_writer_perm",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x2b3d8dd1"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Set permission for the reader of the bucket"
+          ],
+          "label": "get_bucket_readers",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Vec"
+            ],
+            "type": 14
+          },
+          "selector": "0xb9a7cc1c"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "reader",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " Set permission for the reader of the bucket"
+          ],
+          "label": "bucket_set_reader_perm",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0xfc0e94ea"
+        },
+        {
+          "args": [
+            {
+              "label": "bucket_id",
+              "type": {
+                "displayName": [
+                  "BucketId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "writer",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " Revoke permission for the reader of the bucket"
+          ],
+          "label": "bucket_revoke_reader_perm",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0xe9bfed5a"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "node_ids",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 20
+              }
+            },
+            {
+              "label": "v_nodes",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 21
+              }
+            }
+          ],
+          "docs": [
+            " Removes a node to an existing cluster",
+            "",
+            " The caller will be its first manager."
+          ],
+          "label": "cluster_remove_node",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0x793e0778"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "node_ids",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 20
+              }
+            },
+            {
+              "label": "v_nodes",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 21
+              }
+            }
+          ],
+          "docs": [
+            " Adds node to an existing cluster",
+            "",
+            " The caller will be its first manager."
+          ],
+          "label": "cluster_add_node",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0xf7496bdc"
+        },
+        {
+          "args": [
+            {
+              "label": "_unused",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "label": "v_nodes",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 21
+              }
+            },
+            {
+              "label": "node_ids",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 20
+              }
+            },
+            {
+              "label": "cluster_params",
+              "type": {
+                "displayName": [
+                  "ClusterParams"
+                ],
+                "type": 16
+              }
+            }
+          ],
+          "docs": [
+            " Create a new cluster and return its `cluster_id`.",
+            "",
+            " The caller will be its first manager.",
+            "",
+            " The cluster is split in a number of vnodes. The vnodes are assigned to the given physical nodes in a round-robin. Only nodes of providers that trust the cluster manager can be used (see `node_trust_manager`). The assignment can be changed with the function `cluster_replace_node`.",
+            "",
+            " `cluster_params` is configuration used by clients and nodes. In particular, this describes the semantics of vnodes. See the [data structure of ClusterParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
+          ],
+          "label": "cluster_create",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [
+              "ClusterId"
+            ],
+            "type": 9
+          },
+          "selector": "0x4c0f21f6"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "amount",
+              "type": {
+                "displayName": [
+                  "Resource"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " As manager, reserve more resources for the cluster from the free capacity of nodes.",
+            "",
+            " The amount of resources is given per vnode (total resources will be `resource` times the number of vnodes)."
+          ],
+          "label": "cluster_reserve_resource",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0xb5e38125"
+        },
+        {
+          "args": [
+            {
+              "label": "node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "new_tag",
+              "type": {
+                "displayName": [
+                  "NodeTag"
+                ],
+                "type": 31
+              }
+            }
+          ],
+          "docs": [
+            " As manager, change a node tag"
+          ],
+          "label": "cluster_change_node_tag",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x9640d48e"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "v_nodes",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 22
+              }
+            },
+            {
+              "label": "new_node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " As manager, re-assign a vnode to another physical node.",
+            "",
+            " The cluster manager can only use nodes of providers that trust him (see `node_trust_manager`), or any nodes if he is also SuperAdmin."
+          ],
+          "label": "cluster_replace_node",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x48194ab1"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Trigger the distribution of revenues from the cluster to the providers."
+          ],
+          "label": "cluster_distribute_revenues",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0xe71e66fc"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "params",
+              "type": {
+                "displayName": [
+                  "ClusterParams"
+                ],
+                "type": 16
+              }
+            }
+          ],
+          "docs": [
+            " Change the `cluster_params`, which is configuration used by clients and nodes.",
+            "",
+            " See the [data structure of ClusterParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
+          ],
+          "label": "cluster_change_params",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0x1207912c"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Get the current status of a cluster."
+          ],
+          "label": "cluster_get",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 51
+          },
+          "selector": "0xe75411f5"
+        },
+        {
+          "args": [
+            {
+              "label": "offset",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "limit",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "filter_manager_id",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 43
+              }
+            }
+          ],
+          "docs": [
+            " Iterate through all clusters.",
+            "",
+            " The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.",
+            " The optimal `limit` depends on the size of params.",
+            "",
+            " The results can be filtered by manager. Note that paging must still be completed fully."
+          ],
+          "label": "cluster_list",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 53
+          },
+          "selector": "0xd9db9d44"
+        },
+        {
+          "args": [
+            {
+              "label": "cdn_node_ids",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 20
+              }
+            }
+          ],
+          "docs": [
+            " Create a new cluster and return its `cluster_id`.",
+            "",
+            " The caller will be its first manager.",
+            "",
+            " The CDN node ids are provided, which will form a cluster."
+          ],
+          "label": "cdn_cluster_create",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [
+              "ClusterId"
+            ],
+            "type": 9
+          },
+          "selector": "0x4344cd7e"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "usd_per_gb",
+              "type": {
+                "displayName": [
+                  "Balance"
+                ],
+                "type": 12
+              }
+            }
+          ],
+          "docs": [
+            " Set rate for streaming (price per gb)"
+          ],
+          "label": "cdn_set_rate",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x7578922a"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Get rate for streaming (price per gb)"
+          ],
+          "label": "cdn_get_rate",
+          "mutates": false,
+          "payable": true,
+          "returnType": {
+            "displayName": [
+              "Balance"
+            ],
+            "type": 12
+          },
+          "selector": "0xa1e3ea8a"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "aggregates_accounts",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 55
+              }
+            },
+            {
+              "label": "aggregates_nodes",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 57
+              }
+            },
+            {
+              "label": "aggregates_buckets",
+              "type": {
+                "displayName": [
+                  "Vec"
+                ],
+                "type": 59
+              }
+            },
+            {
+              "label": "era",
+              "type": {
+                "displayName": [
+                  "u64"
+                ],
+                "type": 23
+              }
+            }
+          ],
+          "docs": [
+            " As validator, charge payments from users and allocate undistributed payments to CDN nodes.",
+            "",
+            " As a result CDN cluster revenue increases, which can be distributed between CDN node providers via method cdn_cluster_distribute_revenues."
+          ],
+          "label": "cdn_cluster_put_revenue",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x7219be3f"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Trigger the distribution of revenues from the cluster to the CDN node providers.",
+            "",
+            " Anyone can call this method.",
+            "",
+            " Undistributed payments will be trasnferred, CDN cluster revenue will decrease."
+          ],
+          "label": "cdn_cluster_distribute_revenues",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0xfa8d570d"
+        },
+        {
+          "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Get the current status of a cluster."
+          ],
+          "label": "cdn_cluster_get",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 61
+          },
+          "selector": "0x4b22fbf1"
+        },
+        {
+          "args": [
+            {
+              "label": "offset",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "limit",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "filter_manager_id",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 43
+              }
+            }
+          ],
+          "docs": [
+            " Iterate through all clusters.",
+            "",
+            " The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.",
+            " The optimal `limit` depends on the size of params.",
+            "",
+            " The results can be filtered by manager. Note that paging must still be completed fully."
+          ],
+          "label": "cdn_cluster_list",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 63
+          },
+          "selector": "0xb242a64f"
+        },
+        {
+          "args": [
+            {
+              "label": "cdn_owner",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "label": "node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "commit",
+              "type": {
+                "displayName": [
+                  "Commit"
+                ],
+                "type": 37
+              }
+            }
+          ],
+          "docs": [
+            " CDN node operator sets the commit for current era."
+          ],
+          "label": "set_commit",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0xe445e1fd"
+        },
+        {
+          "args": [
+            {
+              "label": "cdn_owner",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " Return the last commit submitted by CDN node operator"
+          ],
+          "label": "get_commit",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Vec"
+            ],
+            "type": 35
+          },
+          "selector": "0x5329f551"
+        },
+        {
+          "args": [
+            {
+              "label": "node",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Return last era validated per CDN node"
+          ],
+          "label": "get_validated_commit",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "EraAndTimestamp"
+            ],
+            "type": 40
+          },
+          "selector": "0x7d497bc1"
+        },
+        {
+          "args": [
+            {
+              "label": "era_config",
+              "type": {
+                "displayName": [
+                  "EraConfig"
+                ],
+                "type": 65
+              }
+            }
+          ],
+          "docs": [
+            " Set the new configs for era"
+          ],
+          "label": "set_era",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x49a5b8f7"
+        },
+        {
+          "args": [],
+          "docs": [
+            " Return current status of an era"
+          ],
+          "label": "get_era",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "EraStatus"
+            ],
+            "type": 66
+          },
+          "selector": "0x617f696b"
+        },
+        {
+          "args": [],
+          "docs": [
+            " Return current era settings"
+          ],
+          "label": "get_era_settings",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "EraConfig"
+            ],
+            "type": 65
+          },
+          "selector": "0x84b61468"
+        },
+        {
+          "args": [
+            {
+              "label": "manager",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " As node provider, authorize a cluster manager to use his nodes."
+          ],
+          "label": "cdn_node_trust_manager",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0x372daa96"
+        },
+        {
+          "args": [
+            {
+              "label": "manager",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " As node provider, revoke the authorization of a cluster manager to use his nodes."
+          ],
+          "label": "cdn_node_distrust_manager",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0xf67f5438"
+        },
+        {
+          "args": [
+            {
+              "label": "node_params",
+              "type": {
+                "displayName": [
+                  "Params"
+                ],
+                "type": 16
+              }
+            }
+          ],
+          "docs": [
+            " Create a new node and return its `node_id`.",
+            "",
+            " The caller will be its owner.",
+            "",
+            " `node_params` is configuration used by clients and nodes. In particular, this contains the URL to the service. See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
+          ],
+          "label": "cdn_node_create",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [
+              "NodeId"
+            ],
+            "type": 9
+          },
+          "selector": "0xe8aa4ade"
+        },
+        {
+          "args": [
+            {
+              "label": "node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "params",
+              "type": {
+                "displayName": [
+                  "NodeParams"
+                ],
+                "type": 16
+              }
+            }
+          ],
+          "docs": [
+            " Change the `node_params`, which is configuration used by clients and nodes.",
+            "",
+            " See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
+          ],
+          "label": "cdn_node_change_params",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0xf52c20f5"
+        },
+        {
+          "args": [
+            {
+              "label": "node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Get the current state of the cdn node"
+          ],
+          "label": "cdn_node_get",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 68
+          },
+          "selector": "0xf9a5a813"
+        },
+        {
+          "args": [
+            {
+              "label": "offset",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "limit",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "filter_provider_id",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 43
+              }
+            }
+          ],
+          "docs": [
+            " Iterate through all nodes.",
+            "",
+            " The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.",
+            " The optimal `limit` depends on the size of params.",
+            "",
+            " The results can be filtered by owner. Note that paging must still be completed fully."
+          ],
+          "label": "cdn_node_list",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 70
+          },
+          "selector": "0xf8589aae"
+        },
+        {
+          "args": [
+            {
+              "label": "manager",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " As node provider, authorize a cluster manager to use his nodes."
+          ],
+          "label": "node_trust_manager",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0x6fd54a01"
+        },
+        {
+          "args": [
+            {
+              "label": "manager",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " As node provider, revoke the authorization of a cluster manager to use his nodes."
+          ],
+          "label": "node_distrust_manager",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0x40912279"
+        },
+        {
+          "args": [
+            {
+              "label": "rent_per_month",
+              "type": {
+                "displayName": [
+                  "Balance"
+                ],
+                "type": 12
+              }
+            },
+            {
+              "label": "node_params",
+              "type": {
+                "displayName": [
+                  "NodeParams"
+                ],
+                "type": 16
+              }
+            },
+            {
+              "label": "capacity",
+              "type": {
+                "displayName": [
+                  "Resource"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "node_tag",
+              "type": {
+                "displayName": [
+                  "NodeTag"
+                ],
+                "type": 31
+              }
+            },
+            {
+              "label": "pubkey",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " Create a new node and return its `node_id`.",
+            "",
+            " The caller will be its owner.",
+            "",
+            " `node_params` is configuration used by clients and nodes. In particular, this contains the URL to the service. See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
+          ],
+          "label": "node_create",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [
+              "NodeId"
+            ],
+            "type": 9
+          },
+          "selector": "0xb77ac1bb"
+        },
+        {
+          "args": [
+            {
+              "label": "node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "params",
+              "type": {
+                "displayName": [
+                  "NodeParams"
+                ],
+                "type": 16
+              }
+            }
+          ],
+          "docs": [
+            " Change the `node_params`, which is configuration used by clients and nodes.",
+            "",
+            " See the [data structure of NodeParams](https://docs.cere.network/ddc/protocols/contract-params-schema)"
+          ],
+          "label": "node_change_params",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0x258ccb2a"
+        },
+        {
+          "args": [
+            {
+              "label": "node_id",
+              "type": {
+                "displayName": [
+                  "NodeId"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Get the current status of a node."
+          ],
+          "label": "node_get",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 72
+          },
+          "selector": "0x847f3997"
+        },
+        {
+          "args": [
+            {
+              "label": "pubkey",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " Get the current status of a node by a public key."
+          ],
+          "label": "node_get_by_pubkey",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 72
+          },
+          "selector": "0x7f6c82d4"
+        },
+        {
+          "args": [
+            {
+              "label": "offset",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "limit",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            },
+            {
+              "label": "filter_provider_id",
+              "type": {
+                "displayName": [
+                  "Option"
+                ],
+                "type": 43
+              }
+            }
+          ],
+          "docs": [
+            " Iterate through all nodes.",
+            "",
+            " The algorithm for paging is: start with `offset = 1` and `limit = 20`. The function returns a `(results, max_id)`. Call again with `offset += limit`, until `offset >= max_id`.",
+            " The optimal `limit` depends on the size of params.",
+            "",
+            " The results can be filtered by owner. Note that paging must still be completed fully."
+          ],
+          "label": "node_list",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 74
+          },
+          "selector": "0x423286d6"
+        },
+        {
+          "args": [],
+          "docs": [
+            " Get the Fee Percentage Basis Points that will be charged by the protocol"
+          ],
+          "label": "get_fee_bp",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "u32"
+            ],
+            "type": 9
+          },
+          "selector": "0x0d5daf5f"
+        },
+        {
+          "args": [
+            {
+              "label": "fee_bp",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 9
+              }
+            }
+          ],
+          "docs": [
+            " Return the last commit submitted by CDN node operator"
+          ],
+          "label": "set_fee_bp",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0xc5e3e2ca"
+        },
+        {
+          "args": [],
+          "docs": [
+            " Return fees accumulated by the protocol"
+          ],
+          "label": "get_protocol_revenues",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Cash"
+            ],
+            "type": 19
+          },
+          "selector": "0x07c63885"
+        },
+        {
+          "args": [
+            {
+              "label": "amount",
+              "type": {
+                "displayName": [
+                  "u128"
+                ],
+                "type": 12
+              }
+            }
+          ],
+          "docs": [
+            " Pay the revenues accumulated by the protocol"
+          ],
+          "label": "protocol_withdraw_revenues",
+          "mutates": true,
+          "payable": false,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x85c6fa6d"
+        },
+        {
+          "args": [],
+          "docs": [
+            " As user, deposit tokens on the account of the caller from the transaction value. This deposit",
+            " can be used to pay for the services to buckets of the account."
+          ],
+          "label": "account_deposit",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0xc311af62"
+        },
+        {
+          "args": [
+            {
+              "label": "bond_amount",
+              "type": {
+                "displayName": [
+                  "Balance"
+                ],
+                "type": 12
+              }
+            }
+          ],
+          "docs": [
+            " As user, bond some amount of tokens from the withdrawable balance. These funds will be used to pay for CDN node service."
+          ],
+          "label": "account_bond",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0xe9fad0bf"
+        },
+        {
+          "args": [
+            {
+              "label": "amount_to_unbond",
+              "type": {
+                "displayName": [
+                  "Cash"
+                ],
+                "type": 19
+              }
+            }
+          ],
+          "docs": [
+            " As user, unbond a specified amount of tokens. The tokens will be locked for some time, as defined by contract owner."
+          ],
+          "label": "account_unbond",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0xf7ea2c67"
+        },
+        {
+          "args": [],
+          "docs": [
+            " As user, move the unbonded tokens back to withdrawable balance state.",
+            "",
+            " This can be triggered after unbonded_timestamp"
+          ],
+          "label": "account_withdraw_unbonded",
+          "mutates": true,
+          "payable": true,
+          "returnType": {
+            "displayName": [],
+            "type": 44
+          },
+          "selector": "0x98173716"
+        },
+        {
+          "args": [
+            {
+              "label": "account_id",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            }
+          ],
+          "docs": [
+            " Get the current status of an account."
+          ],
+          "label": "account_get",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Result"
+            ],
+            "type": 76
+          },
+          "selector": "0x1d4220fa"
+        },
+        {
+          "args": [],
+          "docs": [
+            " Get the current conversion rate between the native currency and an external currency (USD)."
+          ],
+          "label": "account_get_usd_per_cere",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "Balance"
+            ],
+            "type": 12
+          },
+          "selector": "0xe4a4652a"
+        },
+        {
+          "args": [
+            {
+              "label": "usd_per_cere",
+              "type": {
+                "displayName": [
+                  "Balance"
+                ],
+                "type": 12
+              }
+            }
+          ],
+          "docs": [
+            " As price oracle, set the current conversion rate between the native currency and an external currency (USD).",
+            "",
+            " This requires the permission SetExchangeRate or SuperAdmin."
+          ],
+          "label": "account_set_usd_per_cere",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0x48d45ee8"
+        },
+        {
+          "args": [
+            {
+              "label": "grantee",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "label": "permission",
+              "type": {
+                "displayName": [
+                  "Permission"
+                ],
+                "type": 77
+              }
+            }
+          ],
+          "docs": [
+            " Check whether the given account has the given permission currently,",
+            " or the SuperAdmin permission."
+          ],
+          "label": "has_permission",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "bool"
+            ],
+            "type": 3
+          },
+          "selector": "0xe0942492"
+        },
+        {
+          "args": [
+            {
+              "label": "grantee",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "label": "permission",
+              "type": {
+                "displayName": [
+                  "Permission"
+                ],
+                "type": 77
+              }
+            }
+          ],
+          "docs": [
+            " As SuperAdmin, grant any permission to any account."
+          ],
+          "label": "admin_grant_permission",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0xbe41ea55"
+        },
+        {
+          "args": [
+            {
+              "label": "grantee",
+              "type": {
+                "displayName": [
+                  "AccountId"
+                ],
+                "type": 8
+              }
+            },
+            {
+              "label": "permission",
+              "type": {
+                "displayName": [
+                  "Permission"
+                ],
+                "type": 77
+              }
+            }
+          ],
+          "docs": [
+            " As SuperAdmin, revoke any permission to any account."
+          ],
+          "label": "admin_revoke_permission",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0x6b150666"
+        },
+        {
+          "args": [
+            {
+              "label": "amount",
+              "type": {
+                "displayName": [
+                  "Balance"
+                ],
+                "type": 12
+              }
+            }
+          ],
+          "docs": [
+            " As SuperAdmin, withdraw the funds held in custody in this contract.",
+            "",
+            " This is a temporary measure to allow migrating the funds to a new version of the contract."
+          ],
+          "label": "admin_withdraw",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0x2f6e0868"
+        },
+        {
+          "args": [
+            {
+              "label": "config",
+              "type": {
+                "displayName": [
+                  "FeeConfig"
+                ],
+                "type": 78
+              }
+            }
+          ],
+          "docs": [
+            " As SuperAdmin, set the network and cluster fee configuration."
+          ],
+          "label": "admin_set_fee_config",
+          "mutates": true,
+          "payable": false,
+          "returnType": null,
+          "selector": "0x00d441e7"
+        },
+        {
+          "args": [],
+          "docs": [
+            " Get all Account IDs stored in the SC"
+          ],
+          "label": "get_accounts",
+          "mutates": false,
+          "payable": true,
+          "returnType": {
+            "displayName": [
+              "Vec"
+            ],
+            "type": 14
+          },
+          "selector": "0xef03ead7"
+        }
+      ]
+    },
+    "storage": {
+      "struct": {
+        "fields": [
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 0
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "perms"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0100000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 6
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "buckets"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0200000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 13
+                      }
+                    },
+                    "name": "writers"
+                  },
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0300000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 13
+                      }
+                    },
+                    "name": "readers"
+                  }
+                ]
+              }
+            },
+            "name": "buckets_perms"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0400000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 15
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "bucket_params"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0500000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 17
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "clusters"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0600000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 24
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "cdn_clusters"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0700000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 15
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "cluster_params"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0800000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 26
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "cdn_nodes"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0900000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 15
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "cdn_node_params"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0a00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 28
+                      }
+                    },
+                    "name": "account_node"
+                  },
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0b00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 29
+                      }
+                    },
+                    "name": "nodes"
+                  }
+                ]
+              }
+            },
+            "name": "nodes"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0c00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 15
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "node_params"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0d00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 32
+                      }
+                    },
+                    "name": null
+                  },
+                  {
+                    "layout": {
+                      "struct": {
+                        "fields": [
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x0e00000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 12
+                              }
+                            },
+                            "name": null
+                          }
+                        ]
+                      }
+                    },
+                    "name": null
+                  },
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0f00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 14
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "accounts"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "struct": {
+                        "fields": [
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x1000000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 12
+                              }
+                            },
+                            "name": "network_fee_bp"
+                          },
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x1100000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 8
+                              }
+                            },
+                            "name": "network_fee_destination"
+                          },
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x1200000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 12
+                              }
+                            },
+                            "name": "cluster_management_fee_bp"
+                          }
+                        ]
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "network_fee"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x1300000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 8
+                      }
+                    },
+                    "name": "operator_id"
+                  },
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x1400000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 34
+                      }
+                    },
+                    "name": "commits"
+                  },
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x1500000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 39
+                      }
+                    },
+                    "name": "validated_commits"
+                  },
+                  {
+                    "layout": {
+                      "struct": {
+                        "fields": [
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x1600000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 23
+                              }
+                            },
+                            "name": "start"
+                          },
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x1700000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 23
+                              }
+                            },
+                            "name": "interval"
+                          },
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x1800000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 23
+                              }
+                            },
+                            "name": "commit_duration"
+                          },
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x1900000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 23
+                              }
+                            },
+                            "name": "validation_duration"
+                          }
+                        ]
+                      }
+                    },
+                    "name": "era_settings"
+                  }
+                ]
+              }
+            },
+            "name": "committer_store"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x1a00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 8
+                      }
+                    },
+                    "name": "admin"
+                  },
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x1b00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 9
+                      }
+                    },
+                    "name": "fee_bp"
+                  },
+                  {
+                    "layout": {
+                      "struct": {
+                        "fields": [
+                          {
+                            "layout": {
+                              "cell": {
+                                "key": "0x1c00000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 12
+                              }
+                            },
+                            "name": null
+                          }
+                        ]
+                      }
+                    },
+                    "name": "revenues"
+                  }
+                ]
+              }
+            },
+            "name": "protocol_store"
+          },
+          {
+            "layout": {
+              "struct": {
+                "fields": [
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x1d00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 41
+                      }
+                    },
+                    "name": null
+                  }
+                ]
+              }
+            },
+            "name": "topology_store"
+          }
+        ]
+      }
+    },
+    "types": [
+      {
+        "id": 0,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 4,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 1
+            },
+            {
+              "name": "V",
+              "type": 3
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 1,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 2
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": {
+          "def": {
+            "primitive": "u8"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": {
+          "def": {
+            "primitive": "bool"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "type": 5,
+                  "typeName": "[u8; 32]"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ink_primitives",
+            "Key"
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "type": {
+          "def": {
+            "array": {
+              "len": 32,
+              "type": 2
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 7
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "owner_id",
+                  "type": 8,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "cluster_id",
+                  "type": 9,
+                  "typeName": "ClusterId"
+                },
+                {
+                  "name": "flow",
+                  "type": 10,
+                  "typeName": "Flow"
+                },
+                {
+                  "name": "resource_reserved",
+                  "type": 9,
+                  "typeName": "Resource"
+                },
+                {
+                  "name": "public_availability",
+                  "type": 3,
+                  "typeName": "bool"
+                },
+                {
+                  "name": "resource_consumption_cap",
+                  "type": 9,
+                  "typeName": "Resource"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "bucket",
+            "entity",
+            "Bucket"
+          ]
+        }
+      },
+      {
+        "id": 8,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "type": 5,
+                  "typeName": "[u8; 32]"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ink_env",
+            "types",
+            "AccountId"
+          ]
+        }
+      },
+      {
+        "id": 9,
+        "type": {
+          "def": {
+            "primitive": "u32"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "from",
+                  "type": 8,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "schedule",
+                  "type": 11,
+                  "typeName": "Schedule"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "flow",
+            "Flow"
+          ]
+        }
+      },
+      {
+        "id": 11,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "rate",
+                  "type": 12,
+                  "typeName": "Balance"
+                },
+                {
+                  "name": "offset",
+                  "type": 12,
+                  "typeName": "Balance"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "schedule",
+            "Schedule"
+          ]
+        }
+      },
+      {
+        "id": 12,
+        "type": {
+          "def": {
+            "primitive": "u128"
+          }
+        }
+      },
+      {
+        "id": 13,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 4,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 9
+            },
+            {
+              "name": "V",
+              "type": 14
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 14,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 8
+            }
+          }
+        }
+      },
+      {
+        "id": 15,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 16
+            }
+          }
+        }
+      },
+      {
+        "id": 16,
+        "type": {
+          "def": {
+            "primitive": "str"
+          }
+        }
+      },
+      {
+        "id": 17,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 18
+            }
+          }
+        }
+      },
+      {
+        "id": 18,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "manager_id",
+                  "type": 8,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "resource_per_vnode",
+                  "type": 9,
+                  "typeName": "Resource"
+                },
+                {
+                  "name": "resource_used",
+                  "type": 9,
+                  "typeName": "Resource"
+                },
+                {
+                  "name": "revenues",
+                  "type": 19,
+                  "typeName": "Cash"
+                },
+                {
+                  "name": "node_ids",
+                  "type": 20,
+                  "typeName": "Vec<NodeId>"
+                },
+                {
+                  "name": "v_nodes",
+                  "type": 21,
+                  "typeName": "Vec<Vec<u64>>"
+                },
+                {
+                  "name": "total_rent",
+                  "type": 12,
+                  "typeName": "Balance"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "cluster",
+            "entity",
+            "Cluster"
+          ]
+        }
+      },
+      {
+        "id": 19,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "value",
+                  "type": 12,
+                  "typeName": "Balance"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "cash",
+            "Cash"
+          ]
+        }
+      },
+      {
+        "id": 20,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 9
+            }
+          }
+        }
+      },
+      {
+        "id": 21,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 22
+            }
+          }
+        }
+      },
+      {
+        "id": 22,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 23
+            }
+          }
+        }
+      },
+      {
+        "id": 23,
+        "type": {
+          "def": {
+            "primitive": "u64"
+          }
+        }
+      },
+      {
+        "id": 24,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 25
+            }
+          }
+        }
+      },
+      {
+        "id": 25,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "manager_id",
+                  "type": 8,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "cdn_nodes",
+                  "type": 20,
+                  "typeName": "Vec<NodeId>"
+                },
+                {
+                  "name": "resources_used",
+                  "type": 9,
+                  "typeName": "Resource"
+                },
+                {
+                  "name": "revenues",
+                  "type": 19,
+                  "typeName": "Cash"
+                },
+                {
+                  "name": "usd_per_gb",
+                  "type": 12,
+                  "typeName": "Balance"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "cdn_cluster",
+            "entity",
+            "CdnCluster"
+          ]
+        }
+      },
+      {
+        "id": 26,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 27
+            }
+          }
+        }
+      },
+      {
+        "id": 27,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "provider_id",
+                  "type": 8,
+                  "typeName": "ProviderId"
+                },
+                {
+                  "name": "undistributed_payment",
+                  "type": 12,
+                  "typeName": "Balance"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "cdn_node",
+            "entity",
+            "CdnNode"
+          ]
+        }
+      },
+      {
+        "id": 28,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 4,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 8
+            },
+            {
+              "name": "V",
+              "type": 9
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 29,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 30
+            }
+          }
+        }
+      },
+      {
+        "id": 30,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "provider_id",
+                  "type": 8,
+                  "typeName": "ProviderId"
+                },
+                {
+                  "name": "rent_per_month",
+                  "type": 12,
+                  "typeName": "Balance"
+                },
+                {
+                  "name": "free_resource",
+                  "type": 9,
+                  "typeName": "Resource"
+                },
+                {
+                  "name": "node_tag",
+                  "type": 31,
+                  "typeName": "NodeTag"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "node",
+            "entity",
+            "Node"
+          ]
+        }
+      },
+      {
+        "id": 31,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "UNKNOWN"
+                },
+                {
+                  "index": 1,
+                  "name": "ACTIVE"
+                },
+                {
+                  "index": 2,
+                  "name": "ADDING"
+                },
+                {
+                  "index": 3,
+                  "name": "DELETING"
+                },
+                {
+                  "index": 4,
+                  "name": "OFFLINE"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "node",
+            "entity",
+            "NodeTag"
+          ]
+        }
+      },
+      {
+        "id": 32,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 4,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 8
+            },
+            {
+              "name": "V",
+              "type": 33
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 33,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "deposit",
+                  "type": 19,
+                  "typeName": "Cash"
+                },
+                {
+                  "name": "bonded",
+                  "type": 19,
+                  "typeName": "Cash"
+                },
+                {
+                  "name": "negative",
+                  "type": 19,
+                  "typeName": "Cash"
+                },
+                {
+                  "name": "unbonded_amount",
+                  "type": 19,
+                  "typeName": "Cash"
+                },
+                {
+                  "name": "unbonded_timestamp",
+                  "type": 23,
+                  "typeName": "u64"
+                },
+                {
+                  "name": "payable_schedule",
+                  "type": 11,
+                  "typeName": "Schedule"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "account",
+            "entity",
+            "Account"
+          ]
+        }
+      },
+      {
+        "id": 34,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 4,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 8
+            },
+            {
+              "name": "V",
+              "type": 35
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 35,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 36
+            }
+          }
+        }
+      },
+      {
+        "id": 36,
+        "type": {
+          "def": {
+            "tuple": [
+              9,
+              37
+            ]
+          }
+        }
+      },
+      {
+        "id": 37,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "hash",
+                  "type": 38,
+                  "typeName": "Hash"
+                },
+                {
+                  "name": "total_logs",
+                  "type": 12,
+                  "typeName": "u128"
+                },
+                {
+                  "name": "from_timestamp",
+                  "type": 23,
+                  "typeName": "u64"
+                },
+                {
+                  "name": "to_timestamp",
+                  "type": 23,
+                  "typeName": "u64"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "committer",
+            "store",
+            "Commit"
+          ]
+        }
+      },
+      {
+        "id": 38,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "type": 5,
+                  "typeName": "[u8; 32]"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ink_env",
+            "types",
+            "Hash"
+          ]
+        }
+      },
+      {
+        "id": 39,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 4,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 9
+            },
+            {
+              "name": "V",
+              "type": 40
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "type": {
+          "def": {
+            "tuple": [
+              23,
+              23
+            ]
+          }
+        }
+      },
+      {
+        "id": 41,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 4,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 42
+            },
+            {
+              "name": "V",
+              "type": 9
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 42,
+        "type": {
+          "def": {
+            "tuple": [
+              9,
+              23
+            ]
+          }
+        }
+      },
+      {
+        "id": 43,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "None"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 8
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Some"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 8
+            }
+          ],
+          "path": [
+            "Option"
+          ]
+        }
+      },
+      {
+        "id": 44,
+        "type": {
+          "def": {
+            "tuple": []
+          }
+        }
+      },
+      {
+        "id": 45,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 46
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 48
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 46
+            },
+            {
+              "name": "E",
+              "type": 48
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 46,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "bucket_id",
+                  "type": 9,
+                  "typeName": "BucketId"
+                },
+                {
+                  "name": "bucket",
+                  "type": 47,
+                  "typeName": "BucketInStatus"
+                },
+                {
+                  "name": "params",
+                  "type": 16,
+                  "typeName": "BucketParams"
+                },
+                {
+                  "name": "writer_ids",
+                  "type": 14,
+                  "typeName": "Vec<AccountId>"
+                },
+                {
+                  "name": "reader_ids",
+                  "type": 14,
+                  "typeName": "Vec<AccountId>"
+                },
+                {
+                  "name": "rent_covered_until_ms",
+                  "type": 23,
+                  "typeName": "u64"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "bucket",
+            "entity",
+            "BucketStatus"
+          ]
+        }
+      },
+      {
+        "id": 47,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "owner_id",
+                  "type": 8,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "cluster_id",
+                  "type": 9,
+                  "typeName": "ClusterId"
+                },
+                {
+                  "name": "resource_reserved",
+                  "type": 9,
+                  "typeName": "Resource"
+                },
+                {
+                  "name": "public_availability",
+                  "type": 3,
+                  "typeName": "bool"
+                },
+                {
+                  "name": "resource_consumption_cap",
+                  "type": 9,
+                  "typeName": "Resource"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "bucket",
+            "entity",
+            "BucketInStatus"
+          ]
+        }
+      },
+      {
+        "id": 48,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "BucketDoesNotExist"
+                },
+                {
+                  "index": 1,
+                  "name": "ClusterDoesNotExist"
+                },
+                {
+                  "index": 2,
+                  "name": "ParamsTooBig"
+                },
+                {
+                  "index": 3,
+                  "name": "VNodeDoesNotExist"
+                },
+                {
+                  "index": 4,
+                  "name": "BondingPeriodNotFinished"
+                },
+                {
+                  "index": 5,
+                  "name": "BucketClusterAlreadyConnected"
+                },
+                {
+                  "index": 6,
+                  "name": "BucketClusterNotSetup"
+                },
+                {
+                  "index": 7,
+                  "name": "NodeDoesNotExist"
+                },
+                {
+                  "index": 8,
+                  "name": "NodeAlreadyExists"
+                },
+                {
+                  "index": 9,
+                  "name": "FlowDoesNotExist"
+                },
+                {
+                  "index": 10,
+                  "name": "AccountDoesNotExist"
+                },
+                {
+                  "index": 11,
+                  "name": "ParamsDoesNotExist"
+                },
+                {
+                  "index": 12,
+                  "name": "UnauthorizedProvider"
+                },
+                {
+                  "index": 13,
+                  "name": "UnauthorizedOwner"
+                },
+                {
+                  "index": 14,
+                  "name": "UnauthorizedClusterManager"
+                },
+                {
+                  "index": 15,
+                  "name": "ClusterManagerIsNotTrusted"
+                },
+                {
+                  "index": 16,
+                  "name": "TransferFailed"
+                },
+                {
+                  "index": 17,
+                  "name": "InsufficientBalance"
+                },
+                {
+                  "index": 18,
+                  "name": "InsufficientResources"
+                },
+                {
+                  "index": 19,
+                  "name": "Unauthorized"
+                },
+                {
+                  "index": 20,
+                  "name": "UnknownNode"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "Error"
+          ]
+        }
+      },
+      {
+        "id": 49,
+        "type": {
+          "def": {
+            "tuple": [
+              50,
+              9
+            ]
+          }
+        }
+      },
+      {
+        "id": 50,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 46
+            }
+          }
+        }
+      },
+      {
+        "id": 51,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 52
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 48
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 52
+            },
+            {
+              "name": "E",
+              "type": 48
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 52,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "cluster_id",
+                  "type": 9,
+                  "typeName": "ClusterId"
+                },
+                {
+                  "name": "cluster",
+                  "type": 18,
+                  "typeName": "Cluster"
+                },
+                {
+                  "name": "params",
+                  "type": 16,
+                  "typeName": "Params"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "cluster",
+            "entity",
+            "ClusterStatus"
+          ]
+        }
+      },
+      {
+        "id": 53,
+        "type": {
+          "def": {
+            "tuple": [
+              54,
+              9
+            ]
+          }
+        }
+      },
+      {
+        "id": 54,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 52
+            }
+          }
+        }
+      },
+      {
+        "id": 55,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 56
+            }
+          }
+        }
+      },
+      {
+        "id": 56,
+        "type": {
+          "def": {
+            "tuple": [
+              8,
+              12
+            ]
+          }
+        }
+      },
+      {
+        "id": 57,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 58
+            }
+          }
+        }
+      },
+      {
+        "id": 58,
+        "type": {
+          "def": {
+            "tuple": [
+              9,
+              12
+            ]
+          }
+        }
+      },
+      {
+        "id": 59,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 60
+            }
+          }
+        }
+      },
+      {
+        "id": 60,
+        "type": {
+          "def": {
+            "tuple": [
+              9,
+              9
+            ]
+          }
+        }
+      },
+      {
+        "id": 61,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 62
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 48
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 62
+            },
+            {
+              "name": "E",
+              "type": 48
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 62,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "cluster_id",
+                  "type": 9,
+                  "typeName": "ClusterId"
+                },
+                {
+                  "name": "cluster",
+                  "type": 25,
+                  "typeName": "CdnCluster"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "cdn_cluster",
+            "entity",
+            "CdnClusterStatus"
+          ]
+        }
+      },
+      {
+        "id": 63,
+        "type": {
+          "def": {
+            "tuple": [
+              64,
+              9
+            ]
+          }
+        }
+      },
+      {
+        "id": 64,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 62
+            }
+          }
+        }
+      },
+      {
+        "id": 65,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "start",
+                  "type": 23,
+                  "typeName": "u64"
+                },
+                {
+                  "name": "interval",
+                  "type": 23,
+                  "typeName": "u64"
+                },
+                {
+                  "name": "commit_duration",
+                  "type": 23,
+                  "typeName": "u64"
+                },
+                {
+                  "name": "validation_duration",
+                  "type": 23,
+                  "typeName": "u64"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "committer",
+            "store",
+            "EraConfig"
+          ]
+        }
+      },
+      {
+        "id": 66,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "current_era",
+                  "type": 23,
+                  "typeName": "u64"
+                },
+                {
+                  "name": "current_phase",
+                  "type": 67,
+                  "typeName": "Phase"
+                },
+                {
+                  "name": "previous_era",
+                  "type": 23,
+                  "typeName": "u64"
+                },
+                {
+                  "name": "prev_era_from_timestamp",
+                  "type": 23,
+                  "typeName": "u64"
+                },
+                {
+                  "name": "prev_era_to_timestamp",
+                  "type": 23,
+                  "typeName": "u64"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "committer",
+            "store",
+            "EraStatus"
+          ]
+        }
+      },
+      {
+        "id": 67,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "index": 0,
+                  "name": "Commit"
+                },
+                {
+                  "index": 1,
+                  "name": "Valiadation"
+                },
+                {
+                  "index": 2,
+                  "name": "Payout"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "committer",
+            "store",
+            "Phase"
+          ]
+        }
+      },
+      {
+        "id": 68,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 69
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 48
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 69
+            },
+            {
+              "name": "E",
+              "type": 48
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 69,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "node_id",
+                  "type": 9,
+                  "typeName": "NodeId"
+                },
+                {
+                  "name": "node",
+                  "type": 27,
+                  "typeName": "CdnNode"
+                },
+                {
+                  "name": "params",
+                  "type": 16,
+                  "typeName": "Params"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "cdn_node",
+            "entity",
+            "CdnNodeStatus"
+          ]
+        }
+      },
+      {
+        "id": 70,
+        "type": {
+          "def": {
+            "tuple": [
+              71,
+              9
+            ]
+          }
+        }
+      },
+      {
+        "id": 71,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 69
+            }
+          }
+        }
+      },
+      {
+        "id": 72,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 73
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 48
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 73
+            },
+            {
+              "name": "E",
+              "type": 48
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 73,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "node_id",
+                  "type": 9,
+                  "typeName": "NodeId"
+                },
+                {
+                  "name": "node",
+                  "type": 30,
+                  "typeName": "Node"
+                },
+                {
+                  "name": "params",
+                  "type": 16,
+                  "typeName": "Params"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "node",
+            "entity",
+            "NodeStatus"
+          ]
+        }
+      },
+      {
+        "id": 74,
+        "type": {
+          "def": {
+            "tuple": [
+              75,
+              9
+            ]
+          }
+        }
+      },
+      {
+        "id": 75,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 73
+            }
+          }
+        }
+      },
+      {
+        "id": 76,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 33
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 48
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 33
+            },
+            {
+              "name": "E",
+              "type": 48
+            }
+          ],
+          "path": [
+            "Result"
+          ]
+        }
+      },
+      {
+        "id": 77,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 8,
+                      "typeName": "AccountId"
+                    }
+                  ],
+                  "index": 0,
+                  "name": "ManagerTrustedBy"
+                },
+                {
+                  "index": 1,
+                  "name": "SetExchangeRate"
+                },
+                {
+                  "index": 2,
+                  "name": "SuperAdmin"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "perm",
+            "entity",
+            "Permission"
+          ]
+        }
+      },
+      {
+        "id": 78,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "network_fee_bp",
+                  "type": 12,
+                  "typeName": "BasisPoints"
+                },
+                {
+                  "name": "network_fee_destination",
+                  "type": 8,
+                  "typeName": "AccountId"
+                },
+                {
+                  "name": "cluster_management_fee_bp",
+                  "type": 12,
+                  "typeName": "BasisPoints"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "network_fee",
+            "FeeConfig"
+          ]
+        }
+      }
+    ]
+  }
+}

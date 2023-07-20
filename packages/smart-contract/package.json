@@ -1,7 +1,7 @@
 {
     "name": "@cere-ddc-sdk/smart-contract",
     "description": "Smart contract client",
-    "version": "1.7.6-rc.4",
+    "version": "1.8.0-rc.1",
     "type": "module",
     "repository": {
         "type": "git",
@@ -21,12 +21,20 @@
             "require": "./dist/browser.cjs",
             "import": "./dist/browser.js",
             "default": "./dist/browser.js"
+        },
+        "./types": {
+            "require": "./dist/types.cjs",
+            "import": "./dist/types.js",
+            "default": "./dist/types.js"
         }
     },
     "typesVersions": {
         "*": {
             "browser": [
                 "./dist/types/browser.d.ts"
+            ],
+            "types": [
+                "./dist/types/types/index.d.ts"
             ]
         }
     },
@@ -44,16 +52,15 @@
         "clean": "rimraf dist package"
     },
     "devDependencies": {
-        "@polkadot/extension-dapp": "^0.46.5",
-        "@polkadot/extension-inject": "^0.46.5",
+        "@polkadot/extension-dapp": "0.44.9",
+        "@polkadot/extension-inject": "0.44.9",
         "@types/lodash": "^4.14.182",
         "@types/node": "^16.0.0",
         "clean-publish": "^4.0.1",
         "crypto-browserify": "^3.12.0",
         "lodash": "^4.17.21",
         "rimraf": "^3.0.2",
-        "stream-browserify": "^3.0.0",
-        "typescript": "4.5.4"
+        "stream-browserify": "^3.0.0"
     },
     "dependencies": {
         "@polkadot/api": "9.4.1",

@@ -4,6 +4,11 @@
 
 -
 
+### v1.8.0-rc.1
+
+-   Refactor Smart Contract module to include missing methods
+-   Cover Smart Contract API with tests
+
 ### v1.7.6-rc.4
 
 -   Update Smart Contract addresses for all environments
