@@ -120,7 +120,7 @@ export class DdcClient implements DdcClientInterface {
         return {bucketId};
     }
 
-    async accountDeposit(balance: bigint) {
+    async accountDeposit(balance: Balance) {
         await this.smartContract.accountDeposit(balance);
     }
 
@@ -137,15 +137,11 @@ export class DdcClient implements DdcClientInterface {
         await this.smartContract.bucketAllocIntoCluster(bucketId, resourceToAlloc);
     }
 
-    async bucketGet(bucketId: bigint): Promise<BucketStatus> {
+    async bucketGet(bucketId: BucketId): Promise<BucketStatus> {
         return this.smartContract.bucketGet(bucketId);
     }
 
-    async bucketList(
-        offset: Offset,
-        limit: Offset,
-        filterOwnerId?: AccountId,
-    ): Promise<readonly [BucketStatus[], Offset]> {
+    async bucketList(offset: Offset, limit: Offset, filterOwnerId?: AccountId): Promise<[BucketStatus[], Offset]> {
         return this.smartContract.bucketList(offset, limit, filterOwnerId);
     }
 
@@ -153,7 +149,7 @@ export class DdcClient implements DdcClientInterface {
         return this.caStorage.createSession(session);
     }
 
-    async store(bucketId: bigint, fileOrPiece: File | Piece, options: StoreOptions = {}): Promise<DdcUri> {
+    async store(bucketId: BucketId, fileOrPiece: File | Piece, options: StoreOptions = {}): Promise<DdcUri> {
         if (options.encrypt) {
             return this.storeEncrypted(bucketId, fileOrPiece, options);
         } else {
@@ -162,7 +158,7 @@ export class DdcClient implements DdcClientInterface {
     }
 
     private async storeEncrypted(
-        bucketId: bigint,
+        bucketId: BucketId,
         fileOrPiece: File | Piece,
         options: StoreOptions = {},
     ): Promise<DdcUri> {
@@ -199,7 +195,7 @@ export class DdcClient implements DdcClientInterface {
     }
 
     private async storeUnencrypted(
-        bucketId: bigint,
+        bucketId: BucketId,
         fileOrPiece: File | Piece,
         options: StoreOptions = {},
     ): Promise<DdcUri> {
@@ -247,7 +243,7 @@ export class DdcClient implements DdcClientInterface {
     }
 
     async shareData(
-        bucketId: bigint,
+        bucketId: BucketId,
         dekPath: string,
         partnerBoxPublicKey: string,
         options: StoreOptions = {},
@@ -273,8 +269,8 @@ export class DdcClient implements DdcClientInterface {
         if (headPiece.links.length > 0) {
             const data =
                 isEncrypted && options.decrypt
-                    ? this.fileStorage.readDecryptedLinks(ddcUri.bucket as bigint, headPiece.links, dek, options)
-                    : this.fileStorage.readLinks(ddcUri.bucket as bigint, headPiece.links, options);
+                    ? this.fileStorage.readDecryptedLinks(BigInt(ddcUri.bucket), headPiece.links, dek, options)
+                    : this.fileStorage.readLinks(BigInt(ddcUri.bucket), headPiece.links, options);
 
             return new File(data, headPiece.tags, ddcUri.path as string);
         }
@@ -300,7 +296,7 @@ export class DdcClient implements DdcClientInterface {
                 );
             }
 
-            const clientDek = await this.downloadDek(ddcUri.bucket as bigint, options.dekPath!, options);
+            const clientDek = await this.downloadDek(BigInt(ddcUri.bucket), options.dekPath!, options);
 
             return DdcClient.buildHierarchicalDekHex(
                 clientDek,
@@ -311,7 +307,7 @@ export class DdcClient implements DdcClientInterface {
         return new Uint8Array();
     }
 
-    private async downloadDek(bucketId: bigint, dekPath: string, options: ReadOptions = {}): Promise<Uint8Array> {
+    private async downloadDek(bucketId: BucketId, dekPath: string, options: ReadOptions = {}): Promise<Uint8Array> {
         const piece = await this.kvStorage
             .read(bucketId, `${bucketId}/${dekPath}/${u8aToHex(this.boxKeypair.publicKey)}`, {
                 ...options,
