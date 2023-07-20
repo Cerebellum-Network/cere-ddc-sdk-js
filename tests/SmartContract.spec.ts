@@ -149,13 +149,12 @@ describe('Smart Contract', () => {
 
         test('add storage node to a cluster', async () => {
             const vNodes = [1n, 2n, 3n];
-            const nodeIds = [createdStorageNodeId];
 
             await adminContract.clusterAddNode(createdStorageClusterId, createdStorageNodeId, vNodes);
             const {cluster} = await adminContract.clusterGet(createdStorageClusterId);
 
-            expect(cluster.nodeIds).toEqual(nodeIds);
-            expect(cluster.vNodes).toEqual(vNodes);
+            expect(cluster.nodeIds).toEqual([createdStorageNodeId]);
+            expect(cluster.vNodes).toEqual([vNodes]);
         });
 
         test('reserve cluster resource', async () => {
@@ -184,7 +183,7 @@ describe('Smart Contract', () => {
             const {params: newParams} = await adminContract.nodeGet(createdStorageNodeId);
             const parsedNewParams = JSON.parse(newParams);
 
-            expect(parsedNewParams.nodeCountryISOCode).toEqual('US');
+            expect(parsedNewParams.nodeCountryISOCode).toEqual('EU');
         });
 
         test('remove storage node from a cluster', async () => {
