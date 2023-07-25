@@ -231,11 +231,24 @@ export class SmartContract extends SmartContractBase {
         await this.submit(this.contract.tx.clusterChangeNodeTag, nodeId, nodeTag);
     }
 
-    async nodeTrustManager(manager: AccountId) {
-        await this.submit(this.contract.tx.nodeTrustManager, manager);
-    }
-
     async nodeChangeParams(nodeId: NodeId, params: NodeParams) {
         await this.submit(this.contract.tx.nodeChangeParams, nodeId, JSON.stringify(params));
+    }
+
+    // Smart Contract v1.0.0 methods
+
+    async grantTrustedManagerPermission(manager: AccountId) {
+        await this.submit(this.contract.tx.grantTrustedManagerPermission, manager);
+    }
+
+    // Depricated methods
+
+    /**
+     * Use `grantTrustedManagerPermission` instead
+     *
+     * @deprecated
+     */
+    async nodeTrustManager(manager: AccountId) {
+        return this.grantTrustedManagerPermission(manager);
     }
 }
