@@ -3,7 +3,7 @@ import {Codec} from '@polkadot/types/types';
 export type ClusterId = number;
 export type BucketId = bigint;
 export type AccountId = string;
-export type NodeId = number;
+export type NodeKey = string;
 export type Resource = bigint;
 export type VNodeId = bigint;
 export type Balance = bigint;
@@ -53,36 +53,25 @@ export type CdnNodeParams = {
     url?: string;
     size?: number;
     location?: string;
-    publicKey?: string;
 };
 
 export type Cluster = {
     managerId: AccountId;
-    resourcePerVnode: Resource;
+    clusterParams: Params;
+    nodesKeys: NodeKey[];
+    resourcePerVNode: Resource;
     resourceUsed: Resource;
     revenues: Cash;
-    nodeIds: NodeId[];
-    vNodes: VNodeId[][];
     totalRent: Balance;
+    cdnNodesKeys: NodeKey[];
+    cdnRevenues: Cash;
+    cdnUsdPerGb: Balance;
 };
 
-export type ClusterStatus = {
+export type ClusterInfo = {
     clusterId: ClusterId;
-    params: Params;
     cluster: Cluster;
-};
-
-export type CdnCluster = {
-    managerId: AccountId;
-    cdnNodes: NodeId[];
-    resourcesUsed: Resource;
-    revenues: Balance;
-    usdPerGb: Balance;
-};
-
-export type CdnClusterStatus = {
-    clusterId: ClusterId;
-    cluster: CdnCluster;
+    clusterVNodes: VNodeId[];
 };
 
 export type Account = {
@@ -120,7 +109,7 @@ export type Node = {
 };
 
 export type NodeStatus = {
-    nodeId: NodeId;
+    nodeId: NodeKey;
     node: Node;
     params: Params;
 };
@@ -131,7 +120,7 @@ export type CdnNode = {
 };
 
 export type CdnNodeStatus = {
-    nodeId: NodeId;
+    nodeId: NodeKey;
     node: CdnNode;
     params: Params;
 };
