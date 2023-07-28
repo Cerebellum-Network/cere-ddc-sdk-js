@@ -15,15 +15,17 @@ const dryRunOptions: ContractOptions = {
     storageDepositLimit: null,
 };
 
-type SubmitResult = Pick<SubmittableResultValue, 'events'> & {
+export type SubmitResult = Pick<SubmittableResultValue, 'events'> & {
     contractEvents?: DecodedEvent[];
 };
+
+export type ListResult<T> = [T[], Offset];
 
 const drainList = async <T extends unknown>(
     offset: Offset,
     limit: Offset,
     iterate: (offset: Offset, limit: Offset) => Promise<[T[], bigint | number | string]>,
-): Promise<[T[], Offset]> => {
+) => {
     let cursor = offset;
     let total: Offset = 0n;
     const chunkSize: Offset = 10n;
@@ -43,7 +45,7 @@ const drainList = async <T extends unknown>(
         }
     }
 
-    return [list as T[], total];
+    return [list as T[], total] as ListResult<T>;
 };
 
 export class SmartContractBase {

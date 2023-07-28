@@ -24,8 +24,7 @@ type Flow = {
     schedule: Schedule;
 };
 
-export enum NodeTag {
-    UNKNOWN = 'UNKNOWN',
+export enum NodeStatusInCluster {
     ACTIVE = 'ACTIVE',
     ADDING = 'ADDING',
     DELETING = 'DELETING',
@@ -57,7 +56,7 @@ export type CdnNodeParams = {
 
 export type Cluster = {
     managerId: AccountId;
-    clusterParams: Params;
+    clusterParams: ClusterParams;
     nodesKeys: NodeKey[];
     resourcePerVNode: Resource;
     resourceUsed: Resource;
@@ -101,28 +100,32 @@ export type BucketStatus = {
     rentCoveredUntilMs: Balance;
 };
 
-export type Node = {
-    providerId: AccountId;
-    rentPerMonth: Balance;
-    freeResource: Resource;
-    nodeTag: NodeTag;
-};
-
-export type NodeStatus = {
-    nodeId: NodeKey;
-    node: Node;
-    params: Params;
-};
-
 export type CdnNode = {
     providerId: AccountId;
     undistributedPayment: Balance;
+    cdnNodeParams: CdnNodeParams;
+    clusterId: ClusterId | null;
+    statusInCluster: NodeStatusInCluster | null;
 };
 
-export type CdnNodeStatus = {
-    nodeId: NodeKey;
-    node: CdnNode;
-    params: Params;
+export type Node = {
+    providerId: AccountId;
+    rentVNodePerMonth: Balance;
+    freeResource: Resource;
+    nodeParams: NodeParams;
+    clusterId: ClusterId | null;
+    statusInCluster: NodeStatusInCluster | null;
+};
+
+export type CdnNodeInfo = {
+    cdnNodeKey: NodeKey;
+    cdnNode: CdnNode;
+};
+
+export type NodeInfo = {
+    nodeKey: NodeKey;
+    node: Node;
+    vNodes: VNodeId[];
 };
 
 /**
