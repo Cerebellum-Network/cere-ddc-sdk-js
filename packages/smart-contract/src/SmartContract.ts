@@ -147,12 +147,20 @@ export class SmartContract extends SmartContractBase {
         return this.getContractEventArgs(contractEvents, 'NodeCreated').nodeKey;
     }
 
+    async nodeRemove(nodeKey: NodeKey) {
+        await this.submit(this.contract.tx.nodeRemove, nodeKey);
+    }
+
     async cdnNodeCreate(cdnNodeKey: NodeKey, nodeParams: CdnNodeParams) {
         const params = JSON.stringify(nodeParams);
 
         const {contractEvents} = await this.submit(this.contract.tx.cdnNodeCreate, cdnNodeKey, params);
 
         return this.getContractEventArgs(contractEvents, 'CdnNodeCreated').cdnNodeKey;
+    }
+
+    async cdnNodeRemove(nodeKey: NodeKey) {
+        await this.submit(this.contract.tx.cdnNodeRemove, nodeKey);
     }
 
     async clusterCreate(clusterParams: ClusterParams = {}, resourcePerVNode: Resource = 0n) {

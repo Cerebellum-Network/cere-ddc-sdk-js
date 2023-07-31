@@ -216,6 +216,34 @@ describe('Smart Contract', () => {
                 ]),
             );
         });
+
+        test('remove storage node', async () => {
+            await adminContract.nodeRemove(createdStorageNodeKey);
+
+            const [nodes] = await adminContract.nodeList();
+
+            expect(nodes).not.toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        nodeKey: createdStorageNodeKey,
+                    }),
+                ]),
+            );
+        });
+
+        test('remove CDN node', async () => {
+            await adminContract.cdnNodeRemove(createdCdnNodeKey);
+
+            const [nodes] = await adminContract.cdnNodeList();
+
+            expect(nodes).not.toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        nodeKey: createdCdnNodeKey,
+                    }),
+                ]),
+            );
+        });
     });
 
     describe('Accounts', () => {
