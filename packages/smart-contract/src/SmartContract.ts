@@ -1,10 +1,10 @@
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {ContractPromise} from '@polkadot/api-contract';
 import {Keyring} from '@polkadot/keyring';
-import {Signer} from '@polkadot/api/types';
+import {AddressOrPair, Signer} from '@polkadot/api/types';
 import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
 
-import {SmartContractBase} from './SmartContractBase';
+import {SmartContractBase, ListResult} from './SmartContractBase';
 import {SmartContractOptions, TESTNET} from './options/SmartContractOptions';
 import {cereTypes} from './types/cere_types';
 
@@ -13,47 +13,61 @@ import {
     AccountId,
     BucketId,
     BucketStatus,
-    CdnClusterStatus,
     ClusterId,
-    ClusterStatus,
-    NodeId,
+    ClusterInfo,
+    NodeKey,
     Resource,
     VNodeId,
     BucketParams,
     Balance,
-    NodeTag,
     NodeParams,
     CdnNodeParams,
-    CdnNodeStatus,
-    NodeStatus,
     ClusterParams,
     Offset,
+    NodeInfo,
+    CdnNodeInfo,
+    NodeStatusInCluster,
 } from './types';
 
 const CERE = 10_000_000_000n;
 
 export class SmartContract extends SmartContractBase {
+    private shouldDisconnectAPI = false;
+
     static async buildAndConnect(
-        secretPhraseOrAddress: string,
+        secretPhraseOrAddress: AddressOrPair,
         options: SmartContractOptions = TESTNET,
         signer?: Signer,
-    ): Promise<SmartContract> {
+    ) {
         await cryptoWaitReady();
 
-        const provider = new WsProvider(options.rpcUrl);
-        const api = await ApiPromise.create({provider, types: cereTypes});
-        await api.isReady;
+        let api = options.api;
+        let addressOrPair = secretPhraseOrAddress;
+
+        if (!api) {
+            const provider = new WsProvider(options.rpcUrl);
+
+            api = await ApiPromise.create({provider, types: cereTypes});
+        }
+
+        if (typeof secretPhraseOrAddress === 'string') {
+            addressOrPair = isAddress(secretPhraseOrAddress)
+                ? secretPhraseOrAddress
+                : new Keyring({type: 'sr25519'}).addFromMnemonic(secretPhraseOrAddress);
+        }
 
         const contract = new ContractPromise(api, options.abi, options.contractAddress);
-        const keyring = new Keyring({type: 'sr25519'});
-        const addressOrPair = isAddress(secretPhraseOrAddress)
-            ? secretPhraseOrAddress
-            : keyring.addFromMnemonic(secretPhraseOrAddress);
+        const smartContract = new SmartContract(addressOrPair, contract, signer);
 
-        return new SmartContract(addressOrPair, contract, signer);
+        /**
+         * In case an external API instance is used - don't diconnect it
+         */
+        smartContract.shouldDisconnectAPI = !options.api;
+
+        return smartContract.connect();
     }
 
-    async connect(): Promise<SmartContract> {
+    async connect() {
         const api = this.contract.api as ApiPromise;
         await api.isReady;
 
@@ -61,103 +75,40 @@ export class SmartContract extends SmartContractBase {
     }
 
     async disconnect() {
-        return this.contract.api.disconnect();
-    }
-
-    async clusterList(offset?: Offset | null, limit?: Offset | null, filterManagerId?: AccountId) {
-        return this.queryList<ClusterStatus>(this.contract.query.clusterList, offset, limit, filterManagerId);
+        if (this.shouldDisconnectAPI) {
+            await this.contract.api.disconnect();
+        }
     }
 
     async cdnClusterList(offset?: Offset | null, limit?: Offset | null, filterManagerId?: AccountId) {
-        return this.queryList<CdnClusterStatus>(this.contract.query.cdnClusterList, offset, limit, filterManagerId);
-    }
-
-    async clusterCreate(vNodes: VNodeId[][] = [], nodeIds: NodeId[] = [], clusterParams: ClusterParams = {}) {
-        const {contractEvents} = await this.submit(
-            this.contract.tx.clusterCreate,
-            this.address,
-            vNodes,
-            nodeIds,
-            JSON.stringify(clusterParams),
-        );
-
-        return this.getContractEventArgs(contractEvents, 'ClusterCreated').clusterId;
-    }
-
-    async cdnClusterCreate(cdnNodesIds: NodeId[] = []) {
-        const {contractEvents} = await this.submit(this.contract.tx.cdnClusterCreate, cdnNodesIds);
-
-        return this.getContractEventArgs(contractEvents, 'CdnClusterCreated').clusterId;
-    }
-
-    async nodeCreate(
-        rentPerMonth: Balance,
-        nodeParams: NodeParams,
-        capacity: Resource,
-        nodeTag: NodeTag,
-        pubkey: AccountId,
-    ) {
-        const params = JSON.stringify(nodeParams);
-
-        const {contractEvents} = await this.submit(
-            this.contract.tx.nodeCreate,
-            rentPerMonth,
-            params,
-            capacity,
-            nodeTag,
-            pubkey,
-        );
-
-        return this.getContractEventArgs(contractEvents, 'NodeCreated').nodeId;
-    }
-
-    async cdnNodeCreate(nodeParams: CdnNodeParams) {
-        const params = JSON.stringify(nodeParams);
-        const nodeId = await this.query<NodeId>(this.contract.query.cdnNodeCreate, params); // Dry run
-
-        await this.submit(this.contract.tx.cdnNodeCreate, params);
-
-        return nodeId;
-    }
-
-    async nodeList(offset?: Offset | null, limit?: Offset | null, filterProviderId?: AccountId) {
-        return this.queryList<NodeStatus>(this.contract.query.nodeList, offset, limit, filterProviderId);
-    }
-
-    async cdnNodeList(offset?: Offset | null, limit?: Offset | null, filterProviderId?: AccountId) {
-        return this.queryList<CdnNodeStatus>(this.contract.query.cdnNodeList, offset, limit, filterProviderId);
-    }
-
-    async cdnNodeGet(nodeId: NodeId) {
-        return this.queryOne<CdnNodeStatus>(this.contract.query.cdnNodeGet, nodeId);
-    }
-
-    async nodeGet(nodeId: NodeId) {
-        return this.queryOne<NodeStatus>(this.contract.query.nodeGet, nodeId);
+        return this.queryList<ClusterInfo>(this.contract.query.cdnClusterList, offset, limit, filterManagerId);
     }
 
     async accountGet(address: string) {
         return this.queryOne<Account>(this.contract.query.accountGet, address);
     }
 
-    async clusterGet(clusterId: number) {
-        const output = await this.queryOne<ClusterStatus>(this.contract.query.clusterGet, clusterId);
-
-        output.cluster.vNodes = output.cluster.vNodes.map((vNode) => vNode.map(BigInt));
-
-        return output;
-    }
-
-    async cdnClusterGet(clusterId: number) {
-        return this.queryOne<CdnClusterStatus>(this.contract.query.cdnClusterGet, clusterId);
-    }
-
     async bucketList(offset?: Offset | null, limit?: Offset | null, filterOwnerId?: AccountId) {
-        return this.queryList<BucketStatus>(this.contract.query.bucketList, offset, limit, filterOwnerId);
+        const [buckets, total] = await this.queryList<BucketStatus>(
+            this.contract.query.bucketList,
+            offset,
+            limit,
+            filterOwnerId,
+        );
+
+        buckets.forEach((bucket) => {
+            bucket.bucketId = BigInt(bucket.bucketId);
+        });
+
+        return [buckets, total] as ListResult<BucketStatus>;
     }
 
     async bucketGet(bucketId: BucketId) {
-        return this.queryOne<BucketStatus>(this.contract.query.bucketGet, bucketId);
+        const bucketStatus = await this.queryOne<BucketStatus>(this.contract.query.bucketGet, bucketId);
+
+        bucketStatus.bucketId = BigInt(bucketStatus.bucketId);
+
+        return bucketStatus;
     }
 
     async bucketCreate(owner: AccountId, clusterId: ClusterId, bucketParams: BucketParams = {replication: 1}) {
@@ -174,7 +125,9 @@ export class SmartContract extends SmartContractBase {
             owner,
         );
 
-        return this.getContractEventArgs(contractEvents, 'BucketCreated').bucketId;
+        const {bucketId} = this.getContractEventArgs(contractEvents, 'BucketCreated');
+
+        return BigInt(bucketId);
     }
 
     async bucketAllocIntoCluster(bucketId: BucketId, resource: Resource) {
@@ -193,49 +146,162 @@ export class SmartContract extends SmartContractBase {
         await this.submit(this.contract.tx.accountBond, value * CERE);
     }
 
-    async clusterAddNode(clusterId: ClusterId, nodeId: NodeId, vNodes: VNodeId[]) {
-        const {cluster} = await this.clusterGet(clusterId);
-
-        if (cluster.nodeIds.includes(nodeId)) {
-            throw new Error(`Cluster ${clusterId} already has node ${nodeId}`);
-        }
-
-        const newNodeIds = [...cluster.nodeIds, nodeId];
-        const newVNodes = [...cluster.vNodes, vNodes];
-
-        await this.submit(this.contract.tx.clusterAddNode, clusterId, newNodeIds, newVNodes);
+    async grantTrustedManagerPermission(manager: AccountId) {
+        await this.submit(this.contract.tx.grantTrustedManagerPermission, manager);
     }
 
-    async clusterRemoveNode(clusterId: ClusterId, nodeId: NodeId) {
-        const {cluster} = await this.clusterGet(clusterId);
-        const nodeIndex = cluster.nodeIds.indexOf(nodeId);
+    async nodeCreate(nodeKey: NodeKey, nodeParams: NodeParams, capacity: Resource, rentPerMonth: Balance) {
+        const params = JSON.stringify(nodeParams);
 
-        if (nodeIndex < 0) {
-            throw new Error(`Node ${nodeId} is not found in cluster ${clusterId}`);
-        }
+        const {contractEvents} = await this.submit(
+            this.contract.tx.nodeCreate,
+            nodeKey,
+            params,
+            capacity,
+            rentPerMonth,
+        );
 
-        const newNodeIds = [...cluster.nodeIds];
-        const newVNodes = [...cluster.vNodes];
-
-        newNodeIds.splice(nodeIndex, 1);
-        newVNodes.splice(nodeIndex, 1);
-
-        await this.submit(this.contract.tx.clusterRemoveNode, clusterId, newNodeIds, newVNodes);
+        return this.getContractEventArgs(contractEvents, 'NodeCreated').nodeKey;
     }
 
-    async clusterReserveResource(clusterId: ClusterId, amount: Resource) {
-        await this.submit(this.contract.tx.clusterReserveResource, clusterId, amount);
+    async nodeRemove(nodeKey: NodeKey) {
+        await this.submit(this.contract.tx.nodeRemove, nodeKey);
     }
 
-    async clusterChangeNodeTag(nodeId: NodeId, nodeTag: NodeTag) {
-        await this.submit(this.contract.tx.clusterChangeNodeTag, nodeId, nodeTag);
+    async cdnNodeCreate(cdnNodeKey: NodeKey, nodeParams: CdnNodeParams) {
+        const params = JSON.stringify(nodeParams);
+
+        const {contractEvents} = await this.submit(this.contract.tx.cdnNodeCreate, cdnNodeKey, params);
+
+        return this.getContractEventArgs(contractEvents, 'CdnNodeCreated').cdnNodeKey;
     }
 
-    async nodeTrustManager(manager: AccountId) {
-        await this.submit(this.contract.tx.nodeTrustManager, manager);
+    async cdnNodeRemove(nodeKey: NodeKey) {
+        await this.submit(this.contract.tx.cdnNodeRemove, nodeKey);
     }
 
-    async nodeChangeParams(nodeId: NodeId, params: NodeParams) {
-        await this.submit(this.contract.tx.nodeChangeParams, nodeId, JSON.stringify(params));
+    async clusterCreate(clusterParams: ClusterParams = {}, resourcePerVNode: Resource = 0n) {
+        const params = JSON.stringify(clusterParams);
+
+        const {contractEvents} = await this.submit(this.contract.tx.clusterCreate, params, resourcePerVNode);
+
+        return this.getContractEventArgs(contractEvents, 'ClusterCreated').clusterId;
+    }
+
+    async clusterAddNode(clusterId: ClusterId, nodeKey: NodeKey, vNodes: VNodeId[]) {
+        await this.submit(this.contract.tx.clusterAddNode, clusterId, nodeKey, vNodes);
+    }
+
+    async clusterRemoveNode(clusterId: ClusterId, nodeKey: NodeKey) {
+        await this.submit(this.contract.tx.clusterRemoveNode, clusterId, nodeKey);
+    }
+
+    async clusterAddCdnNode(clusterId: ClusterId, nodeKey: NodeKey) {
+        await this.submit(this.contract.tx.clusterAddCdnNode, clusterId, nodeKey);
+    }
+
+    async clusterRemoveCdnNode(clusterId: ClusterId, nodeKey: NodeKey) {
+        await this.submit(this.contract.tx.clusterRemoveCdnNode, clusterId, nodeKey);
+    }
+
+    async clusterRemove(clusterId: ClusterId) {
+        await this.submit(this.contract.tx.clusterRemove, clusterId);
+    }
+
+    async clusterSetNodeStatus(clusterId: ClusterId, nodeKey: NodeKey, statusInCluster: NodeStatusInCluster) {
+        await this.submit(this.contract.tx.clusterSetNodeStatus, clusterId, nodeKey, statusInCluster);
+    }
+
+    async clusterSetCdnNodeStatus(clusterId: ClusterId, nodeKey: NodeKey, statusInCluster: NodeStatusInCluster) {
+        await this.submit(this.contract.tx.clusterSetCdnNodeStatus, clusterId, nodeKey, statusInCluster);
+    }
+
+    async cdnNodeSetParams(nodeKey: NodeKey, params: CdnNodeParams) {
+        await this.submit(this.contract.tx.cdnNodeSetParams, nodeKey, JSON.stringify(params));
+    }
+
+    async nodeSetParams(nodeKey: NodeKey, params: NodeParams) {
+        await this.submit(this.contract.tx.nodeSetParams, nodeKey, JSON.stringify(params));
+    }
+
+    async clusterSetResourcePerVNode(clusterId: ClusterId, amount: Resource) {
+        await this.submit(this.contract.tx.clusterSetResourcePerVNode, clusterId, amount);
+    }
+
+    async clusterSetParams(clusterId: ClusterId, params: ClusterParams) {
+        await this.submit(this.contract.tx.clusterSetParams, clusterId, JSON.stringify(params));
+    }
+
+    async clusterList(offset?: Offset | null, limit?: Offset | null, filterManagerId?: AccountId) {
+        const [clusters, total] = await this.queryList<ClusterInfo>(
+            this.contract.query.clusterList,
+            offset,
+            limit,
+            filterManagerId,
+        );
+
+        clusters.forEach((cluster) => {
+            cluster.cluster.clusterParams = JSON.parse(cluster.cluster.clusterParams as string);
+            cluster.clusterVNodes = cluster.clusterVNodes.map(BigInt);
+        });
+
+        return [clusters, total] as ListResult<ClusterInfo>;
+    }
+
+    async clusterGet(clusterId: number) {
+        const clusterInfo: ClusterInfo = await this.queryOne<ClusterInfo>(this.contract.query.clusterGet, clusterId);
+
+        clusterInfo.cluster.clusterParams = JSON.parse(clusterInfo.cluster.clusterParams as string);
+        clusterInfo.clusterVNodes = clusterInfo.clusterVNodes.map(BigInt);
+
+        return clusterInfo;
+    }
+
+    async nodeList(offset?: Offset | null, limit?: Offset | null, filterProviderId?: AccountId) {
+        const [nodes, total] = await this.queryList<NodeInfo>(
+            this.contract.query.nodeList,
+            offset,
+            limit,
+            filterProviderId,
+        );
+
+        nodes.forEach((node) => {
+            node.vNodes = node.vNodes.map(BigInt);
+            node.node.nodeParams = JSON.parse(node.node.nodeParams as string);
+        });
+
+        return [nodes, total] as ListResult<NodeInfo>;
+    }
+
+    async cdnNodeList(offset?: Offset | null, limit?: Offset | null, filterProviderId?: AccountId) {
+        const [nodes, total] = await this.queryList<CdnNodeInfo>(
+            this.contract.query.cdnNodeList,
+            offset,
+            limit,
+            filterProviderId,
+        );
+
+        nodes.forEach((node) => {
+            node.cdnNode.cdnNodeParams = JSON.parse(node.cdnNode.cdnNodeParams as string);
+        });
+
+        return [nodes, total] as ListResult<CdnNodeInfo>;
+    }
+
+    async cdnNodeGet(nodeKey: NodeKey) {
+        const nodeInfo = await this.queryOne<CdnNodeInfo>(this.contract.query.cdnNodeGet, nodeKey);
+
+        nodeInfo.cdnNode.cdnNodeParams = JSON.parse(nodeInfo.cdnNode.cdnNodeParams as string);
+
+        return nodeInfo;
+    }
+
+    async nodeGet(nodeKey: NodeKey) {
+        const nodeInfo = await this.queryOne<NodeInfo>(this.contract.query.nodeGet, nodeKey);
+
+        nodeInfo.node.nodeParams = JSON.parse(nodeInfo.node.nodeParams as string);
+        nodeInfo.vNodes = nodeInfo.vNodes.map(BigInt);
+
+        return nodeInfo;
     }
 }

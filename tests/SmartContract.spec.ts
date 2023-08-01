@@ -2,6 +2,7 @@ import {ApiPromise} from '@polkadot/api';
 import {KeyringPair} from '@polkadot/keyring/types';
 import {ContractPromise} from '@polkadot/api-contract';
 import {SmartContract} from '@cere-ddc-sdk/smart-contract';
+import {NodeStatusInCluster} from '@cere-ddc-sdk/smart-contract/types';
 
 import {bootstrapContract, createAccount, createBlockhainApi, getAccount} from './helpers';
 
@@ -17,19 +18,17 @@ describe('Smart Contract', () => {
         const publicKey = createAccount().address;
 
         return adminContract.nodeCreate(
-            1n,
+            publicKey,
             {url: `http://localhost:809${index}`, nodeCountryISOCode: 'US'},
             10000n,
-            'ACTIVE' as any,
-            publicKey,
+            1n,
         );
     };
 
     const createCdnNode = (index = 0) => {
-        const publicKey = createAccount().address;
+        const cdnNodeKey = createAccount().address;
 
-        return adminContract.cdnNodeCreate({
-            publicKey,
+        return adminContract.cdnNodeCreate(cdnNodeKey, {
             location: 'US',
             size: 1,
             url: `http://localhost:808${index}`,
@@ -52,86 +51,60 @@ describe('Smart Contract', () => {
     });
 
     describe('Network topology', () => {
-        let createdStorageNodeId: any;
-        let createdCdnNodeId: any;
-        let createdStorageClusterId: any;
-        let createdCdnClusterId: any;
+        let createdStorageNodeKey: any;
+        let createdCdnNodeKey: any;
+        let createdClusterId: any;
 
         test('add trusted manager', async () => {
-            await adminContract.nodeTrustManager(user.address);
+            await adminContract.grantTrustedManagerPermission(user.address);
         });
 
         test('create storage node', async () => {
-            createdStorageNodeId = await createStorageNode();
+            createdStorageNodeKey = await createStorageNode();
 
-            expect(createdStorageNodeId).toEqual(expect.any(Number));
+            expect(createdStorageNodeKey).toEqual(expect.any(String));
         });
 
         test('create CDN node', async () => {
-            createdCdnNodeId = await createCdnNode();
+            createdCdnNodeKey = await createCdnNode();
 
-            expect(createdCdnNodeId).toEqual(expect.any(Number));
+            expect(createdCdnNodeKey).toEqual(expect.any(String));
         });
 
-        test('create storage cluster', async () => {
-            createdStorageClusterId = await adminContract.clusterCreate();
+        test('create cluster', async () => {
+            createdClusterId = await adminContract.clusterCreate();
 
-            expect(createdStorageClusterId).toEqual(expect.any(Number));
+            expect(createdClusterId).toEqual(expect.any(Number));
         });
 
-        test('create CDN cluster', async () => {
-            createdCdnClusterId = await adminContract.cdnClusterCreate();
+        test('get cluster', async () => {
+            const foundCluster = await adminContract.clusterGet(createdClusterId);
 
-            expect(createdCdnClusterId).toEqual(expect.any(Number));
-        });
-
-        test('get storage cluster', async () => {
-            expect(createdStorageClusterId).toBeDefined();
-
-            const foundCluster = await adminContract.clusterGet(createdStorageClusterId);
-
-            expect(foundCluster.clusterId).toEqual(createdStorageClusterId);
-        });
-
-        test('get CDN cluster', async () => {
-            expect(createdCdnClusterId).toBeDefined();
-
-            const foundCluster = await adminContract.cdnClusterGet(createdCdnClusterId);
-
-            expect(foundCluster.clusterId).toEqual(createdCdnClusterId);
+            expect(foundCluster.clusterId).toEqual(createdClusterId);
         });
 
         test('get storage node', async () => {
-            expect(createdStorageNodeId).toBeDefined();
+            const foundNode = await adminContract.nodeGet(createdStorageNodeKey);
 
-            const foundNode = await adminContract.nodeGet(createdStorageNodeId);
-
-            expect(foundNode.nodeId).toEqual(createdStorageNodeId);
+            expect(foundNode.nodeKey).toEqual(createdStorageNodeKey);
         });
 
         test('get CDN node', async () => {
-            expect(createdCdnNodeId).toBeDefined();
+            const foundCluster = await adminContract.cdnNodeGet(createdCdnNodeKey);
 
-            const foundCluster = await adminContract.cdnNodeGet(createdCdnNodeId);
-
-            expect(foundCluster.nodeId).toEqual(createdCdnNodeId);
+            expect(foundCluster.cdnNodeKey).toEqual(createdCdnNodeKey);
         });
 
-        test('get all storage clusters', async () => {
+        test('get all clusters', async () => {
             const [clusters, totalCount] = await adminContract.clusterList();
 
             expect(totalCount).toBeGreaterThanOrEqual(1);
             expect(clusters).toEqual(
-                expect.arrayContaining([expect.objectContaining({clusterId: createdStorageClusterId})]),
-            );
-        });
-
-        test('get all CDN clusters', async () => {
-            const [clusters, totalCount] = await adminContract.cdnClusterList();
-
-            expect(totalCount).toBeGreaterThanOrEqual(1);
-            expect(clusters).toEqual(
-                expect.arrayContaining([expect.objectContaining({clusterId: createdCdnClusterId})]),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        clusterId: createdClusterId,
+                    }),
+                ]),
             );
         });
 
@@ -147,52 +120,129 @@ describe('Smart Contract', () => {
             expect(nodes).toEqual(expect.any(Array));
         });
 
-        test('add storage node to a cluster', async () => {
+        test('add storage node to cluster', async () => {
             const vNodes = [1n, 2n, 3n];
 
-            await adminContract.clusterAddNode(createdStorageClusterId, createdStorageNodeId, vNodes);
-            const {cluster} = await adminContract.clusterGet(createdStorageClusterId);
+            await adminContract.clusterAddNode(createdClusterId, createdStorageNodeKey, vNodes);
+            const {cluster, clusterVNodes} = await adminContract.clusterGet(createdClusterId);
 
-            expect(cluster.nodeIds).toEqual([createdStorageNodeId]);
-            expect(cluster.vNodes).toEqual([vNodes]);
+            expect(cluster.nodesKeys).toEqual([createdStorageNodeKey]);
+            expect(clusterVNodes).toEqual(vNodes);
         });
 
-        test('reserve cluster resource', async () => {
-            await adminContract.clusterReserveResource(createdStorageClusterId, 500n);
+        test('add CDN node to cluster', async () => {
+            await adminContract.clusterAddCdnNode(createdClusterId, createdCdnNodeKey);
+            const {cluster} = await adminContract.clusterGet(createdClusterId);
+
+            expect(cluster.cdnNodesKeys).toEqual([createdCdnNodeKey]);
         });
 
-        test('change storage node tag', async () => {
-            await adminContract.clusterChangeNodeTag(createdStorageNodeId, 'OFFLINE' as any);
+        test('set resource per vNode', async () => {
+            await adminContract.clusterSetResourcePerVNode(createdClusterId, 500n);
+        });
 
-            const {node} = await adminContract.nodeGet(createdStorageNodeId);
+        test('change storage node status in cluster', async () => {
+            await adminContract.clusterSetNodeStatus(
+                createdClusterId,
+                createdStorageNodeKey,
+                NodeStatusInCluster.OFFLINE,
+            );
 
-            expect(node.nodeTag).toEqual('OFFLINE');
+            const {node} = await adminContract.nodeGet(createdStorageNodeKey);
+
+            expect(node.statusInCluster).toEqual(NodeStatusInCluster.OFFLINE);
         });
 
         test('change storage node params', async () => {
-            const {params: origParams} = await adminContract.nodeGet(createdStorageNodeId);
-            const parsedOrigParams = JSON.parse(origParams);
+            const {
+                node: {nodeParams: origParams},
+            } = await adminContract.nodeGet(createdStorageNodeKey);
 
-            expect(parsedOrigParams.nodeCountryISOCode).toEqual('US');
+            expect(origParams.nodeCountryISOCode).toEqual('US');
 
-            await adminContract.nodeChangeParams(createdStorageNodeId, {
-                ...parsedOrigParams,
+            await adminContract.nodeSetParams(createdStorageNodeKey, {
+                ...origParams,
                 nodeCountryISOCode: 'EU',
             });
 
-            const {params: newParams} = await adminContract.nodeGet(createdStorageNodeId);
-            const parsedNewParams = JSON.parse(newParams);
+            const {node} = await adminContract.nodeGet(createdStorageNodeKey);
 
-            expect(parsedNewParams.nodeCountryISOCode).toEqual('EU');
+            expect(node.nodeParams.nodeCountryISOCode).toEqual('EU');
         });
 
-        test('remove storage node from a cluster', async () => {
-            await adminContract.clusterRemoveNode(createdStorageClusterId, createdStorageNodeId);
+        test('change CDN node params', async () => {
+            const {
+                cdnNode: {cdnNodeParams: origParams},
+            } = await adminContract.cdnNodeGet(createdCdnNodeKey);
 
-            const {cluster} = await adminContract.clusterGet(createdStorageClusterId);
+            expect(origParams.location).toEqual('US');
 
-            expect(cluster.nodeIds).toEqual([]);
-            expect(cluster.vNodes).toEqual([]);
+            await adminContract.cdnNodeSetParams(createdCdnNodeKey, {
+                ...origParams,
+                location: 'EU',
+            });
+
+            const {cdnNode} = await adminContract.cdnNodeGet(createdCdnNodeKey);
+
+            expect(cdnNode.cdnNodeParams.location).toEqual('EU');
+        });
+
+        test('remove storage node from cluster', async () => {
+            await adminContract.clusterRemoveNode(createdClusterId, createdStorageNodeKey);
+
+            const {cluster} = await adminContract.clusterGet(createdClusterId);
+
+            expect(cluster.nodesKeys).not.toContain(createdStorageNodeKey);
+        });
+
+        test('remove CDN node from cluster', async () => {
+            await adminContract.clusterRemoveCdnNode(createdClusterId, createdCdnNodeKey);
+
+            const {cluster} = await adminContract.clusterGet(createdClusterId);
+
+            expect(cluster.cdnNodesKeys).not.toContain(createdCdnNodeKey);
+        });
+
+        test('remove cluster', async () => {
+            await adminContract.clusterRemove(createdClusterId);
+
+            const [clusters] = await adminContract.clusterList();
+
+            expect(clusters).not.toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        clusterId: createdClusterId,
+                    }),
+                ]),
+            );
+        });
+
+        test('remove storage node', async () => {
+            await adminContract.nodeRemove(createdStorageNodeKey);
+
+            const [nodes] = await adminContract.nodeList();
+
+            expect(nodes).not.toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        nodeKey: createdStorageNodeKey,
+                    }),
+                ]),
+            );
+        });
+
+        test('remove CDN node', async () => {
+            await adminContract.cdnNodeRemove(createdCdnNodeKey);
+
+            const [nodes] = await adminContract.cdnNodeList();
+
+            expect(nodes).not.toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        nodeKey: createdCdnNodeKey,
+                    }),
+                ]),
+            );
         });
     });
 
@@ -219,22 +269,20 @@ describe('Smart Contract', () => {
         beforeAll(async () => {
             await userContract.accountDeposit(20n);
             await userContract.accountBond(10n);
-            const nodeId = await createStorageNode(1);
 
-            createdClusterId = await adminContract.clusterCreate([[1n]], [nodeId]);
+            createdClusterId = await adminContract.clusterCreate({}, 500n);
 
-            await adminContract.clusterReserveResource(createdClusterId, 500n);
+            const storageNodeId = await createStorageNode(1);
+            await adminContract.clusterAddNode(createdClusterId, storageNodeId, [1n, 2n, 3n]);
         });
 
         test('create bucket', async () => {
             createdBucketId = await userContract.bucketCreate(user.address, createdClusterId);
 
-            expect(createdBucketId).toEqual(expect.any(Number));
+            expect(createdBucketId).toEqual(expect.any(BigInt));
         });
 
         test('get bucket', async () => {
-            expect(createdBucketId).toBeDefined();
-
             const foundBucket = await userContract.bucketGet(createdBucketId);
 
             expect(foundBucket.bucketId).toEqual(createdBucketId);
@@ -254,8 +302,6 @@ describe('Smart Contract', () => {
         });
 
         test('allocate bucket in a cluster', async () => {
-            expect(createdBucketId).toBeDefined();
-
             await userContract.bucketAllocIntoCluster(createdBucketId, 10n);
         });
     });

@@ -106,14 +106,21 @@ export class ContentAddressableStorage {
 
         const smartContract = await SmartContract.buildAndConnect(mnemonicGenerate(), smartContractOptions);
         try {
-            const cluster = await smartContract.cdnClusterGet(clusterAddress);
-            if (cluster.cluster.cdnNodes.length === 0) {
+            const {cluster} = await smartContract.clusterGet(clusterAddress);
+
+            if (cluster.cdnNodesKeys.length === 0) {
                 throw new Error(`unable to find cdn nodes in cluster='${clusterAddress}'`);
             }
-            const index = randomUint8(cluster.cluster.cdnNodes.length);
-            const cdnNodeId = cluster.cluster.cdnNodes[index];
-            const cdnNodeInfo = await smartContract.cdnNodeGet(cdnNodeId);
-            return new URL(JSON.parse(cdnNodeInfo.params).url).href;
+
+            const index = randomUint8(cluster.cdnNodesKeys.length);
+            const cdnNodeKey = cluster.cdnNodesKeys[index];
+            const {cdnNode} = await smartContract.cdnNodeGet(cdnNodeKey);
+
+            if (!cdnNode.cdnNodeParams.url) {
+                throw new Error(`unable to get CDN node URL. Node key '${cdnNodeKey}'`);
+            }
+
+            return new URL(cdnNode.cdnNodeParams.url).href;
         } finally {
             await smartContract.disconnect();
         }

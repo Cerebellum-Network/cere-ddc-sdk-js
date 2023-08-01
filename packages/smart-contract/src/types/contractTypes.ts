@@ -3,7 +3,7 @@ import {Codec} from '@polkadot/types/types';
 export type ClusterId = number;
 export type BucketId = bigint;
 export type AccountId = string;
-export type NodeId = number;
+export type NodeKey = string;
 export type Resource = bigint;
 export type VNodeId = bigint;
 export type Balance = bigint;
@@ -24,8 +24,7 @@ type Flow = {
     schedule: Schedule;
 };
 
-export enum NodeTag {
-    UNKNOWN = 'UNKNOWN',
+export enum NodeStatusInCluster {
     ACTIVE = 'ACTIVE',
     ADDING = 'ADDING',
     DELETING = 'DELETING',
@@ -53,36 +52,25 @@ export type CdnNodeParams = {
     url?: string;
     size?: number;
     location?: string;
-    publicKey?: string;
 };
 
 export type Cluster = {
     managerId: AccountId;
-    resourcePerVnode: Resource;
+    clusterParams: ClusterParams;
+    nodesKeys: NodeKey[];
+    resourcePerVNode: Resource;
     resourceUsed: Resource;
     revenues: Cash;
-    nodeIds: NodeId[];
-    vNodes: VNodeId[][];
     totalRent: Balance;
+    cdnNodesKeys: NodeKey[];
+    cdnRevenues: Cash;
+    cdnUsdPerGb: Balance;
 };
 
-export type ClusterStatus = {
+export type ClusterInfo = {
     clusterId: ClusterId;
-    params: Params;
     cluster: Cluster;
-};
-
-export type CdnCluster = {
-    managerId: AccountId;
-    cdnNodes: NodeId[];
-    resourcesUsed: Resource;
-    revenues: Balance;
-    usdPerGb: Balance;
-};
-
-export type CdnClusterStatus = {
-    clusterId: ClusterId;
-    cluster: CdnCluster;
+    clusterVNodes: VNodeId[];
 };
 
 export type Account = {
@@ -112,28 +100,32 @@ export type BucketStatus = {
     rentCoveredUntilMs: Balance;
 };
 
-export type Node = {
-    providerId: AccountId;
-    rentPerMonth: Balance;
-    freeResource: Resource;
-    nodeTag: NodeTag;
-};
-
-export type NodeStatus = {
-    nodeId: NodeId;
-    node: Node;
-    params: Params;
-};
-
 export type CdnNode = {
     providerId: AccountId;
     undistributedPayment: Balance;
+    cdnNodeParams: CdnNodeParams;
+    clusterId: ClusterId | null;
+    statusInCluster: NodeStatusInCluster | null;
 };
 
-export type CdnNodeStatus = {
-    nodeId: NodeId;
-    node: CdnNode;
-    params: Params;
+export type Node = {
+    providerId: AccountId;
+    rentVNodePerMonth: Balance;
+    freeResource: Resource;
+    nodeParams: NodeParams;
+    clusterId: ClusterId | null;
+    statusInCluster: NodeStatusInCluster | null;
+};
+
+export type CdnNodeInfo = {
+    cdnNodeKey: NodeKey;
+    cdnNode: CdnNode;
+};
+
+export type NodeInfo = {
+    nodeKey: NodeKey;
+    node: Node;
+    vNodes: VNodeId[];
 };
 
 /**

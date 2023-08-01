@@ -19,6 +19,7 @@ module.exports = {
     roots: ['<rootDir>'],
     testPathIgnorePatterns: ['/node_modules/', '/package/', '/dist/', 'test.ts', '/src/'],
     moduleNameMapper: {
+        '^@cere-ddc-sdk/(.*)/types$': '<rootDir>/packages/$1/src/types',
         '^@cere-ddc-sdk/(.*)$': '<rootDir>/packages/$1/src',
     },
     testMatch: ['<rootDir>/tests/**/*.spec.ts'],

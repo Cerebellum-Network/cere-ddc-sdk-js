@@ -4,6 +4,10 @@
 
 -
 
+### v1.8.0-rc.2
+
+-   Upgrade Smart Contract to `v1.0.0`
+
 ### v1.8.0-rc.1
 
 -   Refactor Smart Contract module to include missing methods
