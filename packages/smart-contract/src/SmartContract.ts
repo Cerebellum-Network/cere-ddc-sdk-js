@@ -1,7 +1,7 @@
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {ContractPromise} from '@polkadot/api-contract';
 import {Keyring} from '@polkadot/keyring';
-import {Signer} from '@polkadot/api/types';
+import {AddressOrPair, Signer} from '@polkadot/api/types';
 import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
 
 import {SmartContractBase, ListResult} from './SmartContractBase';
@@ -32,27 +32,42 @@ import {
 const CERE = 10_000_000_000n;
 
 export class SmartContract extends SmartContractBase {
+    private shouldDisconnectAPI = false;
+
     static async buildAndConnect(
-        secretPhraseOrAddress: string,
+        secretPhraseOrAddress: AddressOrPair,
         options: SmartContractOptions = TESTNET,
         signer?: Signer,
-    ): Promise<SmartContract> {
+    ) {
         await cryptoWaitReady();
 
-        const provider = new WsProvider(options.rpcUrl);
-        const api = await ApiPromise.create({provider, types: cereTypes});
-        await api.isReady;
+        let api = options.api;
+        let addressOrPair = secretPhraseOrAddress;
+
+        if (!api) {
+            const provider = new WsProvider(options.rpcUrl);
+
+            api = await ApiPromise.create({provider, types: cereTypes});
+        }
+
+        if (typeof secretPhraseOrAddress === 'string') {
+            addressOrPair = isAddress(secretPhraseOrAddress)
+                ? secretPhraseOrAddress
+                : new Keyring({type: 'sr25519'}).addFromMnemonic(secretPhraseOrAddress);
+        }
 
         const contract = new ContractPromise(api, options.abi, options.contractAddress);
-        const keyring = new Keyring({type: 'sr25519'});
-        const addressOrPair = isAddress(secretPhraseOrAddress)
-            ? secretPhraseOrAddress
-            : keyring.addFromMnemonic(secretPhraseOrAddress);
+        const smartContract = new SmartContract(addressOrPair, contract, signer);
 
-        return new SmartContract(addressOrPair, contract, signer);
+        /**
+         * In case an external API instance is used - don't diconnect it
+         */
+        smartContract.shouldDisconnectAPI = !options.api;
+
+        return smartContract.connect();
     }
 
-    async connect(): Promise<SmartContract> {
+    async connect() {
         const api = this.contract.api as ApiPromise;
         await api.isReady;
 
@@ -60,7 +75,9 @@ export class SmartContract extends SmartContractBase {
     }
 
     async disconnect() {
-        return this.contract.api.disconnect();
+        if (this.shouldDisconnectAPI) {
+            await this.contract.api.disconnect();
+        }
     }
 
     async cdnClusterList(offset?: Offset | null, limit?: Offset | null, filterManagerId?: AccountId) {

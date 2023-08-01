@@ -1,9 +1,11 @@
+import type {ApiPromise} from '@polkadot/api';
 import {ddcBucketAbi} from '../abi';
 
 export type SmartContractOptions = {
-    rpcUrl?: string;
     contractAddress: string;
     abi: Record<string, unknown>;
+    rpcUrl?: string;
+    api?: ApiPromise;
 };
 
 export const MAINNET: SmartContractOptions = {
