@@ -80,12 +80,8 @@ export class SmartContract extends SmartContractBase {
         }
     }
 
-    async cdnClusterList(offset?: Offset | null, limit?: Offset | null, filterManagerId?: AccountId) {
-        return this.queryList<ClusterInfo>(this.contract.query.cdnClusterList, offset, limit, filterManagerId);
-    }
-
-    async accountGet(address: string) {
-        return this.queryOne<Account>(this.contract.query.accountGet, address);
+    async accountGet(accountAddress: AccountId) {
+        return this.queryOne<Account>(this.contract.query.accountGet, accountAddress);
     }
 
     async bucketList(offset?: Offset | null, limit?: Offset | null, filterOwnerId?: AccountId) {
@@ -98,6 +94,7 @@ export class SmartContract extends SmartContractBase {
 
         buckets.forEach((bucket) => {
             bucket.bucketId = BigInt(bucket.bucketId);
+            bucket.params = JSON.parse(bucket.params as any);
         });
 
         return [buckets, total] as ListResult<BucketStatus>;
@@ -107,11 +104,12 @@ export class SmartContract extends SmartContractBase {
         const bucketStatus = await this.queryOne<BucketStatus>(this.contract.query.bucketGet, bucketId);
 
         bucketStatus.bucketId = BigInt(bucketStatus.bucketId);
+        bucketStatus.params = JSON.parse(bucketStatus.params as any);
 
         return bucketStatus;
     }
 
-    async bucketCreate(owner: AccountId, clusterId: ClusterId, bucketParams: BucketParams = {replication: 1}) {
+    async bucketCreate(ownerAddress: AccountId, clusterId: ClusterId, bucketParams: BucketParams = {replication: 1}) {
         if (bucketParams.replication > 3) {
             throw new Error(`Exceed bucket limits: ${JSON.stringify(bucketParams)}`);
         }
@@ -122,7 +120,7 @@ export class SmartContract extends SmartContractBase {
             {value: 10n * CERE},
             params,
             clusterId,
-            owner,
+            ownerAddress,
         );
 
         const {bucketId} = this.getContractEventArgs(contractEvents, 'BucketCreated');
@@ -146,8 +144,8 @@ export class SmartContract extends SmartContractBase {
         await this.submit(this.contract.tx.accountBond, value * CERE);
     }
 
-    async grantTrustedManagerPermission(manager: AccountId) {
-        await this.submit(this.contract.tx.grantTrustedManagerPermission, manager);
+    async grantTrustedManagerPermission(managerAddress: AccountId) {
+        await this.submit(this.contract.tx.grantTrustedManagerPermission, managerAddress);
     }
 
     async nodeCreate(nodeKey: NodeKey, nodeParams: NodeParams, capacity: Resource, rentPerMonth: Balance) {
@@ -168,8 +166,8 @@ export class SmartContract extends SmartContractBase {
         await this.submit(this.contract.tx.nodeRemove, nodeKey);
     }
 
-    async cdnNodeCreate(cdnNodeKey: NodeKey, nodeParams: CdnNodeParams) {
-        const params = JSON.stringify(nodeParams);
+    async cdnNodeCreate(cdnNodeKey: NodeKey, cdnNodeParams: CdnNodeParams) {
+        const params = JSON.stringify(cdnNodeParams);
 
         const {contractEvents} = await this.submit(this.contract.tx.cdnNodeCreate, cdnNodeKey, params);
 
@@ -224,8 +222,8 @@ export class SmartContract extends SmartContractBase {
         await this.submit(this.contract.tx.nodeSetParams, nodeKey, JSON.stringify(params));
     }
 
-    async clusterSetResourcePerVNode(clusterId: ClusterId, amount: Resource) {
-        await this.submit(this.contract.tx.clusterSetResourcePerVNode, clusterId, amount);
+    async clusterSetResourcePerVNode(clusterId: ClusterId, newResourcePerVNode: Resource) {
+        await this.submit(this.contract.tx.clusterSetResourcePerVNode, clusterId, newResourcePerVNode);
     }
 
     async clusterSetParams(clusterId: ClusterId, params: ClusterParams) {
@@ -241,7 +239,7 @@ export class SmartContract extends SmartContractBase {
         );
 
         clusters.forEach((cluster) => {
-            cluster.cluster.clusterParams = JSON.parse(cluster.cluster.clusterParams as string);
+            cluster.cluster.clusterParams = JSON.parse(cluster.cluster.clusterParams as any);
             cluster.clusterVNodes = cluster.clusterVNodes.map(BigInt);
         });
 
@@ -251,7 +249,7 @@ export class SmartContract extends SmartContractBase {
     async clusterGet(clusterId: number) {
         const clusterInfo: ClusterInfo = await this.queryOne<ClusterInfo>(this.contract.query.clusterGet, clusterId);
 
-        clusterInfo.cluster.clusterParams = JSON.parse(clusterInfo.cluster.clusterParams as string);
+        clusterInfo.cluster.clusterParams = JSON.parse(clusterInfo.cluster.clusterParams as any);
         clusterInfo.clusterVNodes = clusterInfo.clusterVNodes.map(BigInt);
 
         return clusterInfo;
@@ -267,7 +265,7 @@ export class SmartContract extends SmartContractBase {
 
         nodes.forEach((node) => {
             node.vNodes = node.vNodes.map(BigInt);
-            node.node.nodeParams = JSON.parse(node.node.nodeParams as string);
+            node.node.nodeParams = JSON.parse(node.node.nodeParams as any);
         });
 
         return [nodes, total] as ListResult<NodeInfo>;
@@ -282,7 +280,7 @@ export class SmartContract extends SmartContractBase {
         );
 
         nodes.forEach((node) => {
-            node.cdnNode.cdnNodeParams = JSON.parse(node.cdnNode.cdnNodeParams as string);
+            node.cdnNode.cdnNodeParams = JSON.parse(node.cdnNode.cdnNodeParams as any);
         });
 
         return [nodes, total] as ListResult<CdnNodeInfo>;
@@ -291,7 +289,7 @@ export class SmartContract extends SmartContractBase {
     async cdnNodeGet(nodeKey: NodeKey) {
         const nodeInfo = await this.queryOne<CdnNodeInfo>(this.contract.query.cdnNodeGet, nodeKey);
 
-        nodeInfo.cdnNode.cdnNodeParams = JSON.parse(nodeInfo.cdnNode.cdnNodeParams as string);
+        nodeInfo.cdnNode.cdnNodeParams = JSON.parse(nodeInfo.cdnNode.cdnNodeParams as any);
 
         return nodeInfo;
     }
@@ -299,7 +297,7 @@ export class SmartContract extends SmartContractBase {
     async nodeGet(nodeKey: NodeKey) {
         const nodeInfo = await this.queryOne<NodeInfo>(this.contract.query.nodeGet, nodeKey);
 
-        nodeInfo.node.nodeParams = JSON.parse(nodeInfo.node.nodeParams as string);
+        nodeInfo.node.nodeParams = JSON.parse(nodeInfo.node.nodeParams as any);
         nodeInfo.vNodes = nodeInfo.vNodes.map(BigInt);
 
         return nodeInfo;

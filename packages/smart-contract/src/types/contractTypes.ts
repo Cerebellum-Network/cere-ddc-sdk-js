@@ -78,7 +78,7 @@ export type Account = {
     bonded: Cash;
     negative: Cash;
     unbondedAmount: Cash;
-    unbonded_timestamp: bigint;
+    unbondedTimestamp: bigint;
     payableSchedule: Schedule;
 };
 
@@ -94,7 +94,7 @@ export type Bucket = {
 export type BucketStatus = {
     bucketId: BucketId;
     bucket: Bucket;
-    params: Params;
+    params: BucketParams;
     writerIds: AccountId[];
     readerIds: AccountId[];
     rentCoveredUntilMs: Balance;
