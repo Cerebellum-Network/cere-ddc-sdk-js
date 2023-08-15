@@ -127,7 +127,12 @@ describe('Smart Contract', () => {
             const {cluster, clusterVNodes} = await adminContract.clusterGet(createdClusterId);
 
             expect(cluster.nodesKeys).toEqual([createdStorageNodeKey]);
-            expect(clusterVNodes).toEqual(vNodes);
+            expect(clusterVNodes).toEqual([
+                {
+                    vNodes,
+                    nodeKey: createdStorageNodeKey,
+                },
+            ]);
         });
 
         test('add CDN node to cluster', async () => {
