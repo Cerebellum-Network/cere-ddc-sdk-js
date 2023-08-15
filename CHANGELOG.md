@@ -4,6 +4,10 @@
 
 -
 
+### v1.8.0-rc.3
+
+-   Upgrade Smart Contract to `v1.0.1`
+
 ### v1.8.0-rc.2
 
 -   Upgrade Smart Contract to `v1.0.0`
