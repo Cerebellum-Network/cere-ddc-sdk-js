@@ -1,14 +1,14 @@
 {
   "source": {
-    "hash": "0x06fde8f8c765086c37ac76cf2167b0dab74f32aaee99ba11527543b05abaad88",
+    "hash": "0xad3287124e5b3813655a04c97c877fb1615ba4481efbcf2e2f73a42c4f8649ba",
     "language": "ink! 3.4.0",
     "compiler": "rustc 1.69.0-nightly"
   },
   "contract": {
     "name": "ddc_bucket",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "authors": [
-      "Aurélien Nicolas <aurel@cere.network>"
+      "Yahor Tsaryk <yahor.tsaryk@cere.io>"
     ],
     "description": "DDC v2 Smart Contracts -- Orchestrate the network around clusters and buckets",
     "license": "Apache-2.0"
@@ -260,7 +260,7 @@
                 "displayName": [
                   "Vec"
                 ],
-                "type": 27
+                "type": 28
               }
             }
           ],
@@ -428,7 +428,7 @@
                 "displayName": [
                   "NodeStatusInCluster"
                 ],
-                "type": 23
+                "type": 24
               }
             }
           ],
@@ -467,7 +467,7 @@
                 "displayName": [
                   "NodeStatusInCluster"
                 ],
-                "type": 23
+                "type": 24
               }
             }
           ],
@@ -506,7 +506,7 @@
                 "displayName": [
                   "Vec"
                 ],
-                "type": 27
+                "type": 28
               }
             }
           ],
@@ -547,7 +547,7 @@
                 "displayName": [
                   "Vec"
                 ],
-                "type": 27
+                "type": 28
               }
             }
           ],
@@ -889,7 +889,7 @@
                 "displayName": [
                   "Permission"
                 ],
-                "type": 75
+                "type": 78
               }
             }
           ],
@@ -919,7 +919,7 @@
                 "displayName": [
                   "Permission"
                 ],
-                "type": 75
+                "type": 78
               }
             }
           ],
@@ -1012,7 +1012,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 41
+                "type": 42
               }
             }
           ],
@@ -1032,7 +1032,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 42
+            "type": 43
           },
           "selector": "0x0aeb2379"
         },
@@ -1069,7 +1069,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xc7d0c2cd"
         },
@@ -1106,7 +1106,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x4c482d19"
         },
@@ -1132,7 +1132,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x15974555"
         },
@@ -1169,7 +1169,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x9f2d075b"
         },
@@ -1195,7 +1195,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 46
+            "type": 47
           },
           "selector": "0x3802cb77"
         },
@@ -1225,7 +1225,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 41
+                "type": 42
               }
             }
           ],
@@ -1242,7 +1242,7 @@
           "payable": false,
           "returnType": {
             "displayName": [],
-            "type": 49
+            "type": 50
           },
           "selector": "0x417ab584"
         },
@@ -1270,7 +1270,7 @@
             "displayName": [
               "Vec"
             ],
-            "type": 51
+            "type": 52
           },
           "selector": "0xc434cf57"
         },
@@ -1305,7 +1305,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x053eb3ce"
         },
@@ -1340,7 +1340,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x85010c6d"
         },
@@ -1401,7 +1401,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xea2e477a"
         },
@@ -1436,7 +1436,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x2b3d8dd1"
         },
@@ -1497,7 +1497,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xfc0e94ea"
         },
@@ -1532,7 +1532,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xe9bfed5a"
         },
@@ -1587,7 +1587,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 42
+            "type": 43
           },
           "selector": "0x4c0f21f6"
         },
@@ -1617,7 +1617,7 @@
                 "displayName": [
                   "Vec"
                 ],
-                "type": 27
+                "type": 28
               }
             }
           ],
@@ -1659,7 +1659,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xf7496bdc"
         },
@@ -1717,7 +1717,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x793e0778"
         },
@@ -1738,7 +1738,7 @@
                 "displayName": [
                   "Vec"
                 ],
-                "type": 27
+                "type": 28
               }
             },
             {
@@ -1790,7 +1790,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x48194ab1"
         },
@@ -1820,7 +1820,7 @@
                 "displayName": [
                   "Vec"
                 ],
-                "type": 27
+                "type": 28
               }
             }
           ],
@@ -1862,7 +1862,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xa78b2e19"
         },
@@ -1920,7 +1920,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x0b4199f3"
         },
@@ -1978,7 +1978,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xff8531d8"
         },
@@ -2034,7 +2034,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x7dac5f9a"
         },
@@ -2081,7 +2081,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x2248742a"
         },
@@ -2111,7 +2111,7 @@
                 "displayName": [
                   "NodeStatusInCluster"
                 ],
-                "type": 23
+                "type": 24
               }
             }
           ],
@@ -2147,7 +2147,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x8078df7f"
         },
@@ -2177,7 +2177,7 @@
                 "displayName": [
                   "NodeStatusInCluster"
                 ],
-                "type": 23
+                "type": 24
               }
             }
           ],
@@ -2213,7 +2213,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x577027ba"
         },
@@ -2273,7 +2273,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xbca5ef71"
         },
@@ -2313,7 +2313,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 52
+            "type": 53
           },
           "selector": "0xe75411f5"
         },
@@ -2343,7 +2343,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 41
+                "type": 42
               }
             }
           ],
@@ -2369,7 +2369,7 @@
           "payable": false,
           "returnType": {
             "displayName": [],
-            "type": 54
+            "type": 57
           },
           "selector": "0xd9db9d44"
         },
@@ -2395,7 +2395,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xe71e66fc"
         },
@@ -2430,7 +2430,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x7578922a"
         },
@@ -2456,7 +2456,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 56
+            "type": 59
           },
           "selector": "0xa1e3ea8a"
         },
@@ -2477,7 +2477,7 @@
                 "displayName": [
                   "Vec"
                 ],
-                "type": 57
+                "type": 60
               }
             },
             {
@@ -2486,7 +2486,7 @@
                 "displayName": [
                   "Vec"
                 ],
-                "type": 57
+                "type": 60
               }
             },
             {
@@ -2495,7 +2495,7 @@
                 "displayName": [
                   "Vec"
                 ],
-                "type": 59
+                "type": 62
               }
             },
             {
@@ -2504,7 +2504,7 @@
                 "displayName": [
                   "u64"
                 ],
-                "type": 28
+                "type": 29
               }
             }
           ],
@@ -2520,7 +2520,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xeb8ec51c"
         },
@@ -2550,7 +2550,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x804ac6e0"
         },
@@ -2580,7 +2580,7 @@
                 "displayName": [
                   "Commit"
                 ],
-                "type": 37
+                "type": 38
               }
             }
           ],
@@ -2594,7 +2594,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xe445e1fd"
         },
@@ -2620,7 +2620,7 @@
             "displayName": [
               "Vec"
             ],
-            "type": 35
+            "type": 36
           },
           "selector": "0x5329f551"
         },
@@ -2646,7 +2646,7 @@
             "displayName": [
               "EraAndTimestamp"
             ],
-            "type": 40
+            "type": 41
           },
           "selector": "0x7d497bc1"
         },
@@ -2658,7 +2658,7 @@
                 "displayName": [
                   "EraConfig"
                 ],
-                "type": 61
+                "type": 64
               }
             }
           ],
@@ -2672,7 +2672,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x49a5b8f7"
         },
@@ -2688,7 +2688,7 @@
             "displayName": [
               "EraStatus"
             ],
-            "type": 62
+            "type": 65
           },
           "selector": "0x617f696b"
         },
@@ -2704,7 +2704,7 @@
             "displayName": [
               "EraConfig"
             ],
-            "type": 61
+            "type": 64
           },
           "selector": "0x84b61468"
         },
@@ -2760,7 +2760,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 64
+            "type": 67
           },
           "selector": "0xe8aa4ade"
         },
@@ -2807,7 +2807,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xe068fb34"
         },
@@ -2863,7 +2863,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xdf8b696e"
         },
@@ -2903,7 +2903,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 65
+            "type": 68
           },
           "selector": "0xf9a5a813"
         },
@@ -2933,7 +2933,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 41
+                "type": 42
               }
             }
           ],
@@ -2959,7 +2959,7 @@
           "payable": false,
           "returnType": {
             "displayName": [],
-            "type": 67
+            "type": 70
           },
           "selector": "0xf8589aae"
         },
@@ -3035,7 +3035,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 64
+            "type": 67
           },
           "selector": "0xb77ac1bb"
         },
@@ -3082,7 +3082,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x42e5f273"
         },
@@ -3138,7 +3138,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xfb74fd2e"
         },
@@ -3178,7 +3178,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 69
+            "type": 72
           },
           "selector": "0x847f3997"
         },
@@ -3208,7 +3208,7 @@
                 "displayName": [
                   "Option"
                 ],
-                "type": 41
+                "type": 42
               }
             }
           ],
@@ -3234,7 +3234,7 @@
           "payable": false,
           "returnType": {
             "displayName": [],
-            "type": 71
+            "type": 74
           },
           "selector": "0x423286d6"
         },
@@ -3282,7 +3282,7 @@
             "displayName": [
               "NetworkFeeConfig"
             ],
-            "type": 73
+            "type": 76
           },
           "selector": "0xd1503f07"
         },
@@ -3299,7 +3299,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xc311af62"
         },
@@ -3325,7 +3325,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xe9fad0bf"
         },
@@ -3351,7 +3351,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xf7ea2c67"
         },
@@ -3369,7 +3369,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x98173716"
         },
@@ -3395,7 +3395,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 74
+            "type": 77
           },
           "selector": "0x1d4220fa"
         },
@@ -3439,7 +3439,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x48d45ee8"
         },
@@ -3460,7 +3460,7 @@
                 "displayName": [
                   "Permission"
                 ],
-                "type": 75
+                "type": 78
               }
             }
           ],
@@ -3536,7 +3536,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xea0cbdcd"
         },
@@ -3582,7 +3582,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x83532355"
         },
@@ -3603,7 +3603,7 @@
                 "displayName": [
                   "Permission"
                 ],
-                "type": 75
+                "type": 78
               }
             }
           ],
@@ -3636,7 +3636,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xbe41ea55"
         },
@@ -3657,7 +3657,7 @@
                 "displayName": [
                   "Permission"
                 ],
-                "type": 75
+                "type": 78
               }
             }
           ],
@@ -3690,7 +3690,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x6b150666"
         },
@@ -3747,7 +3747,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x783b382d"
         },
@@ -3804,7 +3804,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xcd9821be"
         },
@@ -3832,7 +3832,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x2f6e0868"
         },
@@ -3858,7 +3858,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0xa781da48"
         },
@@ -3870,7 +3870,7 @@
                 "displayName": [
                   "NetworkFeeConfig"
                 ],
-                "type": 73
+                "type": 76
               }
             }
           ],
@@ -3884,7 +3884,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x14649395"
         },
@@ -3908,7 +3908,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 44
+            "type": 45
           },
           "selector": "0x00e00535"
         },
@@ -3948,12 +3948,21 @@
             "displayName": [
               "Vec"
             ],
-            "type": 27
+            "type": 28
           },
           "selector": "0x94eb8da6"
         },
         {
           "args": [
+            {
+              "label": "cluster_id",
+              "type": {
+                "displayName": [
+                  "ClusterId"
+                ],
+                "type": 6
+              }
+            },
             {
               "label": "node_key",
               "type": {
@@ -3970,9 +3979,9 @@
           "payable": false,
           "returnType": {
             "displayName": [
-              "Vec"
+              "Result"
             ],
-            "type": 27
+            "type": 79
           },
           "selector": "0xf0dfbd13"
         },
@@ -3993,7 +4002,7 @@
                 "displayName": [
                   "VNodeToken"
                 ],
-                "type": 28
+                "type": 29
               }
             }
           ],
@@ -4005,7 +4014,7 @@
             "displayName": [
               "Result"
             ],
-            "type": 64
+            "type": 67
           },
           "selector": "0xea47048e"
         }
@@ -4098,6 +4107,15 @@
                       }
                     },
                     "name": "clusters"
+                  },
+                  {
+                    "layout": {
+                      "cell": {
+                        "key": "0x0700000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 19
+                      }
+                    },
+                    "name": "clusters_ids"
                   }
                 ]
               }
@@ -4111,8 +4129,8 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0700000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 19
+                        "key": "0x0800000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 20
                       }
                     },
                     "name": "cdn_nodes"
@@ -4120,7 +4138,7 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0800000000000000000000000000000000000000000000000000000000000000",
+                        "key": "0x0900000000000000000000000000000000000000000000000000000000000000",
                         "ty": 15
                       }
                     },
@@ -4138,8 +4156,8 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0900000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 24
+                        "key": "0x0a00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 25
                       }
                     },
                     "name": "nodes"
@@ -4147,7 +4165,7 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0a00000000000000000000000000000000000000000000000000000000000000",
+                        "key": "0x0b00000000000000000000000000000000000000000000000000000000000000",
                         "ty": 15
                       }
                     },
@@ -4165,8 +4183,8 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0b00000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 26
+                        "key": "0x0c00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 27
                       }
                     },
                     "name": "v_nodes_map"
@@ -4174,8 +4192,8 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0c00000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 29
+                        "key": "0x0d00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 30
                       }
                     },
                     "name": "nodes_map"
@@ -4183,8 +4201,8 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0d00000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 31
+                        "key": "0x0e00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 32
                       }
                     },
                     "name": "cluster_v_nodes_map"
@@ -4201,8 +4219,8 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0e00000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 32
+                        "key": "0x0f00000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 33
                       }
                     },
                     "name": "accounts"
@@ -4210,7 +4228,7 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x0f00000000000000000000000000000000000000000000000000000000000000",
+                        "key": "0x1000000000000000000000000000000000000000000000000000000000000000",
                         "ty": 15
                       }
                     },
@@ -4228,7 +4246,7 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x1000000000000000000000000000000000000000000000000000000000000000",
+                        "key": "0x1100000000000000000000000000000000000000000000000000000000000000",
                         "ty": 9
                       }
                     },
@@ -4237,8 +4255,8 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x1100000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 34
+                        "key": "0x1200000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 35
                       }
                     },
                     "name": "commits"
@@ -4246,8 +4264,8 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x1200000000000000000000000000000000000000000000000000000000000000",
-                        "ty": 39
+                        "key": "0x1300000000000000000000000000000000000000000000000000000000000000",
+                        "ty": 40
                       }
                     },
                     "name": "validated_commits"
@@ -4259,8 +4277,8 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1300000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 28
+                                "key": "0x1400000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 29
                               }
                             },
                             "name": "start"
@@ -4268,8 +4286,8 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1400000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 28
+                                "key": "0x1500000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 29
                               }
                             },
                             "name": "interval"
@@ -4277,8 +4295,8 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1500000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 28
+                                "key": "0x1600000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 29
                               }
                             },
                             "name": "commit_duration"
@@ -4286,8 +4304,8 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1600000000000000000000000000000000000000000000000000000000000000",
-                                "ty": 28
+                                "key": "0x1700000000000000000000000000000000000000000000000000000000000000",
+                                "ty": 29
                               }
                             },
                             "name": "validation_duration"
@@ -4309,7 +4327,7 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x1700000000000000000000000000000000000000000000000000000000000000",
+                        "key": "0x1800000000000000000000000000000000000000000000000000000000000000",
                         "ty": 12
                       }
                     },
@@ -4318,7 +4336,7 @@
                   {
                     "layout": {
                       "cell": {
-                        "key": "0x1800000000000000000000000000000000000000000000000000000000000000",
+                        "key": "0x1900000000000000000000000000000000000000000000000000000000000000",
                         "ty": 9
                       }
                     },
@@ -4331,7 +4349,7 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1900000000000000000000000000000000000000000000000000000000000000",
+                                "key": "0x1a00000000000000000000000000000000000000000000000000000000000000",
                                 "ty": 12
                               }
                             },
@@ -4349,7 +4367,7 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1a00000000000000000000000000000000000000000000000000000000000000",
+                                "key": "0x1b00000000000000000000000000000000000000000000000000000000000000",
                                 "ty": 12
                               }
                             },
@@ -4367,7 +4385,7 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1b00000000000000000000000000000000000000000000000000000000000000",
+                                "key": "0x1c00000000000000000000000000000000000000000000000000000000000000",
                                 "ty": 12
                               }
                             },
@@ -4376,7 +4394,7 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1c00000000000000000000000000000000000000000000000000000000000000",
+                                "key": "0x1d00000000000000000000000000000000000000000000000000000000000000",
                                 "ty": 9
                               }
                             },
@@ -4385,7 +4403,7 @@
                           {
                             "layout": {
                               "cell": {
-                                "key": "0x1d00000000000000000000000000000000000000000000000000000000000000",
+                                "key": "0x1e00000000000000000000000000000000000000000000000000000000000000",
                                 "ty": 12
                               }
                             },
@@ -4844,6 +4862,16 @@
         "id": 19,
         "type": {
           "def": {
+            "sequence": {
+              "type": 6
+            }
+          }
+        }
+      },
+      {
+        "id": 20,
+        "type": {
+          "def": {
             "composite": {
               "fields": [
                 {
@@ -4861,7 +4889,7 @@
             },
             {
               "name": "V",
-              "type": 20
+              "type": 21
             }
           ],
           "path": [
@@ -4873,7 +4901,7 @@
         }
       },
       {
-        "id": 20,
+        "id": 21,
         "type": {
           "def": {
             "composite": {
@@ -4895,12 +4923,12 @@
                 },
                 {
                   "name": "cluster_id",
-                  "type": 21,
+                  "type": 22,
                   "typeName": "Option<ClusterId>"
                 },
                 {
                   "name": "status_in_cluster",
-                  "type": 22,
+                  "type": 23,
                   "typeName": "Option<NodeStatusInCluster>"
                 }
               ]
@@ -4916,7 +4944,7 @@
         }
       },
       {
-        "id": 21,
+        "id": 22,
         "type": {
           "def": {
             "variant": {
@@ -4949,7 +4977,7 @@
         }
       },
       {
-        "id": 22,
+        "id": 23,
         "type": {
           "def": {
             "variant": {
@@ -4961,7 +4989,7 @@
                 {
                   "fields": [
                     {
-                      "type": 23
+                      "type": 24
                     }
                   ],
                   "index": 1,
@@ -4973,7 +5001,7 @@
           "params": [
             {
               "name": "T",
-              "type": 23
+              "type": 24
             }
           ],
           "path": [
@@ -4982,7 +5010,7 @@
         }
       },
       {
-        "id": 23,
+        "id": 24,
         "type": {
           "def": {
             "variant": {
@@ -5016,7 +5044,7 @@
         }
       },
       {
-        "id": 24,
+        "id": 25,
         "type": {
           "def": {
             "composite": {
@@ -5036,7 +5064,7 @@
             },
             {
               "name": "V",
-              "type": 25
+              "type": 26
             }
           ],
           "path": [
@@ -5048,7 +5076,7 @@
         }
       },
       {
-        "id": 25,
+        "id": 26,
         "type": {
           "def": {
             "composite": {
@@ -5075,12 +5103,12 @@
                 },
                 {
                   "name": "cluster_id",
-                  "type": 21,
+                  "type": 22,
                   "typeName": "Option<ClusterId>"
                 },
                 {
                   "name": "status_in_cluster",
-                  "type": 22,
+                  "type": 23,
                   "typeName": "Option<NodeStatusInCluster>"
                 }
               ]
@@ -5096,7 +5124,7 @@
         }
       },
       {
-        "id": 26,
+        "id": 27,
         "type": {
           "def": {
             "composite": {
@@ -5116,7 +5144,7 @@
             },
             {
               "name": "V",
-              "type": 27
+              "type": 28
             }
           ],
           "path": [
@@ -5128,20 +5156,12 @@
         }
       },
       {
-        "id": 27,
-        "type": {
-          "def": {
-            "sequence": {
-              "type": 28
-            }
-          }
-        }
-      },
-      {
         "id": 28,
         "type": {
           "def": {
-            "primitive": "u64"
+            "sequence": {
+              "type": 29
+            }
           }
         }
       },
@@ -5149,6 +5169,14 @@
         "id": 29,
         "type": {
           "def": {
+            "primitive": "u64"
+          }
+        }
+      },
+      {
+        "id": 30,
+        "type": {
+          "def": {
             "composite": {
               "fields": [
                 {
@@ -5162,7 +5190,7 @@
           "params": [
             {
               "name": "K",
-              "type": 30
+              "type": 31
             },
             {
               "name": "V",
@@ -5178,46 +5206,14 @@
         }
       },
       {
-        "id": 30,
+        "id": 31,
         "type": {
           "def": {
             "tuple": [
               6,
-              28
+              29
             ]
           }
-        }
-      },
-      {
-        "id": 31,
-        "type": {
-          "def": {
-            "composite": {
-              "fields": [
-                {
-                  "name": "offset_key",
-                  "type": 4,
-                  "typeName": "Key"
-                }
-              ]
-            }
-          },
-          "params": [
-            {
-              "name": "K",
-              "type": 6
-            },
-            {
-              "name": "V",
-              "type": 27
-            }
-          ],
-          "path": [
-            "ink_storage",
-            "lazy",
-            "mapping",
-            "Mapping"
-          ]
         }
       },
       {
@@ -5237,11 +5233,11 @@
           "params": [
             {
               "name": "K",
-              "type": 9
+              "type": 6
             },
             {
               "name": "V",
-              "type": 33
+              "type": 28
             }
           ],
           "path": [
@@ -5254,6 +5250,38 @@
       },
       {
         "id": 33,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "offset_key",
+                  "type": 4,
+                  "typeName": "Key"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "K",
+              "type": 9
+            },
+            {
+              "name": "V",
+              "type": 34
+            }
+          ],
+          "path": [
+            "ink_storage",
+            "lazy",
+            "mapping",
+            "Mapping"
+          ]
+        }
+      },
+      {
+        "id": 34,
         "type": {
           "def": {
             "composite": {
@@ -5280,7 +5308,7 @@
                 },
                 {
                   "name": "unbonded_timestamp",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 },
                 {
@@ -5301,7 +5329,7 @@
         }
       },
       {
-        "id": 34,
+        "id": 35,
         "type": {
           "def": {
             "composite": {
@@ -5321,7 +5349,7 @@
             },
             {
               "name": "V",
-              "type": 35
+              "type": 36
             }
           ],
           "path": [
@@ -5333,23 +5361,12 @@
         }
       },
       {
-        "id": 35,
-        "type": {
-          "def": {
-            "sequence": {
-              "type": 36
-            }
-          }
-        }
-      },
-      {
         "id": 36,
         "type": {
           "def": {
-            "tuple": [
-              9,
-              37
-            ]
+            "sequence": {
+              "type": 37
+            }
           }
         }
       },
@@ -5357,11 +5374,22 @@
         "id": 37,
         "type": {
           "def": {
+            "tuple": [
+              9,
+              38
+            ]
+          }
+        }
+      },
+      {
+        "id": 38,
+        "type": {
+          "def": {
             "composite": {
               "fields": [
                 {
                   "name": "hash",
-                  "type": 38,
+                  "type": 39,
                   "typeName": "Hash"
                 },
                 {
@@ -5371,12 +5399,12 @@
                 },
                 {
                   "name": "from_timestamp",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 },
                 {
                   "name": "to_timestamp",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 }
               ]
@@ -5392,7 +5420,7 @@
         }
       },
       {
-        "id": 38,
+        "id": 39,
         "type": {
           "def": {
             "composite": {
@@ -5412,7 +5440,7 @@
         }
       },
       {
-        "id": 39,
+        "id": 40,
         "type": {
           "def": {
             "composite": {
@@ -5432,7 +5460,7 @@
             },
             {
               "name": "V",
-              "type": 40
+              "type": 41
             }
           ],
           "path": [
@@ -5444,18 +5472,18 @@
         }
       },
       {
-        "id": 40,
+        "id": 41,
         "type": {
           "def": {
             "tuple": [
-              28,
-              28
+              29,
+              29
             ]
           }
         }
       },
       {
-        "id": 41,
+        "id": 42,
         "type": {
           "def": {
             "variant": {
@@ -5488,7 +5516,7 @@
         }
       },
       {
-        "id": 42,
+        "id": 43,
         "type": {
           "def": {
             "variant": {
@@ -5505,7 +5533,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -5521,7 +5549,7 @@
             },
             {
               "name": "E",
-              "type": 43
+              "type": 44
             }
           ],
           "path": [
@@ -5530,7 +5558,7 @@
         }
       },
       {
-        "id": 43,
+        "id": 44,
         "type": {
           "def": {
             "variant": {
@@ -5698,7 +5726,7 @@
                       "typeName": "ClusterId"
                     },
                     {
-                      "type": 28,
+                      "type": 29,
                       "typeName": "VNodeToken"
                     }
                   ],
@@ -5776,7 +5804,7 @@
         }
       },
       {
-        "id": 44,
+        "id": 45,
         "type": {
           "def": {
             "variant": {
@@ -5784,7 +5812,7 @@
                 {
                   "fields": [
                     {
-                      "type": 45
+                      "type": 46
                     }
                   ],
                   "index": 0,
@@ -5793,7 +5821,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -5805,11 +5833,11 @@
           "params": [
             {
               "name": "T",
-              "type": 45
+              "type": 46
             },
             {
               "name": "E",
-              "type": 43
+              "type": 44
             }
           ],
           "path": [
@@ -5818,7 +5846,7 @@
         }
       },
       {
-        "id": 45,
+        "id": 46,
         "type": {
           "def": {
             "tuple": []
@@ -5826,7 +5854,7 @@
         }
       },
       {
-        "id": 46,
+        "id": 47,
         "type": {
           "def": {
             "variant": {
@@ -5834,7 +5862,7 @@
                 {
                   "fields": [
                     {
-                      "type": 47
+                      "type": 48
                     }
                   ],
                   "index": 0,
@@ -5843,7 +5871,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -5855,11 +5883,11 @@
           "params": [
             {
               "name": "T",
-              "type": 47
+              "type": 48
             },
             {
               "name": "E",
-              "type": 43
+              "type": 44
             }
           ],
           "path": [
@@ -5868,7 +5896,7 @@
         }
       },
       {
-        "id": 47,
+        "id": 48,
         "type": {
           "def": {
             "composite": {
@@ -5880,7 +5908,7 @@
                 },
                 {
                   "name": "bucket",
-                  "type": 48,
+                  "type": 49,
                   "typeName": "BucketInStatus"
                 },
                 {
@@ -5900,7 +5928,7 @@
                 },
                 {
                   "name": "rent_covered_until_ms",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 }
               ]
@@ -5916,7 +5944,7 @@
         }
       },
       {
-        "id": 48,
+        "id": 49,
         "type": {
           "def": {
             "composite": {
@@ -5959,28 +5987,28 @@
         }
       },
       {
-        "id": 49,
+        "id": 50,
         "type": {
           "def": {
             "tuple": [
-              50,
+              51,
               6
             ]
           }
         }
       },
       {
-        "id": 50,
+        "id": 51,
         "type": {
           "def": {
             "sequence": {
-              "type": 47
+              "type": 48
             }
           }
         }
       },
       {
-        "id": 51,
+        "id": 52,
         "type": {
           "def": {
             "sequence": {
@@ -5990,7 +6018,7 @@
         }
       },
       {
-        "id": 52,
+        "id": 53,
         "type": {
           "def": {
             "variant": {
@@ -5998,7 +6026,7 @@
                 {
                   "fields": [
                     {
-                      "type": 53
+                      "type": 54
                     }
                   ],
                   "index": 0,
@@ -6007,7 +6035,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -6019,11 +6047,11 @@
           "params": [
             {
               "name": "T",
-              "type": 53
+              "type": 54
             },
             {
               "name": "E",
-              "type": 43
+              "type": 44
             }
           ],
           "path": [
@@ -6032,7 +6060,7 @@
         }
       },
       {
-        "id": 53,
+        "id": 54,
         "type": {
           "def": {
             "composite": {
@@ -6049,8 +6077,8 @@
                 },
                 {
                   "name": "cluster_v_nodes",
-                  "type": 27,
-                  "typeName": "Vec<VNodeToken>"
+                  "type": 55,
+                  "typeName": "Vec<NodeVNodesInfo>"
                 }
               ]
             }
@@ -6065,28 +6093,66 @@
         }
       },
       {
-        "id": 54,
-        "type": {
-          "def": {
-            "tuple": [
-              55,
-              6
-            ]
-          }
-        }
-      },
-      {
         "id": 55,
         "type": {
           "def": {
             "sequence": {
-              "type": 53
+              "type": 56
             }
           }
         }
       },
       {
         "id": 56,
+        "type": {
+          "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "node_key",
+                  "type": 9,
+                  "typeName": "NodeKey"
+                },
+                {
+                  "name": "v_nodes",
+                  "type": 28,
+                  "typeName": "Vec<VNodeToken>"
+                }
+              ]
+            }
+          },
+          "path": [
+            "ddc_bucket",
+            "ddc_bucket",
+            "cluster",
+            "entity",
+            "NodeVNodesInfo"
+          ]
+        }
+      },
+      {
+        "id": 57,
+        "type": {
+          "def": {
+            "tuple": [
+              58,
+              6
+            ]
+          }
+        }
+      },
+      {
+        "id": 58,
+        "type": {
+          "def": {
+            "sequence": {
+              "type": 54
+            }
+          }
+        }
+      },
+      {
+        "id": 59,
         "type": {
           "def": {
             "variant": {
@@ -6103,7 +6169,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -6119,7 +6185,7 @@
             },
             {
               "name": "E",
-              "type": 43
+              "type": 44
             }
           ],
           "path": [
@@ -6128,17 +6194,17 @@
         }
       },
       {
-        "id": 57,
+        "id": 60,
         "type": {
           "def": {
             "sequence": {
-              "type": 58
+              "type": 61
             }
           }
         }
       },
       {
-        "id": 58,
+        "id": 61,
         "type": {
           "def": {
             "tuple": [
@@ -6149,17 +6215,17 @@
         }
       },
       {
-        "id": 59,
+        "id": 62,
         "type": {
           "def": {
             "sequence": {
-              "type": 60
+              "type": 63
             }
           }
         }
       },
       {
-        "id": 60,
+        "id": 63,
         "type": {
           "def": {
             "tuple": [
@@ -6170,29 +6236,29 @@
         }
       },
       {
-        "id": 61,
+        "id": 64,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "start",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 },
                 {
                   "name": "interval",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 },
                 {
                   "name": "commit_duration",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 },
                 {
                   "name": "validation_duration",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 }
               ]
@@ -6208,34 +6274,34 @@
         }
       },
       {
-        "id": 62,
+        "id": 65,
         "type": {
           "def": {
             "composite": {
               "fields": [
                 {
                   "name": "current_era",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 },
                 {
                   "name": "current_phase",
-                  "type": 63,
+                  "type": 66,
                   "typeName": "Phase"
                 },
                 {
                   "name": "previous_era",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 },
                 {
                   "name": "prev_era_from_timestamp",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 },
                 {
                   "name": "prev_era_to_timestamp",
-                  "type": 28,
+                  "type": 29,
                   "typeName": "u64"
                 }
               ]
@@ -6251,7 +6317,7 @@
         }
       },
       {
-        "id": 63,
+        "id": 66,
         "type": {
           "def": {
             "variant": {
@@ -6281,7 +6347,7 @@
         }
       },
       {
-        "id": 64,
+        "id": 67,
         "type": {
           "def": {
             "variant": {
@@ -6298,7 +6364,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -6314,7 +6380,7 @@
             },
             {
               "name": "E",
-              "type": 43
+              "type": 44
             }
           ],
           "path": [
@@ -6323,7 +6389,7 @@
         }
       },
       {
-        "id": 65,
+        "id": 68,
         "type": {
           "def": {
             "variant": {
@@ -6331,7 +6397,7 @@
                 {
                   "fields": [
                     {
-                      "type": 66
+                      "type": 69
                     }
                   ],
                   "index": 0,
@@ -6340,7 +6406,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -6352,11 +6418,11 @@
           "params": [
             {
               "name": "T",
-              "type": 66
+              "type": 69
             },
             {
               "name": "E",
-              "type": 43
+              "type": 44
             }
           ],
           "path": [
@@ -6365,7 +6431,7 @@
         }
       },
       {
-        "id": 66,
+        "id": 69,
         "type": {
           "def": {
             "composite": {
@@ -6377,7 +6443,7 @@
                 },
                 {
                   "name": "cdn_node",
-                  "type": 20,
+                  "type": 21,
                   "typeName": "CdnNode"
                 }
               ]
@@ -6393,28 +6459,28 @@
         }
       },
       {
-        "id": 67,
+        "id": 70,
         "type": {
           "def": {
             "tuple": [
-              68,
+              71,
               6
             ]
           }
         }
       },
       {
-        "id": 68,
+        "id": 71,
         "type": {
           "def": {
             "sequence": {
-              "type": 66
+              "type": 69
             }
           }
         }
       },
       {
-        "id": 69,
+        "id": 72,
         "type": {
           "def": {
             "variant": {
@@ -6422,7 +6488,7 @@
                 {
                   "fields": [
                     {
-                      "type": 70
+                      "type": 73
                     }
                   ],
                   "index": 0,
@@ -6431,7 +6497,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -6443,11 +6509,11 @@
           "params": [
             {
               "name": "T",
-              "type": 70
+              "type": 73
             },
             {
               "name": "E",
-              "type": 43
+              "type": 44
             }
           ],
           "path": [
@@ -6456,7 +6522,7 @@
         }
       },
       {
-        "id": 70,
+        "id": 73,
         "type": {
           "def": {
             "composite": {
@@ -6468,12 +6534,12 @@
                 },
                 {
                   "name": "node",
-                  "type": 25,
+                  "type": 26,
                   "typeName": "Node"
                 },
                 {
                   "name": "v_nodes",
-                  "type": 27,
+                  "type": 28,
                   "typeName": "Vec<VNodeToken>"
                 }
               ]
@@ -6489,28 +6555,28 @@
         }
       },
       {
-        "id": 71,
+        "id": 74,
         "type": {
           "def": {
             "tuple": [
-              72,
+              75,
               6
             ]
           }
         }
       },
       {
-        "id": 72,
+        "id": 75,
         "type": {
           "def": {
             "sequence": {
-              "type": 70
+              "type": 73
             }
           }
         }
       },
       {
-        "id": 73,
+        "id": 76,
         "type": {
           "def": {
             "composite": {
@@ -6543,7 +6609,7 @@
         }
       },
       {
-        "id": 74,
+        "id": 77,
         "type": {
           "def": {
             "variant": {
@@ -6551,7 +6617,7 @@
                 {
                   "fields": [
                     {
-                      "type": 33
+                      "type": 34
                     }
                   ],
                   "index": 0,
@@ -6560,7 +6626,7 @@
                 {
                   "fields": [
                     {
-                      "type": 43
+                      "type": 44
                     }
                   ],
                   "index": 1,
@@ -6572,11 +6638,11 @@
           "params": [
             {
               "name": "T",
-              "type": 33
+              "type": 34
             },
             {
               "name": "E",
-              "type": 43
+              "type": 44
             }
           ],
           "path": [
@@ -6585,7 +6651,7 @@
         }
       },
       {
-        "id": 75,
+        "id": 78,
         "type": {
           "def": {
             "variant": {
@@ -6621,6 +6687,48 @@
             "perm",
             "entity",
             "Permission"
+          ]
+        }
+      },
+      {
+        "id": 79,
+        "type": {
+          "def": {
+            "variant": {
+              "variants": [
+                {
+                  "fields": [
+                    {
+                      "type": 28
+                    }
+                  ],
+                  "index": 0,
+                  "name": "Ok"
+                },
+                {
+                  "fields": [
+                    {
+                      "type": 44
+                    }
+                  ],
+                  "index": 1,
+                  "name": "Err"
+                }
+              ]
+            }
+          },
+          "params": [
+            {
+              "name": "T",
+              "type": 28
+            },
+            {
+              "name": "E",
+              "type": 44
+            }
+          ],
+          "path": [
+            "Result"
           ]
         }
       }
