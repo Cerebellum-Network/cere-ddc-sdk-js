@@ -240,7 +240,9 @@ export class SmartContract extends SmartContractBase {
 
         clusters.forEach((cluster) => {
             cluster.cluster.clusterParams = JSON.parse(cluster.cluster.clusterParams as any);
-            cluster.clusterVNodes = cluster.clusterVNodes.map(BigInt);
+            cluster.clusterVNodes.forEach((info) => {
+                info.vNodes = info.vNodes.map(BigInt);
+            });
         });
 
         return [clusters, total] as ListResult<ClusterInfo>;
@@ -250,7 +252,9 @@ export class SmartContract extends SmartContractBase {
         const clusterInfo: ClusterInfo = await this.queryOne<ClusterInfo>(this.contract.query.clusterGet, clusterId);
 
         clusterInfo.cluster.clusterParams = JSON.parse(clusterInfo.cluster.clusterParams as any);
-        clusterInfo.clusterVNodes = clusterInfo.clusterVNodes.map(BigInt);
+        clusterInfo.clusterVNodes.forEach((info) => {
+            info.vNodes = info.vNodes.map(BigInt);
+        });
 
         return clusterInfo;
     }

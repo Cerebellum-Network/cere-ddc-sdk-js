@@ -54,6 +54,11 @@ export type CdnNodeParams = {
     location?: string;
 };
 
+export type NodeVNodesInfo = {
+    nodeKey: NodeKey;
+    vNodes: VNodeId[];
+};
+
 export type Cluster = {
     managerId: AccountId;
     clusterParams: ClusterParams;
@@ -70,7 +75,7 @@ export type Cluster = {
 export type ClusterInfo = {
     clusterId: ClusterId;
     cluster: Cluster;
-    clusterVNodes: VNodeId[];
+    clusterVNodes: NodeVNodesInfo[];
 };
 
 export type Account = {
