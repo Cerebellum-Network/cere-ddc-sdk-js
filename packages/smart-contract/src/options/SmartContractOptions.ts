@@ -22,7 +22,7 @@ export const TESTNET: SmartContractOptions = {
 
 export const DEVNET: SmartContractOptions = {
     rpcUrl: 'wss://archive.devnet.cere.network/ws',
-    contractAddress: '6SrAzgZBdn7aeoXZzXS6jkbNmnN18fQUHUWeN21NB7yLEt3U',
+    contractAddress: '6UH2M3Peg2jSNvMPFQpUQaCU46ZEgYSzWEmp2QqptZA7E3B4',
     abi: ddcBucketAbi,
 };
 
