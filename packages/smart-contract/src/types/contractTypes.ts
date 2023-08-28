@@ -45,7 +45,8 @@ export type NodeParams = {
 
 export type ClusterParams = {
     replicationFactor?: number;
-    status?: string;
+    unstakeTime?: number;
+    depositSize?: number;
 };
 
 export type CdnNodeParams = {
