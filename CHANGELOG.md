@@ -4,6 +4,10 @@
 
 -
 
+### v1.8.0-rc.4
+
+- Expanded Cluster Parameters
+
 ### v1.8.0-rc.3
 
 -   Upgrade Smart Contract to `v1.0.1`
