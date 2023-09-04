@@ -1,8 +1,7 @@
-name: 'CD release'
+name: Publish
+
 on:
     workflow_call:
-    release:
-        types: [prereleased, released]
 
 permissions:
     id-token: write
