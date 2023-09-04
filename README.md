@@ -55,8 +55,22 @@ npm run test
 Keep the protobuf schema and the test vectors in sync with the `ddc-schemas` repo.
 First checkout the schemas repo:
 
-    git submodule update --init
+```shell
+git submodule update --init
+```
 
 Then work in the `ddc-schemas` folder with git. For example, checkout a new branch, or add a new test vector ([example](packages/content-addressable-storage/src/__tests__/ContentAddressableStorage.spec.ts)). Then record the specific version of the schemas:
 
-    git add ddc-schemas
+```shell
+git add ddc-schemas
+```
+
+## Publish new version
+
+1. Set new version to all packages, push changes and release tag
+
+```shell
+npm run release
+```
+
+2. Publish the packages using `Publish` GitHub action
