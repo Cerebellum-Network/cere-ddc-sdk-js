@@ -4,7 +4,7 @@ import {ContractPromise} from '@polkadot/api-contract';
 import {SmartContract} from '@cere-ddc-sdk/smart-contract';
 import {NodeStatusInCluster} from '@cere-ddc-sdk/smart-contract/types';
 
-import {bootstrapContract, createAccount, createBlockhainApi, getAccount} from './helpers';
+import {CERE, bootstrapContract, createAccount, createBlockhainApi, getAccount} from './helpers';
 
 describe('Smart Contract', () => {
     let api: ApiPromise;
@@ -308,6 +308,28 @@ describe('Smart Contract', () => {
 
         test('allocate bucket in a cluster', async () => {
             await userContract.bucketAllocIntoCluster(createdBucketId, 10n);
+        });
+    });
+
+    describe('Errors', () => {
+        let emptyUser: ReturnType<typeof createAccount>;
+        let emptyUserContract: SmartContract;
+
+        beforeAll(async () => {
+            emptyUser = createAccount();
+            emptyUserContract = new SmartContract(emptyUser.account, deployedContract);
+        });
+
+        it('should throw low balance error during deposit', async () => {
+            const promise = emptyUserContract.accountDeposit(100n);
+
+            await expect(promise).rejects.toThrowError('Inability to pay some fees');
+        });
+
+        it('should throw low balance error during cluster creation', async () => {
+            const promise = emptyUserContract.clusterCreate();
+
+            await expect(promise).rejects.toThrowError('Inability to pay some fees');
         });
     });
 });

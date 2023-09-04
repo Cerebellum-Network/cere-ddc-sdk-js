@@ -88,28 +88,30 @@ export class SmartContractBase {
         const extrinsic = tx({...defaultOptions, ...options}, ...params);
 
         return new Promise<Required<SubmitResult>>((resolve, reject) =>
-            extrinsic.signAndSend(this.account, {signer: this.signer}, (result) => {
-                const {status, dispatchError} = result;
-                const {events = [], contractEvents = []} = result as SubmitResult;
+            extrinsic
+                .signAndSend(this.account, {signer: this.signer}, (result) => {
+                    const {status, dispatchError} = result;
+                    const {events = [], contractEvents = []} = result as SubmitResult;
 
-                if (status.isFinalized) {
-                    return resolve({events, contractEvents});
-                }
-
-                if (dispatchError) {
-                    let errorMessage: string;
-
-                    if (dispatchError.isModule) {
-                        const decoded = this.contract.api.registry.findMetaError(dispatchError.asModule);
-
-                        errorMessage = `${decoded.section}.${decoded.name}: ${decoded.docs.join(' ')}`;
-                    } else {
-                        errorMessage = dispatchError.toString();
+                    if (status.isFinalized) {
+                        return resolve({events, contractEvents});
                     }
 
-                    reject(new Error(errorMessage));
-                }
-            }),
+                    if (dispatchError) {
+                        let errorMessage: string;
+
+                        if (dispatchError.isModule) {
+                            const decoded = this.contract.api.registry.findMetaError(dispatchError.asModule);
+
+                            errorMessage = `${decoded.section}.${decoded.name}: ${decoded.docs.join(' ')}`;
+                        } else {
+                            errorMessage = dispatchError.toString();
+                        }
+
+                        reject(new Error(errorMessage));
+                    }
+                })
+                .catch(reject),
         );
     }
 
