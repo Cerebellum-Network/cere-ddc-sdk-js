@@ -2,7 +2,7 @@
 
 ### vNext
 
--
+-   Update build and publish to use Lerna.js
 
 ### v1.7.6
 
