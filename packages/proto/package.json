@@ -21,20 +21,18 @@
     },
     "license": "Apache-2.0",
     "scripts": {
-        "protoc": "protoc --ts_out ./src --proto_path ../../ddc-schemas/storage/protobuf $(find ../../ddc-schemas/storage/protobuf -name '*.proto' -type f | sed 's/.*\\///' | sort)",
+        "compile": "protoc --ts_out ./src --proto_path ../../ddc-schemas/storage/protobuf $(find ../../ddc-schemas/storage/protobuf -name '*.proto' -type f | sed 's/.*\\///' | sort)",
         "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
         "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
         "build:browser": "BROWSERSLIST_ENV=browser npm run build:cjs && BROWSERSLIST_ENV=browser npm run build:mjs",
         "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
-        "build": "npm run types && npm run build:browser && npm run build:node",
-        "push": "node scripts/publish.js",
+        "build": "npm run compile && npm run types && npm run build:browser && npm run build:node",
         "types": "tsc -p tsconfig.build.json --emitDeclarationOnly || exit 0",
-        "package": "npm run protoc && npm run clean && npm run build && clean-publish",
+        "package": "npm run clean && npm run build && clean-publish",
         "clean": "rimraf dist package"
     },
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.2.2",
-        "clean-publish": "^4.0.1",
         "rimraf": "^3.0.2"
     }
 }

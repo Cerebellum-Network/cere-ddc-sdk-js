@@ -7,15 +7,7 @@ module.exports = {
     collectCoverage: true,
     coverageDirectory: 'coverage',
     collectCoverageFrom: ['packages/**/*.{ts}'],
-    coveragePathIgnorePatterns: [
-        'jest.config.cjs',
-        'test.ts',
-        '/node_modules/',
-        '/package/',
-        '/dist/',
-        '/scripts/',
-        '/src/',
-    ],
+    coveragePathIgnorePatterns: ['jest.config.cjs', 'test.ts', '/node_modules/', '/package/', '/dist/', '/src/'],
     roots: ['<rootDir>'],
     testPathIgnorePatterns: ['/node_modules/', '/package/', '/dist/', 'test.ts', '/src/'],
     moduleNameMapper: {

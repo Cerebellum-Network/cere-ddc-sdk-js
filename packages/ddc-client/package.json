@@ -39,7 +39,6 @@
         "build:browser:module": "TARGET=build:mjs BROWSERSLIST_ENV=browser NODE_ENV=production webpack",
         "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
         "build": "npm run types && npm run build:browser && npm run build:node",
-        "push": "node scripts/publish.js",
         "types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
         "package": "npm run clean && npm run build && clean-publish",
         "clean": "rimraf dist package"
@@ -57,7 +56,6 @@
         "@polkadot/extension-inject": "0.44.9",
         "@types/node": "^16.0.0",
         "buffer": "^6.0.3",
-        "clean-publish": "^4.0.1",
         "rimraf": "^3.0.2",
         "tweetnacl": "^1.0.3"
     }
