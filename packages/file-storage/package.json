@@ -50,5 +50,8 @@
         "clean-publish": "^4.0.1",
         "rimraf": "^3.0.2",
         "typescript": "^4.7.4"
+    },
+    "publishConfig": {
+        "directory": "package"
     }
 }

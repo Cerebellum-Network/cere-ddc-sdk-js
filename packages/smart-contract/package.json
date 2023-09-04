@@ -60,5 +60,8 @@
         "@polkadot/keyring": "^10.1.8",
         "@polkadot/util-crypto": "^10.1.8",
         "@polkadot/types": "9.4.1"
+    },
+    "publishConfig": {
+        "directory": "package"
     }
 }
