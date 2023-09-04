@@ -42,9 +42,6 @@ jobs:
             - name: Install packages
               run: npm ci
 
-            - name: Check protoc version
-              run: protoc --version
-
             - name: Compile proto
               run: npm run compile
 
