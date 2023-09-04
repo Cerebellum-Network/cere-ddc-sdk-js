@@ -28,7 +28,7 @@
         "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
         "build": "npm run types && npm run build:browser && npm run build:node",
         "types": "tsc -p tsconfig.build.json --emitDeclarationOnly || exit 0",
-        "package": "npm run protoc && npm run clean && npm run build && clean-publish",
+        "package": "npm run clean && npm run compile && npm run build && clean-publish",
         "clean": "rimraf dist package"
     },
     "devDependencies": {
