@@ -42,9 +42,6 @@ jobs:
             - name: Install packages
               run: npm ci
 
-            - name: Install protoc
-              run: sudo apt-get install protobuf-compiler
-
             - name: Check protoc version
               run: protoc --version
 
