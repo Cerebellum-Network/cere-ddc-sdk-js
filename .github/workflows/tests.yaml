@@ -1,0 +1,49 @@
+name: 'Tests'
+
+on:
+    pull_request:
+    workflow_call:
+
+permissions:
+    id-token: write
+    contents: read
+
+env:
+    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+jobs:
+    tests:
+        name: Run tests
+        runs-on: ['self-hosted', 'cere-network-large']
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  submodules: 'true'
+
+            - name: Get Node.js version
+              id: nvm
+              run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
+
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with:
+                  role-to-assume: arn:aws:iam::${{ vars.DEV_NETWORK_AWS_ACCOUNT_ID }}:role/github
+                  role-session-name: ${{ github.event.repository.name }}
+                  aws-region: us-west-2
+
+            - name: Login to Amazon ECR
+              uses: aws-actions/amazon-ecr-login@v1
+
+            - name: Install packages
+              run: npm ci
+
+            - name: Build packages
+              run: npm run build
+
+            - name: Run integration tests
+              run: npm test
