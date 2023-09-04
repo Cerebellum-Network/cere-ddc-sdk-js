@@ -43,7 +43,7 @@ jobs:
               run: npm ci
 
             - name: Install protoc
-              run: sudo apt-get install -y protobuf-compiler
+              run: sudo apt-get install protobuf-compiler
 
             - name: Check protoc version
               run: protoc --version
