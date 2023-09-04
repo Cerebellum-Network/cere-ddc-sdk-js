@@ -35,8 +35,5 @@
         "@protobuf-ts/plugin": "^2.2.2",
         "clean-publish": "^4.2.0",
         "rimraf": "^3.0.2"
-    },
-    "publishConfig": {
-        "directory": "package"
     }
 }
