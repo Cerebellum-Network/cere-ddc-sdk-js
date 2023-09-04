@@ -1,0 +1,8 @@
+{
+    "version": "1.7.6",
+    "command": {
+        "publish": {
+            "directory": "{projectRoot}/package"
+        }
+    }
+}
