@@ -42,16 +42,10 @@ jobs:
             - name: Install packages
               run: npm ci
 
-            - name: Install protoc
-              run: sudo apt-get install protobuf-compiler
+            - name: Prepare pacakges for publish
+              run: npm run package
 
-            - name: Check protoc version
-              run: protoc --version
-
-            - name: Compile proto
-              run: npm run compile
-
-            - name: Integration tests
+            - name: Run integration tests
               run: npm test
 
             - name: Publish packages
