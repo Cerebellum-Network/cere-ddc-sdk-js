@@ -1,7 +1,7 @@
 {
     "name": "@cere-ddc-sdk/core",
     "description": "Core with common logic",
-    "version": "1.8.0-rc.4",
+    "version": "1.7.7-rc.0",
     "type": "module",
     "repository": {
         "type": "git",
@@ -43,8 +43,8 @@
         "clean": "rimraf dist package"
     },
     "dependencies": {
-        "@polkadot/util": "^10.1.8",
         "@polkadot/keyring": "^10.1.8",
+        "@polkadot/util": "^10.1.8",
         "@polkadot/util-crypto": "^10.1.8"
     },
     "devDependencies": {
