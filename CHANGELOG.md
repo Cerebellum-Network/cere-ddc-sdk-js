@@ -2,6 +2,7 @@
 
 ### vNext
 
+-   Fix RPC error handling in Smart Contract module
 -   Update build and publish to use Lerna.js
 -   Expanded Cluster Parameters
 -   Upgrade Smart Contract to `v1.0.1`

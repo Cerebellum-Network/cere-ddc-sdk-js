@@ -45,9 +45,9 @@
         "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
         "build:browser": "BROWSERSLIST_ENV=browser npm run build:cjs && BROWSERSLIST_ENV=browser npm run build:mjs",
         "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
-        "build": "npm run types && npm run build:browser && npm run build:node",
+        "build": "npm run clean && npm run types && npm run build:browser && npm run build:node",
         "types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
-        "package": "npm run clean && npm run build && clean-publish",
+        "package": "clean-publish",
         "clean": "rimraf dist package"
     },
     "devDependencies": {

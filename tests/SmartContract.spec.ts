@@ -310,4 +310,26 @@ describe('Smart Contract', () => {
             await userContract.bucketAllocIntoCluster(createdBucketId, 10n);
         });
     });
+
+    describe('Errors', () => {
+        let emptyUser: ReturnType<typeof createAccount>;
+        let emptyUserContract: SmartContract;
+
+        beforeAll(async () => {
+            emptyUser = createAccount();
+            emptyUserContract = new SmartContract(emptyUser.account, deployedContract);
+        });
+
+        it('should throw low balance error during deposit', async () => {
+            const promise = emptyUserContract.accountDeposit(100n);
+
+            await expect(promise).rejects.toThrowError('Inability to pay some fees');
+        });
+
+        it('should throw low balance error during cluster creation', async () => {
+            const promise = emptyUserContract.clusterCreate();
+
+            await expect(promise).rejects.toThrowError('Inability to pay some fees');
+        });
+    });
 });
