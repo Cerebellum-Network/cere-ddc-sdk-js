@@ -256,14 +256,15 @@ describe('Smart Contract', () => {
             await userContract.accountDeposit(20n);
             const account = await adminContract.accountGet(user.address);
 
-            expect(account.deposit.value).toBeTruthy();
+            expect(account.deposit.value).toEqual(adminContract.toUnits(20n));
         });
 
         test('bond account balance', async () => {
             await userContract.accountBond(10n);
             const account = await adminContract.accountGet(user.address);
 
-            expect(account.bonded.value).toBeTruthy();
+            expect(account.bonded.value).toEqual(adminContract.toUnits(10n));
+            expect(account.deposit.value).toEqual(adminContract.toUnits(10n));
         });
     });
 
