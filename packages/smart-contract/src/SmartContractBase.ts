@@ -4,6 +4,7 @@ import {SubmittableResultValue, Signer, AddressOrPair} from '@polkadot/api/types
 import {ContractQuery, ContractTx} from '@polkadot/api-contract/base/types';
 import {DecodedEvent, ContractOptions} from '@polkadot/api-contract/types';
 import {ContractEvent, ContractEventArgs, Offset, toJs} from './types';
+import {ApiPromise} from '@polkadot/api';
 
 const defaultOptions: ContractOptions = {
     gasLimit: -1,
@@ -55,6 +56,7 @@ export class SmartContractBase {
         protected readonly account: AddressOrPair,
         protected readonly contract: ContractPromise,
         protected readonly signer?: Signer,
+        protected readonly api?: ApiPromise,
     ) {
         this.address = isKeyringPair(this.account) ? this.account.address : this.account.toString();
     }
@@ -117,6 +119,10 @@ export class SmartContractBase {
 
     protected submit(tx: ContractTx<'promise'>, ...params: unknown[]) {
         return this.submitWithOptions(tx, dryRunOptions, ...params);
+    }
+
+    protected submitWithoutSign(tx: ContractTx<'promise'>, ...params: unknown[]) {
+        return tx({...params, ...defaultOptions}, ...params);
     }
 
     protected getContractEventArgs<T extends ContractEvent>(contractEvents: DecodedEvent[], eventName: T) {

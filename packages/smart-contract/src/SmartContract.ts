@@ -4,7 +4,7 @@ import {Keyring} from '@polkadot/keyring';
 import {AddressOrPair, Signer} from '@polkadot/api/types';
 import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
 
-import {SmartContractBase, ListResult} from './SmartContractBase';
+import {SmartContractBase, ListResult, SubmitResult} from './SmartContractBase';
 import {SmartContractOptions, TESTNET} from './options/SmartContractOptions';
 import {cereTypes} from './types/cere_types';
 
@@ -55,7 +55,7 @@ export class SmartContract extends SmartContractBase {
         }
 
         const contract = new ContractPromise(api, options.abi, options.contractAddress);
-        const smartContract = new SmartContract(addressOrPair, contract, signer);
+        const smartContract = new SmartContract(addressOrPair, contract, signer, api);
 
         /**
          * In case an external API instance is used - don't diconnect it
@@ -314,5 +314,45 @@ export class SmartContract extends SmartContractBase {
         nodeInfo.vNodes = nodeInfo.vNodes.map(BigInt);
 
         return nodeInfo;
+    }
+
+    async activateAllClusterNodes(clusterId: ClusterId) {
+        const [cdnNodeListResult, nodeListResult] = await Promise.all([
+            this.cdnNodeList(),
+            this.nodeList()
+        ])
+        const storageNodes = nodeListResult[0].filter((s) => s.node.clusterId === clusterId);
+        const cdnNodes = cdnNodeListResult[0].filter((s) => s.cdnNode.clusterId === clusterId);
+
+        const tx = this.api?.tx.utility.batch([
+            ...storageNodes.map(({nodeKey}) => this.submitWithoutSign(this.contract.tx.clusterSetNodeStatus, clusterId, nodeKey, 'ACTIVE')),
+            ...cdnNodes.map(({cdnNodeKey}) => this.submitWithoutSign(this.contract.tx.clusterSetCdnNodeStatus, clusterId, cdnNodeKey, 'ACTIVE'))
+        ])
+
+        return new Promise<Required<SubmitResult>>((resolve, reject) =>
+            tx?.signAndSend(this.account, {signer: this.signer}, (result) => {
+                    const {status, dispatchError} = result;
+                    const {events = [], contractEvents = []} = result as SubmitResult;
+
+                    if (status.isFinalized) {
+                        return resolve({events, contractEvents});
+                    }
+
+                    if (dispatchError) {
+                        let errorMessage: string;
+
+                        if (dispatchError.isModule) {
+                            const decoded = this.contract.api.registry.findMetaError(dispatchError.asModule);
+
+                            errorMessage = `${decoded.section}.${decoded.name}: ${decoded.docs.join(' ')}`;
+                        } else {
+                            errorMessage = dispatchError.toString();
+                        }
+
+                        reject(new Error(errorMessage));
+                    }
+                })
+                .catch(reject),
+        );
     }
 }
