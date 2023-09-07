@@ -29,8 +29,6 @@ import {
     NodeStatusInCluster,
 } from './types';
 
-const CERE = 10_000_000_000n;
-
 export class SmartContract extends SmartContractBase {
     private shouldDisconnectAPI = false;
 
@@ -80,8 +78,26 @@ export class SmartContract extends SmartContractBase {
         }
     }
 
+    toUnits(tokens: bigint) {
+        const api = this.contract.api as ApiPromise;
+        const [decimals] = api.registry.chainDecimals;
+        const multiplier = 10n ** BigInt(decimals);
+
+        return tokens * multiplier;
+    }
+
     async accountGet(accountAddress: AccountId) {
-        return this.queryOne<Account>(this.contract.query.accountGet, accountAddress);
+        const account = await this.queryOne<Account>(this.contract.query.accountGet, accountAddress);
+
+        account.bonded.value = BigInt(account.bonded.value);
+        account.deposit.value = BigInt(account.deposit.value);
+        account.negative.value = BigInt(account.negative.value);
+        account.unbondedAmount.value = BigInt(account.unbondedAmount.value);
+        account.unbondedTimestamp = BigInt(account.unbondedTimestamp);
+        account.payableSchedule.offset = BigInt(account.payableSchedule.offset);
+        account.payableSchedule.rate = BigInt(account.payableSchedule.rate);
+
+        return account;
     }
 
     async bucketList(offset?: Offset | null, limit?: Offset | null, filterOwnerId?: AccountId) {
@@ -115,14 +131,7 @@ export class SmartContract extends SmartContractBase {
         }
 
         const params = JSON.stringify(bucketParams);
-        const {contractEvents} = await this.submitWithOptions(
-            this.contract.tx.bucketCreate,
-            {value: 10n * CERE},
-            params,
-            clusterId,
-            ownerAddress,
-        );
-
+        const {contractEvents} = await this.submit(this.contract.tx.bucketCreate, params, clusterId, ownerAddress);
         const {bucketId} = this.getContractEventArgs(contractEvents, 'BucketCreated');
 
         return BigInt(bucketId);
@@ -137,11 +146,11 @@ export class SmartContract extends SmartContractBase {
     }
 
     async accountDeposit(value: Balance) {
-        await this.submitWithOptions(this.contract.tx.accountDeposit, {value: value * CERE});
+        await this.submitWithOptions(this.contract.tx.accountDeposit, {value: this.toUnits(value)});
     }
 
     async accountBond(value: Balance) {
-        await this.submit(this.contract.tx.accountBond, value * CERE);
+        await this.submit(this.contract.tx.accountBond, this.toUnits(value));
     }
 
     async grantTrustedManagerPermission(managerAddress: AccountId) {

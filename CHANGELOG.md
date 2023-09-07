@@ -2,6 +2,7 @@
 
 ### vNext
 
+-   Get $CERE decimals value from blockchain properties instead of hardcoded value
 -   Fix RPC error handling in Smart Contract module
 -   Update build and publish to use Lerna.js
 -   Expanded Cluster Parameters
