@@ -78,14 +78,6 @@ export class SmartContract extends SmartContractBase {
         }
     }
 
-    toUnits(tokens: bigint) {
-        const api = this.contract.api as ApiPromise;
-        const [decimals] = api.registry.chainDecimals;
-        const multiplier = 10n ** BigInt(decimals);
-
-        return tokens * multiplier;
-    }
-
     async accountGet(accountAddress: AccountId) {
         const account = await this.queryOne<Account>(this.contract.query.accountGet, accountAddress);
 
@@ -132,7 +124,7 @@ export class SmartContract extends SmartContractBase {
 
         const params = JSON.stringify(bucketParams);
         const {contractEvents} = await this.submit(this.contract.tx.bucketCreate, params, clusterId, ownerAddress);
-        const {bucketId} = this.getContractEventArgs(contractEvents, 'BucketCreated');
+        const {bucketId} = this.pullContractEventArgs(contractEvents, 'BucketCreated');
 
         return BigInt(bucketId);
     }
@@ -168,7 +160,7 @@ export class SmartContract extends SmartContractBase {
             rentPerMonth,
         );
 
-        return this.getContractEventArgs(contractEvents, 'NodeCreated').nodeKey;
+        return this.pullContractEventArgs(contractEvents, 'NodeCreated').nodeKey;
     }
 
     async nodeRemove(nodeKey: NodeKey) {
@@ -180,7 +172,7 @@ export class SmartContract extends SmartContractBase {
 
         const {contractEvents} = await this.submit(this.contract.tx.cdnNodeCreate, cdnNodeKey, params);
 
-        return this.getContractEventArgs(contractEvents, 'CdnNodeCreated').cdnNodeKey;
+        return this.pullContractEventArgs(contractEvents, 'CdnNodeCreated').cdnNodeKey;
     }
 
     async cdnNodeRemove(nodeKey: NodeKey) {
@@ -192,7 +184,7 @@ export class SmartContract extends SmartContractBase {
 
         const {contractEvents} = await this.submit(this.contract.tx.clusterCreate, params, resourcePerVNode);
 
-        return this.getContractEventArgs(contractEvents, 'ClusterCreated').clusterId;
+        return this.pullContractEventArgs(contractEvents, 'ClusterCreated').clusterId;
     }
 
     async clusterAddNode(clusterId: ClusterId, nodeKey: NodeKey, vNodes: VNodeId[]) {

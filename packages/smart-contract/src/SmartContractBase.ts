@@ -1,18 +1,22 @@
 import {ContractPromise} from '@polkadot/api-contract';
 import {isKeyringPair} from '@polkadot/api/util';
-import {SubmittableResultValue, Signer, AddressOrPair} from '@polkadot/api/types';
+import {SubmittableResultValue, Signer, AddressOrPair, SubmittableExtrinsic} from '@polkadot/api/types';
 import {ContractQuery, ContractTx} from '@polkadot/api-contract/base/types';
 import {DecodedEvent, ContractOptions} from '@polkadot/api-contract/types';
 import {ContractEvent, ContractEventArgs, Offset, toJs} from './types';
+import {Bytes} from '@polkadot/types';
+import {ApiPromise} from '@polkadot/api';
 
+const MGAS = 1_000_000n;
 const defaultOptions: ContractOptions = {
-    gasLimit: -1,
+    storageDepositLimit: null,
+    gasLimit: 200_000n * MGAS,
 };
 
 const dryRunOptions: ContractOptions = {
     ...defaultOptions,
 
-    storageDepositLimit: null,
+    gasLimit: -1,
 };
 
 export type SubmitResult = Pick<SubmittableResultValue, 'events'> & {
@@ -49,6 +53,9 @@ const drainList = async <T extends unknown>(
 };
 
 export class SmartContractBase {
+    private currentBatch?: SubmittableExtrinsic<'promise'>[];
+    private currentBatchPromise?: Promise<Required<SubmitResult>>;
+
     protected readonly address: string;
 
     constructor(
@@ -57,6 +64,14 @@ export class SmartContractBase {
         protected readonly signer?: Signer,
     ) {
         this.address = isKeyringPair(this.account) ? this.account.address : this.account.toString();
+    }
+
+    toUnits(tokens: bigint) {
+        const api = this.contract.api as ApiPromise;
+        const [decimals] = api.registry.chainDecimals;
+        const multiplier = 10n ** BigInt(decimals);
+
+        return tokens * multiplier;
     }
 
     protected async query<T extends unknown>(query: ContractQuery<'promise'>, ...params: unknown[]) {
@@ -87,11 +102,48 @@ export class SmartContractBase {
     protected async submitWithOptions(tx: ContractTx<'promise'>, options: ContractOptions, ...params: unknown[]) {
         const extrinsic = tx({...defaultOptions, ...options}, ...params);
 
+        if (this.currentBatch && this.currentBatchPromise) {
+            this.currentBatch.push(extrinsic);
+
+            return this.currentBatchPromise;
+        }
+
+        return this.signAndSend(extrinsic);
+    }
+
+    protected submit(tx: ContractTx<'promise'>, ...params: unknown[]) {
+        return this.submitWithOptions(tx, defaultOptions, ...params);
+    }
+
+    /**
+     * Returns a contract event params from the events list and removes the event to not allow it to be reused in batched operations
+     */
+    protected pullContractEventArgs<T extends ContractEvent>(contractEvents: DecodedEvent[], eventName: T) {
+        const eventIndex = contractEvents.findIndex(({event}) => event.identifier === eventName);
+
+        if (eventIndex < 0) {
+            throw new Error(`Event ${eventName} has not been emited`);
+        }
+
+        const [record] = contractEvents.splice(eventIndex, 1);
+        const args: ContractEventArgs<T> = record.event.args.reduce<any>(
+            (args, {name}, index) => ({...args, [name]: toJs(record.args[index])}),
+            {},
+        );
+
+        return args;
+    }
+
+    protected async signAndSend(extrinsic: SubmittableExtrinsic<'promise'>) {
         return new Promise<Required<SubmitResult>>((resolve, reject) =>
             extrinsic
-                .signAndSend(this.account, {signer: this.signer}, (result) => {
-                    const {status, dispatchError} = result;
-                    const {events = [], contractEvents = []} = result as SubmitResult;
+                .signAndSend(this.account, {signer: this.signer, nonce: -1}, (result) => {
+                    const {status, dispatchError, events = []} = result;
+                    const contractEvents = result.filterRecords('contracts', 'ContractEmitted').map((record) => {
+                        const [, data] = record.event.data;
+
+                        return this.contract.abi.decodeEvent(data as Bytes);
+                    });
 
                     if (status.isFinalized) {
                         return resolve({events, contractEvents});
@@ -115,22 +167,28 @@ export class SmartContractBase {
         );
     }
 
-    protected submit(tx: ContractTx<'promise'>, ...params: unknown[]) {
-        return this.submitWithOptions(tx, dryRunOptions, ...params);
-    }
+    async batch<T extends readonly Promise<any>[]>(builder: () => T | void) {
+        let resolveBatch!: (params: any) => any;
+        let rejectBatch!: (params: any) => any;
 
-    protected getContractEventArgs<T extends ContractEvent>(contractEvents: DecodedEvent[], eventName: T) {
-        const result = contractEvents.find(({event}) => event.identifier === eventName);
+        this.currentBatch = [];
+        this.currentBatchPromise = new Promise((resolve, reject) => {
+            resolveBatch = resolve;
+            rejectBatch = reject;
+        });
 
-        if (!result) {
-            throw new Error(`Event ${eventName} has not been emited`);
-        }
+        const batchPromise = this.currentBatchPromise;
+        const promises = builder() || ([] as any);
 
-        const args: ContractEventArgs<T> = result.event.args.reduce<any>(
-            (args, {name}, index) => ({...args, [name]: toJs(result.args[index])}),
-            {},
-        );
+        this.signAndSend(this.contract.api.tx.utility.batch([...this.currentBatch]))
+            .then(resolveBatch)
+            .catch(rejectBatch);
 
-        return args;
+        this.currentBatchPromise = undefined;
+        this.currentBatch = undefined;
+
+        await batchPromise;
+
+        return Promise.all(promises);
     }
 }
