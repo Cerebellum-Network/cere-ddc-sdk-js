@@ -7,9 +7,10 @@ import {ContractEvent, ContractEventArgs, Offset, toJs} from './types';
 import {Bytes} from '@polkadot/types';
 import {ApiPromise} from '@polkadot/api';
 
+const MGAS = 1_000_000n;
 const defaultOptions: ContractOptions = {
-    gasLimit: 10_000_000_000,
     storageDepositLimit: null,
+    gasLimit: 200_000n * MGAS,
 };
 
 const dryRunOptions: ContractOptions = {
@@ -65,11 +66,12 @@ export class SmartContractBase {
         this.address = isKeyringPair(this.account) ? this.account.address : this.account.toString();
     }
 
-    protected estimateGasLimit() {
+    toUnits(tokens: bigint) {
         const api = this.contract.api as ApiPromise;
-        const {maxBlock} = api.consts.system.blockWeights.toJSON() as any;
+        const [decimals] = api.registry.chainDecimals;
+        const multiplier = 10n ** BigInt(decimals);
 
-        return Number(maxBlock);
+        return tokens * multiplier;
     }
 
     protected async query<T extends unknown>(query: ContractQuery<'promise'>, ...params: unknown[]) {

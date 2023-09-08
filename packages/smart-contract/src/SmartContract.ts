@@ -78,14 +78,6 @@ export class SmartContract extends SmartContractBase {
         }
     }
 
-    toUnits(tokens: bigint) {
-        const api = this.contract.api as ApiPromise;
-        const [decimals] = api.registry.chainDecimals;
-        const multiplier = 10n ** BigInt(decimals);
-
-        return tokens * multiplier;
-    }
-
     async accountGet(accountAddress: AccountId) {
         const account = await this.queryOne<Account>(this.contract.query.accountGet, accountAddress);
 
