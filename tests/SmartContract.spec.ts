@@ -333,4 +333,38 @@ describe('Smart Contract', () => {
             await expect(promise).rejects.toThrowError('Inability to pay some fees');
         });
     });
+
+    describe('Batch transactions', () => {
+        let clusterId: number;
+        let storageNodeKey: string;
+        let cdnNodeKey: string;
+
+        beforeAll(async () => {
+            clusterId = await adminContract.clusterCreate();
+        });
+
+        afterAll(async () => {
+            await adminContract.clusterRemove(clusterId);
+        });
+
+        test('create CDN and Storage node', async () => {
+            [storageNodeKey, cdnNodeKey] = await adminContract.batch(() => [createStorageNode(), createCdnNode()]);
+        });
+
+        test('set CDN and storage nodes status', async () => {
+            await adminContract.batch(() => [
+                adminContract.clusterSetNodeStatus(clusterId, storageNodeKey, NodeStatusInCluster.ACTIVE),
+                adminContract.clusterSetCdnNodeStatus(clusterId, cdnNodeKey, NodeStatusInCluster.ACTIVE),
+            ]);
+        });
+
+        test('Remove nodes', async () => {
+            await adminContract.batch(() => [
+                adminContract.clusterRemoveNode(clusterId, storageNodeKey),
+                adminContract.clusterRemoveCdnNode(clusterId, cdnNodeKey),
+                adminContract.nodeRemove(storageNodeKey),
+                adminContract.cdnNodeRemove(cdnNodeKey),
+            ]);
+        });
+    });
 });
