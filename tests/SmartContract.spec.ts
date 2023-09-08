@@ -349,6 +349,9 @@ describe('Smart Contract', () => {
 
         test('create CDN and Storage node', async () => {
             [storageNodeKey, cdnNodeKey] = await adminContract.batch(() => [createStorageNode(), createCdnNode()]);
+
+            expect(storageNodeKey).toEqual(expect.any(String));
+            expect(cdnNodeKey).toEqual(expect.any(String));
         });
 
         test('set CDN and storage nodes status', async () => {
@@ -356,6 +359,12 @@ describe('Smart Contract', () => {
                 adminContract.clusterSetNodeStatus(clusterId, storageNodeKey, NodeStatusInCluster.ACTIVE),
                 adminContract.clusterSetCdnNodeStatus(clusterId, cdnNodeKey, NodeStatusInCluster.ACTIVE),
             ]);
+
+            const {node} = await adminContract.nodeGet(storageNodeKey);
+            const {cdnNode} = await adminContract.cdnNodeGet(cdnNodeKey);
+
+            expect(node.statusInCluster).toEqual(NodeStatusInCluster.ACTIVE);
+            expect(cdnNode.statusInCluster).toEqual(NodeStatusInCluster.ACTIVE);
         });
 
         test('Remove nodes', async () => {

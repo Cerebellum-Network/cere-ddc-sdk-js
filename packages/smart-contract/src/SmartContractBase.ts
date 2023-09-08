@@ -8,6 +8,7 @@ import {Bytes} from '@polkadot/types';
 import {ApiPromise} from '@polkadot/api';
 
 const defaultOptions: ContractOptions = {
+    gasLimit: 10_000_000_000,
     storageDepositLimit: null,
 };
 
@@ -15,7 +16,6 @@ const dryRunOptions: ContractOptions = {
     ...defaultOptions,
 
     gasLimit: -1,
-    storageDepositLimit: null,
 };
 
 export type SubmitResult = Pick<SubmittableResultValue, 'events'> & {
@@ -65,7 +65,7 @@ export class SmartContractBase {
         this.address = isKeyringPair(this.account) ? this.account.address : this.account.toString();
     }
 
-    protected get gasLimit() {
+    protected estimateGasLimit() {
         const api = this.contract.api as ApiPromise;
         const {maxBlock} = api.consts.system.blockWeights.toJSON() as any;
 
@@ -98,16 +98,12 @@ export class SmartContractBase {
     }
 
     protected async submitWithOptions(tx: ContractTx<'promise'>, options: ContractOptions, ...params: unknown[]) {
-        const batchPromise = this.currentBatchPromise;
-        const batch = this.currentBatch;
+        const extrinsic = tx({...defaultOptions, ...options}, ...params);
 
-        // const {weight} = await tx(dryRunOptions, ...params).paymentInfo(this.account);
-        const extrinsic = tx({gasLimit: 100_000_000_000, ...options}, ...params);
+        if (this.currentBatch && this.currentBatchPromise) {
+            this.currentBatch.push(extrinsic);
 
-        if (batch && batchPromise) {
-            batch.push(extrinsic);
-
-            return batchPromise;
+            return this.currentBatchPromise;
         }
 
         return this.signAndSend(extrinsic);
@@ -117,15 +113,19 @@ export class SmartContractBase {
         return this.submitWithOptions(tx, defaultOptions, ...params);
     }
 
-    protected getContractEventArgs<T extends ContractEvent>(contractEvents: DecodedEvent[], eventName: T) {
-        const result = contractEvents.find(({event}) => event.identifier === eventName);
+    /**
+     * Returns a contract event params from the events list and removes the event to not allow it to be reused in batched operations
+     */
+    protected pullContractEventArgs<T extends ContractEvent>(contractEvents: DecodedEvent[], eventName: T) {
+        const eventIndex = contractEvents.findIndex(({event}) => event.identifier === eventName);
 
-        if (!result) {
+        if (eventIndex < 0) {
             throw new Error(`Event ${eventName} has not been emited`);
         }
 
-        const args: ContractEventArgs<T> = result.event.args.reduce<any>(
-            (args, {name}, index) => ({...args, [name]: toJs(result.args[index])}),
+        const [record] = contractEvents.splice(eventIndex, 1);
+        const args: ContractEventArgs<T> = record.event.args.reduce<any>(
+            (args, {name}, index) => ({...args, [name]: toJs(record.args[index])}),
             {},
         );
 
