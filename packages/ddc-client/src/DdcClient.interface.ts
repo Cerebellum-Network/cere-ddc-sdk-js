@@ -1,38 +1,43 @@
-import {Piece, Query, Session, SearchOptions} from '@cere-ddc-sdk/content-addressable-storage';
-import {BucketCreatedEvent, BucketStatus, BucketStatusList} from '@cere-ddc-sdk/smart-contract';
-import {BucketParams} from '@cere-ddc-sdk/smart-contract';
+import {Piece, Query, SearchOptions} from '@cere-ddc-sdk/content-addressable-storage';
 import {DdcUri} from '@cere-ddc-sdk/core';
+import {
+    BucketParams,
+    BucketStatus,
+    ClusterId,
+    Balance,
+    Resource,
+    BucketId,
+    AccountId,
+    Offset,
+} from '@cere-ddc-sdk/smart-contract/types';
+
 import {StoreOptions} from './options/StoreOptions';
 import {ReadOptions} from './options/ReadOptions';
 import {File} from './model/File';
 
 export interface DdcClientInterface {
     createBucket(
-        balance: bigint,
-        resource: bigint,
-        clusterId: bigint,
+        balance: Balance,
+        resource: Resource,
+        clusterId: ClusterId,
         bucketParams?: BucketParams,
-    ): Promise<BucketCreatedEvent>;
+    ): Promise<Pick<BucketStatus, 'bucketId'>>;
 
-    accountDeposit(balance: bigint): Promise<void>;
+    accountDeposit(balance: Balance): Promise<void>;
 
-    bucketAllocIntoCluster(bucketId: bigint, resource: bigint): Promise<void>;
+    bucketAllocIntoCluster(bucketId: BucketId, resource: Resource): Promise<void>;
 
-    /*    grantBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionGrantedEvent>
+    bucketGet(bucketId: BucketId): Promise<BucketStatus>;
 
-        revokeBucketPermission(bucketId: bigint, grantee: string, permission: Permission): Promise<BucketPermissionRevokedEvent>*/
+    bucketList(offset?: Offset, limit?: Offset, filterOwnerId?: AccountId): Promise<readonly [BucketStatus[], Offset]>;
 
-    bucketGet(bucketId: bigint): Promise<BucketStatus>;
+    store(bucketId: BucketId, piece: Piece, options?: StoreOptions): Promise<DdcUri>;
 
-    bucketList(offset: bigint, limit: bigint, filterOwnerId?: string): Promise<BucketStatusList>;
-
-    store(bucketId: bigint, piece: Piece, options?: StoreOptions): Promise<DdcUri>;
-
-    store(bucketId: bigint, file: File, options?: StoreOptions): Promise<DdcUri>;
+    store(bucketId: BucketId, file: File, options?: StoreOptions): Promise<DdcUri>;
 
     read(ddcUri: DdcUri, options?: ReadOptions): Promise<File | Piece>;
 
     search(query: Query, options?: SearchOptions): Promise<Array<Piece>>;
 
-    shareData(bucketId: bigint, dekPath: string, publicKeyHex: string, options?: StoreOptions): Promise<DdcUri>;
+    shareData(bucketId: BucketId, dekPath: string, publicKeyHex: string, options?: StoreOptions): Promise<DdcUri>;
 }

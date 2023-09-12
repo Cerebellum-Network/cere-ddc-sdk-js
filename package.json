@@ -54,6 +54,9 @@
         "lerna": "^7.2.0",
         "tweetnacl": "^1.0.3"
     },
+    "overrides": {
+        "@polkadot/api": "9.4.1"
+    },
     "workspaces": [
         "packages/*"
     ],

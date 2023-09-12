@@ -1,6 +1,15 @@
 version: "3.4"
 
 services:
+  cere-chain:
+    platform: linux/amd64
+    container_name: cere-chain
+    image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/pos-network-node:v4.7.0"
+    command: bash -c "/usr/local/bin/cere --dev --alice --ws-external --rpc-external"
+    ports:
+      - "9944:9944"
+      - "9933:9933"
+
   ddc-cdn-node:
     platform: linux/amd64
     container_name: "ddc-cdn-node"

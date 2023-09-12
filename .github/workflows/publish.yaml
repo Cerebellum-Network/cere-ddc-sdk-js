@@ -41,11 +41,14 @@ jobs:
             - name: Install packages
               run: npm ci
 
-            - name: Prepare pacakges for publish
-              run: npm run package
+            - name: Build packages
+              run: npm run build
 
             - name: Run integration tests
               run: npm test
+
+            - name: Prepare pacakges for publish
+              run: npm run package
 
             - name: Publish packages
               env:
