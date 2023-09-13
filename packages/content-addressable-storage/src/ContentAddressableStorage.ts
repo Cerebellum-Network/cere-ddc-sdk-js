@@ -32,6 +32,7 @@ import {concatArrays} from './lib/concat-arrays';
 import {DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG, REQIEST_ID_HEADER} from './constants';
 import {initDefaultOptions} from './lib/init-default-options';
 import {repeatableFetch} from './lib/repeatable-fetch';
+import {Route} from './router';
 
 const BASE_PATH_PIECES = '/api/v1/rest/pieces';
 
@@ -41,9 +42,13 @@ type SessionOptions = {
     session?: Session;
 };
 
-export type ReadOptions = SessionOptions & {};
-export type StoreOptions = SessionOptions & {};
-export type SearchOptions = SessionOptions & {};
+type RouteOptions = {
+    route?: Route;
+};
+
+export type ReadOptions = SessionOptions & RouteOptions & {};
+export type StoreOptions = SessionOptions & RouteOptions & {};
+export type SearchOptions = SessionOptions & RouteOptions & {};
 
 type StoreRequest = {
     body: Uint8Array;

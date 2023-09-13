@@ -5,12 +5,12 @@ import {cryptoWaitReady} from '@polkadot/util-crypto';
 import {SchemeInterface, SchemeName} from './Scheme.interface';
 
 export class Scheme implements SchemeInterface {
-    private readonly keyringPair: KeyringPair;
-    name: SchemeName;
-    address: string;
+    readonly pair: KeyringPair;
+    readonly name: SchemeName;
+    readonly address: string;
 
     private constructor(keyringPair: KeyringPair, name: SchemeName) {
-        this.keyringPair = keyringPair;
+        this.pair = keyringPair;
         this.name = name;
         this.address = keyringPair.address;
     }
@@ -29,20 +29,22 @@ export class Scheme implements SchemeInterface {
         } catch (err) {
             throw new Error(`Couldn't create scheme with current secretPhrase`);
         }
+
         return new Scheme(keyringPair, schemeName);
     }
 
-    get publicKey(): Uint8Array {
-        return this.keyringPair.publicKey;
+    get publicKey() {
+        return this.pair.publicKey;
     }
 
-    get publicKeyHex(): string {
-        return u8aToHex(this.keyringPair.publicKey);
+    get publicKeyHex() {
+        return u8aToHex(this.pair.publicKey);
     }
 
-    async sign(data: Uint8Array): Promise<Uint8Array> {
+    async sign(data: Uint8Array) {
         assertSafeMessage(data);
-        return Promise.resolve(this.keyringPair.sign(data));
+
+        return this.pair.sign(data);
     }
 }
 
