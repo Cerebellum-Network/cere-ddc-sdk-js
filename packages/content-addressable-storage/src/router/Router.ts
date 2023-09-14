@@ -3,7 +3,7 @@ import {BucketId, ClusterId} from '@cere-ddc-sdk/smart-contract/types';
 import {stringToU8a, u8aToHex, u8aConcat} from '@polkadot/util';
 import {CidBuilder, SchemeInterface} from '@cere-ddc-sdk/core';
 import {PieceUri} from '../models/PieceUri';
-import {Route} from './Route';
+import {Route, PieceRoute} from './Route';
 
 type UnsignedRequest = {
     requestId: string;
@@ -18,6 +18,11 @@ type SignedRequest = UnsignedRequest & {
     userSignature: string;
 };
 
+type Response = {
+    requestId: string;
+    routing: PieceRoute[];
+};
+
 export type RouteParams = {
     clusterId: ClusterId;
     uri: PieceUri;
@@ -26,14 +31,6 @@ export type RouteParams = {
 export type RouterOptions = {
     cidBuilder?: CidBuilder;
     signer: SchemeInterface;
-
-    /**
-     * Temp options
-     *
-     * TODO: Remove after the router endpoint is ready
-     */
-    fallbackNodeUrl: string;
-    fallbackSessionId: string;
 };
 
 export class Router {
@@ -68,18 +65,14 @@ export class Router {
         });
     }
 
+    private async requestRoutingData(request: SignedRequest): Promise<Response> {
+        throw new Error('Not implemented');
+    }
+
     async getRoute(uri: PieceUri) {
         const request = await this.createRequest(uri);
+        const respose = await this.requestRoutingData(request);
 
-        /**
-         * TODO: Request router data to create a real route
-         */
-        return new Route(request.requestId, [
-            {
-                cid: uri.cid,
-                nodeUrl: this.options.fallbackNodeUrl,
-                sessionId: this.options.fallbackSessionId,
-            },
-        ]);
+        return new Route(respose.requestId, respose.routing);
     }
 }

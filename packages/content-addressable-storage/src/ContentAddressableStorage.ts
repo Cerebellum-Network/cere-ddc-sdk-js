@@ -33,6 +33,7 @@ import {DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG, REQIEST_ID_HEADER} from './consta
 import {initDefaultOptions} from './lib/init-default-options';
 import {repeatableFetch} from './lib/repeatable-fetch';
 import {Route} from './router';
+import {BucketId} from '@cere-ddc-sdk/smart-contract/types';
 
 const BASE_PATH_PIECES = '/api/v1/rest/pieces';
 
@@ -223,7 +224,7 @@ export class ContentAddressableStorage {
     }
 
     async store(bucketId: bigint, piece: Piece, options: StoreOptions = {}): Promise<PieceUri> {
-        const session = await this.useSession(options.session);
+        const session = this.useSession(options.session);
         const request = await this.buildStoreRequest(bucketId, session, piece);
 
         const response = await this.sendRequest(
@@ -259,11 +260,9 @@ export class ContentAddressableStorage {
         return new PieceUri(bucketId, request.cid);
     }
 
-    async read(bucketId: bigint, cid: string, options: ReadOptions = {}): Promise<Piece> {
-        const session = await this.useSession(options.session);
-        console.log('1', cid, options.route);
+    async read(bucketId: BucketId, cid: string, options: ReadOptions = {}): Promise<Piece> {
         const cdnNodeUrl = this.getCdnNodeUrl(cid, options.route);
-        console.log('2', cdnNodeUrl);
+        const session = this.useSession(options.route?.getSessionId(cid) || options.session);
 
         const search = new URLSearchParams();
         search.set('bucketId', bucketId.toString());
@@ -430,11 +429,11 @@ export class ContentAddressableStorage {
         return piece;
     }
 
-    async createSession(session?: Session): Promise<Uint8Array> {
+    createSession(session?: Session) {
         return session || randomAsU8a(DEFAULT_SESSION_ID_SIZE);
     }
 
-    private async useSession(session?: Session) {
+    private useSession(session?: Session) {
         if (session) {
             return session;
         }
@@ -442,7 +441,7 @@ export class ContentAddressableStorage {
         /**
          * Create new default session once for an instance
          */
-        this.defaultSession ||= await this.createSession();
+        this.defaultSession ||= this.createSession();
 
         return this.defaultSession;
     }

@@ -1,7 +1,7 @@
-import {CID} from "multiformats";
-import {base32} from "multiformats/bases/base32"
-import { blake2b256 } from '@multiformats/blake2/blake2b'
-import * as raw from "multiformats/codecs/raw";
+import {CID} from 'multiformats';
+import {base32} from 'multiformats/bases/base32';
+import {blake2b256} from '@multiformats/blake2/blake2b';
+import * as raw from 'multiformats/codecs/raw';
 
 export class CidBuilder {
     async build(data: Uint8Array): Promise<string> {

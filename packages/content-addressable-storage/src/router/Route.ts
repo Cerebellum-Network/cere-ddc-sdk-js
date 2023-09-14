@@ -1,35 +1,39 @@
-export type RouteChunk = {
+import {stringToU8a} from '@polkadot/util';
+
+export type PieceRoute = {
     cid: string;
     nodeUrl: string;
     sessionId: string;
 };
 
 export class Route {
-    constructor(readonly requestId: string, readonly chunks: RouteChunk[]) {}
+    constructor(readonly requestId: string, readonly pieces: PieceRoute[]) {}
 
-    private getChunk(cid: string) {
-        return this.chunks.find((chunk) => chunk.cid === cid);
+    private getPieceRoute(cid: string) {
+        return this.pieces.find((chunk) => chunk.cid === cid);
     }
 
-    private getChunkIndex(cid: string) {
-        const chunk = this.getChunk(cid);
+    private getPieceRouteIndex(cid: string) {
+        const chunk = this.getPieceRoute(cid);
 
         if (!chunk) {
             throw new Error(`Cid ${cid} is note in the route`);
         }
 
-        return this.chunks.indexOf(chunk);
+        return this.pieces.indexOf(chunk);
     }
 
-    isLastChunk(cid: string) {
-        return this.getChunkIndex(cid) === this.chunks.length - 1;
+    isLastPiece(cid: string) {
+        return this.getPieceRouteIndex(cid) === this.pieces.length - 1;
     }
 
     getNodeUrl(cid: string) {
-        return this.getChunk(cid)?.nodeUrl;
+        return this.getPieceRoute(cid)?.nodeUrl;
     }
 
     getSessionId(cid: string) {
-        return this.getChunk(cid)?.sessionId;
+        const sessionId = this.getPieceRoute(cid)?.sessionId;
+
+        return sessionId && stringToU8a(sessionId);
     }
 }
