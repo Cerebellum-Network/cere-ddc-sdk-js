@@ -63,6 +63,7 @@ type AckParams = {
     session: Session;
     piece: Piece;
     cid?: string;
+    route?: Route;
 };
 
 export type ContentAddressableStorageOptions = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
@@ -133,10 +134,16 @@ export class ContentAddressableStorage {
         throw new Error(`unable to find cdn nodes in cluster='${clusterAddress}'`);
     }
 
-    private getPath(path: string, method: HTTP_METHOD = 'GET'): Uint8Array {
-        const url = new URL(this.cdnNodeUrl);
+    private getCdnNodeUrl(cid: string, route?: Route) {
+        return route?.getNodeUrl(cid) || this.cdnNodeUrl;
+    }
+
+    private getPath(cdnNodeUrl: string, path: string, method: HTTP_METHOD = 'GET'): Uint8Array {
+        const url = new URL(cdnNodeUrl);
         const [pathname, search] = path.split('?');
+
         url.pathname = pathname;
+
         if (search) {
             url.search = search;
             url.searchParams.delete('data');
@@ -152,14 +159,10 @@ export class ContentAddressableStorage {
         );
     }
 
-    private async signRequest(
-        request: PbRequest,
-        path: string,
-        method: HTTP_METHOD = 'GET',
-    ): Promise<Uint8Array | undefined> {
+    private async signRequest(request: PbRequest, path: Uint8Array): Promise<Uint8Array | undefined> {
         const cid = await this.cidBuilder.build(
             concatArrays(
-                this.getPath(path, method),
+                path,
                 new Uint8Array(encode(request.body.length)),
                 request.body,
                 new Uint8Array(encode(request.sessionId.length)),
@@ -169,12 +172,18 @@ export class ContentAddressableStorage {
         return this.scheme.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
     }
 
-    private async buildStoreRequest(bucketId: bigint, session: Session, piece: Piece): Promise<StoreRequest> {
+    private async buildStoreRequest(
+        bucketId: bigint,
+        session: Session,
+        piece: Piece,
+        route?: Route,
+    ): Promise<StoreRequest> {
         const pbPiece: PbPiece = piece.toProto(bucketId);
         // @ts-ignore
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
         const cid = await this.cidBuilder.build(pieceAsBytes);
         const timestamp = new Date();
+        const cdnNodeUrl = this.getCdnNodeUrl(cid, route);
         const signature = await this.scheme.sign(
             stringToU8a(`<Bytes>DDC store ${cid} at ${timestamp.toISOString()}</Bytes>`),
         );
@@ -193,8 +202,7 @@ export class ContentAddressableStorage {
         const signedPieceSerial = PbSignedPiece.toBinary(pbSignedPiece);
         const requestSignature = await this.signRequest(
             PbRequest.create({body: signedPieceSerial, sessionId: session}),
-            BASE_PATH_PIECES,
-            'PUT',
+            this.getPath(cdnNodeUrl, BASE_PATH_PIECES, 'PUT'),
         );
 
         const request = PbRequest.create({
@@ -218,10 +226,16 @@ export class ContentAddressableStorage {
         const session = await this.useSession(options.session);
         const request = await this.buildStoreRequest(bucketId, session, piece);
 
-        const response = await this.sendRequest(request.path, undefined, {
-            method: request.method,
-            body: request.body,
-        });
+        const response = await this.sendRequest(
+            request.path,
+            undefined,
+            {
+                method: request.method,
+                body: request.body,
+            },
+            options.route,
+        );
+
         const responseData = await response.arrayBuffer();
         // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
@@ -247,22 +261,34 @@ export class ContentAddressableStorage {
 
     async read(bucketId: bigint, cid: string, options: ReadOptions = {}): Promise<Piece> {
         const session = await this.useSession(options.session);
+        console.log('1', cid, options.route);
+        const cdnNodeUrl = this.getCdnNodeUrl(cid, options.route);
+        console.log('2', cdnNodeUrl);
+
         const search = new URLSearchParams();
         search.set('bucketId', bucketId.toString());
+
         const requestSignature = await this.signRequest(
             PbRequest.create({sessionId: session}),
-            `${BASE_PATH_PIECES}/${cid}?${search.toString()}`,
+            this.getPath(cdnNodeUrl, `${BASE_PATH_PIECES}/${cid}?${search.toString()}`),
         );
+
         const pbRequest = PbRequest.create({
             scheme: this.scheme.name,
             sessionId: session,
             signature: requestSignature,
             publicKey: this.scheme.publicKey,
         });
-        // @ts-ignore
+
         search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'));
 
-        const response = await this.sendRequest(`${BASE_PATH_PIECES}/${cid}`, search.toString());
+        const response = await this.sendRequest(
+            `${BASE_PATH_PIECES}/${cid}`,
+            search.toString(),
+            undefined,
+            options.route,
+        );
+
         const responseData = await response.arrayBuffer();
         // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
@@ -329,8 +355,9 @@ export class ContentAddressableStorage {
 
         const requestSignature = await this.signRequest(
             PbRequest.create({sessionId: session}),
-            `${BASE_PATH_PIECES}?${search.toString()}`,
+            this.getPath(this.cdnNodeUrl, `${BASE_PATH_PIECES}?${search.toString()}`),
         );
+
         const pbRequest = PbRequest.create({
             scheme: this.scheme.name,
             sessionId: session,
@@ -340,7 +367,7 @@ export class ContentAddressableStorage {
         // @ts-ignore
         search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'));
 
-        const response = await this.sendRequest(`${BASE_PATH_PIECES}`, search.toString());
+        const response = await this.sendRequest(`${BASE_PATH_PIECES}`, search.toString(), undefined, options.route);
         const responseData = await response.arrayBuffer();
         // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
@@ -436,7 +463,7 @@ export class ContentAddressableStorage {
         );
     }
 
-    private ack = async ({piece, session, response, payload, cid}: AckParams): Promise<void> => {
+    private ack = async ({piece, session, response, payload, cid, route}: AckParams): Promise<void> => {
         if (!response.headers.has(REQIEST_ID_HEADER) || (payload.responseCode !== 0 && payload.responseCode !== 1)) {
             return;
         }
@@ -448,6 +475,7 @@ export class ContentAddressableStorage {
             return;
         }
 
+        const cdnNodeUrl = this.getCdnNodeUrl(finalCid, route);
         const ack = PbAck.create({
             requestId,
             sessionId: session,
@@ -472,16 +500,21 @@ export class ContentAddressableStorage {
             multiHashType: 0n,
         });
 
-        const requestSignature = await this.signRequest(request, '/api/rest/ack', 'POST');
+        const requestSignature = await this.signRequest(request, this.getPath(cdnNodeUrl, '/api/rest/ack', 'POST'));
 
         if (requestSignature) {
             request.signature = requestSignature;
         }
 
-        const ackResponse = await this.sendRequest('/api/rest/ack', undefined, {
-            method: 'POST',
-            body: PbRequest.toBinary(request).buffer,
-        });
+        const ackResponse = await this.sendRequest(
+            '/api/rest/ack',
+            undefined,
+            {
+                method: 'POST',
+                body: PbRequest.toBinary(request).buffer,
+            },
+            route,
+        );
 
         const pbAckResponse = PbResponse.fromBinary(new Uint8Array(await ackResponse.arrayBuffer()));
 
@@ -508,7 +541,7 @@ export class ContentAddressableStorage {
         return this.scheme.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
     }
 
-    private sendRequest(pathname: string, query?: string, init?: RequestInit): Promise<Response> {
+    private async sendRequest(pathname: string, query?: string, init?: RequestInit, route?: Route): Promise<Response> {
         const url = new URL(this.cdnNodeUrl);
         url.pathname = pathname;
         if (query) {
@@ -519,8 +552,10 @@ export class ContentAddressableStorage {
         const options = init != null ? {...init, attempts} : {attempts};
         const response = attempts === 1 ? fetch(url.href, init) : repeatableFetch(url.href, options);
 
-        return response.catch((error) => {
+        try {
+            return await response;
+        } catch (error) {
             throw new Error(`Can't send request url='${url}', method='${method}', error='${error}'`);
-        });
+        }
     }
 }

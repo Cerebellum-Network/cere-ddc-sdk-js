@@ -1,11 +1,9 @@
+import {v4 as uuid} from 'uuid';
 import {BucketId, ClusterId} from '@cere-ddc-sdk/smart-contract/types';
-import {randomAsU8a} from '@polkadot/util-crypto';
 import {stringToU8a, u8aToHex, u8aConcat} from '@polkadot/util';
 import {CidBuilder, SchemeInterface} from '@cere-ddc-sdk/core';
 import {PieceUri} from '../models/PieceUri';
 import {Route} from './Route';
-
-const REQUEST_ID_SIZE = 32;
 
 type UnsignedRequest = {
     requestId: string;
@@ -26,7 +24,7 @@ export type RouteParams = {
 };
 
 export type RouterOptions = {
-    cidBuilder: CidBuilder;
+    cidBuilder?: CidBuilder;
     signer: SchemeInterface;
 
     /**
@@ -39,18 +37,18 @@ export type RouterOptions = {
 };
 
 export class Router {
-    constructor(private clusterId: ClusterId, private options: RouterOptions) {}
+    private cidBuilder: CidBuilder;
+    private signer: SchemeInterface;
 
-    private createRequestId() {
-        return randomAsU8a(REQUEST_ID_SIZE).toString();
+    constructor(private clusterId: ClusterId, private options: RouterOptions) {
+        this.cidBuilder = options.cidBuilder || new CidBuilder();
+        this.signer = options.signer;
     }
 
     private async signRequest(request: UnsignedRequest) {
-        const {cidBuilder, signer} = this.options;
-
-        const cid = await cidBuilder.build(u8aConcat(request.cid, request.requestId, request.timestamp.toString()));
-        const signature = await signer.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
-
+        const sigData = u8aConcat(request.cid, request.requestId, request.timestamp.toString());
+        const cid = await this.cidBuilder.build(sigData);
+        const signature = await this.signer.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
         const signedRequest: SignedRequest = {
             ...request,
             userSignature: u8aToHex(signature),
@@ -60,15 +58,13 @@ export class Router {
     }
 
     private createRequest(uri: PieceUri) {
-        const {signer} = this.options;
-
         return this.signRequest({
             clusterId: this.clusterId,
             cid: uri.cid,
             bucketId: uri.bucketId,
-            requestId: this.createRequestId(),
+            requestId: uuid(),
             timestamp: Date.now(),
-            userAddress: signer.address,
+            userAddress: this.signer.address,
         });
     }
 

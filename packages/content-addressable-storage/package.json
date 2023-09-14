@@ -49,12 +49,13 @@
         "@cere-ddc-sdk/smart-contract": "1.8.0-rc.7",
         "@polkadot/util": "^10.1.8",
         "@polkadot/util-crypto": "^10.1.8",
-        "nanoid": "3.3.3",
+        "uuid": "^9.0.1",
         "varint": "^6.0.0"
     },
     "devDependencies": {
         "@types/node": "^16.0.0",
         "@types/varint": "^6.0.0",
+        "@types/uuid": "^9.0.3",
         "cross-fetch": "^3.1.5",
         "rimraf": "^3.0.2"
     }
