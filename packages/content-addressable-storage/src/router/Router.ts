@@ -3,17 +3,17 @@ import {BucketId, ClusterId} from '@cere-ddc-sdk/smart-contract/types';
 import {stringToU8a, u8aToHex, u8aConcat} from '@polkadot/util';
 import {CidBuilder, SchemeInterface} from '@cere-ddc-sdk/core';
 import {PieceUri} from '../models/PieceUri';
-import {Route, PieceRoute} from './Route';
+import {Route, PieceRouting} from './Route';
 import {Link} from '../models/Link';
 
 type UnsignedRequest = {
-    operation: 'store' | 'read';
-    cid: string;
+    operation: 'store' | 'read' | 'search';
     requestId: string;
     clusterId: ClusterId;
     bucketId: BucketId;
     userAddress: string;
     timestamp: number;
+    cid?: string;
     links?: Link[];
 };
 
@@ -21,9 +21,14 @@ type SignedRequest = UnsignedRequest & {
     userSignature: string;
 };
 
-type Response = {
+type PiecesRoutingResponse = {
     requestId: string;
-    routing: PieceRoute[];
+    routing: PieceRouting[];
+};
+
+type SearchRoutingResponse = {
+    requestId: string;
+    routing: Omit<PieceRouting, 'cid'>;
 };
 
 export type RouteParams = {
@@ -45,9 +50,26 @@ export class Router {
         this.signer = options.signer;
     }
 
+    private async createRequest(
+        request: Omit<UnsignedRequest, 'requestId' | 'clusterId' | 'timestamp' | 'userAddress'>,
+    ) {
+        return this.signRequest({
+            ...request,
+            clusterId: this.clusterId,
+            requestId: uuid(),
+            timestamp: Date.now(),
+            userAddress: this.signer.address,
+        });
+    }
+
     private async signRequest(request: UnsignedRequest) {
-        const sigData = u8aConcat(request.cid, request.requestId, request.timestamp.toString());
-        const cid = await this.cidBuilder.build(sigData);
+        let sigData = [request.requestId, request.timestamp.toString()];
+
+        if (request.cid) {
+            sigData = [request.cid, ...sigData];
+        }
+
+        const cid = await this.cidBuilder.build(u8aConcat(...sigData));
         const signature = await this.signer.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
         const signedRequest: SignedRequest = {
             ...request,
@@ -57,39 +79,47 @@ export class Router {
         return signedRequest;
     }
 
-    private createRequest(operation: UnsignedRequest['operation'], uri: PieceUri, links?: Link[]) {
-        return this.signRequest({
+    private async getPiecesRoute(operation: UnsignedRequest['operation'], uri: PieceUri, links?: Link[]) {
+        const request = await this.createRequest({
             operation,
             links,
-            clusterId: this.clusterId,
             cid: uri.cid,
             bucketId: uri.bucketId,
-            requestId: uuid(),
-            timestamp: Date.now(),
-            userAddress: this.signer.address,
+        });
+
+        const {requestId, routing} = await this.requestPiecesRouting(request);
+
+        return new Route(requestId, {
+            pieces: routing,
         });
     }
 
-    private async requestRoutingData(request: SignedRequest): Promise<Response> {
-        throw new Error('Not implemented');
-    }
+    async getSearchRoute(bucketId: PieceUri['bucketId']) {
+        const request = await this.createRequest({
+            bucketId,
+            operation: 'search',
+        });
 
-    private async getRoute(operation: UnsignedRequest['operation'], uri: PieceUri, links?: Link[]) {
-        const request = await this.createRequest(operation, uri, links);
-        const respose = await this.requestRoutingData(request);
+        const {requestId, routing} = await this.requestSearchRouting(request);
 
-        return new Route(respose.requestId, respose.routing);
+        return new Route(requestId, {
+            search: routing,
+        });
     }
 
     async getReadRoute(uri: PieceUri) {
-        return this.getRoute('read', uri);
+        return this.getPiecesRoute('read', uri);
     }
 
     async getStoreRoute(uri: PieceUri, links: Link[]) {
-        return this.getRoute('store', uri, links);
+        return this.getPiecesRoute('store', uri, links);
     }
 
-    async getSearchRoute() {
+    private async requestPiecesRouting(request: SignedRequest): Promise<PiecesRoutingResponse> {
+        throw new Error('Not implemented');
+    }
+
+    private async requestSearchRouting(request: SignedRequest): Promise<SearchRoutingResponse> {
         throw new Error('Not implemented');
     }
 }

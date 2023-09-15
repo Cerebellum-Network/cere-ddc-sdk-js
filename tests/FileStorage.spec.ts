@@ -64,7 +64,7 @@ describe('packages/file-storage/src/index.ts', () => {
                 signer: storage.caStorage.scheme,
             });
 
-            jest.spyOn(router as any, 'requestRoutingData').mockImplementation(
+            jest.spyOn(router as any, 'requestPiecesRouting').mockImplementation(
                 async ({requestId, cid: headCid}: any) => {
                     const sessionId = 'test-session';
 

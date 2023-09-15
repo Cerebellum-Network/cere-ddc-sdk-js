@@ -1,13 +1,29 @@
 import {stringToU8a} from '@polkadot/util';
 
-export type PieceRoute = {
+export type PieceRouting = {
     cid: string;
     nodeUrl: string;
     sessionId: string;
 };
 
+export type SearchRouting = {
+    nodeUrl: string;
+    sessionId: string;
+};
+
+export type RouteOptions = {
+    pieces?: PieceRouting[];
+    search?: SearchRouting;
+};
+
 export class Route {
-    constructor(readonly requestId: string, readonly pieces: PieceRoute[]) {}
+    private readonly pieces: PieceRouting[];
+    private readonly search?: SearchRouting;
+
+    constructor(readonly requestId: string, {pieces, search}: RouteOptions) {
+        this.pieces = pieces || [];
+        this.search = search;
+    }
 
     private getPieceRoute(cid: string) {
         return this.pieces.find((chunk) => chunk.cid === cid);
@@ -21,6 +37,14 @@ export class Route {
         }
 
         return this.pieces.indexOf(chunk);
+    }
+
+    get searchNodeUrl() {
+        return this.search?.nodeUrl;
+    }
+
+    get searchSessionId() {
+        return this.search?.sessionId && stringToU8a(this.search?.sessionId);
     }
 
     isLastPiece(cid: string) {

@@ -341,7 +341,8 @@ export class ContentAddressableStorage {
     }
 
     async search(query: Query, options: SearchOptions = {}): Promise<SearchResult> {
-        const session = await this.useSession(options.session);
+        const session = this.useSession(options.route?.searchSessionId || options.session);
+        const cdnNodeUrl = options.route?.searchNodeUrl || this.cdnNodeUrl;
 
         const pbQuery: PbQuery = {
             bucketId: Number(query.bucketId),
@@ -357,7 +358,7 @@ export class ContentAddressableStorage {
 
         const requestSignature = await this.signRequest(
             PbRequest.create({sessionId: session}),
-            this.getPath(this.cdnNodeUrl, `${BASE_PATH_PIECES}?${search.toString()}`),
+            this.getPath(cdnNodeUrl, `${BASE_PATH_PIECES}?${search.toString()}`),
         );
 
         const pbRequest = PbRequest.create({
@@ -369,7 +370,7 @@ export class ContentAddressableStorage {
 
         search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'));
 
-        const response = await this.sendRequest(this.cdnNodeUrl, `${BASE_PATH_PIECES}`, search.toString());
+        const response = await this.sendRequest(cdnNodeUrl, `${BASE_PATH_PIECES}`, search.toString());
         const responseData = await response.arrayBuffer();
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
 
