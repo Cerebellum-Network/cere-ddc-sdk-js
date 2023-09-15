@@ -95,7 +95,10 @@ describe('packages/file-storage/src/index.ts', () => {
         });
 
         test('upload chunked data', async () => {
-            headPieceUri = await storage.upload(bucketId, fileData, []);
+            const headPiece = await storage.createHeadPiece(bucketId, fileData);
+            const route = await router.getRoute(new PieceUri(bucketId, headPiece.cid!), headPiece.links);
+
+            headPieceUri = await storage.upload(bucketId, fileData, [], {route});
         });
 
         test('read chunked data', async () => {

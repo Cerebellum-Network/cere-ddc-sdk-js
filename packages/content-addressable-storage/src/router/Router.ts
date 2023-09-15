@@ -4,6 +4,7 @@ import {stringToU8a, u8aToHex, u8aConcat} from '@polkadot/util';
 import {CidBuilder, SchemeInterface} from '@cere-ddc-sdk/core';
 import {PieceUri} from '../models/PieceUri';
 import {Route, PieceRoute} from './Route';
+import {Link} from '../models/Link';
 
 type UnsignedRequest = {
     requestId: string;
@@ -12,6 +13,7 @@ type UnsignedRequest = {
     bucketId: BucketId;
     userAddress: string;
     timestamp: number;
+    links: Link[];
 };
 
 type SignedRequest = UnsignedRequest & {
@@ -54,8 +56,9 @@ export class Router {
         return signedRequest;
     }
 
-    private createRequest(uri: PieceUri) {
+    private createRequest(uri: PieceUri, links: Link[] = []) {
         return this.signRequest({
+            links,
             clusterId: this.clusterId,
             cid: uri.cid,
             bucketId: uri.bucketId,
@@ -69,8 +72,8 @@ export class Router {
         throw new Error('Not implemented');
     }
 
-    async getRoute(uri: PieceUri) {
-        const request = await this.createRequest(uri);
+    async getRoute(uri: PieceUri, links: Link[] = []) {
+        const request = await this.createRequest(uri, links);
         const respose = await this.requestRoutingData(request);
 
         return new Route(respose.requestId, respose.routing);

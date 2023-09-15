@@ -6,7 +6,6 @@ import {
     Link,
     PieceUri,
     ReadOptions,
-    Session,
     StoreOptions,
     Tag,
 } from '@cere-ddc-sdk/content-addressable-storage';
@@ -14,6 +13,7 @@ import type {ReadableStream as NodeReadableStream} from 'stream/web';
 import {GetFirstArgument, RequiredSelected} from '@cere-ddc-sdk/core';
 
 import {FileStorageConfig} from './core/FileStorageConfig.js';
+import {CoreFileStorage} from './core/CoreFileStorage.js';
 
 type CaCreateOptions = GetFirstArgument<typeof ContentAddressableStorage.build>;
 type Options = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
@@ -30,6 +30,7 @@ export {FileStorageConfig, KB, MB} from './core/FileStorageConfig.js';
 export interface FileStorage {
     readonly config: FileStorageConfig;
     readonly caStorage: ContentAddressableStorage;
+    readonly fs: CoreFileStorage;
 
     upload(bucketId: bigint, data: Data, tags: Tag[], storeOptions?: StoreOptions): Promise<PieceUri>;
 
