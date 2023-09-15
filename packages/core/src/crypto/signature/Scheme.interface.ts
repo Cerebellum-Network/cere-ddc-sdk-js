@@ -10,7 +10,6 @@ export interface SchemeInterface {
     readonly address: string;
     readonly publicKey: Uint8Array;
     readonly publicKeyHex: string;
-    readonly pair: KeyringPair;
 
     sign(data: Uint8Array): Promise<Uint8Array>;
 }

@@ -5,7 +5,8 @@ import {cryptoWaitReady} from '@polkadot/util-crypto';
 import {SchemeInterface, SchemeName} from './Scheme.interface';
 
 export class Scheme implements SchemeInterface {
-    readonly pair: KeyringPair;
+    private readonly pair: KeyringPair;
+
     readonly name: SchemeName;
     readonly address: string;
 
