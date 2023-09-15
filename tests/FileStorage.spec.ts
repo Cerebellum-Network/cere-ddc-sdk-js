@@ -96,13 +96,13 @@ describe('packages/file-storage/src/index.ts', () => {
 
         test('upload chunked data', async () => {
             const headPiece = await storage.createHeadPiece(bucketId, fileData);
-            const route = await router.getRoute(new PieceUri(bucketId, headPiece.cid!), headPiece.links);
+            const route = await router.getStoreRoute(new PieceUri(bucketId, headPiece.cid!), headPiece.links);
 
             headPieceUri = await storage.upload(bucketId, fileData, [], {route});
         });
 
         test('read chunked data', async () => {
-            const route = await router.getRoute(headPieceUri);
+            const route = await router.getReadRoute(headPieceUri);
             const stream = storage.read(bucketId, headPieceUri.cid, {route});
 
             await assertReadStream(stream);

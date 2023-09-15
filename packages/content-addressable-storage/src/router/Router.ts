@@ -7,13 +7,14 @@ import {Route, PieceRoute} from './Route';
 import {Link} from '../models/Link';
 
 type UnsignedRequest = {
-    requestId: string;
+    operation: 'store' | 'read';
     cid: string;
+    requestId: string;
     clusterId: ClusterId;
     bucketId: BucketId;
     userAddress: string;
     timestamp: number;
-    links: Link[];
+    links?: Link[];
 };
 
 type SignedRequest = UnsignedRequest & {
@@ -56,8 +57,9 @@ export class Router {
         return signedRequest;
     }
 
-    private createRequest(uri: PieceUri, links: Link[] = []) {
+    private createRequest(operation: UnsignedRequest['operation'], uri: PieceUri, links?: Link[]) {
         return this.signRequest({
+            operation,
             links,
             clusterId: this.clusterId,
             cid: uri.cid,
@@ -72,10 +74,22 @@ export class Router {
         throw new Error('Not implemented');
     }
 
-    async getRoute(uri: PieceUri, links: Link[] = []) {
-        const request = await this.createRequest(uri, links);
+    private async getRoute(operation: UnsignedRequest['operation'], uri: PieceUri, links?: Link[]) {
+        const request = await this.createRequest(operation, uri, links);
         const respose = await this.requestRoutingData(request);
 
         return new Route(respose.requestId, respose.routing);
+    }
+
+    async getReadRoute(uri: PieceUri) {
+        return this.getRoute('read', uri);
+    }
+
+    async getStoreRoute(uri: PieceUri, links: Link[]) {
+        return this.getRoute('store', uri, links);
+    }
+
+    async getSearchRoute() {
+        throw new Error('Not implemented');
     }
 }
