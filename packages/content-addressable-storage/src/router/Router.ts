@@ -14,7 +14,7 @@ type UnsignedRequest = {
     userAddress: string;
     timestamp: number;
     cid?: string;
-    links?: Link[];
+    chunks?: Link[];
 };
 
 type SignedRequest = UnsignedRequest & {
@@ -39,6 +39,7 @@ export type RouteParams = {
 export type RouterOptions = {
     cidBuilder?: CidBuilder;
     signer: SchemeInterface;
+    serviceUrl: string;
 };
 
 export class Router {
@@ -79,10 +80,10 @@ export class Router {
         return signedRequest;
     }
 
-    private async getPiecesRoute(operation: UnsignedRequest['operation'], uri: PieceUri, links?: Link[]) {
+    private async getPiecesRoute(operation: UnsignedRequest['operation'], uri: PieceUri, chunks?: Link[]) {
         const request = await this.createRequest({
             operation,
-            links,
+            chunks,
             cid: uri.cid,
             bucketId: uri.bucketId,
         });
@@ -116,10 +117,28 @@ export class Router {
     }
 
     private async requestPiecesRouting(request: SignedRequest): Promise<PiecesRoutingResponse> {
-        throw new Error('Not implemented');
+        const path = request.operation === 'store' ? '/write-resource-metadata' : '/read-resource-metadata';
+
+        return this.request(path, request);
     }
 
     private async requestSearchRouting(request: SignedRequest): Promise<SearchRoutingResponse> {
-        throw new Error('Not implemented');
+        return this.request('/search-metadata', request);
+    }
+
+    private async request<T>(path: string, body: SignedRequest): Promise<T> {
+        const response = await fetch(new URL(path, this.options.serviceUrl), {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+
+            body: JSON.stringify(body, (key, value) => {
+                return typeof value === 'bigint' ? value.toString() : value;
+            }),
+        });
+
+        return response.json();
     }
 }

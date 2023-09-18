@@ -16,7 +16,8 @@ module.exports = {
     transform: {
         '\\.(js|ts)$': require.resolve('babel-jest'),
     },
-    globalTeardown: './jest.teardown.cjs',
-    globalSetup: './jest.setup.cjs',
+    globalTeardown: './tests/setup/globalTeardown.cjs',
+    globalSetup: './tests/setup/globalSetup.cjs',
+    setupFilesAfterEnv: ['./tests/setup/setup.ts'],
     testTimeout: 100000,
 };
