@@ -137,6 +137,10 @@ export class SmartContract extends SmartContractBase {
         await this.submit(this.contract.tx.bucketAllocIntoCluster, bucketId, resource);
     }
 
+    async bucketSetAvailability(bucketId: BucketId, isPublic: boolean) {
+        await this.submit(this.contract.tx.bucketSetAvailability, bucketId, isPublic);
+    }
+
     async accountDeposit(value: Balance) {
         await this.submitWithOptions(this.contract.tx.accountDeposit, {value: this.toUnits(value)});
     }

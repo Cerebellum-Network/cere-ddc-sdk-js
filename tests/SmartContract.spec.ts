@@ -294,6 +294,13 @@ describe('Smart Contract', () => {
             expect(foundBucket.bucketId).toEqual(createdBucketId);
         });
 
+        test('set bucket availability', async () => {
+            await userContract.bucketSetAvailability(createdBucketId, true);
+            const foundBucket = await userContract.bucketGet(createdBucketId);
+
+            expect(foundBucket.bucket.publicAvailability).toEqual(true);
+        });
+
         test('get all buckets', async () => {
             const [buckets, totalCount] = await userContract.bucketList();
 
