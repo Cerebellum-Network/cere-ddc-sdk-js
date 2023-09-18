@@ -2,6 +2,7 @@
 
 ### vNext
 
+-   Add bucket availability method to Smart Contract module
 -   Get $CERE decimals value from blockchain properties instead of hardcoded value
 -   Fix RPC error handling in Smart Contract module
 -   Update build and publish to use Lerna.js
