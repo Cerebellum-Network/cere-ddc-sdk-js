@@ -7,7 +7,7 @@ export interface StorageOptionsInterface {
     scheme: SchemeName | SchemeInterface;
     cipher: CipherInterface;
     cidBuilder: CidBuilder;
-    routerServiceUrl?: string;
+    routerServiceUrl: string | null;
 }
 
 export class StorageOptions implements StorageOptionsInterface {
@@ -17,6 +17,6 @@ export class StorageOptions implements StorageOptionsInterface {
         public readonly scheme: SchemeName | SchemeInterface = 'sr25519',
         public readonly cipher: CipherInterface = new NaclCipher(),
         public readonly cidBuilder: CidBuilder = new CidBuilder(),
-        public readonly routerServiceUrl?: string,
+        public readonly routerServiceUrl: string | null = null,
     ) {}
 }
