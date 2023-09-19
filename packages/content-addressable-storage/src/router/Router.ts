@@ -5,6 +5,7 @@ import {CidBuilder, SchemeInterface} from '@cere-ddc-sdk/core';
 import {PieceUri} from '../models/PieceUri';
 import {Route, PieceRouting} from './Route';
 import {Link} from '../models/Link';
+import {RouterInterface} from './types';
 
 type UnsignedRequest = {
     operation: 'store' | 'read' | 'search';
@@ -42,13 +43,15 @@ export type RouterOptions = {
     serviceUrl: string;
 };
 
-export class Router {
+export class Router implements RouterInterface {
     private cidBuilder: CidBuilder;
     private signer: SchemeInterface;
 
     constructor(private clusterId: ClusterId, private options: RouterOptions) {
         this.cidBuilder = options.cidBuilder || new CidBuilder();
         this.signer = options.signer;
+
+        console.log('Real router mode');
     }
 
     private async createRequest(

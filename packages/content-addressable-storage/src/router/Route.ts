@@ -14,15 +14,33 @@ export type SearchRouting = {
 export type RouteOptions = {
     pieces?: PieceRouting[];
     search?: SearchRouting;
+    fallbackNodeUrl?: string;
+    fallbackSessionId?: string;
 };
 
 export class Route {
     private readonly pieces: PieceRouting[];
     private readonly search?: SearchRouting;
 
-    constructor(readonly requestId: string, {pieces, search}: RouteOptions) {
-        this.pieces = pieces || [];
-        this.search = search;
+    constructor(readonly requestId: string, private options: RouteOptions) {
+        this.pieces = options.pieces || [];
+        this.search = options.search;
+    }
+
+    private get fallbackNodeUrl() {
+        if (!this.options.fallbackNodeUrl) {
+            throw new Error('Fallback node url was not provided');
+        }
+
+        return this.options.fallbackNodeUrl;
+    }
+
+    private get fallbackSessionId() {
+        if (!this.options.fallbackSessionId) {
+            throw new Error('Fallback node url was not provided');
+        }
+
+        return this.options.fallbackSessionId;
     }
 
     private getPieceRoute(cid: string) {
@@ -40,11 +58,15 @@ export class Route {
     }
 
     get searchNodeUrl() {
-        return this.search?.nodeUrl;
+        return this.search?.nodeUrl || this.fallbackNodeUrl;
     }
 
     get searchSessionId() {
-        return this.search?.sessionId && stringToU8a(this.search?.sessionId);
+        if (!this.search) {
+            throw new Error(`No search route data`);
+        }
+
+        return stringToU8a(this.search.sessionId);
     }
 
     isLastPiece(cid: string) {
@@ -52,12 +74,10 @@ export class Route {
     }
 
     getNodeUrl(cid: string) {
-        return this.getPieceRoute(cid)?.nodeUrl;
+        return this.getPieceRoute(cid)?.nodeUrl || this.fallbackNodeUrl;
     }
 
     getSessionId(cid: string) {
-        const sessionId = this.getPieceRoute(cid)?.sessionId;
-
-        return sessionId && stringToU8a(sessionId);
+        return stringToU8a(this.getPieceRoute(cid)?.sessionId || this.fallbackSessionId);
     }
 }

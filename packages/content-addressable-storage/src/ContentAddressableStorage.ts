@@ -7,17 +7,9 @@ import {
     SearchResult as PbSearchResult,
     SignedPiece as PbSignedPiece,
 } from '@cere-ddc-sdk/proto';
-import {
-    CidBuilder,
-    CipherInterface,
-    isSchemeName,
-    randomUint8,
-    RequiredSelected,
-    Scheme,
-    SchemeInterface,
-} from '@cere-ddc-sdk/core';
-import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
-import {base58Encode, mnemonicGenerate, randomAsU8a} from '@polkadot/util-crypto';
+import {CidBuilder, CipherInterface, isSchemeName, RequiredSelected, Scheme, SchemeInterface} from '@cere-ddc-sdk/core';
+
+import {base58Encode, randomAsU8a} from '@polkadot/util-crypto';
 import {stringToU8a, u8aToString, bnToU8a} from '@polkadot/util';
 import {fetch} from 'cross-fetch';
 import {encode} from 'varint';
@@ -32,7 +24,7 @@ import {concatArrays} from './lib/concat-arrays';
 import {DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG, REQIEST_ID_HEADER} from './constants';
 import {initDefaultOptions} from './lib/init-default-options';
 import {repeatableFetch} from './lib/repeatable-fetch';
-import {Route} from './router';
+import {FallbackRouter, Route, Router, RouterInterface} from './router';
 import {BucketId} from '@cere-ddc-sdk/smart-contract/types';
 
 const BASE_PATH_PIECES = '/api/v1/rest/pieces';
@@ -63,8 +55,8 @@ type AckParams = {
     payload: PbResponse;
     session: Session;
     piece: Piece;
+    route: Route;
     cid?: string;
-    route?: Route;
 };
 
 export type ContentAddressableStorageOptions = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
@@ -72,9 +64,9 @@ export type ContentAddressableStorageOptions = RequiredSelected<Partial<CaCreate
 export class ContentAddressableStorage {
     private constructor(
         public readonly scheme: SchemeInterface,
-        public readonly cdnNodeUrl: string,
         public readonly cipher: CipherInterface,
         public readonly cidBuilder: CidBuilder,
+        public readonly router: RouterInterface,
         private readonly readAttempts: number = 1,
         private readonly writeAttempts: number = 1,
         private defaultSession: Session | null = null,
@@ -88,13 +80,21 @@ export class ContentAddressableStorage {
         const scheme = isSchemeName(caOptions.scheme)
             ? await Scheme.createScheme(caOptions.scheme, secretMnemonicOrSeed)
             : caOptions.scheme;
-        const cdn = await ContentAddressableStorage.getCdnAddress(caOptions.smartContract, caOptions.clusterAddress);
+
+        const router =
+            !caOptions.routerServiceUrl || typeof caOptions.clusterAddress === 'string'
+                ? new FallbackRouter(caOptions.clusterAddress, caOptions.smartContract, caOptions.session)
+                : new Router(caOptions.clusterAddress, {
+                      signer: scheme,
+                      cidBuilder: caOptions.cidBuilder,
+                      serviceUrl: caOptions.routerServiceUrl,
+                  });
 
         return new ContentAddressableStorage(
             scheme,
-            cdn,
             caOptions.cipher,
             caOptions.cidBuilder,
+            router,
             caOptions.readAttempts,
             caOptions.writeAttempts,
             caOptions.session,
@@ -102,38 +102,6 @@ export class ContentAddressableStorage {
     }
 
     async disconnect(): Promise<void> {}
-
-    private static async getCdnAddress(
-        smartContractOptions: SmartContractOptions,
-        clusterAddress: string | number,
-    ): Promise<string> {
-        if (typeof clusterAddress === 'string') {
-            return clusterAddress;
-        }
-
-        const smartContract = await SmartContract.buildAndConnect(mnemonicGenerate(), smartContractOptions);
-        try {
-            const {cluster} = await smartContract.clusterGet(clusterAddress);
-
-            if (cluster.cdnNodesKeys.length === 0) {
-                throw new Error(`unable to find cdn nodes in cluster='${clusterAddress}'`);
-            }
-
-            const index = randomUint8(cluster.cdnNodesKeys.length);
-            const cdnNodeKey = cluster.cdnNodesKeys[index];
-            const {cdnNode} = await smartContract.cdnNodeGet(cdnNodeKey);
-
-            if (!cdnNode.cdnNodeParams.url) {
-                throw new Error(`unable to get CDN node URL. Node key '${cdnNodeKey}'`);
-            }
-
-            return new URL(cdnNode.cdnNodeParams.url).href;
-        } finally {
-            await smartContract.disconnect();
-        }
-
-        throw new Error(`unable to find cdn nodes in cluster='${clusterAddress}'`);
-    }
 
     buildCid(bucketId: bigint, piece: Piece, encryptionOptions?: EncryptionOptions) {
         const targetPiece = piece.clone();
@@ -147,10 +115,6 @@ export class ContentAddressableStorage {
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
 
         return this.cidBuilder.build(pieceAsBytes);
-    }
-
-    private getCdnNodeUrl(cid: string, route?: Route) {
-        return route?.getNodeUrl(cid) || this.cdnNodeUrl;
     }
 
     private getPath(cdnNodeUrl: string, path: string, method: HTTP_METHOD = 'GET'): Uint8Array {
@@ -191,13 +155,13 @@ export class ContentAddressableStorage {
         bucketId: bigint,
         session: Session,
         piece: Piece,
-        route?: Route,
+        route: Route,
     ): Promise<StoreRequest> {
         const pbPiece: PbPiece = piece.toProto(bucketId);
         const pieceAsBytes = PbPiece.toBinary(pbPiece);
         const cid = await this.cidBuilder.build(pieceAsBytes);
+        const cdnNodeUrl = route.getNodeUrl(cid);
         const timestamp = new Date();
-        const cdnNodeUrl = this.getCdnNodeUrl(cid, route);
         const signature = await this.scheme.sign(
             stringToU8a(`<Bytes>DDC store ${cid} at ${timestamp.toISOString()}</Bytes>`),
         );
@@ -238,10 +202,12 @@ export class ContentAddressableStorage {
 
     async store(bucketId: bigint, piece: Piece, options: StoreOptions = {}): Promise<PieceUri> {
         const cid = piece.cid || (await this.buildCid(bucketId, piece));
-        const cdnNodeUrl = this.getCdnNodeUrl(cid, options.route);
+        const pieceUri = new PieceUri(bucketId, cid);
+        const route = options.route || (await this.router.getStoreRoute(pieceUri, piece.links));
+        const cdnNodeUrl = route.getNodeUrl(cid);
         const session = this.useSession(options.route?.getSessionId(cid) || options.session);
 
-        const request = await this.buildStoreRequest(bucketId, session, piece, options.route);
+        const request = await this.buildStoreRequest(bucketId, session, piece, route);
         const response = await this.sendRequest(cdnNodeUrl, request.path, undefined, {
             method: request.method,
             body: request.body,
@@ -263,6 +229,7 @@ export class ContentAddressableStorage {
             piece,
             session,
             response,
+            route,
             cid: request.cid,
             payload: protoResponse,
         });
@@ -271,7 +238,9 @@ export class ContentAddressableStorage {
     }
 
     async read(bucketId: BucketId, cid: string, options: ReadOptions = {}): Promise<Piece> {
-        const cdnNodeUrl = this.getCdnNodeUrl(cid, options.route);
+        const pieceUri = new PieceUri(bucketId, cid);
+        const route = options.route || (await this.router.getReadRoute(pieceUri));
+        const cdnNodeUrl = route.getNodeUrl(cid);
         const session = this.useSession(options.route?.getSessionId(cid) || options.session);
 
         const search = new URLSearchParams();
@@ -334,6 +303,7 @@ export class ContentAddressableStorage {
             piece,
             session,
             response,
+            route,
             payload: protoResponse,
         });
 
@@ -342,7 +312,8 @@ export class ContentAddressableStorage {
 
     async search(query: Query, options: SearchOptions = {}): Promise<SearchResult> {
         const session = this.useSession(options.route?.searchSessionId || options.session);
-        const cdnNodeUrl = options.route?.searchNodeUrl || this.cdnNodeUrl;
+        const route = options.route || (await this.router.getSearchRoute(query.bucketId));
+        const cdnNodeUrl = route.searchNodeUrl;
 
         const pbQuery: PbQuery = {
             bucketId: Number(query.bucketId),
@@ -403,6 +374,7 @@ export class ContentAddressableStorage {
                     piece,
                     session,
                     response,
+                    route,
                     payload: protoResponse,
                 }),
             ),
@@ -477,7 +449,7 @@ export class ContentAddressableStorage {
             return;
         }
 
-        const cdnNodeUrl = this.getCdnNodeUrl(finalCid, route);
+        const cdnNodeUrl = route.getNodeUrl(finalCid);
         const ack = PbAck.create({
             requestId,
             sessionId: session,

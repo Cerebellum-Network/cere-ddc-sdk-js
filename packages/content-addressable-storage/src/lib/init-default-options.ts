@@ -20,5 +20,6 @@ export const initDefaultOptions = (options: Options): CaCreateOptions => {
         writeAttempts: options.writeAttempts || 1,
         ackTimeout: options.ackTimeout,
         session: options.session || null,
+        routerServiceUrl: options.routerServiceUrl,
     };
 };
