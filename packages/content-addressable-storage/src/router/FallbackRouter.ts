@@ -16,9 +16,7 @@ export class FallbackRouter implements RouterInterface {
         private clusterAddress: string | number,
         private smartContract: SmartContractOptions,
         private session?: Session | null,
-    ) {
-        console.log('Fallback router mode');
-    }
+    ) {}
 
     private async detectNodeUrl() {
         if (typeof this.clusterAddress === 'string') {

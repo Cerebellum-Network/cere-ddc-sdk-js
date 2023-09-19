@@ -21,7 +21,7 @@ export class Piece {
     }
 
     clone(): Piece {
-        return new Piece(this.data, this.tags, this.links, this.cid);
+        return new Piece(this.data, [...this.tags], [...this.links], this.cid);
     }
 
     static isPiece(obj: any): obj is Piece {

@@ -50,8 +50,6 @@ export class Router implements RouterInterface {
     constructor(private clusterId: ClusterId, private options: RouterOptions) {
         this.cidBuilder = options.cidBuilder || new CidBuilder();
         this.signer = options.signer;
-
-        console.log('Real router mode');
     }
 
     private async createRequest(

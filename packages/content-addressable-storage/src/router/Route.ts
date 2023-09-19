@@ -29,7 +29,7 @@ export class Route {
 
     private get fallbackNodeUrl() {
         if (!this.options.fallbackNodeUrl) {
-            throw new Error('Fallback node url was not provided');
+            throw new Error('Node URL was not found in the routing data');
         }
 
         return this.options.fallbackNodeUrl;
@@ -37,7 +37,7 @@ export class Route {
 
     private get fallbackSessionId() {
         if (!this.options.fallbackSessionId) {
-            throw new Error('Fallback node url was not provided');
+            throw new Error('Session was not found in the routing data');
         }
 
         return this.options.fallbackSessionId;
@@ -51,7 +51,7 @@ export class Route {
         const chunk = this.getPieceRoute(cid);
 
         if (!chunk) {
-            throw new Error(`Cid ${cid} is note in the route`);
+            throw new Error(`Cid ${cid} is not in the routing data`);
         }
 
         return this.pieces.indexOf(chunk);
@@ -62,11 +62,7 @@ export class Route {
     }
 
     get searchSessionId() {
-        if (!this.search) {
-            throw new Error(`No search route data`);
-        }
-
-        return stringToU8a(this.search.sessionId);
+        return stringToU8a(this.search?.sessionId || this.fallbackSessionId);
     }
 
     isLastPiece(cid: string) {

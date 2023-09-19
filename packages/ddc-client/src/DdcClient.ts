@@ -180,12 +180,24 @@ export class DdcClient implements DdcClientInterface {
 
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
         } else {
+            const headPiece = await this.fileStorage.createHeadPiece(
+                bucketId,
+                fileOrPiece.data,
+                fileOrPiece.tags,
+                encryptionOptions,
+            );
+
+            const route = await this.caStorage.router.getStoreRoute(
+                new PieceUri(bucketId, headPiece.cid!),
+                headPiece.links,
+            );
+
             const pieceUri = await this.fileStorage.uploadEncrypted(
                 bucketId,
                 fileOrPiece.data as any,
                 fileOrPiece.tags,
                 encryptionOptions,
-                options,
+                {route, ...options},
             );
 
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IFILE);
@@ -201,21 +213,28 @@ export class DdcClient implements DdcClientInterface {
             const pieceUri = await this.caStorage.store(bucketId, fileOrPiece, options);
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IPIECE);
         } else {
-            const pieceUri = await this.fileStorage.upload(
-                bucketId,
-                fileOrPiece.data as any,
-                fileOrPiece.tags,
-                options,
+            const headPiece = await this.fileStorage.createHeadPiece(bucketId, fileOrPiece.data, fileOrPiece.tags);
+            const route = await this.caStorage.router.getStoreRoute(
+                new PieceUri(bucketId, headPiece.cid!),
+                headPiece.links,
             );
+
+            const pieceUri = await this.fileStorage.upload(bucketId, fileOrPiece.data as any, fileOrPiece.tags, {
+                route,
+                ...options,
+            });
 
             return DdcUri.build(pieceUri.bucketId, pieceUri.cid, IFILE);
         }
     }
 
     async read(ddcUri: DdcUri, options: ReadOptions = {}): Promise<File | Piece> {
+        const pieceUri = new PieceUri(BigInt(ddcUri.bucket), ddcUri.path as string);
+        const route = await this.caStorage.router.getReadRoute(pieceUri);
+        const finalOptions = {route, ...options};
+
         if (ddcUri.protocol) {
-            const pieceUri = new PieceUri(BigInt(ddcUri.bucket), ddcUri.path as string);
-            const piece = await this.caStorage.read(pieceUri.bucketId, pieceUri.cid, options);
+            const piece = await this.caStorage.read(pieceUri.bucketId, pieceUri.cid, finalOptions);
 
             if (ddcUri.protocol === IPIECE) {
                 if (options.decrypt) {
@@ -225,15 +244,15 @@ export class DdcClient implements DdcClientInterface {
 
                 return piece;
             } else if (ddcUri.protocol === IFILE) {
-                return this.readByPieceUri(ddcUri, piece, options);
+                return this.readByPieceUri(ddcUri, piece, finalOptions);
             }
 
             throw new Error(`Unsupported URL for read: ${ddcUri.toString()}`);
         }
 
-        const headPiece = await this.caStorage.read(BigInt(ddcUri.bucket), ddcUri.path as string, options);
+        const headPiece = await this.caStorage.read(BigInt(ddcUri.bucket), ddcUri.path as string, finalOptions);
 
-        return this.readByPieceUri(ddcUri, headPiece, options);
+        return this.readByPieceUri(ddcUri, headPiece, finalOptions);
     }
 
     async search(query: Query, options: SearchOptions = {}): Promise<Array<Piece>> {

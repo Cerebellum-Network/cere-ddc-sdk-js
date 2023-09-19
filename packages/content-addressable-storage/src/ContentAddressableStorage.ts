@@ -41,7 +41,7 @@ type RouteOptions = {
 
 export type ReadOptions = SessionOptions & RouteOptions & {};
 export type StoreOptions = SessionOptions & RouteOptions & {};
-export type SearchOptions = SessionOptions & RouteOptions & {};
+export type SearchOptions = SessionOptions & {};
 
 type StoreRequest = {
     body: Uint8Array;
@@ -55,7 +55,7 @@ type AckParams = {
     payload: PbResponse;
     session: Session;
     piece: Piece;
-    route: Route;
+    nodeUrl: string;
     cid?: string;
 };
 
@@ -205,7 +205,7 @@ export class ContentAddressableStorage {
         const pieceUri = new PieceUri(bucketId, cid);
         const route = options.route || (await this.router.getStoreRoute(pieceUri, piece.links));
         const cdnNodeUrl = route.getNodeUrl(cid);
-        const session = this.useSession(options.route?.getSessionId(cid) || options.session);
+        const session = this.useSession(options.session || options.route?.getSessionId(cid));
 
         const request = await this.buildStoreRequest(bucketId, session, piece, route);
         const response = await this.sendRequest(cdnNodeUrl, request.path, undefined, {
@@ -229,7 +229,7 @@ export class ContentAddressableStorage {
             piece,
             session,
             response,
-            route,
+            nodeUrl: cdnNodeUrl,
             cid: request.cid,
             payload: protoResponse,
         });
@@ -241,7 +241,7 @@ export class ContentAddressableStorage {
         const pieceUri = new PieceUri(bucketId, cid);
         const route = options.route || (await this.router.getReadRoute(pieceUri));
         const cdnNodeUrl = route.getNodeUrl(cid);
-        const session = this.useSession(options.route?.getSessionId(cid) || options.session);
+        const session = this.useSession(options.session || options.route?.getSessionId(cid));
 
         const search = new URLSearchParams();
         search.set('bucketId', bucketId.toString());
@@ -303,7 +303,7 @@ export class ContentAddressableStorage {
             piece,
             session,
             response,
-            route,
+            nodeUrl: cdnNodeUrl,
             payload: protoResponse,
         });
 
@@ -311,8 +311,9 @@ export class ContentAddressableStorage {
     }
 
     async search(query: Query, options: SearchOptions = {}): Promise<SearchResult> {
-        const session = this.useSession(options.route?.searchSessionId || options.session);
-        const route = options.route || (await this.router.getSearchRoute(query.bucketId));
+        const route = await this.router.getSearchRoute(query.bucketId);
+        const session = this.useSession(options.session || route.searchSessionId);
+
         const cdnNodeUrl = route.searchNodeUrl;
 
         const pbQuery: PbQuery = {
@@ -374,7 +375,7 @@ export class ContentAddressableStorage {
                     piece,
                     session,
                     response,
-                    route,
+                    nodeUrl: cdnNodeUrl,
                     payload: protoResponse,
                 }),
             ),
@@ -437,7 +438,7 @@ export class ContentAddressableStorage {
         );
     }
 
-    private ack = async ({piece, session, response, payload, cid, route}: AckParams): Promise<void> => {
+    private ack = async ({piece, session, response, payload, cid, nodeUrl}: AckParams): Promise<void> => {
         if (!response.headers.has(REQIEST_ID_HEADER) || (payload.responseCode !== 0 && payload.responseCode !== 1)) {
             return;
         }
@@ -449,7 +450,6 @@ export class ContentAddressableStorage {
             return;
         }
 
-        const cdnNodeUrl = route.getNodeUrl(finalCid);
         const ack = PbAck.create({
             requestId,
             sessionId: session,
@@ -474,13 +474,13 @@ export class ContentAddressableStorage {
             multiHashType: 0n,
         });
 
-        const requestSignature = await this.signRequest(request, this.getPath(cdnNodeUrl, '/api/rest/ack', 'POST'));
+        const requestSignature = await this.signRequest(request, this.getPath(nodeUrl, '/api/rest/ack', 'POST'));
 
         if (requestSignature) {
             request.signature = requestSignature;
         }
 
-        const ackResponse = await this.sendRequest(cdnNodeUrl, '/api/rest/ack', undefined, {
+        const ackResponse = await this.sendRequest(nodeUrl, '/api/rest/ack', undefined, {
             method: 'POST',
             body: PbRequest.toBinary(request).buffer,
         });
