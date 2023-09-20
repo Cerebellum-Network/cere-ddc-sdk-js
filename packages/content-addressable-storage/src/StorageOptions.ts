@@ -1,9 +1,9 @@
-import {SmartContractOptions, TESTNET} from '@cere-ddc-sdk/smart-contract';
+import {SmartContract, SmartContractOptions, TESTNET} from '@cere-ddc-sdk/smart-contract';
 import {CidBuilder, CipherInterface, NaclCipher, SchemeInterface, SchemeName} from '@cere-ddc-sdk/core';
 
 export interface StorageOptionsInterface {
     clusterAddress: string | number;
-    smartContract: SmartContractOptions;
+    smartContract: SmartContractOptions | SmartContract;
     scheme: SchemeName | SchemeInterface;
     cipher: CipherInterface;
     cidBuilder: CidBuilder;

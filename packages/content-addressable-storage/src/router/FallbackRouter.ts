@@ -14,16 +14,21 @@ export class FallbackRouter implements RouterInterface {
 
     constructor(
         private clusterAddress: string | number,
-        private smartContract: SmartContractOptions,
+        private smartContract: SmartContractOptions | SmartContract,
         private session?: Session | null,
     ) {}
 
     private async detectNodeUrl() {
+        const isExternalContract = this.smartContract instanceof SmartContract;
+
         if (typeof this.clusterAddress === 'string') {
             return this.clusterAddress;
         }
 
-        const smartContract = await SmartContract.buildAndConnect(mnemonicGenerate(), this.smartContract);
+        const smartContract =
+            this.smartContract instanceof SmartContract
+                ? this.smartContract
+                : await SmartContract.buildAndConnect(mnemonicGenerate(), this.smartContract);
 
         try {
             const {cluster} = await smartContract.clusterGet(this.clusterAddress);
@@ -42,7 +47,9 @@ export class FallbackRouter implements RouterInterface {
 
             return new URL(cdnNode.cdnNodeParams.url).href;
         } finally {
-            await smartContract.disconnect();
+            if (!isExternalContract) {
+                await smartContract.disconnect();
+            }
         }
     }
 

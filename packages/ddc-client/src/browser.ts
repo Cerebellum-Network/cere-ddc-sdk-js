@@ -38,10 +38,7 @@ export class DdcClient extends CoreDdcClient {
             clientCreateOptions.smartContract,
         );
         const caStorage = await ContentAddressableStorage.build(
-            {
-                ...clientCreateOptions,
-                scheme,
-            },
+            {...clientCreateOptions, scheme, smartContract},
             encryptionSecretPhrase,
         );
 

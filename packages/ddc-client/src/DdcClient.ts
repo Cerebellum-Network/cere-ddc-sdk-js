@@ -73,12 +73,10 @@ export class DdcClient implements DdcClientInterface {
         const scheme = isSchemeName(clientCreateOptions.scheme)
             ? await Scheme.createScheme(clientCreateOptions.scheme, secretPhrase)
             : clientCreateOptions.scheme;
+
         const smartContract = await SmartContract.buildAndConnect(secretPhrase, options.smartContract);
         const caStorage = await ContentAddressableStorage.build(
-            {
-                ...clientCreateOptions,
-                scheme,
-            },
+            {...clientCreateOptions, smartContract, scheme},
             secretPhrase,
         );
 

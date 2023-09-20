@@ -12,8 +12,9 @@ import {ContentAddressableStorageOptions, Session} from '@cere-ddc-sdk/content-a
 
 type CaOptions = Required<ContentAddressableStorageOptions>;
 
-export interface ClientOptionsInterface extends CaOptions {
+export interface ClientOptionsInterface extends Omit<CaOptions, 'smartContract'> {
     fileOptions: FileStorageConfig;
+    smartContract: SmartContractOptions;
 }
 
 export type CreateClientOptions = RequiredSelected<Partial<ClientOptionsInterface>, 'clusterAddress'>;
