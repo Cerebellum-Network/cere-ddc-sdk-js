@@ -22,8 +22,7 @@ type Options = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
 export class FileStorage implements FileStorageInterface {
     readonly config: FileStorageConfig;
     readonly caStorage: ContentAddressableStorage;
-
-    private readonly fs: CoreFileStorage;
+    readonly fs: CoreFileStorage;
 
     constructor(caStorage: ContentAddressableStorage, config: FileStorageConfig = new FileStorageConfig()) {
         this.fs = new CoreFileStorage(caStorage, config);
@@ -41,6 +40,13 @@ export class FileStorage implements FileStorageInterface {
 
     disconnect(): Promise<void> {
         return this.caStorage.disconnect();
+    }
+
+    async createHeadPiece(bucketId: bigint, data: Data, tags: Tag[] = [], encryptionOptions?: EncryptionOptions) {
+        const stream = await transformDataToStream(data);
+        const reader = stream.pipeThrough(new streamWeb.TransformStream(this.fs.chunkTransformer())).getReader();
+
+        return this.fs.createHeadPiece(bucketId, reader, tags, encryptionOptions);
     }
 
     async upload(

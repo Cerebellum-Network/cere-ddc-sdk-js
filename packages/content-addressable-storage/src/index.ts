@@ -15,3 +15,5 @@ export {
     type ReadOptions,
     type SearchOptions,
 } from './ContentAddressableStorage';
+
+export * from './router';

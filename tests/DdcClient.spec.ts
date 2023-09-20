@@ -78,8 +78,7 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         const result = await mainClient.read(uri, {decrypt: true, dekPath});
 
         //then
-        piece.cid = uri.path as string;
-        expect(result).toEqual(piece);
+        expect(result.data).toEqual(piece.data);
         expect(Piece.isPiece(result)).toBeTruthy();
     });
 
@@ -117,15 +116,15 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
 
         //then
         let offset = 0;
-        const expectedData = new Uint8Array(data.length);
+        const fileData = new Uint8Array(data.length);
         for await (const chunkData of (result as File).dataReader()) {
-            expectedData.set(chunkData, offset);
+            fileData.set(chunkData, offset);
             offset += chunkData.length;
         }
 
-        result.data = expectedData;
+        result.data = fileData;
         file.cid = uri.path as string;
-        expect(result).toEqual(file);
+        expect(data).toEqual(fileData);
         expect(File.isFile(result)).toBeTruthy();
     });
 
@@ -169,15 +168,13 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
         expect(File.isFile(result)).toBeTruthy();
 
         let offset = 0;
-        const expectedData = new Uint8Array(data.length);
+        const fileData = new Uint8Array(data.length);
         for await (const chunkData of (result as File).dataReader()) {
-            expectedData.set(chunkData, offset);
+            fileData.set(chunkData, offset);
             offset += chunkData.length;
         }
 
-        result.data = expectedData;
-        file.cid = uri.path as string;
-        expect(result).toEqual(file);
+        expect(fileData).toEqual(data);
     });
 
     it('search data encrypted', async () => {

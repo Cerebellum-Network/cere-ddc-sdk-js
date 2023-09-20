@@ -1,3 +1,4 @@
+import type {UnderlyingSource} from 'stream/web';
 import {
     ContentAddressableStorage,
     Link,
@@ -8,7 +9,7 @@ import {
     StoreOptions,
     ReadOptions,
 } from '@cere-ddc-sdk/content-addressable-storage';
-import type {UnderlyingSource} from 'stream/web';
+
 import {FileStorageConfig} from './FileStorageConfig';
 import {IndexedLink} from './model/IndexedLink';
 
@@ -21,6 +22,32 @@ export class CoreFileStorage {
     constructor(caStorage: ContentAddressableStorage, config: FileStorageConfig) {
         this.config = config;
         this.caStorage = caStorage;
+    }
+
+    async createHeadPiece(
+        bucketId: bigint,
+        reader: ReadableStreamDefaultReader<Uint8Array>,
+        tags: Array<Tag> = [],
+        encryptionOptions?: EncryptionOptions,
+    ) {
+        const headPiece = new Piece(new Uint8Array(), tags, []);
+
+        while (true) {
+            const {done, value} = await reader.read();
+
+            if (done) {
+                break;
+            }
+
+            const piece = new Piece(value, [new Tag(multipartTag, 'true')]);
+
+            piece.cid = await this.caStorage.buildCid(bucketId, piece, encryptionOptions);
+            headPiece.links.push(new Link(piece.cid!, BigInt(value.byteLength)));
+        }
+
+        headPiece.cid = await this.caStorage.buildCid(bucketId, headPiece, encryptionOptions);
+
+        return headPiece;
     }
 
     async uploadFromStreamReader(

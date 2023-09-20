@@ -1,12 +1,13 @@
-import {SmartContractOptions, TESTNET} from '@cere-ddc-sdk/smart-contract';
+import {SmartContract, SmartContractOptions, TESTNET} from '@cere-ddc-sdk/smart-contract';
 import {CidBuilder, CipherInterface, NaclCipher, SchemeInterface, SchemeName} from '@cere-ddc-sdk/core';
 
 export interface StorageOptionsInterface {
-    clusterAddress: string | number,
-    smartContract: SmartContractOptions,
-    scheme: SchemeName | SchemeInterface,
-    cipher: CipherInterface,
-    cidBuilder: CidBuilder,
+    clusterAddress: string | number;
+    smartContract: SmartContractOptions | SmartContract;
+    scheme: SchemeName | SchemeInterface;
+    cipher: CipherInterface;
+    cidBuilder: CidBuilder;
+    routerServiceUrl: string | null;
 }
 
 export class StorageOptions implements StorageOptionsInterface {
@@ -16,5 +17,6 @@ export class StorageOptions implements StorageOptionsInterface {
         public readonly scheme: SchemeName | SchemeInterface = 'sr25519',
         public readonly cipher: CipherInterface = new NaclCipher(),
         public readonly cidBuilder: CidBuilder = new CidBuilder(),
+        public readonly routerServiceUrl: string | null = null,
     ) {}
 }
