@@ -31,6 +31,7 @@ export const initDefaultClientOptions = (options: Options): ClientOptionsInterfa
         writeAttempts: options.writeAttempts || defaultClientOptions.writeAttempts,
         ackTimeout: options.ackTimeout || defaultClientOptions.ackTimeout,
         session: options.session || null,
-        routerServiceUrl: options.routerServiceUrl || '',
+        routerServiceUrl: options.routerServiceUrl || null,
+        collectionPointServiceUrl: options.collectionPointServiceUrl || null,
     };
 };

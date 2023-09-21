@@ -8,6 +8,7 @@ export interface StorageOptionsInterface {
     cipher: CipherInterface;
     cidBuilder: CidBuilder;
     routerServiceUrl: string | null;
+    collectionPointServiceUrl: string | null;
 }
 
 export class StorageOptions implements StorageOptionsInterface {
@@ -18,5 +19,6 @@ export class StorageOptions implements StorageOptionsInterface {
         public readonly cipher: CipherInterface = new NaclCipher(),
         public readonly cidBuilder: CidBuilder = new CidBuilder(),
         public readonly routerServiceUrl: string | null = null,
+        public readonly collectionPointServiceUrl: string | null = null,
     ) {}
 }

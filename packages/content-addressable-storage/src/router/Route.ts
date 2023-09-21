@@ -4,25 +4,30 @@ export type PieceRouting = {
     cid: string;
     nodeUrl: string;
     sessionId: string;
+    workerAddress: string;
 };
 
-export type SearchRouting = {
-    nodeUrl: string;
-    sessionId: string;
-};
+export type SearchRouting = Omit<PieceRouting, 'cid'>;
 
 export type RouteOptions = {
     pieces?: PieceRouting[];
     search?: SearchRouting;
     fallbackNodeUrl?: string;
     fallbackSessionId?: string;
+    fallbackWorkerAddress?: string;
 };
+
+export enum RouteOperation {
+    READ = 1,
+    STORE = 2,
+    SEARCH = 3,
+}
 
 export class Route {
     private readonly pieces: PieceRouting[];
     private readonly search?: SearchRouting;
 
-    constructor(readonly requestId: string, private options: RouteOptions) {
+    constructor(readonly requestId: string, readonly operation: RouteOperation, private options: RouteOptions) {
         this.pieces = options.pieces || [];
         this.search = options.search;
     }
@@ -41,6 +46,14 @@ export class Route {
         }
 
         return this.options.fallbackSessionId;
+    }
+
+    private get fallbackWorkerAddress() {
+        if (!this.options.fallbackWorkerAddress) {
+            throw new Error('Worker address was not found in the routing data');
+        }
+
+        return this.options.fallbackWorkerAddress;
     }
 
     private getPieceRoute(cid: string) {
@@ -62,7 +75,11 @@ export class Route {
     }
 
     get searchSessionId() {
-        return stringToU8a(this.search?.sessionId || this.fallbackSessionId);
+        return this.search?.sessionId || this.fallbackSessionId;
+    }
+
+    get searchWorkerAddress() {
+        return this.search?.workerAddress || this.fallbackWorkerAddress;
     }
 
     isLastPiece(cid: string) {
@@ -74,6 +91,10 @@ export class Route {
     }
 
     getSessionId(cid: string) {
-        return stringToU8a(this.getPieceRoute(cid)?.sessionId || this.fallbackSessionId);
+        return this.getPieceRoute(cid)?.sessionId || this.fallbackSessionId;
+    }
+
+    getWorkerAddress(cid: string) {
+        return this.getPieceRoute(cid)?.workerAddress || this.fallbackWorkerAddress;
     }
 }

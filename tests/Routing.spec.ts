@@ -21,9 +21,9 @@ describe('Routing', () => {
     beforeAll(async () => {
         client = await DdcClient.buildAndConnect(
             {
-                // clusterAddress: 'http://localhost:8080',
                 clusterAddress: clusterId,
                 routerServiceUrl: 'http://router.cere.io',
+                collectionPointServiceUrl: 'http://collection-point.cere.io',
                 fileOptions: {
                     parallel: 4,
                     pieceSizeInBytes: 1,
