@@ -64,11 +64,21 @@ export class CollectionPoint {
     }
 
     private async request(path: string, body: SignedAck) {
-        await fetch(new URL(path, this.options.serviceUrl), {
+        const baseUrl = this.options.serviceUrl.replace(/\/+$/, '') + '/';
+        const response = await fetch(new URL(path, baseUrl), {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body),
         });
+
+        if (!response.ok) {
+            const payload = await response.json();
+            console.warn('Collection point response', payload);
+
+            throw new Error(`Collection point request failed with status ${response.status}`, {
+                cause: payload,
+            });
+        }
     }
 
     private async unsafeAcknowledgePiece(piece: Piece, route: Route, options: AcknowledgePieceOptions) {
@@ -119,7 +129,7 @@ export class CollectionPoint {
             ackCode: isLast ? AckCode.FINAL : AckCode.NEXT,
         });
 
-        return this.request('/acknowledgment', signedAck);
+        return this.request('acknowledgment', signedAck);
     }
 
     async acknowledgePiece(piece: Piece, route: Route, options: AcknowledgePieceOptions) {

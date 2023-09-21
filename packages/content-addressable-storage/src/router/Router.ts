@@ -118,17 +118,18 @@ export class Router implements RouterInterface {
     }
 
     private async requestPiecesRouting(request: SignedRequest): Promise<PiecesRoutingResponse> {
-        const path = request.opCode === RouteOperation.STORE ? '/write-resource-metadata' : '/read-resource-metadata';
+        const path = request.opCode === RouteOperation.STORE ? 'write-file-metadata' : 'read-file-metadata';
 
         return this.request(path, request);
     }
 
     private async requestSearchRouting(request: SignedRequest): Promise<SearchRoutingResponse> {
-        return this.request('/search-metadata', request);
+        return this.request('search-metadata', request);
     }
 
     private async request<T>(path: string, body: SignedRequest): Promise<T> {
-        const response = await fetch(new URL(path, this.options.serviceUrl), {
+        const baseUrl = this.options.serviceUrl.replace(/\/+$/, '') + '/';
+        const response = await fetch(new URL(path, baseUrl), {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -140,6 +141,16 @@ export class Router implements RouterInterface {
             }),
         });
 
-        return response.json();
+        const payload = await response.json();
+
+        if (!response.ok) {
+            console.warn('Router response', payload);
+
+            throw new Error(`Router request failed with status ${response.status}`, {
+                cause: payload,
+            });
+        }
+
+        return payload;
     }
 }
