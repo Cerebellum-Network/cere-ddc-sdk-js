@@ -22,7 +22,7 @@ import {EncryptionOptions} from './EncryptionOptions';
 import {CaCreateOptions, Session} from './ca-create-options';
 import {concatArrays} from './lib/concat-arrays';
 import {DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG} from './constants';
-import {initDefaultOptions} from './lib/init-default-optiodns';
+import {initDefaultOptions} from './lib/init-default-options';
 import {repeatableFetch} from './lib/repeatable-fetch';
 import {FallbackRouter, Route, Router, RouterInterface} from './router';
 import {BucketId} from '@cere-ddc-sdk/smart-contract/types';
