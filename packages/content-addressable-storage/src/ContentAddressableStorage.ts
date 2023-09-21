@@ -21,8 +21,8 @@ import {Tag} from './models/Tag';
 import {EncryptionOptions} from './EncryptionOptions';
 import {CaCreateOptions, Session} from './ca-create-options';
 import {concatArrays} from './lib/concat-arrays';
-import {DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG, REQIEST_ID_HEADER} from './constants';
-import {initDefaultOptions} from './lib/init-default-options';
+import {DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG} from './constants';
+import {initDefaultOptions} from './lib/init-default-optiodns';
 import {repeatableFetch} from './lib/repeatable-fetch';
 import {FallbackRouter, Route, Router, RouterInterface} from './router';
 import {BucketId} from '@cere-ddc-sdk/smart-contract/types';
@@ -446,7 +446,7 @@ export class ContentAddressableStorage {
     }
 
     private ack = async ({piece, session, response, payload, cid, nodeUrl, requestId}: AckParams): Promise<void> => {
-        if (!response.headers.has(REQIEST_ID_HEADER) || (payload.responseCode !== 0 && payload.responseCode !== 1)) {
+        if ((payload.responseCode !== 0 && payload.responseCode !== 1)) {
             return;
         }
 
