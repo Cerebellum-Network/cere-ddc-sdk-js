@@ -31,8 +31,10 @@
         "package": "clean-publish",
         "clean": "rimraf dist package"
     },
+    "dependencies": {
+        "@protobuf-ts/plugin": "^2.2.2"
+    },
     "devDependencies": {
-        "@protobuf-ts/plugin": "^2.2.2",
         "rimraf": "^3.0.2"
     }
 }
