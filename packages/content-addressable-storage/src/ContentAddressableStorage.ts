@@ -57,6 +57,7 @@ type AckParams = {
     piece: Piece;
     nodeUrl: string;
     cid?: string;
+    requestId: string
 };
 
 export type ContentAddressableStorageOptions = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
@@ -190,6 +191,7 @@ export class ContentAddressableStorage {
             multiHashType: 0n,
             signature: requestSignature,
             sessionId: session,
+            requestId: route.requestId
         });
 
         return {
@@ -232,6 +234,7 @@ export class ContentAddressableStorage {
             nodeUrl: cdnNodeUrl,
             cid: request.cid,
             payload: protoResponse,
+            requestId: route.requestId
         });
 
         return new PieceUri(bucketId, request.cid);
@@ -256,6 +259,7 @@ export class ContentAddressableStorage {
             sessionId: session,
             signature: requestSignature,
             publicKey: this.scheme.publicKey,
+            requestId: route.requestId
         });
 
         search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'));
@@ -305,6 +309,7 @@ export class ContentAddressableStorage {
             response,
             nodeUrl: cdnNodeUrl,
             payload: protoResponse,
+            requestId: route.requestId
         });
 
         return piece;
@@ -338,6 +343,7 @@ export class ContentAddressableStorage {
             sessionId: session,
             signature: requestSignature,
             publicKey: this.scheme.publicKey,
+            requestId: route.requestId
         });
 
         search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'));
@@ -377,6 +383,7 @@ export class ContentAddressableStorage {
                     response,
                     nodeUrl: cdnNodeUrl,
                     payload: protoResponse,
+                    requestId: route.requestId
                 }),
             ),
         );
@@ -438,12 +445,11 @@ export class ContentAddressableStorage {
         );
     }
 
-    private ack = async ({piece, session, response, payload, cid, nodeUrl}: AckParams): Promise<void> => {
+    private ack = async ({piece, session, response, payload, cid, nodeUrl, requestId}: AckParams): Promise<void> => {
         if (!response.headers.has(REQIEST_ID_HEADER) || (payload.responseCode !== 0 && payload.responseCode !== 1)) {
             return;
         }
 
-        const requestId = response.headers.get(REQIEST_ID_HEADER)!!;
         const finalCid = piece.cid || cid;
 
         if (!finalCid) {
