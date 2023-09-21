@@ -32,9 +32,10 @@
         "clean": "rimraf dist package"
     },
     "dependencies": {
-        "@protobuf-ts/plugin": "^2.2.2"
+        "@protobuf-ts/runtime": "^2.2.2"
     },
     "devDependencies": {
+        "@protobuf-ts/plugin": "^2.2.2",
         "rimraf": "^3.0.2"
     }
 }
