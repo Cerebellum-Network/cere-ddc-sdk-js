@@ -1,7 +1,7 @@
 {
     "name": "@cere-ddc-sdk/content-addressable-storage",
     "description": "Content-addressable storage client",
-    "version": "1.9.0-rc.0",
+    "version": "1.9.0-rc.1",
     "type": "module",
     "repository": {
         "type": "git",
@@ -44,9 +44,9 @@
         "clean": "rimraf dist package"
     },
     "dependencies": {
-        "@cere-ddc-sdk/core": "1.9.0-rc.0",
-        "@cere-ddc-sdk/proto": "1.9.0-rc.0",
-        "@cere-ddc-sdk/smart-contract": "1.9.0-rc.0",
+        "@cere-ddc-sdk/core": "1.9.0-rc.1",
+        "@cere-ddc-sdk/proto": "1.9.0-rc.1",
+        "@cere-ddc-sdk/smart-contract": "1.9.0-rc.1",
         "@polkadot/util": "^10.1.8",
         "@polkadot/util-crypto": "^10.1.8",
         "uuid": "^9.0.1",
