@@ -72,7 +72,7 @@ export class Router implements RouterInterface {
         }
 
         const cid = await this.cidBuilder.build(u8aConcat(...sigData));
-        const signature = await this.signer.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
+        const signature = await this.signer.sign(stringToU8a(cid));
         const signedRequest: SignedRequest = {
             ...request,
             userSignature: u8aToHex(signature),

@@ -53,7 +53,7 @@ export class CollectionPoint {
         const sigData = [ack.cid, ack.sessionId, ack.requestId, ack.timestamp.toString()];
 
         const cid = await this.cidBuilder.build(u8aConcat(...sigData));
-        const signature = await this.signer.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
+        const signature = await this.signer.sign(stringToU8a(cid));
         const signedRequest: SignedAck = {
             ...ack,
             userSignature: u8aToHex(signature),
@@ -63,7 +63,7 @@ export class CollectionPoint {
         return signedRequest;
     }
 
-    private async request<T>(path: string, body: SignedAck) {
+    private async request(path: string, body: SignedAck) {
         await fetch(new URL(path, this.options.serviceUrl), {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
