@@ -87,9 +87,10 @@ export class CollectionPoint {
             throw new Error('Cannot acknowledge piece with unknown CID');
         }
 
-        const bytesProcessed = options.bucketId
-            ? PbPiece.toBinary(piece.toProto(options.bucketId)).byteLength
-            : options.bytesProcessed;
+        const bytesProcessed =
+            options.bucketId === undefined
+                ? options.bytesProcessed
+                : PbPiece.toBinary(piece.toProto(options.bucketId)).byteLength;
 
         if (!bytesProcessed) {
             throw new Error('Cannot calculate processed bytes length');
@@ -133,7 +134,7 @@ export class CollectionPoint {
 
     async acknowledgePiece(piece: Piece, route: Route, options: AcknowledgePieceOptions) {
         try {
-            return this.unsafeAcknowledgePiece(piece, route, options);
+            await this.unsafeAcknowledgePiece(piece, route, options);
         } catch (error) {
             console.warn(error instanceof Error ? error.message : error);
         }

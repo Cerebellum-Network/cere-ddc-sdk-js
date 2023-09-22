@@ -32,30 +32,6 @@ export class Route {
         this.search = options.search;
     }
 
-    private get fallbackNodeUrl() {
-        if (!this.options.fallbackNodeUrl) {
-            throw new Error('Node URL was not found in the routing data');
-        }
-
-        return this.options.fallbackNodeUrl;
-    }
-
-    private get fallbackSessionId() {
-        if (!this.options.fallbackSessionId) {
-            throw new Error('Session was not found in the routing data');
-        }
-
-        return this.options.fallbackSessionId;
-    }
-
-    private get fallbackWorkerAddress() {
-        if (!this.options.fallbackWorkerAddress) {
-            throw new Error('Worker address was not found in the routing data');
-        }
-
-        return this.options.fallbackWorkerAddress;
-    }
-
     private getPieceRoute(cid: string) {
         return this.pieces.find((chunk) => chunk.cid === cid);
     }
@@ -71,30 +47,66 @@ export class Route {
     }
 
     get searchNodeUrl() {
-        return this.search?.nodeUrl || this.fallbackNodeUrl;
+        const nodeUrl = this.search?.nodeUrl || this.options.fallbackNodeUrl;
+
+        if (!nodeUrl) {
+            throw new Error(`nodeUrl is not in routing data for search request`);
+        }
+
+        return nodeUrl;
     }
 
     get searchSessionId() {
-        return this.search?.sessionId || this.fallbackSessionId;
+        const sessionId = this.search?.sessionId || this.options.fallbackSessionId;
+
+        if (!sessionId) {
+            throw new Error(`sessionId is not in routing data for search request`);
+        }
+
+        return sessionId;
     }
 
     get searchWorkerAddress() {
-        return this.search?.workerAddress || this.fallbackWorkerAddress;
+        const workerAddress = this.search?.workerAddress || this.options.fallbackWorkerAddress;
+
+        if (!workerAddress) {
+            throw new Error(`workerAddress is not in routing data for search request`);
+        }
+
+        return workerAddress;
+    }
+
+    getNodeUrl(cid: string) {
+        const nodeUrl = this.getPieceRoute(cid)?.nodeUrl || this.options.fallbackNodeUrl;
+
+        if (!nodeUrl) {
+            throw new Error(`nodeUrl is not in routing data for CID=${cid}`);
+        }
+
+        return nodeUrl;
+    }
+
+    getSessionId(cid: string) {
+        const sessionId = this.getPieceRoute(cid)?.sessionId || this.options.fallbackSessionId;
+
+        if (!sessionId) {
+            throw new Error(`sessionId is not in routing data for CID=${cid}`);
+        }
+
+        return sessionId;
+    }
+
+    getWorkerAddress(cid: string) {
+        const workerAddress = this.getPieceRoute(cid)?.workerAddress || this.options.fallbackWorkerAddress;
+
+        if (!workerAddress) {
+            throw new Error(`workerAddress is not in routing data for CID=${cid}`);
+        }
+
+        return workerAddress;
     }
 
     isLastPiece(cid: string) {
         return this.getPieceRouteIndex(cid) === this.pieces.length - 1;
-    }
-
-    getNodeUrl(cid: string) {
-        return this.getPieceRoute(cid)?.nodeUrl || this.fallbackNodeUrl;
-    }
-
-    getSessionId(cid: string) {
-        return this.getPieceRoute(cid)?.sessionId || this.fallbackSessionId;
-    }
-
-    getWorkerAddress(cid: string) {
-        return this.getPieceRoute(cid)?.workerAddress || this.fallbackWorkerAddress;
     }
 }
