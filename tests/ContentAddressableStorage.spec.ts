@@ -12,7 +12,7 @@ import {delay} from './delay';
 const seed = '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03';
 
 describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts', () => {
-    const url = 'http://localhost:8080';
+    const url = 'http://localhost:8081';
     let storage: ContentAddressableStorage;
     let randomPieceData = new Uint8Array();
     let session: Session;

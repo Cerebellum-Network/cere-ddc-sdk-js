@@ -18,7 +18,7 @@ type RequestBody = {
 };
 
 const baseUrl = 'http://router.cere.io';
-const nodeUrl = 'http://localhost:8081';
+const nodeUrl = 'http://localhost:8082';
 const workerAddress = 'test-worker-address';
 const sessionId = 'test-session';
 

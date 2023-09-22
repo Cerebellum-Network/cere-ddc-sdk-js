@@ -225,7 +225,6 @@ export class ContentAddressableStorage {
         });
 
         const responseData = await response.arrayBuffer();
-        // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
 
         if (!response.ok) {

@@ -73,11 +73,10 @@ export class CollectionPoint {
 
         if (!response.ok) {
             const payload = await response.json();
-            console.warn('Collection point response', payload);
 
-            throw new Error(`Collection point request failed with status ${response.status}`, {
-                cause: payload,
-            });
+            throw new Error(
+                [`Collection Ponit request failed (/${path}):`, JSON.stringify(payload, null, 2)].join('\n'),
+            );
         }
     }
 

@@ -118,7 +118,7 @@ export class Router implements RouterInterface {
     }
 
     private async requestPiecesRouting(request: SignedRequest): Promise<PiecesRoutingResponse> {
-        const path = request.opCode === RouteOperation.STORE ? 'write-file-metadata' : 'read-file-metadata';
+        const path = request.opCode === RouteOperation.STORE ? 'write-resource-metadata' : 'read-resource-metadata';
 
         return this.request(path, request);
     }
@@ -144,11 +144,7 @@ export class Router implements RouterInterface {
         const payload = await response.json();
 
         if (!response.ok) {
-            console.warn('Router response', payload);
-
-            throw new Error(`Router request failed with status ${response.status}`, {
-                cause: payload,
-            });
+            throw new Error([`Router request failed (/${path}):`, JSON.stringify(payload, null, 2)].join('\n'));
         }
 
         return payload;
