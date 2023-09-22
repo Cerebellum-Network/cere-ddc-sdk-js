@@ -10,7 +10,7 @@ describe('packages/ddc-client/src/DdcClient.ts', () => {
     const seed = '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03';
     const otherSecretPhrase = 'wheat wise addict group walk park desk yard render scare false measure';
     const bucketId = 1n;
-    const options = {clusterAddress: 'http://localhost:8080', chunkSizeInBytes: 30, readAttempts: 3};
+    const options = {clusterAddress: 'http://localhost:8081', chunkSizeInBytes: 30, readAttempts: 3};
     let mainClient: DdcClient;
     let secondClient: DdcClient;
     let session: Session;

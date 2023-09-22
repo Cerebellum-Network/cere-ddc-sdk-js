@@ -26,6 +26,7 @@ import {initDefaultOptions} from './lib/init-default-options';
 import {repeatableFetch} from './lib/repeatable-fetch';
 import {FallbackRouter, Route, Router, RouterInterface} from './router';
 import {BucketId} from '@cere-ddc-sdk/smart-contract/types';
+import {CollectionPoint} from './collectionPoint';
 
 const BASE_PATH_PIECES = '/api/v1/rest/pieces';
 
@@ -67,6 +68,7 @@ export class ContentAddressableStorage {
         public readonly cipher: CipherInterface,
         public readonly cidBuilder: CidBuilder,
         public readonly router: RouterInterface,
+        public readonly collectionPoint?: CollectionPoint,
         private readonly readAttempts: number = 1,
         private readonly writeAttempts: number = 1,
         private defaultSession: Session | null = null,
@@ -90,11 +92,20 @@ export class ContentAddressableStorage {
                       serviceUrl: caOptions.routerServiceUrl,
                   });
 
+        const collectionPoint = !caOptions.collectionPointServiceUrl
+            ? undefined
+            : new CollectionPoint({
+                  cidBuilder: caOptions.cidBuilder,
+                  signer: scheme,
+                  serviceUrl: caOptions.collectionPointServiceUrl,
+              });
+
         return new ContentAddressableStorage(
             scheme,
             caOptions.cipher,
             caOptions.cidBuilder,
             router,
+            collectionPoint,
             caOptions.readAttempts,
             caOptions.writeAttempts,
             caOptions.session,
@@ -214,7 +225,6 @@ export class ContentAddressableStorage {
         });
 
         const responseData = await response.arrayBuffer();
-        // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
 
         if (!response.ok) {
@@ -224,6 +234,14 @@ export class ContentAddressableStorage {
                 }' body=${u8aToString(protoResponse.body)}`,
             );
         }
+
+        /**
+         * Send collection point ack if possible
+         */
+        await this.collectionPoint?.acknowledgePiece(piece, route, {
+            cid,
+            bucketId, // Auto-calculate bytesProcessed by reconstructing binary piece using the bucketId
+        });
 
         await this.ack({
             piece,
@@ -299,6 +317,14 @@ export class ContentAddressableStorage {
 
         const piece = this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
 
+        /**
+         * Send collection point ack if possible
+         */
+        await this.collectionPoint?.acknowledgePiece(piece, route, {
+            cid,
+            bytesProcessed: pbSignedPiece.piece.byteLength,
+        });
+
         await this.ack({
             piece,
             session,
@@ -370,15 +396,22 @@ export class ContentAddressableStorage {
             .map(({signedPiece, cid}) => this.toPiece(PbPiece.fromBinary(signedPiece!.piece), cid));
 
         await Promise.all(
-            pieces.map((piece) =>
-                this.ack({
+            pieces.map(async (piece) => {
+                /**
+                 * Send collection point ack if possible
+                 */
+                await this.collectionPoint?.acknowledgePiece(piece, route, {
+                    bucketId: query.bucketId,
+                });
+
+                await this.ack({
                     piece,
                     session,
                     response,
                     nodeUrl: cdnNodeUrl,
                     payload: protoResponse,
-                }),
-            ),
+                });
+            }),
         );
 
         return new SearchResult(pieces);
@@ -409,9 +442,9 @@ export class ContentAddressableStorage {
         return session || randomAsU8a(DEFAULT_SESSION_ID_SIZE);
     }
 
-    private useSession(session?: Session) {
+    private useSession(session?: Session | string) {
         if (session) {
-            return session;
+            return typeof session === 'string' ? stringToU8a(session) : session;
         }
 
         /**

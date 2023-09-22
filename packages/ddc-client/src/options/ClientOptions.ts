@@ -32,5 +32,6 @@ export class ClientOptions implements ClientOptionsInterface {
         public readonly ackTimeout = 500,
         public readonly session: Session | null = null,
         public readonly routerServiceUrl: string | null = null,
+        public readonly collectionPointServiceUrl: string | null = null,
     ) {}
 }

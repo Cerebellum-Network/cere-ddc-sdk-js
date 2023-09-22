@@ -85,22 +85,19 @@ export class CoreFileStorage {
                 : this.caStorage.read(bucketId, address as string, readOptions).then((value) => value.links);
 
         let index = 0;
-        const runReadPieceTask = () =>
-            new Promise<Uint8Array>(async (resolve) => {
-                const current = index++;
-                const link = (await linksPromise)[current];
+        const runReadPieceTask = async () => {
+            const current = index++;
+            const link = (await linksPromise)[current];
 
-                const promisePiece: Promise<Piece> = dek
-                    ? this.caStorage.readDecrypted(bucketId, link.cid, dek, readOptions)
-                    : this.caStorage.read(bucketId, link.cid, readOptions);
+            const piece = dek
+                ? await this.caStorage.readDecrypted(bucketId, link.cid, dek, readOptions)
+                : await this.caStorage.read(bucketId, link.cid, readOptions);
 
-                promisePiece.then((piece) => resolve(piece.data));
-            });
+            return piece.data;
+        };
 
         const tasksPromise = linksPromise.then((e) =>
-            Array(Math.min(e.length, this.config.parallel))
-                .fill(0)
-                .map(() => runReadPieceTask()),
+            Array(Math.min(e.length, this.config.parallel)).fill(0).map(runReadPieceTask),
         );
 
         return {
@@ -168,25 +165,22 @@ export class CoreFileStorage {
         const tasks = new Array<Promise<void>>();
         let index = 0;
         for (let i = 0; i < this.config.parallel; i++) {
-            tasks.push(
-                new Promise(async (resolve) => {
-                    let result;
-                    while (!(result = await reader.read()).done) {
-                        const current = index++;
+            const task = async () => {
+                let result;
+                while (!(result = await reader.read()).done) {
+                    const current = index++;
 
-                        const piece = new Piece(result.value);
-                        piece.tags.push(new Tag(multipartTag, 'true'));
-                        const pieceUri = encryptionOptions
-                            ? await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions, storeOptions)
-                            : await this.caStorage.store(bucketId, piece, storeOptions);
+                    const piece = new Piece(result.value);
+                    piece.tags.push(new Tag(multipartTag, 'true'));
+                    const pieceUri = encryptionOptions
+                        ? await this.caStorage.storeEncrypted(bucketId, piece, encryptionOptions, storeOptions)
+                        : await this.caStorage.store(bucketId, piece, storeOptions);
 
-                        indexedLinks.push(
-                            new IndexedLink(current, new Link(pieceUri.cid, BigInt(result.value.length))),
-                        );
-                    }
-                    resolve();
-                }),
-            );
+                    indexedLinks.push(new IndexedLink(current, new Link(pieceUri.cid, BigInt(result.value.length))));
+                }
+            };
+
+            tasks.push(task());
         }
 
         await Promise.all(tasks);

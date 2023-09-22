@@ -5,12 +5,17 @@ import {randomUint8} from '@cere-ddc-sdk/core';
 
 import {Link} from '../models/Link';
 import {PieceUri} from '../models/PieceUri';
-import {Route} from './Route';
+import {Route, RouteOperation} from './Route';
 import {RouterInterface} from './types';
 import {Session} from '../ca-create-options';
 
+type NodeInfo = {
+    nodeUrl: string;
+    workerAddress: string;
+};
+
 export class FallbackRouter implements RouterInterface {
-    private nodeUrlPromise?: Promise<string>;
+    private nodeInfoPromise?: Promise<NodeInfo>;
 
     constructor(
         private clusterAddress: string | number,
@@ -18,11 +23,14 @@ export class FallbackRouter implements RouterInterface {
         private session?: Session | null,
     ) {}
 
-    private async detectNodeUrl() {
+    private async detectNodeInfo(): Promise<NodeInfo> {
         const isExternalContract = this.smartContract instanceof SmartContract;
 
         if (typeof this.clusterAddress === 'string') {
-            return this.clusterAddress;
+            return {
+                nodeUrl: this.clusterAddress,
+                workerAddress: '', // Cannot detect workerAddress in this case
+            };
         }
 
         const smartContract =
@@ -45,7 +53,10 @@ export class FallbackRouter implements RouterInterface {
                 throw new Error(`unable to get CDN node URL. Node key '${cdnNodeKey}'`);
             }
 
-            return new URL(cdnNode.cdnNodeParams.url).href;
+            return {
+                nodeUrl: new URL(cdnNode.cdnNodeParams.url).href,
+                workerAddress: cdnNodeKey,
+            };
         } finally {
             if (!isExternalContract) {
                 await smartContract.disconnect();
@@ -53,32 +64,33 @@ export class FallbackRouter implements RouterInterface {
         }
     }
 
-    private getNodeUrl() {
-        this.nodeUrlPromise ||= this.detectNodeUrl();
+    private getNodeInfo() {
+        this.nodeInfoPromise ||= this.detectNodeInfo();
 
-        return this.nodeUrlPromise;
+        return this.nodeInfoPromise;
     }
 
-    private async getFallbackRoute() {
-        const nodeUrl = await this.getNodeUrl();
+    private async getFallbackRoute(opCode: RouteOperation) {
+        const {nodeUrl, workerAddress} = await this.getNodeInfo();
         const requestId = uuid();
         const sessionId = this.session?.toString() || uuid();
 
-        return new Route(requestId, {
+        return new Route(requestId, opCode, {
             fallbackNodeUrl: nodeUrl,
             fallbackSessionId: sessionId,
+            fallbackWorkerAddress: workerAddress,
         });
     }
 
     async getReadRoute(uri: PieceUri) {
-        return this.getFallbackRoute();
+        return this.getFallbackRoute(RouteOperation.READ);
     }
 
     async getSearchRoute(bucketId: bigint) {
-        return this.getFallbackRoute();
+        return this.getFallbackRoute(RouteOperation.SEARCH);
     }
 
     async getStoreRoute(uri: PieceUri, links: Link[]) {
-        return this.getFallbackRoute();
+        return this.getFallbackRoute(RouteOperation.STORE);
     }
 }

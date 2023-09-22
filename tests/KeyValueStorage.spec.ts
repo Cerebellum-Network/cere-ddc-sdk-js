@@ -2,7 +2,7 @@ import {Piece} from '@cere-ddc-sdk/content-addressable-storage';
 import {KeyValueStorage} from '@cere-ddc-sdk/key-value-storage';
 
 describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
-    const url = 'http://localhost:8080';
+    const url = 'http://localhost:8081';
     let storage: KeyValueStorage;
 
     beforeAll(async () => {

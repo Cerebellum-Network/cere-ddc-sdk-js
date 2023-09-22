@@ -7,13 +7,13 @@ export const startDDC = async () => {
     console.log('Starting local DDC environment...');
     environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.yml')
         .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
-        .withWaitStrategy('ddc-cdn-node-0', Wait.forHealthCheck())
         .withWaitStrategy('ddc-cdn-node-1', Wait.forHealthCheck())
-        .withWaitStrategy('ddc-storage-node-0', Wait.forHealthCheck())
-        .withWaitStrategy('ddc-storage-node-1', Wait.forHealthCheck())
-        .withWaitStrategy('ddc-storage-node-2', Wait.forHealthCheck())
-        .withWaitStrategy('ddc-storage-node-3', Wait.forHealthCheck())
-        .withWaitStrategy('ddc-storage-node-6', Wait.forHealthCheck())
+        .withWaitStrategy('ddc-cdn-node-2', Wait.forHealthCheck())
+        .withWaitStrategy('ddc-storage-node-d43593c7', Wait.forHealthCheck())
+        .withWaitStrategy('ddc-storage-node-8eaf0415', Wait.forHealthCheck())
+        .withWaitStrategy('ddc-storage-node-90b5ab20', Wait.forHealthCheck())
+        .withWaitStrategy('ddc-storage-node-e659a7a1', Wait.forHealthCheck())
+        .withWaitStrategy('ddc-storage-node-1cbd2d43', Wait.forHealthCheck())
         .up();
 
     console.log('Local DDC is started');

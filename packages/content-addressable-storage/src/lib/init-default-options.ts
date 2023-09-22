@@ -21,5 +21,6 @@ export const initDefaultOptions = (options: Options): CaCreateOptions => {
         ackTimeout: options.ackTimeout,
         session: options.session || null,
         routerServiceUrl: options.routerServiceUrl || null,
+        collectionPointServiceUrl: options.collectionPointServiceUrl || null,
     };
 };

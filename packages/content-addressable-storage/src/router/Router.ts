@@ -3,12 +3,12 @@ import {BucketId, ClusterId} from '@cere-ddc-sdk/smart-contract/types';
 import {stringToU8a, u8aToHex, u8aConcat} from '@polkadot/util';
 import {CidBuilder, SchemeInterface} from '@cere-ddc-sdk/core';
 import {PieceUri} from '../models/PieceUri';
-import {Route, PieceRouting} from './Route';
+import {Route, PieceRouting, RouteOperation} from './Route';
 import {Link} from '../models/Link';
 import {RouterInterface} from './types';
 
 type UnsignedRequest = {
-    operation: 'store' | 'read' | 'search';
+    opCode: RouteOperation;
     requestId: string;
     clusterId: ClusterId;
     bucketId: BucketId;
@@ -72,7 +72,7 @@ export class Router implements RouterInterface {
         }
 
         const cid = await this.cidBuilder.build(u8aConcat(...sigData));
-        const signature = await this.signer.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
+        const signature = await this.signer.sign(stringToU8a(cid));
         const signedRequest: SignedRequest = {
             ...request,
             userSignature: u8aToHex(signature),
@@ -81,9 +81,9 @@ export class Router implements RouterInterface {
         return signedRequest;
     }
 
-    private async getPiecesRoute(operation: UnsignedRequest['operation'], uri: PieceUri, chunks?: Link[]) {
+    private async getPiecesRoute(opCode: RouteOperation, uri: PieceUri, chunks?: Link[]) {
         const request = await this.createRequest({
-            operation,
+            opCode,
             chunks,
             cid: uri.cid,
             bucketId: uri.bucketId,
@@ -91,7 +91,7 @@ export class Router implements RouterInterface {
 
         const {requestId, routing} = await this.requestPiecesRouting(request);
 
-        return new Route(requestId, {
+        return new Route(requestId, RouteOperation.READ, {
             pieces: routing,
         });
     }
@@ -99,36 +99,37 @@ export class Router implements RouterInterface {
     async getSearchRoute(bucketId: PieceUri['bucketId']) {
         const request = await this.createRequest({
             bucketId,
-            operation: 'search',
+            opCode: RouteOperation.SEARCH,
         });
 
         const {requestId, routing} = await this.requestSearchRouting(request);
 
-        return new Route(requestId, {
+        return new Route(requestId, RouteOperation.SEARCH, {
             search: routing,
         });
     }
 
     async getReadRoute(uri: PieceUri) {
-        return this.getPiecesRoute('read', uri);
+        return this.getPiecesRoute(RouteOperation.READ, uri);
     }
 
     async getStoreRoute(uri: PieceUri, links: Link[]) {
-        return this.getPiecesRoute('store', uri, links);
+        return this.getPiecesRoute(RouteOperation.STORE, uri, links);
     }
 
     private async requestPiecesRouting(request: SignedRequest): Promise<PiecesRoutingResponse> {
-        const path = request.operation === 'store' ? '/write-resource-metadata' : '/read-resource-metadata';
+        const path = request.opCode === RouteOperation.STORE ? 'write-resource-metadata' : 'read-resource-metadata';
 
         return this.request(path, request);
     }
 
     private async requestSearchRouting(request: SignedRequest): Promise<SearchRoutingResponse> {
-        return this.request('/search-metadata', request);
+        return this.request('search-metadata', request);
     }
 
     private async request<T>(path: string, body: SignedRequest): Promise<T> {
-        const response = await fetch(new URL(path, this.options.serviceUrl), {
+        const baseUrl = this.options.serviceUrl.replace(/\/+$/, '') + '/';
+        const response = await fetch(new URL(path, baseUrl), {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -140,6 +141,12 @@ export class Router implements RouterInterface {
             }),
         });
 
-        return response.json();
+        const payload = await response.json();
+
+        if (!response.ok) {
+            throw new Error([`Router request failed (/${path}):`, JSON.stringify(payload, null, 2)].join('\n'));
+        }
+
+        return payload;
     }
 }
