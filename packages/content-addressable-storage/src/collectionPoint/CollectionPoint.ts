@@ -98,11 +98,6 @@ export class CollectionPoint {
         const isSearchResult = route.operation === RouteOperation.SEARCH;
 
         /**
-         * Use READ operation code in case of search result
-         */
-        const opCode = isSearchResult ? RouteOperation.READ : route.operation;
-
-        /**
          * Use search worker address in case of search result
          */
         const workerAddress = isSearchResult ? route.searchWorkerAddress : route.getWorkerAddress(cid);
@@ -119,11 +114,11 @@ export class CollectionPoint {
 
         const signedAck = await this.signAck({
             cid,
-            opCode,
             bytesProcessed,
             workerAddress,
             sessionId,
             timestamp: Date.now(),
+            opCode: route.operation,
             requestId: route.requestId,
             ackCode: isLast ? AckCode.FINAL : AckCode.NEXT,
         });
