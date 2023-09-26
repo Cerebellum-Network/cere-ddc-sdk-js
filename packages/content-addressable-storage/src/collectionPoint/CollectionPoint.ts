@@ -63,20 +63,19 @@ export class CollectionPoint {
         return signedRequest;
     }
 
-    private async request(path: string, body: SignedAck) {
+    private async request(path: string, request: SignedAck) {
         const baseUrl = this.options.serviceUrl.replace(/\/+$/, '') + '/';
+        const body = JSON.stringify(request, null, 2);
         const response = await fetch(new URL(path, baseUrl), {
+            body,
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body),
         });
 
         if (!response.ok) {
-            const payload = await response.json();
+            const error = JSON.stringify(await response.json(), null, 2);
 
-            throw new Error(
-                [`Collection Ponit request failed (/${path}):`, JSON.stringify(payload, null, 2)].join('\n'),
-            );
+            throw new Error(`Collection point request(/${path}):\n${body}\n\nFailed with error:\n${error}`);
         }
     }
 

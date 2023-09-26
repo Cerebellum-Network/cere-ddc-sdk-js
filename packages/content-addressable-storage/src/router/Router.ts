@@ -127,26 +127,25 @@ export class Router implements RouterInterface {
         return this.request('search-metadata', request);
     }
 
-    private async request<T>(path: string, body: SignedRequest): Promise<T> {
+    private async request<T>(path: string, request: SignedRequest): Promise<T> {
         const baseUrl = this.options.serviceUrl.replace(/\/+$/, '') + '/';
+        const body = JSON.stringify(request, (key, value) => (typeof value === 'bigint' ? value.toString() : value), 2);
+
         const response = await fetch(new URL(path, baseUrl), {
+            body,
             method: 'POST',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
-
-            body: JSON.stringify(body, (key, value) => {
-                return typeof value === 'bigint' ? value.toString() : value;
-            }),
         });
 
-        const payload = await response.json();
-
         if (!response.ok) {
-            throw new Error([`Router request failed (/${path}):`, JSON.stringify(payload, null, 2)].join('\n'));
+            const error = JSON.stringify(await response.json(), null, 2);
+
+            throw new Error(`Router request(/${path}):\n${body}\n\nFailed with error:\n${error}`);
         }
 
-        return payload;
+        return response.json();
     }
 }
