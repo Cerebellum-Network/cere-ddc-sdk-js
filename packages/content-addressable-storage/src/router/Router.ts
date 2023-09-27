@@ -1,4 +1,6 @@
 import {v4 as uuid} from 'uuid';
+import {Request as PbRequest} from '@cere-ddc-sdk/proto';
+import {encode} from 'varint';
 import {BucketId, ClusterId} from '@cere-ddc-sdk/smart-contract/types';
 import {stringToU8a, u8aToHex, u8aConcat} from '@polkadot/util';
 import {CidBuilder, SchemeInterface} from '@cere-ddc-sdk/core';
@@ -6,6 +8,8 @@ import {PieceUri} from '../models/PieceUri';
 import {Route, PieceRouting, RouteOperation} from './Route';
 import {Link} from '../models/Link';
 import {RouterInterface} from './types';
+import {BASE_PATH_PIECES} from '../constants';
+import {concatArrays} from '../lib/concat-arrays';
 
 type UnsignedRequest = {
     opCode: RouteOperation;
@@ -14,12 +18,14 @@ type UnsignedRequest = {
     bucketId: BucketId;
     userAddress: string;
     timestamp: number;
+    sessionId: string;
     cid?: string;
     chunks?: Link[];
 };
 
 type SignedRequest = UnsignedRequest & {
     userSignature: string;
+    nodeOperationSignature?: string;
 };
 
 type PiecesRoutingResponse = {
@@ -53,15 +59,54 @@ export class Router implements RouterInterface {
     }
 
     private async createRequest(
-        request: Omit<UnsignedRequest, 'requestId' | 'clusterId' | 'timestamp' | 'userAddress'>,
+        request: Omit<UnsignedRequest, 'requestId' | 'clusterId' | 'timestamp' | 'userAddress' | 'sessionId'>,
     ) {
         return this.signRequest({
             ...request,
             clusterId: this.clusterId,
             requestId: uuid(),
+            sessionId: uuid(),
             timestamp: Date.now(),
             userAddress: this.signer.address,
         });
+    }
+
+    /**
+     * Creates CDN Node operation signature to forward it to the Router service.
+     * The signature will later be used by the router to request data from CDN Node.
+     *
+     * TODO: It is a temp soluation whiath should be revised after the router will be a part of CDN Node
+     */
+    private async createNodeOperationSignature(request: UnsignedRequest) {
+        if (request.opCode !== RouteOperation.READ) {
+            return; // Only READ operation signature needed on Router service
+        }
+
+        const link = `${BASE_PATH_PIECES}/${request.cid}?bucketId=${request.bucketId}`;
+        const method = 'GET';
+
+        const {body, sessionId} = PbRequest.create({
+            sessionId: stringToU8a(request.sessionId),
+        });
+
+        const path = concatArrays(
+            new Uint8Array(encode(method.length)),
+            stringToU8a(method),
+            new Uint8Array(encode(link.length)),
+            stringToU8a(link),
+        );
+
+        const cid = await this.cidBuilder.build(
+            concatArrays(
+                path,
+                new Uint8Array(encode(body.length)),
+                body,
+                new Uint8Array(encode(request.sessionId.length)),
+                sessionId,
+            ),
+        );
+
+        return this.signer.sign(stringToU8a(`<Bytes>${cid}</Bytes>`));
     }
 
     private async signRequest(request: UnsignedRequest) {
@@ -73,9 +118,11 @@ export class Router implements RouterInterface {
 
         const cid = await this.cidBuilder.build(u8aConcat(...sigData));
         const signature = await this.signer.sign(stringToU8a(cid));
+        const nodeOperationSignature = await this.createNodeOperationSignature(request);
         const signedRequest: SignedRequest = {
             ...request,
             userSignature: u8aToHex(signature),
+            nodeOperationSignature: nodeOperationSignature && u8aToHex(nodeOperationSignature),
         };
 
         return signedRequest;
@@ -93,6 +140,7 @@ export class Router implements RouterInterface {
 
         return new Route(requestId, RouteOperation.READ, {
             pieces: routing,
+            fallbackSessionId: request.sessionId,
         });
     }
 
@@ -106,6 +154,7 @@ export class Router implements RouterInterface {
 
         return new Route(requestId, RouteOperation.SEARCH, {
             search: routing,
+            fallbackSessionId: request.sessionId,
         });
     }
 

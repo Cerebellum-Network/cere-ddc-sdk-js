@@ -13,6 +13,8 @@ type RequestBody = {
     bucketId: string;
     userAddress: string;
     timestamp: number;
+    sessionId: string;
+    nodeOperationSignature?: string;
     cid?: string;
     chunks?: RequestBodyChunk[];
 };
@@ -24,14 +26,14 @@ const sessionId = 'test-session';
 
 export const setupRouter = async () => {
     fetchMock.post(`${baseUrl}/read-resource-metadata`, async (url, request) => {
-        const {requestId, cid}: RequestBody = request.body && JSON.parse(request.body.toString());
+        const {requestId, cid, sessionId}: RequestBody = request.body && JSON.parse(request.body.toString());
         const {links = []} = pieces.find((piece) => piece.cid === cid) || {};
         const routing = [
             {cid, nodeUrl, sessionId, workerAddress},
             ...links.map(({cid}) => ({cid, nodeUrl, sessionId, workerAddress})),
         ];
 
-        // console.log('Router:', 'read', {cid, routing});
+        // console.log('Router:', 'read', {cid, routing, nodeOperationSignature, sessionId});
 
         return {
             status: 200,
