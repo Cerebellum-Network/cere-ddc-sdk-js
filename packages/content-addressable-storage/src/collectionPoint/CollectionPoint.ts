@@ -95,32 +95,15 @@ export class CollectionPoint {
             throw new Error('Cannot calculate processed bytes length');
         }
 
-        const isSearchResult = route.operation === RouteOperation.SEARCH;
-
-        /**
-         * Use search worker address in case of search result
-         */
-        const workerAddress = isSearchResult ? route.searchWorkerAddress : route.getWorkerAddress(cid);
-
-        /**
-         * Use search seassionId in case of search result
-         */
-        const sessionId = isSearchResult ? route.searchSessionId : route.getSessionId(cid);
-
-        /**
-         * Search result pieces are separate jobs so always last
-         */
-        const isLast = isSearchResult || route.isLastPiece(cid);
-
         const signedAck = await this.signAck({
             cid,
             bytesProcessed,
-            workerAddress,
-            sessionId,
+            workerAddress: route.getWorkerAddress(cid),
+            sessionId: route.getSessionId(cid),
             timestamp: Date.now(),
             opCode: route.operation,
             requestId: route.requestId,
-            ackCode: isLast ? AckCode.FINAL : AckCode.NEXT,
+            ackCode: route.isLastPiece(cid) ? AckCode.FINAL : AckCode.NEXT,
         });
 
         return this.request('acknowledgment', signedAck);

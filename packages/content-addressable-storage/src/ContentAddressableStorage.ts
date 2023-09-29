@@ -379,9 +379,9 @@ export class ContentAddressableStorage {
         }
 
         const {searchedPieces} = PbSearchResult.fromBinary(protoResponse.body);
-        const piecePromises = searchedPieces.map(({cid}) =>
+        const piecePromises = searchedPieces.map(({cid, signedPiece}) =>
             skipData
-                ? this.toPiece(PbPiece.fromBinary(new Uint8Array()), cid) // Create piece with empty content
+                ? this.toPiece(PbPiece.fromBinary(signedPiece?.piece || new Uint8Array([])), cid)
                 : this.read(query.bucketId, cid),
         );
 
