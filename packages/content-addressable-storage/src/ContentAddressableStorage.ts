@@ -248,7 +248,7 @@ export class ContentAddressableStorage {
             nodeUrl: cdnNodeUrl,
             cid: request.cid,
             payload: protoResponse,
-            requestId: route.requestId || response.headers.get(REQIEST_ID_HEADER)!,
+            requestId: route.requestId
         });
 
         return new PieceUri(bucketId, request.cid);
@@ -330,7 +330,7 @@ export class ContentAddressableStorage {
             session,
             nodeUrl: cdnNodeUrl,
             payload: protoResponse,
-            requestId: route.requestId || response.headers.get(REQIEST_ID_HEADER)!,
+            requestId: route.requestId
         });
 
         return piece;
