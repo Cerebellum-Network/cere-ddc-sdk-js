@@ -110,11 +110,9 @@ export class Router implements RouterInterface {
     }
 
     private async signRequest(request: UnsignedRequest) {
-        let sigData = [request.requestId, request.timestamp.toString()];
-
-        if (request.cid) {
-            sigData = [request.cid, ...sigData];
-        }
+        const sigData = [request.cid, request.sessionId, request.requestId, request.timestamp]
+            .filter(Boolean)
+            .map(String);
 
         const cid = await this.cidBuilder.build(u8aConcat(...sigData));
         const signature = await this.signer.sign(stringToU8a(cid));
