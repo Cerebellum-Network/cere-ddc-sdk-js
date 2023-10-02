@@ -1,7 +1,7 @@
 {
     "name": "@cere-ddc-sdk/proto",
     "description": "Storage protocol buffer models",
-    "version": "1.9.0-rc.0",
+    "version": "1.9.0-rc.7",
     "type": "module",
     "main": "./dist/index.cjs",
     "types": "./dist/types",
@@ -30,6 +30,9 @@
         "types": "tsc -p tsconfig.build.json --emitDeclarationOnly || exit 0",
         "package": "clean-publish",
         "clean": "rimraf dist package"
+    },
+    "dependencies": {
+        "@protobuf-ts/runtime": "^2.2.2"
     },
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.2.2",

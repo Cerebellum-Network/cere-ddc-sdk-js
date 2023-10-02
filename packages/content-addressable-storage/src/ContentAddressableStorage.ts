@@ -21,13 +21,12 @@ import {Tag} from './models/Tag';
 import {EncryptionOptions} from './EncryptionOptions';
 import {CaCreateOptions, Session} from './ca-create-options';
 import {concatArrays} from './lib/concat-arrays';
-import {DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG} from './constants';
+import {BASE_PATH_PIECES, DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG} from './constants';
 import {initDefaultOptions} from './lib/init-default-options';
 import {repeatableFetch} from './lib/repeatable-fetch';
 import {FallbackRouter, Route, Router, RouterInterface} from './router';
 import {BucketId} from '@cere-ddc-sdk/smart-contract/types';
-
-const BASE_PATH_PIECES = '/api/v1/rest/pieces';
+import {CollectionPoint} from './collectionPoint';
 
 type HTTP_METHOD = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -67,6 +66,7 @@ export class ContentAddressableStorage {
         public readonly cipher: CipherInterface,
         public readonly cidBuilder: CidBuilder,
         public readonly router: RouterInterface,
+        public readonly collectionPoint?: CollectionPoint,
         private readonly readAttempts: number = 1,
         private readonly writeAttempts: number = 1,
         private defaultSession: Session | null = null,
@@ -90,11 +90,20 @@ export class ContentAddressableStorage {
                       serviceUrl: caOptions.routerServiceUrl,
                   });
 
+        const collectionPoint = !caOptions.collectionPointServiceUrl
+            ? undefined
+            : new CollectionPoint({
+                  cidBuilder: caOptions.cidBuilder,
+                  signer: scheme,
+                  serviceUrl: caOptions.collectionPointServiceUrl,
+              });
+
         return new ContentAddressableStorage(
             scheme,
             caOptions.cipher,
             caOptions.cidBuilder,
             router,
+            collectionPoint,
             caOptions.readAttempts,
             caOptions.writeAttempts,
             caOptions.session,
@@ -215,7 +224,6 @@ export class ContentAddressableStorage {
         });
 
         const responseData = await response.arrayBuffer();
-        // @ts-ignore
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
 
         if (!response.ok) {
@@ -225,6 +233,14 @@ export class ContentAddressableStorage {
                 }' body=${u8aToString(protoResponse.body)}`,
             );
         }
+
+        /**
+         * Send collection point ack if possible
+         */
+        await this.collectionPoint?.acknowledgePiece(piece, route, {
+            cid,
+            bucketId, // Auto-calculate bytesProcessed by reconstructing binary piece using the bucketId
+        });
 
         await this.ack({
             piece,
@@ -301,6 +317,14 @@ export class ContentAddressableStorage {
 
         const piece = this.toPiece(PbPiece.fromBinary(pbSignedPiece.piece), cid);
 
+        /**
+         * Send collection point ack if possible
+         */
+        await this.collectionPoint?.acknowledgePiece(piece, route, {
+            cid,
+            bytesProcessed: pbSignedPiece.piece.byteLength,
+        });
+
         await this.ack({
             piece,
             session,
@@ -315,15 +339,15 @@ export class ContentAddressableStorage {
     async search(query: Query, options: SearchOptions = {}): Promise<SearchResult> {
         const route = await this.router.getSearchRoute(query.bucketId);
         const session = this.useSession(options.session || route.searchSessionId);
-
+        const skipData = query.skipData;
         const cdnNodeUrl = route.searchNodeUrl;
 
         const pbQuery: PbQuery = {
             bucketId: Number(query.bucketId),
             tags: query.tags,
-            skipData: query.skipData,
+            skipData: true, // Always skip data - will be loaded with regular reads
         };
-        // @ts-ignore
+
         const queryAsBytes = PbQuery.toBinary(pbQuery);
         const queryBase58 = base58Encode(queryAsBytes);
 
@@ -357,34 +381,15 @@ export class ContentAddressableStorage {
             );
         }
 
-        const pbSearchResult = await new Promise<PbSearchResult>((resolve) => {
-            try {
-                // @ts-ignore
-                resolve(PbSearchResult.fromBinary(protoResponse.body));
-            } catch (e) {
-                throw new Error(
-                    `Can't parse search response body to SearchResult.\n${u8aToString(protoResponse.body)}`,
-                );
-            }
-        });
 
-        const pieces = pbSearchResult.searchedPieces
-            .filter((p) => !!p.signedPiece)
-            .map(({signedPiece, cid}) => this.toPiece(PbPiece.fromBinary(signedPiece!.piece), cid));
-
-        await Promise.all(
-            pieces.map((piece) =>
-                this.ack({
-                    piece,
-                    session,
-                    nodeUrl: cdnNodeUrl,
-                    payload: protoResponse,
-                    requestId: route.requestId
-                }),
-            ),
+        const {searchedPieces} = PbSearchResult.fromBinary(protoResponse.body);
+        const piecePromises = searchedPieces.map(({cid, signedPiece}) =>
+            skipData
+                ? this.toPiece(PbPiece.fromBinary(signedPiece?.piece || new Uint8Array([])), cid)
+                : this.read(query.bucketId, cid),
         );
 
-        return new SearchResult(pieces);
+        return new SearchResult(await Promise.all(piecePromises));
     }
 
     async storeEncrypted(
@@ -412,9 +417,9 @@ export class ContentAddressableStorage {
         return session || randomAsU8a(DEFAULT_SESSION_ID_SIZE);
     }
 
-    private useSession(session?: Session) {
+    private useSession(session?: Session | string) {
         if (session) {
-            return session;
+            return typeof session === 'string' ? stringToU8a(session) : session;
         }
 
         /**
