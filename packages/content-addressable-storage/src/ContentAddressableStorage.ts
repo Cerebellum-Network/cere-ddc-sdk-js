@@ -21,7 +21,7 @@ import {Tag} from './models/Tag';
 import {EncryptionOptions} from './EncryptionOptions';
 import {CaCreateOptions, Session} from './ca-create-options';
 import {concatArrays} from './lib/concat-arrays';
-import {BASE_PATH_PIECES, DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG} from './constants';
+import {BASE_PATH_PIECES, DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG, REQIEST_ID_HEADER} from './constants';
 import {initDefaultOptions} from './lib/init-default-options';
 import {repeatableFetch} from './lib/repeatable-fetch';
 import {FallbackRouter, Route, Router, RouterInterface} from './router';
@@ -248,7 +248,7 @@ export class ContentAddressableStorage {
             nodeUrl: cdnNodeUrl,
             cid: request.cid,
             payload: protoResponse,
-            requestId: route.requestId
+            requestId: route.requestId || response.headers.get(REQIEST_ID_HEADER)!,
         });
 
         return new PieceUri(bucketId, request.cid);
@@ -330,7 +330,7 @@ export class ContentAddressableStorage {
             session,
             nodeUrl: cdnNodeUrl,
             payload: protoResponse,
-            requestId: route.requestId
+            requestId: route.requestId || response.headers.get(REQIEST_ID_HEADER)!,
         });
 
         return piece;
