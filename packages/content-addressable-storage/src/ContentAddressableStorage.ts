@@ -51,7 +51,6 @@ type StoreRequest = {
 };
 
 type AckParams = {
-    response: Response;
     payload: PbResponse;
     session: Session;
     piece: Piece;
@@ -230,7 +229,6 @@ export class ContentAddressableStorage {
         await this.ack({
             piece,
             session,
-            response,
             nodeUrl: cdnNodeUrl,
             cid: request.cid,
             payload: protoResponse,
@@ -306,7 +304,6 @@ export class ContentAddressableStorage {
         await this.ack({
             piece,
             session,
-            response,
             nodeUrl: cdnNodeUrl,
             payload: protoResponse,
             requestId: route.requestId
@@ -380,7 +377,6 @@ export class ContentAddressableStorage {
                 this.ack({
                     piece,
                     session,
-                    response,
                     nodeUrl: cdnNodeUrl,
                     payload: protoResponse,
                     requestId: route.requestId
@@ -445,7 +441,7 @@ export class ContentAddressableStorage {
         );
     }
 
-    private ack = async ({piece, session, response, payload, cid, nodeUrl, requestId}: AckParams): Promise<void> => {
+    private ack = async ({piece, session, payload, cid, nodeUrl, requestId}: AckParams): Promise<void> => {
         if ((payload.responseCode !== 0 && payload.responseCode !== 1)) {
             return;
         }
