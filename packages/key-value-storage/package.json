@@ -31,11 +31,7 @@
         "clean": "rimraf dist package"
     },
     "dependencies": {
-<<<<<<< HEAD
         "@cere-ddc-sdk/content-addressable-storage": "1.9.0-rc.10"
-=======
-        "@cere-ddc-sdk/content-addressable-storage": "1.9.0-rc.9"
->>>>>>> be1f5f1 (Calculate bytes of full read and store request body (#124))
     },
     "devDependencies": {
         "@types/node": "^16.0.0",

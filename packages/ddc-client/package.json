@@ -44,19 +44,11 @@
         "clean": "rimraf dist package"
     },
     "dependencies": {
-<<<<<<< HEAD
         "@cere-ddc-sdk/content-addressable-storage": "1.9.0-rc.10",
         "@cere-ddc-sdk/core": "1.9.0-rc.10",
         "@cere-ddc-sdk/file-storage": "1.9.0-rc.10",
         "@cere-ddc-sdk/key-value-storage": "1.9.0-rc.10",
         "@cere-ddc-sdk/smart-contract": "1.9.0-rc.10",
-=======
-        "@cere-ddc-sdk/content-addressable-storage": "1.9.0-rc.9",
-        "@cere-ddc-sdk/core": "1.9.0-rc.9",
-        "@cere-ddc-sdk/file-storage": "1.9.0-rc.9",
-        "@cere-ddc-sdk/key-value-storage": "1.9.0-rc.9",
-        "@cere-ddc-sdk/smart-contract": "1.9.0-rc.9",
->>>>>>> be1f5f1 (Calculate bytes of full read and store request body (#124))
         "@polkadot/util": "^10.1.8",
         "@polkadot/util-crypto": "^10.1.8"
     },
