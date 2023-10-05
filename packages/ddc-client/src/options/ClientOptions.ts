@@ -12,7 +12,7 @@ import {
     ContentAddressableStorageOptions,
     Session,
     COLLECTION_POINT_SERVICE_URL,
-    ROUTING_SERVICE_URL,
+    ROUTER_SERVICE_URL,
 } from '@cere-ddc-sdk/content-addressable-storage';
 
 type CaOptions = Required<ContentAddressableStorageOptions>;
@@ -36,7 +36,7 @@ export class ClientOptions implements ClientOptionsInterface {
         public readonly writeAttempts = 1,
         public readonly ackTimeout = 500,
         public readonly session: Session | null = null,
-        public readonly routerServiceUrl: string | null = ROUTING_SERVICE_URL,
+        public readonly routerServiceUrl: string | null = ROUTER_SERVICE_URL,
         public readonly collectionPointServiceUrl: string | null = COLLECTION_POINT_SERVICE_URL,
     ) {}
 }
