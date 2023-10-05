@@ -87,9 +87,9 @@ export class CollectionPoint {
         }
 
         const bytesProcessed =
-            options.bucketId === undefined
-                ? options.bytesProcessed
-                : PbPiece.toBinary(piece.toProto(options.bucketId)).byteLength;
+            !options.bytesProcessed && options.bucketId !== undefined
+                ? PbPiece.toBinary(piece.toProto(options.bucketId)).byteLength
+                : options.bytesProcessed;
 
         if (!bytesProcessed) {
             throw new Error('Cannot calculate processed bytes length');
