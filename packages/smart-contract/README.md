@@ -75,6 +75,7 @@ The `SmartContract` instance can be created in two ways:
 -   [accountDeposit()](#accountdeposit)
 -   [accountBond()](#accountbond)
 -   [grantTrustedManagerPermission()](#granttrustedmanagerpermission)
+-   [revokeTrustedManagerPermission()](#revokeTrustedManagerPermission)
 -   [nodeCreate()](#nodecreate)
 -   [nodeRemove()](#noderemove)
 -   [cdnNodeCreate()](#cdnnodecreate)
@@ -267,6 +268,26 @@ import {AccountId} from '@cere-ddc-sdk/smart-contract/types';
 const managerAddress: AccountId = '0x...';
 
 await smartContractInstance.grantTrustedManagerPermission(managerAddress);
+```
+
+## revokeTrustedManagerPermission()
+
+This endpoint revokes permissions from a cluster manager to manage Storage or CDN node owner.
+After the permission is revoked, the cluster manager can add nodes to the cluster.
+Permissions can be revoked by Storage or CDN node owner.
+
+**Arguments**
+
+-   `managerAddress` - the manager account address to revoke permissions to
+
+**Usage example**
+
+```ts
+import {AccountId} from '@cere-ddc-sdk/smart-contract/types';
+
+const managerAddress: AccountId = '0x...';
+
+await smartContractInstance.revokeTrustedManagerPermission(managerAddress);
 ```
 
 ## nodeCreate()

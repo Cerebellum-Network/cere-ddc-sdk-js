@@ -311,4 +311,8 @@ export class SmartContract extends SmartContractBase {
 
         return nodeInfo;
     }
+
+    async revokeTrustedManagerPermission(managerAddress: AccountId) {
+        await this.submit(this.contract.tx.revokeTrustedManagerPermission, managerAddress);
+    }
 }
