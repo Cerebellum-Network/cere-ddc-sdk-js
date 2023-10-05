@@ -59,6 +59,10 @@ describe('Smart Contract', () => {
             await adminContract.grantTrustedManagerPermission(user.address);
         });
 
+        test(' revoke trusted manager permission', async () => {
+            await adminContract.revokeTrustedManagerPermission(admin.address);
+        });
+
         test('create storage node', async () => {
             createdStorageNodeKey = await createStorageNode();
 
