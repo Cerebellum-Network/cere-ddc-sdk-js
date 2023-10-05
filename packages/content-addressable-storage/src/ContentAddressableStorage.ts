@@ -55,7 +55,7 @@ type AckParams = {
     piece: Piece;
     nodeUrl: string;
     cid?: string;
-    requestId: string
+    requestId: string;
 };
 
 export type ContentAddressableStorageOptions = RequiredSelected<Partial<CaCreateOptions>, 'clusterAddress'>;
@@ -199,7 +199,7 @@ export class ContentAddressableStorage {
             multiHashType: 0n,
             signature: requestSignature,
             sessionId: session,
-            requestId: route.requestId
+            requestId: route.requestId,
         });
 
         return {
@@ -218,6 +218,7 @@ export class ContentAddressableStorage {
         const session = this.useSession(options.session || options.route?.getSessionId(cid));
 
         const request = await this.buildStoreRequest(bucketId, session, piece, route);
+        const bytesProcessed = request.body.byteLength;
         const response = await this.sendRequest(cdnNodeUrl, request.path, undefined, {
             method: request.method,
             body: request.body,
@@ -239,7 +240,8 @@ export class ContentAddressableStorage {
          */
         await this.collectionPoint?.acknowledgePiece(piece, route, {
             cid,
-            bucketId, // Auto-calculate bytesProcessed by reconstructing binary piece using the bucketId
+            bucketId,
+            bytesProcessed,
         });
 
         await this.ack({
@@ -248,7 +250,7 @@ export class ContentAddressableStorage {
             nodeUrl: cdnNodeUrl,
             cid: request.cid,
             payload: protoResponse,
-            requestId: route.requestId
+            requestId: route.requestId,
         });
 
         return new PieceUri(bucketId, request.cid);
@@ -273,7 +275,7 @@ export class ContentAddressableStorage {
             sessionId: session,
             signature: requestSignature,
             publicKey: this.scheme.publicKey,
-            requestId: route.requestId
+            requestId: route.requestId,
         });
 
         search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'));
@@ -281,6 +283,7 @@ export class ContentAddressableStorage {
         const response = await this.sendRequest(cdnNodeUrl, `${BASE_PATH_PIECES}/${cid}`, search.toString());
         const responseData = await response.arrayBuffer();
         const protoResponse = PbResponse.fromBinary(new Uint8Array(responseData));
+        const bytesProcessed = responseData.byteLength;
 
         if (!response.ok) {
             throw Error(
@@ -322,7 +325,8 @@ export class ContentAddressableStorage {
          */
         await this.collectionPoint?.acknowledgePiece(piece, route, {
             cid,
-            bytesProcessed: pbSignedPiece.piece.byteLength,
+            bucketId,
+            bytesProcessed,
         });
 
         await this.ack({
@@ -330,7 +334,7 @@ export class ContentAddressableStorage {
             session,
             nodeUrl: cdnNodeUrl,
             payload: protoResponse,
-            requestId: route.requestId
+            requestId: route.requestId,
         });
 
         return piece;
@@ -364,7 +368,7 @@ export class ContentAddressableStorage {
             sessionId: session,
             signature: requestSignature,
             publicKey: this.scheme.publicKey,
-            requestId: route.requestId
+            requestId: route.requestId,
         });
 
         search.set('data', Buffer.from(PbRequest.toBinary(pbRequest)).toString('base64'));
@@ -380,7 +384,6 @@ export class ContentAddressableStorage {
                 )}`,
             );
         }
-
 
         const {searchedPieces} = PbSearchResult.fromBinary(protoResponse.body);
         const piecePromises = searchedPieces.map(({cid, signedPiece}) =>
@@ -447,7 +450,7 @@ export class ContentAddressableStorage {
     }
 
     private ack = async ({piece, session, payload, cid, nodeUrl, requestId}: AckParams): Promise<void> => {
-        if ((payload.responseCode !== 0 && payload.responseCode !== 1)) {
+        if (payload.responseCode !== 0 && payload.responseCode !== 1) {
             return;
         }
 
