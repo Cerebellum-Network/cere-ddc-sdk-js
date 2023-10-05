@@ -1,6 +1,6 @@
 import fetchMock from 'fetch-mock-jest';
 
-const baseUrl = 'http://collection-point.cere.io';
+const baseUrl = 'https://dev-cluster-management.network-dev.aws.cere.io/collection-point';
 
 export const setupCollectionPoint = async () => {
     fetchMock.post(`${baseUrl}/acknowledgment`, (url, request) => {

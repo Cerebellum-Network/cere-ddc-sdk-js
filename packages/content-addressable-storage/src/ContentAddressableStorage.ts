@@ -21,7 +21,7 @@ import {Tag} from './models/Tag';
 import {EncryptionOptions} from './EncryptionOptions';
 import {CaCreateOptions, Session} from './ca-create-options';
 import {concatArrays} from './lib/concat-arrays';
-import {BASE_PATH_PIECES, DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG, REQIEST_ID_HEADER} from './constants';
+import {BASE_PATH_PIECES, DEFAULT_SESSION_ID_SIZE, DEK_PATH_TAG} from './constants';
 import {initDefaultOptions} from './lib/init-default-options';
 import {repeatableFetch} from './lib/repeatable-fetch';
 import {FallbackRouter, Route, Router, RouterInterface} from './router';
@@ -90,13 +90,14 @@ export class ContentAddressableStorage {
                       serviceUrl: caOptions.routerServiceUrl,
                   });
 
-        const collectionPoint = !caOptions.collectionPointServiceUrl
-            ? undefined
-            : new CollectionPoint({
-                  cidBuilder: caOptions.cidBuilder,
-                  signer: scheme,
-                  serviceUrl: caOptions.collectionPointServiceUrl,
-              });
+        const collectionPoint =
+            !caOptions.collectionPointServiceUrl || router instanceof FallbackRouter
+                ? undefined
+                : new CollectionPoint({
+                      cidBuilder: caOptions.cidBuilder,
+                      signer: scheme,
+                      serviceUrl: caOptions.collectionPointServiceUrl,
+                  });
 
         return new ContentAddressableStorage(
             scheme,

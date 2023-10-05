@@ -59,7 +59,6 @@ describe('packages/file-storage/src/index.ts', () => {
                 {
                     clusterAddress: clusterId,
                     scheme: 'sr25519',
-                    routerServiceUrl: 'http://router.cere.io',
                 },
                 {
                     parallel: 2,
