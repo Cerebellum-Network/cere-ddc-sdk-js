@@ -1,5 +1,5 @@
 {
-    "version": "1.9.1-rc.1",
+    "version": "1.9.1",
     "command": {
         "publish": {
             "directory": "{workspaceRoot}/{projectRoot}/package"
