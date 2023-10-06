@@ -31,7 +31,7 @@ export enum NodeStatusInCluster {
     OFFLINE = 'OFFLINE',
 }
 
-export enum Permission {
+export enum PermissionType {
     CLUSTER_MANAGER_TRUSTED_BY = 'ClusterManagerTrustedBy',
     SET_EXCHANGE_RATE = 'SetExchangeRate',
     SUPER_ADMIN = 'SuperAdmin',
