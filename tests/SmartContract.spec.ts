@@ -69,7 +69,7 @@ describe('Smart Contract', () => {
                 user.address,
                 Permission.CLUSTER_MANAGER_TRUSTED_BY,
             );
-            expect(hasCMPermission).toEqual('true');
+            expect(hasCMPermission).toEqual(true);
         });
 
         test('create storage node', async () => {
