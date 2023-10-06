@@ -8,7 +8,12 @@ import {
 } from '@cere-ddc-sdk/core';
 import {SmartContractOptions, TESTNET} from '@cere-ddc-sdk/smart-contract';
 import {FileStorageConfig} from '@cere-ddc-sdk/file-storage';
-import {ContentAddressableStorageOptions, Session} from '@cere-ddc-sdk/content-addressable-storage';
+import {
+    ContentAddressableStorageOptions,
+    Session,
+    COLLECTION_POINT_SERVICE_URL,
+    ROUTER_SERVICE_URL,
+} from '@cere-ddc-sdk/content-addressable-storage';
 
 type CaOptions = Required<ContentAddressableStorageOptions>;
 
@@ -31,7 +36,7 @@ export class ClientOptions implements ClientOptionsInterface {
         public readonly writeAttempts = 1,
         public readonly ackTimeout = 500,
         public readonly session: Session | null = null,
-        public readonly routerServiceUrl: string | null = null,
-        public readonly collectionPointServiceUrl: string | null = null,
+        public readonly routerServiceUrl: string | null = ROUTER_SERVICE_URL,
+        public readonly collectionPointServiceUrl: string | null = COLLECTION_POINT_SERVICE_URL,
     ) {}
 }

@@ -5,7 +5,7 @@ export {SearchResult} from './models/SearchResult';
 export {Tag, SearchType} from './models/Tag';
 export {Link} from './models/Link';
 export {EncryptionOptions} from './EncryptionOptions';
-export {DEK_PATH_TAG} from './constants';
+export {DEK_PATH_TAG, COLLECTION_POINT_SERVICE_URL, ROUTER_SERVICE_URL} from './constants';
 export type {Session} from './ca-create-options';
 
 export {

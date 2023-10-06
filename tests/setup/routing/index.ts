@@ -19,7 +19,7 @@ type RequestBody = {
     chunks?: RequestBodyChunk[];
 };
 
-const baseUrl = 'http://router.cere.io';
+const baseUrl = 'https://dev-cluster-management.network-dev.aws.cere.io/router';
 const nodeUrl = 'http://localhost:8082';
 const workerAddress = 'test-worker-address';
 const sessionId = 'test-session';

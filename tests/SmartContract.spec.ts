@@ -13,7 +13,6 @@ describe('Smart Contract', () => {
     let adminContract: SmartContract;
     let user: KeyringPair;
     let userContract: SmartContract;
-    let clusterManager: KeyringPair;
 
     const createStorageNode = (index = 1) => {
         const publicKey = createAccount().address;
@@ -40,13 +39,11 @@ describe('Smart Contract', () => {
         api = await createBlockhainApi();
         admin = await getAccount('//Alice');
         user = await getAccount('//Bob');
-        clusterManager = await getAccount('//ALICE_STASH');
 
         deployedContract = await bootstrapContract(api, admin);
 
         adminContract = new SmartContract(admin, deployedContract);
         userContract = new SmartContract(user, deployedContract);
-        await adminContract.grantTrustedManagerPermission(clusterManager.address);
     });
 
     afterAll(async () => {
@@ -63,7 +60,7 @@ describe('Smart Contract', () => {
         });
 
         test('revoke trusted manager permission', async () => {
-            await adminContract.revokeTrustedManagerPermission(clusterManager.address);
+            await adminContract.revokeTrustedManagerPermission(user.address);
         });
 
         test('create storage node', async () => {

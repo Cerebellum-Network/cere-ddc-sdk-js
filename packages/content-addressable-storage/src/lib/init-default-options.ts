@@ -20,7 +20,8 @@ export const initDefaultOptions = (options: Options): CaCreateOptions => {
         writeAttempts: options.writeAttempts || 1,
         ackTimeout: options.ackTimeout,
         session: options.session || null,
-        routerServiceUrl: options.routerServiceUrl || null,
-        collectionPointServiceUrl: options.collectionPointServiceUrl || null,
+        routerServiceUrl: options.routerServiceUrl === null ? null : defaultOptions.routerServiceUrl,
+        collectionPointServiceUrl:
+            options.collectionPointServiceUrl === null ? null : defaultOptions.collectionPointServiceUrl,
     };
 };
