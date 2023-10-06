@@ -2,7 +2,7 @@ import {ApiPromise} from '@polkadot/api';
 import {KeyringPair} from '@polkadot/keyring/types';
 import {ContractPromise} from '@polkadot/api-contract';
 import {SmartContract} from '@cere-ddc-sdk/smart-contract';
-import {NodeStatusInCluster} from '@cere-ddc-sdk/smart-contract/types';
+import {NodeStatusInCluster, Permission} from '@cere-ddc-sdk/smart-contract/types';
 
 import {bootstrapContract, createAccount, createBlockhainApi, getAccount} from './helpers';
 
@@ -61,6 +61,15 @@ describe('Smart Contract', () => {
 
         test('revoke trusted manager permission', async () => {
             await adminContract.revokeTrustedManagerPermission(user.address);
+        });
+
+        test('has trusted manager permission', async () => {
+            await adminContract.grantTrustedManagerPermission(user.address);
+            const hasCMPermission = await adminContract.hasPermission(
+                user.address,
+                Permission.CLUSTER_MANAGER_TRUSTED_BY,
+            );
+            expect(hasCMPermission).toEqual(true);
         });
 
         test('create storage node', async () => {
