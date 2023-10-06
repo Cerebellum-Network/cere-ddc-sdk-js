@@ -1,7 +1,7 @@
 {
     "name": "@cere-ddc-sdk/proto",
     "description": "Storage protocol buffer models",
-    "version": "1.9.0",
+    "version": "1.9.1-rc.1",
     "type": "module",
     "main": "./dist/index.cjs",
     "types": "./dist/types",

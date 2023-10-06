@@ -76,6 +76,7 @@ The `SmartContract` instance can be created in two ways:
 -   [accountBond()](#accountbond)
 -   [grantTrustedManagerPermission()](#granttrustedmanagerpermission)
 -   [revokeTrustedManagerPermission()](#revokeTrustedManagerPermission)
+-   [hasPermission()](#hasPermission)
 -   [nodeCreate()](#nodecreate)
 -   [nodeRemove()](#noderemove)
 -   [cdnNodeCreate()](#cdnnodecreate)
@@ -288,6 +289,26 @@ import {AccountId} from '@cere-ddc-sdk/smart-contract/types';
 const managerAddress: AccountId = '0x...';
 
 await smartContractInstance.revokeTrustedManagerPermission(managerAddress);
+```
+
+## hasPermission()
+
+This endpoint checks whether the given account has the given permission.
+Super-admin will always have all permissions.
+
+**Arguments**
+
+-   `account_id` - account to check permissions.",
+-   `permission` - permission to check.",
+
+**Usage example**
+
+```ts
+import {AccountId, PermissionType} from '@cere-ddc-sdk/smart-contract/types';
+
+const accountId: AccountId = '0x...';
+
+await smartContractInstance.hasPermission(accountId, PermissionType.CLUSTER_MANAGER_TRUSTED_BY);
 ```
 
 ## nodeCreate()

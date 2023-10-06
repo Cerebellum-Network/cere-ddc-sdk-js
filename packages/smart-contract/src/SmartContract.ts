@@ -27,6 +27,7 @@ import {
     NodeInfo,
     CdnNodeInfo,
     NodeStatusInCluster,
+    PermissionType,
 } from './types';
 
 export class SmartContract extends SmartContractBase {
@@ -314,5 +315,9 @@ export class SmartContract extends SmartContractBase {
 
     async revokeTrustedManagerPermission(managerAddress: AccountId) {
         await this.submit(this.contract.tx.revokeTrustedManagerPermission, managerAddress);
+    }
+
+    async hasPermission(accountId: AccountId, permission: PermissionType) {
+        await this.submit(this.contract.tx.hasPermission, accountId, permission);
     }
 }
