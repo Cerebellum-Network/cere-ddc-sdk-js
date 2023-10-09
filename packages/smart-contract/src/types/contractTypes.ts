@@ -31,34 +31,29 @@ export enum NodeStatusInCluster {
     OFFLINE = 'OFFLINE',
 }
 
-// export type ClusterManagerTrustedBy = {
-//     name: 'ClusterManagerTrustedBy';
-//     accountId: AccountId;
-// };
+export class Permission {
+    private constructor(private value: string, private accountId?: AccountId) {}
 
-// export type SetExchangeRate = {
-//     name: 'SetExchangeRate';
-// };
+    public static ClusterManagerTrustedBy(accountId: AccountId) {
+        return new Permission('ClusterManagerTrustedBy', accountId);
+    }
 
-// export type SuperAdmin = {
-//     name: 'SuperAdmin';
-// };
+    public static SetExchangeRate() {
+        return new Permission('SetExchangeRate');
+    }
 
-// export type Validator = {
-//     name: 'Validator';
-// };
+    public static SuperAdmin() {
+        return new Permission('SuperAdmin');
+    }
 
-export type Permission = {accountId: AccountId} | 'SetExchangeRate' | 'SuperAdmin' | 'Validator';
+    public static Validator() {
+        return new Permission('Validator');
+    }
 
-export type PermissionVariant = 'ClusterManagerTrustedBy' | 'SetExchangeRate' | 'SuperAdmin' | 'Validator';
-
-//export type Permission = ClusterManagerTrustedBy | SetExchangeRate | SuperAdmin | Validator;
-// export enum Permission {
-//     CLUSTER_MANAGER_TRUSTED_BY = 'ClusterManagerTrustedBy',
-//     SET_EXCHANGE_RATE = 'SetExchangeRate',
-//     SUPER_ADMIN = 'SuperAdmin',
-//     VALIDATOR = 'Validator',
-// }
+    public toString() {
+        return this.value;
+    }
+}
 
 export type BucketParams = {
     replication: number;
