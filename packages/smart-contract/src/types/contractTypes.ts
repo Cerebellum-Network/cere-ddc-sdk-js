@@ -31,12 +31,30 @@ export enum NodeStatusInCluster {
     OFFLINE = 'OFFLINE',
 }
 
-export enum Permission {
-    CLUSTER_MANAGER_TRUSTED_BY = 'ClusterManagerTrustedBy',
-    SET_EXCHANGE_RATE = 'SetExchangeRate',
-    SUPER_ADMIN = 'SuperAdmin',
-    VALIDATOR = 'Validator',
-}
+export type ClusterManagerTrustedBy = {
+    kind: 'ClusterManagerTrustedBy';
+    accountId: AccountId;
+};
+
+export type SetExchangeRate = {
+    kind: 'SetExchangeRate';
+};
+
+export type SuperAdmin = {
+    kind: 'SuperAdmin';
+};
+
+export type Validator = {
+    kind: 'Validator';
+};
+
+export type Permission = ClusterManagerTrustedBy | SetExchangeRate | SuperAdmin | Validator;
+// export enum Permission {
+//     CLUSTER_MANAGER_TRUSTED_BY = 'ClusterManagerTrustedBy',
+//     SET_EXCHANGE_RATE = 'SetExchangeRate',
+//     SUPER_ADMIN = 'SuperAdmin',
+//     VALIDATOR = 'Validator',
+// }
 
 export type BucketParams = {
     replication: number;
