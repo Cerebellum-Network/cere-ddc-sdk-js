@@ -64,12 +64,8 @@ describe('Smart Contract', () => {
         });
 
         test('has trusted manager permission', async () => {
-            const clusterManagerTrustedBy: Permission = {
-                type: 'ClusterManagerTrustedBy',
-                value: user.address,
-            };
             await adminContract.grantTrustedManagerPermission(user.address);
-            const hasCMPermission = await adminContract.hasPermission(user.address, clusterManagerTrustedBy);
+            const hasCMPermission = await adminContract.hasPermission(user.address, {accountId: user.address});
             expect(hasCMPermission).toEqual(true);
         });
 

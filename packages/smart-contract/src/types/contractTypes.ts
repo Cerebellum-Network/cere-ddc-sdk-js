@@ -48,12 +48,10 @@ export enum NodeStatusInCluster {
 //     name: 'Validator';
 // };
 
+export type Permission = {accountId: AccountId} | 'SetExchangeRate' | 'SuperAdmin' | 'Validator';
+
 export type PermissionVariant = 'ClusterManagerTrustedBy' | 'SetExchangeRate' | 'SuperAdmin' | 'Validator';
 
-export type Permission = {
-    type: PermissionVariant;
-    value?: AccountId;
-};
 //export type Permission = ClusterManagerTrustedBy | SetExchangeRate | SuperAdmin | Validator;
 // export enum Permission {
 //     CLUSTER_MANAGER_TRUSTED_BY = 'ClusterManagerTrustedBy',
