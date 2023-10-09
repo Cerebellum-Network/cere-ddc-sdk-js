@@ -31,24 +31,30 @@ export enum NodeStatusInCluster {
     OFFLINE = 'OFFLINE',
 }
 
-export type ClusterManagerTrustedBy = {
-    name: 'ClusterManagerTrustedBy';
-    accountId: AccountId;
-};
+// export type ClusterManagerTrustedBy = {
+//     name: 'ClusterManagerTrustedBy';
+//     accountId: AccountId;
+// };
 
-export type SetExchangeRate = {
-    name: 'SetExchangeRate';
-};
+// export type SetExchangeRate = {
+//     name: 'SetExchangeRate';
+// };
 
-export type SuperAdmin = {
-    name: 'SuperAdmin';
-};
+// export type SuperAdmin = {
+//     name: 'SuperAdmin';
+// };
 
-export type Validator = {
-    name: 'Validator';
-};
+// export type Validator = {
+//     name: 'Validator';
+// };
 
-export type Permission = ClusterManagerTrustedBy | SetExchangeRate | SuperAdmin | Validator;
+export type PermissionVariant = 'ClusterManagerTrustedBy' | 'SetExchangeRate' | 'SuperAdmin' | 'Validator';
+
+export type Permission = {
+    type: PermissionVariant;
+    value?: AccountId;
+};
+//export type Permission = ClusterManagerTrustedBy | SetExchangeRate | SuperAdmin | Validator;
 // export enum Permission {
 //     CLUSTER_MANAGER_TRUSTED_BY = 'ClusterManagerTrustedBy',
 //     SET_EXCHANGE_RATE = 'SetExchangeRate',

@@ -2,7 +2,7 @@ import {ApiPromise} from '@polkadot/api';
 import {KeyringPair} from '@polkadot/keyring/types';
 import {ContractPromise} from '@polkadot/api-contract';
 import {SmartContract} from '@cere-ddc-sdk/smart-contract';
-import {NodeStatusInCluster, ClusterManagerTrustedBy, Permission} from '@cere-ddc-sdk/smart-contract/types';
+import {NodeStatusInCluster, PermissionVariant, Permission} from '@cere-ddc-sdk/smart-contract/types';
 
 import {bootstrapContract, createAccount, createBlockhainApi, getAccount} from './helpers';
 
@@ -64,9 +64,9 @@ describe('Smart Contract', () => {
         });
 
         test('has trusted manager permission', async () => {
-            const clusterManagerTrustedBy: ClusterManagerTrustedBy = {
-                name: 'ClusterManagerTrustedBy',
-                accountId: user.address,
+            const clusterManagerTrustedBy: Permission = {
+                type: 'ClusterManagerTrustedBy',
+                value: user.address,
             };
             await adminContract.grantTrustedManagerPermission(user.address);
             const hasCMPermission = await adminContract.hasPermission(user.address, clusterManagerTrustedBy);
