@@ -32,20 +32,20 @@ export enum NodeStatusInCluster {
 }
 
 export type ClusterManagerTrustedBy = {
-    kind: 'ClusterManagerTrustedBy';
+    name: 'ClusterManagerTrustedBy';
     accountId: AccountId;
 };
 
 export type SetExchangeRate = {
-    kind: 'SetExchangeRate';
+    name: 'SetExchangeRate';
 };
 
 export type SuperAdmin = {
-    kind: 'SuperAdmin';
+    name: 'SuperAdmin';
 };
 
 export type Validator = {
-    kind: 'Validator';
+    name: 'Validator';
 };
 
 export type Permission = ClusterManagerTrustedBy | SetExchangeRate | SuperAdmin | Validator;

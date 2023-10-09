@@ -65,7 +65,7 @@ describe('Smart Contract', () => {
 
         test('has trusted manager permission', async () => {
             const clusterManagerTrustedBy: ClusterManagerTrustedBy = {
-                kind: 'ClusterManagerTrustedBy',
+                name: 'ClusterManagerTrustedBy',
                 accountId: user.address,
             };
             await adminContract.grantTrustedManagerPermission(user.address);
