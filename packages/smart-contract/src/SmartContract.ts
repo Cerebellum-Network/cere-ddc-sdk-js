@@ -318,6 +318,7 @@ export class SmartContract extends SmartContractBase {
     }
 
     async hasPermission(accountId: AccountId, permission: Permission) {
-        return this.query(this.contract.query.hasPermission, accountId, permission);
+        const result = await this.submit(this.contract.tx.hasPermission, accountId, permission);
+        return Boolean(result);
     }
 }
