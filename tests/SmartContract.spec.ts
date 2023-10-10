@@ -64,12 +64,18 @@ describe('Smart Contract', () => {
         });
 
         test('has trusted manager permission', async () => {
+            const hasPermission = await adminContract.hasPermission(user.address, {
+                ClusterManagerTrustedBy: admin.address,
+            });
+
+            expect(hasPermission).toBe(false);
+
             await adminContract.grantTrustedManagerPermission(user.address);
-            const hasCMPermission = await adminContract.hasPermission(
-                user.address,
-                Permission.CLUSTER_MANAGER_TRUSTED_BY,
-            );
-            expect(hasCMPermission).toEqual(true);
+            const nextHasPermission = await adminContract.hasPermission(user.address, {
+                ClusterManagerTrustedBy: admin.address,
+            });
+
+            expect(nextHasPermission).toEqual(true);
         });
 
         test('create storage node', async () => {
