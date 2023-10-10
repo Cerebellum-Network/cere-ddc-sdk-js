@@ -1,5 +1,4 @@
 import {Codec} from '@polkadot/types/types';
-import {Enum} from '@polkadot/types'
 export type ClusterId = number;
 export type BucketId = bigint;
 export type AccountId = string;
@@ -30,17 +29,6 @@ export enum NodeStatusInCluster {
     DELETING = 'DELETING',
     OFFLINE = 'OFFLINE',
 }
-
-class Permission extends Enum {
-    constructor(Type, value) {
-      super({ 
-        ClusterManagerTrustedBy: AccountId, 
-        SetExchangeRate: Null, 
-        SuperAdmin: Null, 
-        Validator: Null
-      }, value)
-    }
-  }
 
 export type BucketParams = {
     replication: number;
