@@ -31,13 +31,12 @@ export enum NodeStatusInCluster {
     OFFLINE = 'OFFLINE',
 }
 
-export type Permission =
-    | 'SetExchangeRate'
-    | 'SuperAdmin'
-    | 'Validator'
-    | {
-          ClusterManagerTrustedBy: AccountId;
-      };
+export enum Permission {
+    CLUSTER_MANAGER_TRUSTED_BY = 'ClusterManagerTrustedBy',
+    SET_EXCHANGE_RATE = 'SetExchangeRate',
+    SUPER_ADMIN = 'SuperAdmin',
+    VALIDATOR = 'Validator',
+}
 
 export type BucketParams = {
     replication: number;
