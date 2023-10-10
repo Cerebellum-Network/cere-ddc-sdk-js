@@ -67,7 +67,8 @@ describe('Smart Contract', () => {
             await adminContract.grantTrustedManagerPermission(user.address);
             const hasCMPermission = await adminContract.hasPermission(
                 user.address,
-                Permission.ClusterManagerTrustedBy(user.address),
+                "ClusterManagerTrustedBy",
+                user.address,
             );
             expect(hasCMPermission).toEqual(true);
         });

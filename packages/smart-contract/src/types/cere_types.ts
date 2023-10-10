@@ -9,6 +9,14 @@ export const cereTypes = {
             "Rejected"
         ]
     },
+    "Permission": {
+        "_enum": {
+            "ClusterManagerTrustedBy": "AccountId",
+             "SetExchangeRate": null, 
+             "SuperAdmin": null,
+             "Validator": null
+        }  
+    },
     "ProposalVotes": {
         "votes_for": "Vec<AccountId>",
         "votes_against": "Vec<AccountId>",

@@ -27,11 +27,12 @@ import {
     NodeInfo,
     CdnNodeInfo,
     NodeStatusInCluster,
-    Permission,
 } from './types';
 
+const  { Permission } = cereTypes;
 export class SmartContract extends SmartContractBase {
     private shouldDisconnectAPI = false;
+    private api!: ApiPromise;
 
     static async buildAndConnect(
         secretPhraseOrAddress: AddressOrPair,
@@ -57,7 +58,7 @@ export class SmartContract extends SmartContractBase {
 
         const contract = new ContractPromise(api, options.abi, options.contractAddress);
         const smartContract = new SmartContract(addressOrPair, contract, signer);
-
+        smartContract.api = api;
         /**
          * In case an external API instance is used - don't diconnect it
          */
@@ -317,8 +318,9 @@ export class SmartContract extends SmartContractBase {
         await this.submit(this.contract.tx.revokeTrustedManagerPermission, managerAddress);
     }
 
-    async hasPermission(accountId: AccountId, permission: Permission) {
-        const result = await this.submit(this.contract.tx.hasPermission, accountId, permission);
+    async hasPermission(accountId: AccountId, permissionString: string, grantor?: AccountId ) {
+        const permission = this.api.registry.createType('Permission', permissionString);
+        const result = await this.submit(this.contract.tx.hasPermission, accountId, permission, grantor);
         return result;
     }
 }
