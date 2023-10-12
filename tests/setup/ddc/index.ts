@@ -3,8 +3,9 @@ import {DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait} from 't
 let environment: StartedDockerComposeEnvironment | undefined;
 
 export const startDDC = async () => {
-    console.log('');
-    console.log('Starting local DDC environment...');
+    console.group('Start DDC');
+
+    console.log('Starting the environment...');
     environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.yml')
         .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
         .withWaitStrategy('ddc-cdn-node-1', Wait.forHealthCheck())
@@ -16,11 +17,17 @@ export const startDDC = async () => {
         .withWaitStrategy('ddc-storage-node-1cbd2d43', Wait.forHealthCheck())
         .up();
 
-    console.log('Local DDC is started');
+    console.log('The environment has started!');
+
+    console.groupEnd();
 };
 
 export const stopDDC = async () => {
-    console.log('Stopping local DDC environment...');
+    console.group('Stop DDC');
+
+    console.log('Stopping the environment...');
     await environment?.down();
-    console.log('Local DDC is stopped');
+    console.log('The environment has stopped!');
+
+    console.groupEnd();
 };

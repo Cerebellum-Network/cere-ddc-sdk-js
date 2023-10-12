@@ -2,6 +2,7 @@ import fetchMock from 'fetch-mock-jest';
 
 import {setupRouter} from './routing';
 import {setupCollectionPoint} from './collectionPoint';
+import {setupBlockchain} from './blockchain';
 
 fetchMock.config.fallbackToNetwork = true;
 
