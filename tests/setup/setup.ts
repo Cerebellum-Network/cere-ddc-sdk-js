@@ -1,15 +1,19 @@
-import fetchMock from 'fetch-mock-jest';
+import {setupServer} from 'msw/node';
 
 import {setupRouter} from './routing';
 import {setupCollectionPoint} from './collectionPoint';
 
-fetchMock.config.fallbackToNetwork = true;
+const server = setupServer();
 
 beforeAll(async () => {
-    await setupRouter();
-    await setupCollectionPoint();
+    await setupRouter(server);
+    await setupCollectionPoint(server);
+
+    server.listen({
+        onUnhandledRequest() {},
+    });
 });
 
 afterAll(async () => {
-    fetchMock.restore();
+    server.close();
 });

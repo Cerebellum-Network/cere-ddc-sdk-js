@@ -1,3 +1,4 @@
+import {fetch} from 'cross-fetch';
 import {CidBuilder, SchemeInterface} from '@cere-ddc-sdk/core';
 import {stringToU8a, u8aConcat, u8aToHex} from '@polkadot/util';
 import {Piece as PbPiece} from '@cere-ddc-sdk/proto';
