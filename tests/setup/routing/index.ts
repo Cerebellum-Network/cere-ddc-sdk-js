@@ -1,4 +1,5 @@
-import fetchMock from 'fetch-mock-jest';
+import {rest} from 'msw';
+import {SetupServer} from 'msw/node';
 
 import pieces from '../../fixtures/ddc/pieces.json';
 
@@ -24,50 +25,53 @@ const nodeUrl = 'http://localhost:8081';
 const workerAddress = 'test-worker-address';
 const sessionId = 'test-session';
 
-export const setupRouter = async () => {
-    fetchMock.post(`${baseUrl}/read-resource-metadata`, async (url, request) => {
-        const {requestId, cid, sessionId}: RequestBody = request.body && JSON.parse(request.body.toString());
-        const {links = []} = pieces.find((piece) => piece.cid === cid) || {};
-        const routing = [
-            {cid, nodeUrl, sessionId, workerAddress},
-            ...links.map(({cid}) => ({cid, nodeUrl, sessionId, workerAddress})),
-        ];
+export const setupRouter = async (server: SetupServer) => {
+    server.use(
+        rest.post(`${baseUrl}/read-resource-metadata`, async (req, res, ctx) => {
+            const {requestId, cid, sessionId, nodeOperationSignature} = await req.json<RequestBody>();
+            const {links = []} = pieces.find((piece) => piece.cid === cid) || {};
+            const routing = [
+                {cid, nodeUrl, sessionId, workerAddress},
+                ...links.map(({cid}) => ({cid, nodeUrl, sessionId, workerAddress})),
+            ];
 
-        // console.log('Router:', 'read', {cid, routing, nodeOperationSignature, sessionId});
+            // console.log('Router:', 'read', {cid, routing, nodeOperationSignature, sessionId});
 
-        return {
-            status: 200,
-            body: {requestId, routing},
-        };
-    });
+            return res(ctx.status(200), ctx.json({requestId, routing}));
+        }),
 
-    fetchMock.post(`${baseUrl}/write-resource-metadata`, (url, request) => {
-        const {requestId, cid, chunks = []}: RequestBody = request.body && JSON.parse(request.body.toString());
-        const routing = [
-            {cid, nodeUrl, sessionId, workerAddress},
-            ...chunks.map(({cid}) => ({cid, nodeUrl, sessionId, workerAddress})),
-        ];
+        rest.post(`${baseUrl}/read-resource-metadata`, async (req, res, ctx) => {
+            const {requestId, cid, sessionId, nodeOperationSignature} = await req.json<RequestBody>();
+            const {links = []} = pieces.find((piece) => piece.cid === cid) || {};
+            const routing = [
+                {cid, nodeUrl, sessionId, workerAddress},
+                ...links.map(({cid}) => ({cid, nodeUrl, sessionId, workerAddress})),
+            ];
 
-        // console.log('Router:', 'write', {cid, chunks});
+            // console.log('Router:', 'read', {cid, routing, nodeOperationSignature, sessionId});
 
-        return {
-            status: 200,
-            body: {
-                requestId,
-                routing,
-            },
-        };
-    });
+            return res(ctx.status(200), ctx.json({requestId, routing}));
+        }),
 
-    fetchMock.post(`${baseUrl}/search-metadata`, (url, request) => {
-        const {requestId}: RequestBody = request.body && JSON.parse(request.body.toString());
-        const routing = {nodeUrl, sessionId, workerAddress};
+        rest.post(`${baseUrl}/write-resource-metadata`, async (req, res, ctx) => {
+            const {requestId, cid, chunks = []} = await req.json<RequestBody>();
+            const routing = [
+                {cid, nodeUrl, sessionId, workerAddress},
+                ...chunks.map(({cid}) => ({cid, nodeUrl, sessionId, workerAddress})),
+            ];
 
-        // console.log('Router:', 'search', {routing});
+            // console.log('Router:', 'write', {cid, chunks});
 
-        return {
-            status: 200,
-            body: {requestId, routing},
-        };
-    });
+            return res(ctx.status(200), ctx.json({requestId, routing}));
+        }),
+
+        rest.post(`${baseUrl}/search-metadata`, async (req, res, ctx) => {
+            const {requestId} = await req.json<RequestBody>();
+            const routing = {nodeUrl, sessionId, workerAddress};
+
+            // console.log('Router:', 'search', {routing});
+
+            return res(ctx.status(200), ctx.json({requestId, routing}));
+        }),
+    );
 };
