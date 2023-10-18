@@ -33,20 +33,8 @@ const setupContract = async (): Promise<ContractData> => {
     const api = await createBlockhainApi();
     const admin = getAccount();
 
-    console.time('Deploy contract');
-    await transferCere(api, admin.address, 1000);
-    const deployedContract = await bootstrapContract(api, admin);
-    const contract = new SmartContract(admin, deployedContract);
-    console.timeEnd('Deploy contract');
-
-    console.time('Create account');
-    await contract.batch(() => [contract.accountDeposit(200n), contract.accountBond(100n)]);
-    console.timeEnd('Create account');
-
-    console.time('Create cluster');
-    const clusterId = await contract.clusterCreate({replicationFactor: 1}, 100000n);
-    console.timeEnd('Create cluster');
-
+    const clusterId = 0; // Always the same for fresh SC
+    const bucketIds = [0n, 1n, 2n]; // Always the same for fresh SC
     const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
     const storageNodeAccounts = [
         getAccount('//Eve'),
@@ -55,42 +43,49 @@ const setupContract = async (): Promise<ContractData> => {
         getAccount('//Alice'),
     ];
 
-    console.time('Add storage nodes');
-    for (const [index, account] of storageNodeAccounts.entries()) {
-        const nodeUrl = `http://ddc-storage-node-${index + 1}:809${index + 1}`;
+    console.time('Top-up user');
+    await transferCere(api, admin.address, 1000);
+    console.timeEnd('Top-up user');
 
-        await contract.batch(() => [
-            contract.nodeCreate(account.address, {url: nodeUrl}, 100000000n, 1n),
-            contract.clusterAddNode(clusterId, account.address, [BigInt(index) * 4611686018427387904n]),
-            contract.clusterSetNodeStatus(clusterId, account.address, NodeStatusInCluster.ACTIVE),
-        ]);
-    }
-    console.timeEnd('Add storage nodes');
+    console.time('Deploy contract');
+    const deployedContract = await bootstrapContract(api, admin);
+    const contract = new SmartContract(admin, deployedContract);
+    console.timeEnd('Deploy contract');
 
-    console.time('Add CDN nodes');
-    for (const [index, account] of cdnNodeAccounts.entries()) {
-        await contract.batch(() => [
+    console.time('Setup network topology');
+    await contract.batch(() => [
+        contract.clusterCreate({replicationFactor: 1}, 100000n),
+
+        ...storageNodeAccounts.flatMap((account, index) => {
+            const nodeUrl = `http://ddc-storage-node-${index + 1}:809${index + 1}`;
+
+            return [
+                contract.nodeCreate(account.address, {url: nodeUrl}, 100000000n, 1n),
+                contract.clusterAddNode(clusterId, account.address, [BigInt(index) * 4611686018427387904n]),
+                contract.clusterSetNodeStatus(clusterId, account.address, NodeStatusInCluster.ACTIVE),
+            ];
+        }),
+
+        ...cdnNodeAccounts.flatMap((account, index) => [
             contract.cdnNodeCreate(account.address, {url: `http://${hostIp}:808${index + 1}`}),
             contract.clusterAddCdnNode(clusterId, account.address),
             contract.clusterSetCdnNodeStatus(clusterId, account.address, NodeStatusInCluster.ACTIVE),
-        ]);
-    }
-    console.timeEnd('Add CDN nodes');
-
-    console.time('Create buckets');
-    const bucketIds = await contract.batch(() => [
-        contract.bucketCreate(admin.address, clusterId),
-        contract.bucketCreate(admin.address, clusterId),
-        contract.bucketCreate(admin.address, clusterId),
+        ]),
     ]);
+    console.timeEnd('Setup network topology');
 
-    await contract.batch(() =>
-        bucketIds.flatMap((bucketId) => [
+    console.time('Setup account and create buckets');
+    await contract.batch(() => [
+        contract.accountDeposit(200n),
+        contract.accountBond(100n),
+
+        ...bucketIds.flatMap((bucketId) => [
+            contract.bucketCreate(admin.address, clusterId),
             contract.bucketSetAvailability(bucketId, true),
             contract.bucketAllocIntoCluster(bucketId, 1000n),
         ]),
-    );
-    console.timeEnd('Create buckets');
+    ]);
+    console.timeEnd('Setup account and create buckets');
 
     await api.disconnect();
     console.log('');
