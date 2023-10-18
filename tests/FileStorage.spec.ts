@@ -24,7 +24,7 @@ describe('packages/file-storage/src/index.ts', () => {
 
     describe('Unrouted', () => {
         let storage: FileStorage;
-        const cdnNodeUrl = 'http://localhost:8080';
+        const cdnNodeUrl = 'http://localhost:8081';
 
         beforeAll(async () => {
             storage = await FileStorage.build(

@@ -12,7 +12,7 @@ import {ROOT_USER_SEED, getContractOptions} from './helpers';
 import {delay} from './delay';
 
 describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts', () => {
-    const url = 'http://localhost:8080';
+    const url = 'http://localhost:8081';
     const bucketId = 0n;
 
     let storage: ContentAddressableStorage;

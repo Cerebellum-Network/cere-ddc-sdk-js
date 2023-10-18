@@ -14,7 +14,7 @@ describe('Smart Contract', () => {
     let user: KeyringPair;
     let userContract: SmartContract;
 
-    const createStorageNode = (index = 0) => {
+    const createStorageNode = (index = 1) => {
         const publicKey = createAccount().address;
 
         return adminContract.nodeCreate(
@@ -25,7 +25,7 @@ describe('Smart Contract', () => {
         );
     };
 
-    const createCdnNode = (index = 0) => {
+    const createCdnNode = (index = 1) => {
         const cdnNodeKey = createAccount().address;
 
         return adminContract.cdnNodeCreate(cdnNodeKey, {
@@ -297,7 +297,7 @@ describe('Smart Contract', () => {
 
             createdClusterId = await adminContract.clusterCreate({}, 500n);
 
-            const storageNodeId = await createStorageNode(1);
+            const storageNodeId = await createStorageNode(2);
             await adminContract.clusterAddNode(createdClusterId, storageNodeId, [1n, 2n, 3n]);
         });
 

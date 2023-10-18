@@ -22,6 +22,7 @@ const hostIp = getHostIP();
 
 const setupContract = async (): Promise<ContractData> => {
     console.group('Setup smart contract');
+    console.time('Done');
 
     environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.blockchain.yml', uuid)
         .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
@@ -32,47 +33,51 @@ const setupContract = async (): Promise<ContractData> => {
     const api = await createBlockhainApi();
     const admin = getAccount();
 
+    console.time('Deploy contract');
     await transferCere(api, admin.address, 1000);
-
     const deployedContract = await bootstrapContract(api, admin);
-    console.log('Contract address', deployedContract.address.toString());
-
     const contract = new SmartContract(admin, deployedContract);
+    console.timeEnd('Deploy contract');
 
-    await contract.accountDeposit(200n);
-    await contract.accountBond(100n);
-    console.log('Account', admin.address);
+    console.time('Create account');
+    await contract.batch(() => [contract.accountDeposit(200n), contract.accountBond(100n)]);
+    console.timeEnd('Create account');
 
+    console.time('Create cluster');
     const clusterId = await contract.clusterCreate({replicationFactor: 1}, 100000n);
-    console.log('Cluster ID', clusterId);
+    console.timeEnd('Create cluster');
 
     const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
-    const storageNodeAccounts = [getAccount('//Eve'), getAccount('//Ferdie'), getAccount('//Charlie')];
+    const storageNodeAccounts = [
+        getAccount('//Eve'),
+        getAccount('//Ferdie'),
+        getAccount('//Charlie'),
+        getAccount('//Alice'),
+    ];
 
-    await contract.batch(() =>
-        storageNodeAccounts.flatMap((account, index) => [
-            contract.nodeCreate(account.address, {url: `http://${hostIp}:809${index}`}, 100000000n, 1n),
+    console.time('Add storage nodes');
+    for (const [index, account] of storageNodeAccounts.entries()) {
+        const nodeUrl = `http://ddc-storage-node-${index + 1}:809${index + 1}`;
+
+        await contract.batch(() => [
+            contract.nodeCreate(account.address, {url: nodeUrl}, 100000000n, 1n),
             contract.clusterAddNode(clusterId, account.address, [BigInt(index) * 4611686018427387904n]),
-        ]),
-    );
-
-    await contract.batch(() =>
-        cdnNodeAccounts.flatMap((account, index) => [
-            contract.cdnNodeCreate(account.address, {url: `http://${hostIp}:808${index}`}),
-            contract.clusterAddCdnNode(clusterId, account.address),
-        ]),
-    );
-
-    await contract.batch(() => [
-        ...storageNodeAccounts.flatMap((account) =>
             contract.clusterSetNodeStatus(clusterId, account.address, NodeStatusInCluster.ACTIVE),
-        ),
+        ]);
+    }
+    console.timeEnd('Add storage nodes');
 
-        ...cdnNodeAccounts.flatMap((account) =>
+    console.time('Add CDN nodes');
+    for (const [index, account] of cdnNodeAccounts.entries()) {
+        await contract.batch(() => [
+            contract.cdnNodeCreate(account.address, {url: `http://${hostIp}:808${index + 1}`}),
+            contract.clusterAddCdnNode(clusterId, account.address),
             contract.clusterSetCdnNodeStatus(clusterId, account.address, NodeStatusInCluster.ACTIVE),
-        ),
-    ]);
+        ]);
+    }
+    console.timeEnd('Add CDN nodes');
 
+    console.time('Create buckets');
     const bucketIds = await contract.batch(() => [
         contract.bucketCreate(admin.address, clusterId),
         contract.bucketCreate(admin.address, clusterId),
@@ -85,10 +90,17 @@ const setupContract = async (): Promise<ContractData> => {
             contract.bucketAllocIntoCluster(bucketId, 1000n),
         ]),
     );
-
-    console.log('Bucket IDs', bucketIds);
+    console.timeEnd('Create buckets');
 
     await api.disconnect();
+    console.log('');
+    console.timeEnd('Done');
+
+    console.log('');
+    console.log('Contract address', deployedContract.address.toString());
+    console.log('Account', admin.address);
+    console.log('Cluster ID', clusterId);
+    console.log('Bucket IDs', bucketIds);
 
     console.groupEnd();
 
