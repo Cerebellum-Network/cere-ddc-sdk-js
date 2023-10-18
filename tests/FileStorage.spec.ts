@@ -3,7 +3,7 @@ import {FileStorage} from '@cere-ddc-sdk/file-storage';
 import {ReadableStream} from 'stream/web';
 
 describe('packages/file-storage/src/index.ts', () => {
-    const bucketId = 1n;
+    const bucketId = 0n;
     const fileData = new Uint8Array([1, 2, 3, 4, 5]);
     let headPieceUri: PieceUri;
 
@@ -23,7 +23,7 @@ describe('packages/file-storage/src/index.ts', () => {
 
     describe('Unrouted', () => {
         let storage: FileStorage;
-        const cdnNodeUrl = 'http://localhost:8081';
+        const cdnNodeUrl = 'http://localhost:8080';
 
         beforeAll(async () => {
             storage = await FileStorage.build(

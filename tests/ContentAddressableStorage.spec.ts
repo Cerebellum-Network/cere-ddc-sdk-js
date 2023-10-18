@@ -7,12 +7,14 @@ import {
     Query,
     Session,
 } from '@cere-ddc-sdk/content-addressable-storage';
+
+import {ROOT_USER_SEED} from './helpers';
 import {delay} from './delay';
 
-const seed = '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03';
-
 describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts', () => {
-    const url = 'http://localhost:8081';
+    const url = 'http://localhost:8080';
+    const bucketId = 0n;
+
     let storage: ContentAddressableStorage;
     let randomPieceData = new Uint8Array();
     let session: Session;
@@ -25,7 +27,7 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
                 scheme: 'sr25519',
                 ackTimeout: 0,
             },
-            seed,
+            ROOT_USER_SEED,
         );
         randomPieceData = new Uint8Array(10);
         webcrypto.getRandomValues(randomPieceData);
@@ -41,7 +43,6 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         //given
         const tag = new Tag('some-key', 'some-value', SearchType.NOT_SEARCHABLE);
         const piece = new Piece(randomPieceData, [tag]);
-        const bucketId = 1n;
 
         //when
         const storeRequest = await storage.store(bucketId, piece);
@@ -56,7 +57,6 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
     it('should validate cid on reading', async () => {
         const tag = new Tag('some-key', 'some-value', SearchType.NOT_SEARCHABLE);
         const piece = new Piece(randomPieceData, [tag]);
-        const bucketId = 1n;
 
         //when
         const storeRequest = await storage.store(bucketId, piece);
@@ -76,7 +76,6 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         //given
         const tag = new Tag('some-key', 'some-value', SearchType.NOT_SEARCHABLE);
         const piece = new Piece(randomPieceData, [tag]);
-        const bucketId = 1n;
         const storeRequest = await storage.store(bucketId, piece);
         expect(storeRequest.cid).toBeDefined();
         await delay(20);
@@ -87,7 +86,6 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
         //given
         const tag = new Tag('some-key', 'some-value', SearchType.NOT_SEARCHABLE);
         const piece = new Piece(randomPieceData, [tag]);
-        const bucketId = 1n;
 
         //when
         const d = new Date();
@@ -104,7 +102,6 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
     test('search', async () => {
         //given
         const tags = [new Tag('testKey', 'testValue')];
-        const bucketId = 1n;
         const piece1 = new Piece(new Uint8Array(randomBytes(3)), tags);
         const piece2 = new Piece(new Uint8Array(randomBytes(3)), tags);
 
@@ -126,7 +123,6 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
     test('search with explicit session', async () => {
         //given
         const tags = [new Tag('testKeyWithSession', 'testValueWithSession')];
-        const bucketId = 1n;
         const piece = new Piece(new Uint8Array(randomBytes(3)), tags);
         const {cid} = await storage.store(bucketId, piece, {session});
 
@@ -143,7 +139,6 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
     test('search not searchable', async () => {
         //given
         const tags = [new Tag('testKey2', 'testValue2', SearchType.NOT_SEARCHABLE)];
-        const bucketId = 1n;
         const piece = new Piece(new Uint8Array([1, 2, 3]), tags);
         await storage.store(bucketId, piece);
 

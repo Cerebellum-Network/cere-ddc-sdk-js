@@ -1,9 +1,7 @@
-const {startDDC} = require('./ddc');
-const {setupBlockchain} = require('./blockchain');
+const {startEnvironment} = require('./environment');
 
 module.exports = async () => {
     console.log(''); // New line
 
-    await startDDC();
-    await setupBlockchain();
+    await startEnvironment();
 };

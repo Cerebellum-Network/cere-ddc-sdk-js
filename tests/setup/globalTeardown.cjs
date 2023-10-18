@@ -1,5 +1,5 @@
-const {stopDDC} = require('./ddc');
+const {stopEnvironment} = require('./environment');
 
 module.exports = async () => {
-    await stopDDC();
+    await stopEnvironment();
 };

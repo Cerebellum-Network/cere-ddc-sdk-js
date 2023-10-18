@@ -2,7 +2,7 @@ import {Piece} from '@cere-ddc-sdk/content-addressable-storage';
 import {KeyValueStorage} from '@cere-ddc-sdk/key-value-storage';
 
 describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
-    const url = 'http://localhost:8081';
+    const url = 'http://localhost:8080';
     let storage: KeyValueStorage;
 
     beforeAll(async () => {
@@ -22,7 +22,7 @@ describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
     test('upload and read by key', async () => {
         //given
         const data = new Uint8Array([1, 2, 3]);
-        const bucketId = 2n;
+        const bucketId = 0n;
         const key = 'keyValue';
 
         //when
@@ -41,7 +41,7 @@ describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
     test('upload and read by key with explicit session', async () => {
         //given
         const data = new Uint8Array([1, 2, 3]);
-        const bucketId = 2n;
+        const bucketId = 0n;
         const key = 'keyValue';
         const session = await storage.caStorage.createSession();
 

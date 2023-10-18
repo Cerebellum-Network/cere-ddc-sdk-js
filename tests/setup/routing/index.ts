@@ -20,7 +20,7 @@ type RequestBody = {
 };
 
 const baseUrl = 'https://dev-cluster-management.network-dev.aws.cere.io/router';
-const nodeUrl = 'http://localhost:8082';
+const nodeUrl = 'http://localhost:8081';
 const workerAddress = 'test-worker-address';
 const sessionId = 'test-session';
 
