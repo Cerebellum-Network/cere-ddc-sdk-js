@@ -1,3 +1,5 @@
+require('tsconfig-paths').register();
+
 const {startEnvironment} = require('./environment');
 
 module.exports = async () => {
