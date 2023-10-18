@@ -8,7 +8,7 @@ import {
     Session,
 } from '@cere-ddc-sdk/content-addressable-storage';
 
-import {ROOT_USER_SEED} from './helpers';
+import {ROOT_USER_SEED, getContractOptions} from './helpers';
 import {delay} from './delay';
 
 describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts', () => {
@@ -23,6 +23,7 @@ describe('packages/content-addressable-storage/src/ContentAddressableStorage.ts'
     beforeEach(async () => {
         storage = await ContentAddressableStorage.build(
             {
+                smartContract: getContractOptions(),
                 clusterAddress: url,
                 scheme: 'sr25519',
                 ackTimeout: 0,

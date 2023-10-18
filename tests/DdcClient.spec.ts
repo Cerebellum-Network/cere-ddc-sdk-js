@@ -5,18 +5,24 @@ import {DdcUri} from '@cere-ddc-sdk/core';
 import {Piece, Query, Tag} from '@cere-ddc-sdk/content-addressable-storage';
 import {saveWithEmptyNonce} from './save-with-empty-nonce';
 import {unwrap} from './unwrap';
+import {getContractOptions, ROOT_USER_SEED} from './helpers';
 
 describe('packages/ddc-client/src/DdcClient.ts', () => {
-    const seed = '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03';
-    const otherSecretPhrase = 'wheat wise addict group walk park desk yard render scare false measure';
-    const bucketId = 0n;
-    const options = {clusterAddress: 'http://localhost:8081', chunkSizeInBytes: 30, readAttempts: 3};
     let mainClient: DdcClient;
     let secondClient: DdcClient;
     let session: Session;
 
+    const otherSecretPhrase = 'wheat wise addict group walk park desk yard render scare false measure';
+    const bucketId = 0n;
+    const options = {
+        smartContract: getContractOptions(),
+        clusterAddress: 'http://localhost:8081',
+        chunkSizeInBytes: 30,
+        readAttempts: 3,
+    };
+
     beforeAll(async () => {
-        mainClient = await DdcClient.buildAndConnect(options, seed);
+        mainClient = await DdcClient.buildAndConnect(options, ROOT_USER_SEED);
         secondClient = await DdcClient.buildAndConnect(options, otherSecretPhrase);
         session = await mainClient.createSession();
     });
