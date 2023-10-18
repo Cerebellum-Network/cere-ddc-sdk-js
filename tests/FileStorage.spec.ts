@@ -4,7 +4,7 @@ import {ReadableStream} from 'stream/web';
 import {ROOT_USER_SEED, getContractOptions} from './helpers';
 
 describe('packages/file-storage/src/index.ts', () => {
-    const bucketId = 0n;
+    const bucketId = 1n;
     const fileData = new Uint8Array([1, 2, 3, 4, 5]);
     let headPieceUri: PieceUri;
 
