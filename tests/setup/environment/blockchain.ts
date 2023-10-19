@@ -20,7 +20,7 @@ export type Blockchain = ContractData & {
 
 let environment: StartedDockerComposeEnvironment | undefined;
 
-const bcStateFile = path.resolve(__dirname, './data/ddc.json');
+const dataDir = path.resolve(__dirname, './data');
 const uuid = {nextUuid: () => 'blockchain'};
 const hostIp = getHostIP();
 
@@ -105,11 +105,18 @@ const setupContract = async (): Promise<ContractData> => {
 export const startBlockchain = async (): Promise<Blockchain> => {
     console.group('Blockchain');
 
+    const bcStateFile = path.resolve(dataDir, './ddc.json');
+    const bcDataDir = path.resolve(dataDir, './blockchain');
+    const isCached = fs.existsSync(bcStateFile);
+
+    if (!fs.existsSync(bcDataDir)) {
+        fs.mkdirSync(bcDataDir);
+    }
+
     environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.blockchain.yml', uuid)
         .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
         .up();
 
-    const isCached = fs.existsSync(bcStateFile);
     const contractData: ContractData = isCached
         ? JSON.parse(fs.readFileSync(bcStateFile).toString('utf8'), (key, value) =>
               key === 'bucketIds' ? value.map(BigInt) : value,
