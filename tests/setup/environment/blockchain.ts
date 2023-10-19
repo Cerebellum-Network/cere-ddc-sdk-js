@@ -111,6 +111,8 @@ export const startBlockchain = async (): Promise<Blockchain> => {
 
     if (!fs.existsSync(bcDataDir)) {
         fs.mkdirSync(bcDataDir);
+
+        console.log('Create cache dir', bcDataDir);
     }
 
     environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.blockchain.yml', uuid)
