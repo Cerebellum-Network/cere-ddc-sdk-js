@@ -14,6 +14,6 @@ describe('New Storage', () => {
         });
 
         console.log('CID', cid);
-        expect(cid).toBe(String);
+        expect(cid).toBe(expect.any(String));
     });
 });
