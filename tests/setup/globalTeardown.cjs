@@ -1,5 +1,7 @@
-const {stopDDC} = require('./ddc');
+require('tsconfig-paths').register();
+
+const {stopEnvironment} = require('./environment');
 
 module.exports = async () => {
-    await stopDDC();
+    await stopEnvironment();
 };

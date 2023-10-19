@@ -1,6 +1,7 @@
 import {PieceUri} from '@cere-ddc-sdk/content-addressable-storage';
 import {FileStorage} from '@cere-ddc-sdk/file-storage';
 import {ReadableStream} from 'stream/web';
+import {ROOT_USER_SEED, getContractOptions} from './helpers';
 
 describe('packages/file-storage/src/index.ts', () => {
     const bucketId = 1n;
@@ -28,6 +29,7 @@ describe('packages/file-storage/src/index.ts', () => {
         beforeAll(async () => {
             storage = await FileStorage.build(
                 {
+                    smartContract: getContractOptions(),
                     clusterAddress: cdnNodeUrl,
                     scheme: 'sr25519',
                 },
@@ -35,7 +37,7 @@ describe('packages/file-storage/src/index.ts', () => {
                     parallel: 2,
                     pieceSizeInBytes: 1,
                 },
-                '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03',
+                ROOT_USER_SEED,
             );
         });
 
@@ -57,6 +59,7 @@ describe('packages/file-storage/src/index.ts', () => {
         beforeAll(async () => {
             storage = await FileStorage.build(
                 {
+                    smartContract: getContractOptions(),
                     clusterAddress: clusterId,
                     scheme: 'sr25519',
                 },
@@ -64,7 +67,7 @@ describe('packages/file-storage/src/index.ts', () => {
                     parallel: 2,
                     pieceSizeInBytes: 1,
                 },
-                '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03',
+                ROOT_USER_SEED,
             );
         });
 
