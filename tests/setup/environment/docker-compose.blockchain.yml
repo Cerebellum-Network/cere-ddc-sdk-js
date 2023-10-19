@@ -10,5 +10,5 @@ services:
       - "9944:9944"
       - "9933:9933"
     volumes:
-      - ./data/blockchain:/data
+      - ${BC_CAHCHE_DIR}:/data
 
