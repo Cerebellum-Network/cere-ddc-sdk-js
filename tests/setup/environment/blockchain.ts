@@ -1,3 +1,5 @@
+import * as path from 'path';
+import * as fs from 'fs';
 import {DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait} from 'testcontainers';
 import {cryptoWaitReady} from '@polkadot/util-crypto';
 import {SmartContract} from '@cere-ddc-sdk/smart-contract';
@@ -6,6 +8,7 @@ import {NodeStatusInCluster} from '@cere-ddc-sdk/smart-contract/types';
 import {bootstrapContract, createBlockhainApi, getAccount, getHostIP, transferCere} from '../../helpers';
 
 export type ContractData = {
+    account: string;
     clusterId: number;
     bucketIds: bigint[];
     contractAddress: string;
@@ -17,16 +20,13 @@ export type Blockchain = ContractData & {
 
 let environment: StartedDockerComposeEnvironment | undefined;
 
+const dataDir = path.resolve(__dirname, '../../data');
 const uuid = {nextUuid: () => 'blockchain'};
 const hostIp = getHostIP();
 
 const setupContract = async (): Promise<ContractData> => {
     console.group('Setup smart contract');
     console.time('Done');
-
-    environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.blockchain.yml', uuid)
-        .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
-        .up();
 
     await cryptoWaitReady();
 
@@ -90,24 +90,52 @@ const setupContract = async (): Promise<ContractData> => {
     await api.disconnect();
     console.log('');
     console.timeEnd('Done');
-
     console.log('');
-    console.log('Contract address', deployedContract.address.toString());
-    console.log('Account', admin.address);
-    console.log('Cluster ID', clusterId);
-    console.log('Bucket IDs', bucketIds);
 
     console.groupEnd();
 
     return {
         bucketIds,
         clusterId,
+        account: admin.address,
         contractAddress: deployedContract.address.toString(),
     };
 };
 
 export const startBlockchain = async (): Promise<Blockchain> => {
-    const contractData = await setupContract();
+    console.group('Blockchain');
+
+    const bcStateFile = path.resolve(dataDir, './ddc.json');
+    const isCached = fs.existsSync(bcStateFile);
+    const composeFile = process.env.CI ? 'docker-compose.blockchain.ci.yml' : 'docker-compose.blockchain.yml';
+
+    environment = await new DockerComposeEnvironment(__dirname, composeFile, uuid)
+        .withEnv('BC_CAHCHE_DIR', path.resolve(dataDir, './blockchain'))
+        .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
+        .up();
+
+    const contractData: ContractData = isCached
+        ? JSON.parse(fs.readFileSync(bcStateFile).toString('utf8'), (key, value) =>
+              key === 'bucketIds' ? value.map(BigInt) : value,
+          )
+        : await setupContract();
+
+    if (!isCached) {
+        const contractDataJson = JSON.stringify(
+            contractData,
+            (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+            2,
+        );
+
+        fs.writeFileSync(bcStateFile, contractDataJson);
+    }
+
+    console.log('Contract address', contractData.contractAddress);
+    console.log('Account', contractData.account);
+    console.log('Cluster ID', contractData.clusterId);
+    console.log('Bucket IDs', contractData.bucketIds);
+
+    console.groupEnd();
 
     return {
         ...contractData,
@@ -117,4 +145,6 @@ export const startBlockchain = async (): Promise<Blockchain> => {
 
 export const stopBlockchain = async () => {
     await environment?.down();
+
+    console.log('Blockchain');
 };

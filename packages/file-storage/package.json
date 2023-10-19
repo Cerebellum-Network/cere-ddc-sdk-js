@@ -46,7 +46,6 @@
         "@cere-ddc-sdk/content-addressable-storage": "1.9.3"
     },
     "devDependencies": {
-        "@types/node": "^16.0.0",
-        "rimraf": "^3.0.2"
+        "@types/node": "^16.0.0"
     }
 }

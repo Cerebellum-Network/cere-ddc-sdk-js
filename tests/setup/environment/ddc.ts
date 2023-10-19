@@ -6,7 +6,7 @@ let environment: StartedDockerComposeEnvironment | undefined;
 
 const uuid = {nextUuid: () => 'ddc'};
 export const startDDC = async (bc: Blockchain) => {
-    console.group('Start DDC');
+    console.group('DDC');
 
     const environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.ddc.yml', uuid)
         .withEnv('BLOCKCHAIN_API_URL', bc.apiUrl)
@@ -25,9 +25,7 @@ export const startDDC = async (bc: Blockchain) => {
 };
 
 export const stopDDC = async () => {
-    console.group('Stop DDC');
     await environment?.down();
-    console.log('The environment has stopped!');
 
-    console.groupEnd();
+    console.log('DDC');
 };
