@@ -112,7 +112,7 @@ export const startBlockchain = async (): Promise<Blockchain> => {
     const isCached = fs.existsSync(bcStateFile);
     const contractData: ContractData = isCached
         ? JSON.parse(fs.readFileSync(bcStateFile).toString('utf8'), (key, value) =>
-              typeof value === 'bigint' ? BigInt(value) : value,
+              key === 'bucketIds' ? value.map(BigInt) : value,
           )
         : await setupContract();
 
