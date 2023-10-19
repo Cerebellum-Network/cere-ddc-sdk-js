@@ -107,8 +107,9 @@ export const startBlockchain = async (): Promise<Blockchain> => {
 
     const bcStateFile = path.resolve(dataDir, './ddc.json');
     const isCached = fs.existsSync(bcStateFile);
+    const composeFile = process.env.CI ? 'docker-compose.blockchain.ci.yml' : 'docker-compose.blockchain.yml';
 
-    environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.blockchain.yml', uuid)
+    environment = await new DockerComposeEnvironment(__dirname, composeFile, uuid)
         .withEnv('BC_CAHCHE_DIR', path.resolve(dataDir, './blockchain'))
         .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
         .up();

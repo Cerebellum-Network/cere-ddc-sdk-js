@@ -46,6 +46,4 @@ jobs:
               run: npm run build
 
             - name: Run integration tests
-              run: |
-                  chmod -R 777 ./tests/data
-                  npm test
+              run: npm test

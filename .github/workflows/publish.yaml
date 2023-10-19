@@ -54,9 +54,7 @@ jobs:
 
             - name: Run integration tests
               if: ${{ !inputs.skipTests }}
-              run: |
-                  chmod -R 777 ./tests/data
-                  npm test
+              run: npm test
 
             - name: Prepare pacakges for publish
               run: npm run package
