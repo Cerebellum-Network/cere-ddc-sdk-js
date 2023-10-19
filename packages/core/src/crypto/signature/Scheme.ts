@@ -23,7 +23,7 @@ export class Scheme implements SchemeInterface {
 
         await cryptoWaitReady();
 
-        const keyring = new Keyring({type: schemeName});
+        const keyring = new Keyring({type: schemeName, ss58Format: 54});
         let keyringPair;
         try {
             keyringPair = keyring.addFromMnemonic(secretPhrase);

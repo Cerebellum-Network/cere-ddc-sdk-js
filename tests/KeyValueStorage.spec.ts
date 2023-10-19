@@ -1,5 +1,6 @@
 import {Piece} from '@cere-ddc-sdk/content-addressable-storage';
 import {KeyValueStorage} from '@cere-ddc-sdk/key-value-storage';
+import {ROOT_USER_SEED, getContractOptions} from './helpers';
 
 describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
     const url = 'http://localhost:8081';
@@ -8,10 +9,11 @@ describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
     beforeAll(async () => {
         storage = await KeyValueStorage.build(
             {
+                smartContract: getContractOptions(),
                 clusterAddress: url,
                 scheme: 'sr25519',
             },
-            '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03',
+            ROOT_USER_SEED,
         );
     });
 
@@ -22,7 +24,7 @@ describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
     test('upload and read by key', async () => {
         //given
         const data = new Uint8Array([1, 2, 3]);
-        const bucketId = 2n;
+        const bucketId = 0n;
         const key = 'keyValue';
 
         //when
@@ -41,7 +43,7 @@ describe('packages/key-value-storage/src/KeyValueStorage.ts', () => {
     test('upload and read by key with explicit session', async () => {
         //given
         const data = new Uint8Array([1, 2, 3]);
-        const bucketId = 2n;
+        const bucketId = 0n;
         const key = 'keyValue';
         const session = await storage.caStorage.createSession();
 
