@@ -14,7 +14,7 @@ env:
 jobs:
     tests:
         name: Run tests
-        runs-on: ['self-hosted', 'cere-network-large']
+        runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
               with:
