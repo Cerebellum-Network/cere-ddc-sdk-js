@@ -38,7 +38,7 @@ describe('Routing', () => {
     });
 
     describe('Pieces', () => {
-        test.only('Store and read single unencrypted piece', async () => {
+        test('Store and read single unencrypted piece', async () => {
             const piece = new Piece(pieceData);
             const uri = await client.store(bucketId, piece, {encrypt: false});
             const result = await client.read(uri, {decrypt: false});
