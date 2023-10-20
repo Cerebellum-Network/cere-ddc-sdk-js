@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package cns;
+
+option go_package = "api/external/cns";
+
+import "google/api/annotations.proto";
+
+service CnsApi {
+  rpc Put(PutRequest) returns (PutResponse) {
+    option (google.api.http) = {
+      post: "/v1/cns/{BucketId}"
+      body: "*"
+    };
+  }
+
+  rpc Get(GetRequest) returns (GetResponse) {
+    option (google.api.http) = {
+      get: "/v1/cns/{BucketId}/{Name}"
+    };
+  }
+}
+
+message PutRequest {
+  uint32 BucketId = 1;
+  string Name = 2;
+  string Cid = 3;
+}
+
+message PutResponse {}
+
+message GetRequest {
+  // either bucketId or bucketName should be provided
+  uint32 BucketId = 1;
+  string Name = 3;
+}
+
+message GetResponse {
+  string Cid = 1;
+}

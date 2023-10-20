@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package file;
+
+option go_package = "api/external/file";
+
+service FileApi {
+  rpc putRawPiece(stream PutRawPieceRequest) returns (PutRawPieceResponse) {}
+  rpc putMultipartPiece(PutMultiPartPieceRequest) returns (PutMultiPartPieceResponse) {}
+  rpc getFile(GetFileRequest) returns (stream GetFileResponse) {}
+}
+
+message PutRawPieceRequest {
+  message Metadata {
+    bytes cid = 1;
+    string bucketId = 2;
+  }
+
+  message Content {
+    bytes data = 1;
+  }
+
+  oneof body {
+    Metadata metadata = 1; // first message contains piece metadata
+    Content content = 2; // subsequent messages contain only part of a raw piece data
+  }
+}
+
+message PutRawPieceResponse {
+  // TBD
+}
+
+message PutMultiPartPieceRequest {
+  bytes cid = 1; // root hash of the file hash tree
+  uint64 totalSize = 2; // size of the multi-part piece (large file total size)
+  uint64 partSize = 3; // size of the raw piece (large file part size)
+  repeated bytes partHashes = 4; // ordered list of the raw piece hashes
+}
+
+message PutMultiPartPieceResponse {
+  // TBD
+}
+
+message GetFileRequest {
+  bytes cid = 1; // CID of either raw or multi-part piece
+  Range range = 2; // indicates part of the file to be returned (return whole file if range is missing)
+
+  message Range {
+    uint64 start = 1;
+    uint64 end = 2;
+  }
+}
+
+message GetFileResponse {
+  oneof body {
+    bytes proof = 1; // first message contains only merkle proof of requested content for the root (CID)
+    bytes data = 2; // subsequent messages contain only part of a requested content
+  }
+}
