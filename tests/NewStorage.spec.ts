@@ -1,19 +1,29 @@
 import {StorageNode} from '@cere-ddc-sdk/storage';
 
 describe('New Storage', () => {
+    const bucketId = 0;
     const storageNode = new StorageNode('localhost:9091');
 
-    test('Store data', async () => {
+    test('Store and read node', async () => {
+        const sentData = new TextEncoder().encode('Hello');
         const cid = await storageNode.store({
-            bucketId: 0,
+            bucketId,
             node: {
-                data: new TextEncoder().encode('Hello'),
+                data: sentData,
                 links: [],
                 tags: [],
             },
         });
 
-        console.log('CID', cid);
-        expect(cid).toBe(expect.any(String));
+        const node = await storageNode.read({
+            cid,
+            bucketId,
+            path: '',
+        });
+
+        const receivedData = node && new Uint8Array(node.data);
+
+        expect(cid).toEqual(expect.any(String));
+        expect(receivedData).toEqual(sentData);
     });
 });
