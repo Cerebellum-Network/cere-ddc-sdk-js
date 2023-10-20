@@ -1,7 +1,7 @@
 {
     "name": "@cere-ddc-sdk/smart-contract",
     "description": "Smart contract client",
-    "version": "1.9.3",
+    "version": "1.9.4",
     "type": "module",
     "repository": {
         "type": "git",
