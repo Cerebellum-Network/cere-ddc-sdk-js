@@ -1,34 +1,30 @@
 import type {ApiPromise} from '@polkadot/api';
-import {ddcBucketAbi} from '../abi';
+import {GlobalNftRegistryAbi, globalNftRegistryAbi} from '../abi';
 
 export type SmartContractOptions = {
     contractAddress: string;
-    abi: Record<string, unknown>;
+    // abi: Record<string, unknown>;
+    abi: GlobalNftRegistryAbi;
     rpcUrl?: string;
     api?: ApiPromise;
 };
 
 export const MAINNET: SmartContractOptions = {
     rpcUrl: 'wss://rpc.qanet.cere.network/ws',
-    contractAddress: '6Q7C6G3Hpz43tSDPotqT1wYHupTpEJ54oAv3QrAM7TnCF2oY',
-    abi: ddcBucketAbi,
+    contractAddress: '',
+    abi: globalNftRegistryAbi,
 };
 
 export const TESTNET: SmartContractOptions = {
     rpcUrl: 'wss://rpc.devnet.cere.network/ws',
-    contractAddress: '6UhsrTkkqbXTSoD4GJ15cQxc5tkWR1ecV7wK8VDSQokCyAmw',
-    abi: ddcBucketAbi,
+    contractAddress: '',
+    abi: globalNftRegistryAbi,
 };
 
 export const DEVNET: SmartContractOptions = {
     rpcUrl: 'wss://archive.devnet.cere.network/ws',
-    contractAddress: '6U7MUyRTQNLVwTao9JuvDFoiJxsk6HNtQZ8XFswPrkLmQPjx',
-    abi: ddcBucketAbi,
+    contractAddress: '',
+    abi: globalNftRegistryAbi,
 };
 
-/**
- * TODO: Remove if not used
- *
- * @deprecated
- */
 export const STAGENET = TESTNET;

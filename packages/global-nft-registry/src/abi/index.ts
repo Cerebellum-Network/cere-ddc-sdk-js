@@ -1,4 +1,4 @@
-import metadata from './metadata.json';
+import globalNftRegistryAbi from './global_nft_registry.json';
 
-export type ContractAbi = typeof metadata;
-export {metadata as ddcBucketAbi};
+export type GlobalNftRegistryAbi = typeof globalNftRegistryAbi;
+export {globalNftRegistryAbi};
