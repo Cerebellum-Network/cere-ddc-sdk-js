@@ -1,6 +1,6 @@
 {
     "name": "@cere-ddc-sdk/global-nft-registry",
-    "description": "Smart contract client",
+    "description": "Global NFT Registry Client",
     "version": "1.9.1",
     "type": "module",
     "repository": {

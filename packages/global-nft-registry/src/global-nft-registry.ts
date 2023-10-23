@@ -6,9 +6,9 @@ import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
 
 import {SmartContractBase} from './smart-contract-base';
 import {GlobalNftRegistryOptions, TESTNET} from './options';
-import {cereTypes} from './types';
+import {GlobalNftRegistryInterface, Role, cereTypes} from './types';
 
-export class GlobalNftRegistry extends SmartContractBase {
+export class GlobalNftRegistry extends SmartContractBase implements GlobalNftRegistryInterface {
     private shouldDisconnectAPI = false;
 
     static async buildAndConnect(
@@ -36,9 +36,7 @@ export class GlobalNftRegistry extends SmartContractBase {
         const contract = new ContractPromise(api, options.abi, options.contractAddress);
         const registry = new GlobalNftRegistry(addressOrPair, contract, signer);
 
-        /**
-         * In case an external API instance is used - don't disconnect it
-         */
+        // In case an external API instance is used - don't disconnect it
         registry.shouldDisconnectAPI = !options.api;
 
         return registry.connect();
@@ -55,5 +53,46 @@ export class GlobalNftRegistry extends SmartContractBase {
         if (this.shouldDisconnectAPI) {
             await this.contract.api.disconnect();
         }
+    }
+
+    updateRegistry(
+        chainId: bigint,
+        tokenContract: string,
+        tokenId: bigint,
+        owner: string,
+        balance: bigint,
+    ): Promise<void> {
+        // ...
+    }
+
+    transfer(
+        chainId: bigint,
+        tokenContract: string,
+        tokenId: bigint,
+        from: string,
+        to: string,
+        amount: bigint,
+    ): Promise<void> {
+        // ...
+    }
+
+    getBalance(chainId: bigint, tokenContract: string, tokenId: bigint, owner: string): Promise<bigint> {
+        // ...
+    }
+
+    isOwner(chainId: bigint, tokenContract: string, tokenId: bigint, owner: string): Promise<boolean> {
+        // ...
+    }
+
+    grantRole(role: Role, account: string): Promise<void> {
+        // ...
+    }
+
+    revokeRole(role: Role, account: string): Promise<void> {
+        // ...
+    }
+
+    hasRole(role: Role, account: string): Promise<boolean> {
+        // ...
     }
 }
