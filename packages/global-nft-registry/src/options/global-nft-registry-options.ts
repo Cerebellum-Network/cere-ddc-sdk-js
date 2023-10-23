@@ -1,7 +1,7 @@
 import type {ApiPromise} from '@polkadot/api';
 import {GlobalNftRegistryAbi, globalNftRegistryAbi} from '../abi';
 
-export type SmartContractOptions = {
+export type GlobalNftRegistryOptions = {
     contractAddress: string;
     // abi: Record<string, unknown>;
     abi: GlobalNftRegistryAbi;
@@ -9,19 +9,19 @@ export type SmartContractOptions = {
     api?: ApiPromise;
 };
 
-export const MAINNET: SmartContractOptions = {
+export const MAINNET: GlobalNftRegistryOptions = {
     rpcUrl: 'wss://rpc.qanet.cere.network/ws',
     contractAddress: '',
     abi: globalNftRegistryAbi,
 };
 
-export const TESTNET: SmartContractOptions = {
+export const TESTNET: GlobalNftRegistryOptions = {
     rpcUrl: 'wss://rpc.devnet.cere.network/ws',
     contractAddress: '',
     abi: globalNftRegistryAbi,
 };
 
-export const DEVNET: SmartContractOptions = {
+export const DEVNET: GlobalNftRegistryOptions = {
     rpcUrl: 'wss://archive.devnet.cere.network/ws',
     contractAddress: '',
     abi: globalNftRegistryAbi,

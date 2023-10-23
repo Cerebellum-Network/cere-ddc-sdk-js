@@ -1,2 +1,2 @@
-export * from './contractTypes';
-export * from './contractEvents';
+export * from './contract-types';
+export * from './event-types';
