@@ -6,6 +6,7 @@ import {AccountId, ChainId, ContractAddress, TokenId} from '@cere-ddc-sdk/global
 
 import {bootstrapRegistry, createBlockhainApi, getAccount} from './helpers';
 import {Role} from 'packages/global-nft-registry/dist/types/types';
+import exp from 'constants';
 
 describe('Global NFT Registry', () => {
     let api: ApiPromise;
@@ -17,8 +18,10 @@ describe('Global NFT Registry', () => {
 
     const chainId: ChainId = 1n;
     const owner: AccountId = '0xa4d8d7c9f7b4489e8cb616fca9d677901d7d9b2a';
+    const receiver: AccountId = '0x5a8edac6d9c6b8c7c3f9d2c8f8a3a0b0f9c0a2e6';
     const tokenContract: ContractAddress = '0x7a250d5630b4cf539739df2c5dacb4c659f2488d';
     const tokenId: TokenId = 100n;
+    const zeroAddress: AccountId = '0x0000000000000000000000000000000000000000';
 
     const updateRegistry = async () => {
         await adminRegistry.updateRegistry(chainId, tokenContract, tokenId, owner, 100n);
@@ -41,29 +44,68 @@ describe('Global NFT Registry', () => {
 
     describe('updateRegistry', () => {
         it('should directly update the token balance in the registry', async () => {
-            throw Error('Not Implemented');
+            expect(await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract})).toEqual(0n);
+
+            await updateRegistry();
+
+            const balance = await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract});
+            expect(balance).toEqual(100n);
         });
 
         it('should throw an error if not an admin', async () => {
-            throw Error('Not Implemented');
+            await expect(userRegistry.updateRegistry(chainId, tokenContract, tokenId, owner, 100n)).rejects.toThrow();
         });
     });
 
     describe('transfer', () => {
         it('should transfer the balance of a token', async () => {
-            throw Error('Not Implemented');
+            await updateRegistry();
+
+            expect(await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract})).toEqual(100n);
+            expect(await adminRegistry.getBalanceByKey({chainId, owner: receiver, tokenId, tokenContract})).toEqual(0n);
+
+            await adminRegistry.transfer(chainId, tokenContract, tokenId, owner, receiver, 100n);
+
+            expect(await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract})).toEqual(0n);
+            expect(await adminRegistry.getBalanceByKey({chainId, owner: receiver, tokenId, tokenContract})).toEqual(
+                100n,
+            );
         });
 
         it('should support transfer from the zero address (mint)', async () => {
-            throw Error('Not Implemented');
+            expect(await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract})).toEqual(0n);
+            expect(await adminRegistry.getBalanceByKey({chainId, owner: zeroAddress, tokenId, tokenContract})).toEqual(
+                0n,
+            );
+
+            await adminRegistry.transfer(chainId, tokenContract, tokenId, zeroAddress, owner, 100n);
+
+            expect(await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract})).toEqual(100n);
+            expect(await adminRegistry.getBalanceByKey({chainId, owner: zeroAddress, tokenId, tokenContract})).toEqual(
+                0n,
+            );
         });
 
         it('should support transfer to the zero address (burn)', async () => {
-            throw Error('Not Implemented');
+            await updateRegistry();
+
+            expect(await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract})).toEqual(100n);
+            expect(await adminRegistry.getBalanceByKey({chainId, owner: zeroAddress, tokenId, tokenContract})).toEqual(
+                0n,
+            );
+
+            await adminRegistry.transfer(chainId, tokenContract, tokenId, owner, zeroAddress, 100n);
+
+            expect(await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract})).toEqual(0n);
+            expect(await adminRegistry.getBalanceByKey({chainId, owner: zeroAddress, tokenId, tokenContract})).toEqual(
+                0n,
+            );
         });
 
         it('should throw an error if not an admin', async () => {
-            throw Error('Not Implemented');
+            await expect(
+                userRegistry.transfer(chainId, tokenContract, tokenId, owner, receiver, 100n),
+            ).rejects.toThrow();
         });
     });
 
