@@ -80,6 +80,20 @@ export class GlobalNftRegistry extends SmartContractBase implements GlobalNftReg
         return this.queryOne(this.contract.query.getBalance, chainId, tokenContract, tokenId, owner);
     }
 
+    async getBalanceByKey({
+        chainId,
+        tokenContract,
+        tokenId,
+        owner,
+    }: {
+        chainId: bigint;
+        tokenContract: string;
+        tokenId: bigint;
+        owner: string;
+    }): Promise<Balance> {
+        return this.getBalance(chainId, tokenContract, tokenId, owner);
+    }
+
     async isOwner(chainId: bigint, tokenContract: string, tokenId: bigint, owner: string): Promise<boolean> {
         return this.queryOne(this.contract.query.isOwner, chainId, tokenContract, tokenId, owner);
     }

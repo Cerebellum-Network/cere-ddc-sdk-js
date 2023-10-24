@@ -55,6 +55,16 @@ export interface GlobalNftRegistryInterface {
     getBalance(chainId: bigint, tokenContract: string, tokenId: bigint, owner: AccountId): Promise<Balance>;
 
     /**
+     * Check the balance of an owner in the registry
+     * @param key.chainId The chain ID of the chain on which the token exists
+     * @param key.tokenContract The address of the token contract
+     * @param key.tokenId The ID of the token
+     * @param key.owner The address of the owner
+     * @returns The balance of the owner
+     */
+    getBalanceByKey(key: {chainId: bigint; tokenContract: string; tokenId: bigint; owner: AccountId}): Promise<Balance>;
+
+    /**
      * Check if an account is the owner of a token
      * @param chainId The chain ID of the chain on which the token exists
      * @param tokenContract The address of the token contract
