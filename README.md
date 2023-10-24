@@ -9,6 +9,7 @@
 -   [core](packages/core/README.md)
 -   [smart-contract](packages/smart-contract/README.md)
 -   [ddc-client](packages/ddc-client/README.md)
+-   [global-nft-registry](packages/global-nft-registry/README.md)
 
 ## Use case
 
@@ -17,6 +18,7 @@
 -   `file-storage` use when need to upload large data by chunks
 -   `smart-contract` client for working DDC Smart-Contract
 -   `ddc-client` simple client with all methods for working with DDC and DDC Smart-Contract
+-   `global-nft-registry` client for interacting with the Global NFT Registry
 
 ## Definitions
 

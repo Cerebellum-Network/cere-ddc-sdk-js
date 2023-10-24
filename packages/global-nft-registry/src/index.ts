@@ -1,3 +1,3 @@
-export {DEVNET, TESTNET, MAINNET, STAGENET} from './options/SmartContractOptions';
-export type {SmartContractOptions} from './options/SmartContractOptions';
-export {SmartContract} from './SmartContract';
+export {DEVNET, TESTNET, MAINNET, STAGENET} from './options';
+export type {GlobalNftRegistryOptions} from './options';
+export {GlobalNftRegistry} from './global-nft-registry';

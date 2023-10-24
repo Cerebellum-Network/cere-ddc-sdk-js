@@ -1,4 +1,5 @@
-import {AccountId, Role} from './contract-types';
+import {SubmitResult} from '../smart-contract-base';
+import {AccountId, Balance, Role} from './contract-types';
 
 export interface GlobalNftRegistryInterface {
     connect(): Promise<this>;
@@ -20,7 +21,7 @@ export interface GlobalNftRegistryInterface {
         tokenId: bigint,
         owner: string,
         balance: bigint,
-    ): Promise<void>;
+    ): Promise<Required<SubmitResult>>;
 
     /**
      * - Requires TrustedService role
@@ -41,7 +42,7 @@ export interface GlobalNftRegistryInterface {
         from: AccountId,
         to: string,
         amount: bigint,
-    ): Promise<void>;
+    ): Promise<Required<SubmitResult>>;
 
     /**
      * Check the balance of an owner in the registry
@@ -51,7 +52,7 @@ export interface GlobalNftRegistryInterface {
      * @param owner The address of the owner
      * @returns The balance of the owner
      */
-    getBalance(chainId: bigint, tokenContract: string, tokenId: bigint, owner: AccountId): Promise<bigint>;
+    getBalance(chainId: bigint, tokenContract: string, tokenId: bigint, owner: AccountId): Promise<Balance>;
 
     /**
      * Check if an account is the owner of a token
@@ -70,7 +71,7 @@ export interface GlobalNftRegistryInterface {
      * @param role The role to grant
      * @param account The address of the account to grant the role to
      */
-    grantRole(role: Role, account: AccountId): Promise<void>;
+    grantRole(role: Role, account: AccountId): Promise<Required<SubmitResult>>;
 
     /**
      * - Requires being called by the contract owner/administrator
@@ -79,7 +80,7 @@ export interface GlobalNftRegistryInterface {
      * @param role The role to revoke
      * @param account The address of the account to revoke the role from
      */
-    revokeRole(role: Role, account: AccountId): Promise<void>;
+    revokeRole(role: Role, account: AccountId): Promise<Required<SubmitResult>>;
 
     /**
      * Check if an account has a role

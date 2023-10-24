@@ -4,9 +4,9 @@ import {Keyring} from '@polkadot/keyring';
 import {AddressOrPair, Signer} from '@polkadot/api/types';
 import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
 
-import {SmartContractBase} from './smart-contract-base';
+import {SmartContractBase, SubmitResult} from './smart-contract-base';
 import {GlobalNftRegistryOptions, TESTNET} from './options';
-import {GlobalNftRegistryInterface, Role, cereTypes} from './types';
+import {Balance, GlobalNftRegistryInterface, Role, cereTypes} from './types';
 
 export class GlobalNftRegistry extends SmartContractBase implements GlobalNftRegistryInterface {
     private shouldDisconnectAPI = false;
@@ -55,44 +55,44 @@ export class GlobalNftRegistry extends SmartContractBase implements GlobalNftReg
         }
     }
 
-    updateRegistry(
+    async updateRegistry(
         chainId: bigint,
         tokenContract: string,
         tokenId: bigint,
         owner: string,
         balance: bigint,
-    ): Promise<void> {
-        // ...
+    ): Promise<Required<SubmitResult>> {
+        return this.submit(this.contract.tx.updateRegistry, chainId, tokenContract, tokenId, owner, balance);
     }
 
-    transfer(
+    async transfer(
         chainId: bigint,
         tokenContract: string,
         tokenId: bigint,
         from: string,
         to: string,
         amount: bigint,
-    ): Promise<void> {
-        // ...
+    ): Promise<Required<SubmitResult>> {
+        return this.submit(this.contract.tx.transfer, chainId, tokenContract, tokenId, from, to, amount);
     }
 
-    getBalance(chainId: bigint, tokenContract: string, tokenId: bigint, owner: string): Promise<bigint> {
-        // ...
+    async getBalance(chainId: bigint, tokenContract: string, tokenId: bigint, owner: string): Promise<Balance> {
+        return this.queryOne(this.contract.query.getBalance, chainId, tokenContract, tokenId, owner);
     }
 
-    isOwner(chainId: bigint, tokenContract: string, tokenId: bigint, owner: string): Promise<boolean> {
-        // ...
+    async isOwner(chainId: bigint, tokenContract: string, tokenId: bigint, owner: string): Promise<boolean> {
+        return this.queryOne(this.contract.query.isOwner, chainId, tokenContract, tokenId, owner);
     }
 
-    grantRole(role: Role, account: string): Promise<void> {
-        // ...
+    async grantRole(role: Role, account: string): Promise<Required<SubmitResult>> {
+        return this.submit(this.contract.tx.grantRole, role, account);
     }
 
-    revokeRole(role: Role, account: string): Promise<void> {
-        // ...
+    async revokeRole(role: Role, account: string): Promise<Required<SubmitResult>> {
+        return this.submit(this.contract.tx.revokeRole, role, account);
     }
 
-    hasRole(role: Role, account: string): Promise<boolean> {
-        // ...
+    async hasRole(role: Role, account: string): Promise<boolean> {
+        return this.queryOne(this.contract.query.hasRole, role, account);
     }
 }
