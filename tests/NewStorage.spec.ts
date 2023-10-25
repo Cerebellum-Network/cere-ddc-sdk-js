@@ -1,3 +1,4 @@
+import {u8aToHex} from '@polkadot/util';
 import {StorageNode} from '@cere-ddc-sdk/storage';
 
 describe('New Storage', () => {
@@ -59,33 +60,49 @@ describe('New Storage', () => {
 
     describe('File Api', () => {
         const chunkData = new TextEncoder().encode('Hello');
-        const chunkCid = new Uint8Array([]); // TODO: Figure out how to calculate CID on client
-        const fileCid = new Uint8Array([]); // TODO: Figure out how to get the file CID
+
+        let chunkCid: Uint8Array;
+        let fileCid: Uint8Array;
 
         test('Store file chunk', async () => {
-            await storageNode.fileApi.storeChunk(
+            const response = await storageNode.fileApi.storeChunk(
                 {
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
-                    cid: chunkCid,
+                    isMultipart: false,
                 },
                 {
                     data: chunkData,
                 },
             );
+
+            chunkCid = response.cid;
+
+            console.log('Chunk CID', u8aToHex(chunkCid));
+            expect(chunkCid).toEqual(expect.any(Uint8Array));
         });
 
         test('Store file head', async () => {
-            await storageNode.fileApi.storeHead({
-                cid: fileCid,
+            expect(chunkCid).toBeDefined();
+
+            const response = await storageNode.fileApi.storeHead({
                 partHashes: [chunkCid],
                 partSize: BigInt(chunkData.byteLength),
                 totalSize: BigInt(chunkData.byteLength),
+                bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
             });
+
+            fileCid = response.cid;
+
+            console.log('File CID', u8aToHex(fileCid));
+            expect(chunkCid).toEqual(expect.any(Uint8Array));
         });
 
         test('Read file', async () => {
+            expect(chunkCid).toBeDefined();
+
             await storageNode.fileApi.readFile({
-                cid: fileCid,
+                cid: chunkCid,
+                bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
             });
         });
     });

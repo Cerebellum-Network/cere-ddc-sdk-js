@@ -10,9 +10,9 @@
     "dependencies": {
         "@protobuf-ts/grpc-transport": "^2.9.1",
         "@protobuf-ts/grpcweb-transport": "^2.9.1",
-        "@protobuf-ts/runtime": "^2.2.2"
+        "@protobuf-ts/runtime": "^2.9.1"
     },
     "devDependencies": {
-        "@protobuf-ts/plugin": "^2.2.2"
+        "@protobuf-ts/plugin": "^2.9.1"
     }
 }

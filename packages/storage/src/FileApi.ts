@@ -17,7 +17,9 @@ export class FileApi {
     }
 
     async storeHead(request: PutMultiPartPieceRequest) {
-        await this.api.putMultipartPiece(request);
+        const {response} = await this.api.putMultipartPiece(request);
+
+        return response;
     }
 
     async storeChunk(metadata: PutRawPieceRequest_Metadata, content: PutRawPieceRequest_Content) {
@@ -38,7 +40,8 @@ export class FileApi {
         });
 
         await requests.complete();
-        await response;
+
+        return response;
     }
 
     async readFile(request: GetFileRequest) {

@@ -12,8 +12,10 @@ service FileApi {
 
 message PutRawPieceRequest {
   message Metadata {
-    bytes cid = 1;
+    optional bytes cid = 1;
     string bucketId = 2;
+    optional uint64 offset = 3; // starting offset of the piece inside a file. Should be set only if isMultipart = true
+    bool isMultipart = 4; // whether the piece is part of a file or not
   }
 
   message Content {
@@ -27,23 +29,27 @@ message PutRawPieceRequest {
 }
 
 message PutRawPieceResponse {
+  bytes cid = 1;
   // TBD
 }
 
 message PutMultiPartPieceRequest {
-  bytes cid = 1; // root hash of the file hash tree
-  uint64 totalSize = 2; // size of the multi-part piece (large file total size)
-  uint64 partSize = 3; // size of the raw piece (large file part size)
-  repeated bytes partHashes = 4; // ordered list of the raw piece hashes
+  optional bytes cid = 1; // root hash of the file hash tree
+  string bucketId = 2; // bucket where file is stored
+  uint64 totalSize = 3; // size of the multi-part piece (large file total size)
+  uint64 partSize = 4; // size of the raw piece (large file part size)
+  repeated bytes partHashes = 5; // ordered list of the raw piece hashes
 }
 
 message PutMultiPartPieceResponse {
+  bytes cid = 1;
   // TBD
 }
 
 message GetFileRequest {
   bytes cid = 1; // CID of either raw or multi-part piece
-  Range range = 2; // indicates part of the file to be returned (return whole file if range is missing)
+  string bucketId = 2;
+  optional Range range = 3; // indicates part of the file to be returned (return whole file if range is missing)
 
   message Range {
     uint64 start = 1;
@@ -52,8 +58,12 @@ message GetFileRequest {
 }
 
 message GetFileResponse {
+  message Proof {
+    repeated bytes proof = 1;
+  }
+
   oneof body {
-    bytes proof = 1; // first message contains only merkle proof of requested content for the root (CID)
+    Proof proof = 1; // first message contains only merkle proof of requested content for the root (CID)
     bytes data = 2; // subsequent messages contain only part of a requested content
   }
 }
