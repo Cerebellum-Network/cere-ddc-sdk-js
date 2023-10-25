@@ -1,7 +1,7 @@
 import {u8aToHex} from '@polkadot/util';
 import {StorageNode} from '@cere-ddc-sdk/storage';
 
-describe('New Storage', () => {
+describe('Storage', () => {
     const bucketId = 0;
     const storageNode = new StorageNode('localhost:9091');
 
