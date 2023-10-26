@@ -15,4 +15,9 @@ export class StorageNode {
         this.fileApi = new FileApi(transport);
         this.cnsApi = new CnsApi(transport);
     }
+
+    async store() {}
+    async read() {}
+
+    async createAlias() {}
 }

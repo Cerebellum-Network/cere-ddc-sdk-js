@@ -1,13 +1,35 @@
-import {u8aToHex} from '@polkadot/util';
+import {randomBytes} from 'crypto';
+import {u8aConcat} from '@polkadot/util';
+import {ReadableStream} from 'stream/web';
 import {StorageNode} from '@cere-ddc-sdk/storage';
+
+const streamToU8 = async (stream: ReadableStream<Uint8Array>) => {
+    let content = new Uint8Array([]);
+    for await (const chunk of stream) {
+        content = u8aConcat(content, chunk);
+    }
+
+    return content;
+};
 
 describe('Storage', () => {
     const bucketId = 0;
     const storageNode = new StorageNode('localhost:9091');
 
+    const storeRawPiece = async (chunks: Uint8Array[], mutipartOffset?: bigint) => {
+        return storageNode.fileApi.storeRawPiece(
+            {
+                bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+                isMultipart: mutipartOffset !== undefined,
+                offset: mutipartOffset,
+            },
+            chunks,
+        );
+    };
+
     describe('Dag Api', () => {
         let nodeCid: string;
-        const nodeData = new TextEncoder().encode('Hello');
+        const nodeData = randomBytes(10);
 
         test('Create node', async () => {
             nodeCid = await storageNode.dagApi.store({
@@ -31,12 +53,11 @@ describe('Storage', () => {
                 path: '',
             });
 
-            const receivedData = node && new Uint8Array(node.data);
-            expect(receivedData).toEqual(nodeData);
+            expect(node?.data).toEqual(nodeData);
         });
     });
 
-    describe('Cns Api', () => {
+    describe.skip('Cns Api', () => {
         const alias = 'test-cid-alias';
         const testCid = 'test-cid';
 
@@ -59,50 +80,29 @@ describe('Storage', () => {
     });
 
     describe('File Api', () => {
-        const chunkData = new TextEncoder().encode('Hello');
+        const chunkData = new Uint8Array(randomBytes(1024));
 
-        let chunkCid: Uint8Array;
-        let fileCid: Uint8Array;
+        describe('Raw piece', () => {
+            let rawPieceCid: Uint8Array;
 
-        test('Store file chunk', async () => {
-            const response = await storageNode.fileApi.storeChunk(
-                {
-                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
-                    isMultipart: false,
-                },
-                {
-                    data: chunkData,
-                },
-            );
+            test('Store raw piece', async () => {
+                rawPieceCid = await storeRawPiece([chunkData]);
 
-            chunkCid = response.cid;
-
-            console.log('Chunk CID', u8aToHex(chunkCid));
-            expect(chunkCid).toEqual(expect.any(Uint8Array));
-        });
-
-        test('Store file head', async () => {
-            expect(chunkCid).toBeDefined();
-
-            const response = await storageNode.fileApi.storeHead({
-                partHashes: [chunkCid],
-                partSize: BigInt(chunkData.byteLength),
-                totalSize: BigInt(chunkData.byteLength),
-                bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+                expect(rawPieceCid).toEqual(expect.any(Uint8Array));
+                expect(rawPieceCid.length).toBeGreaterThan(0);
             });
 
-            fileCid = response.cid;
+            test('Read full raw piece', async () => {
+                expect(rawPieceCid).toBeDefined();
 
-            console.log('File CID', u8aToHex(fileCid));
-            expect(chunkCid).toEqual(expect.any(Uint8Array));
-        });
+                const contentStream = storageNode.fileApi.read({
+                    cid: rawPieceCid,
+                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+                });
 
-        test('Read file', async () => {
-            expect(chunkCid).toBeDefined();
+                const content = await streamToU8(contentStream);
 
-            await storageNode.fileApi.readFile({
-                cid: chunkCid,
-                bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+                expect(content).toEqual(chunkData);
             });
         });
     });

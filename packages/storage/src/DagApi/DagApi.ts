@@ -1,7 +1,7 @@
 import {RpcTransport} from '@protobuf-ts/runtime-rpc';
 
-import {PutRequest, GetRequest} from './grpc/dag_api';
-import {DagApiClient} from './grpc/dag_api.client';
+import {PutRequest, GetRequest} from '../grpc/dag_api';
+import {DagApiClient} from '../grpc/dag_api.client';
 
 export class DagApi {
     private api: DagApiClient;

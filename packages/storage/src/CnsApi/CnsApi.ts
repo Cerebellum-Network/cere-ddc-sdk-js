@@ -1,7 +1,7 @@
 import {RpcTransport} from '@protobuf-ts/runtime-rpc';
 
-import {PutRequest, GetRequest} from './grpc/cns_api';
-import {CnsApiClient} from './grpc/cns_api.client';
+import {PutRequest, GetRequest} from '../grpc/cns_api';
+import {CnsApiClient} from '../grpc/cns_api.client';
 
 export class CnsApi {
     private api: CnsApiClient;
