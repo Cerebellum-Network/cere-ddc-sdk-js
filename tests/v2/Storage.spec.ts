@@ -3,7 +3,7 @@ import {u8aConcat} from '@polkadot/util';
 import {ReadableStream} from 'stream/web';
 import {StorageNode} from '@cere-ddc-sdk/storage';
 
-const streamToU8 = async (stream: ReadableStream<Uint8Array>) => {
+const streamToU8a = async (stream: ReadableStream<Uint8Array>) => {
     let content = new Uint8Array([]);
     for await (const chunk of stream) {
         content = u8aConcat(content, chunk);
@@ -80,9 +80,8 @@ describe('Storage', () => {
     });
 
     describe('File Api', () => {
-        const chunkData = new Uint8Array(randomBytes(1024));
-
         describe('Raw piece', () => {
+            const chunkData = new Uint8Array(randomBytes(1024));
             let rawPieceCid: Uint8Array;
 
             test('Store raw piece', async () => {
@@ -100,9 +99,55 @@ describe('Storage', () => {
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
 
-                const content = await streamToU8(contentStream);
+                const content = await streamToU8a(contentStream);
 
                 expect(content).toEqual(chunkData);
+            });
+        });
+
+        describe('Multipart piece', () => {
+            let multipartPieceCid: Uint8Array;
+            let rawPieceCids: Uint8Array[];
+            const partSize = 64 * 1024 * 1024; // 64 MB
+            const rawPieceContents = [
+                [new Uint8Array(randomBytes(partSize))],
+                [new Uint8Array(randomBytes(partSize))],
+                [new Uint8Array(randomBytes(partSize))],
+            ];
+
+            const fullContent = rawPieceContents
+                .flat()
+                .reduce((full, chunk) => u8aConcat(full, chunk), new Uint8Array([]));
+
+            beforeAll(async () => {
+                rawPieceCids = await Promise.all(
+                    rawPieceContents.map((chunks, index) => storeRawPiece(chunks, BigInt(index * partSize))),
+                );
+            });
+
+            test('Store multipart piece', async () => {
+                multipartPieceCid = await storageNode.fileApi.storeMultipartPiece({
+                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+                    partHashes: rawPieceCids,
+                    partSize: BigInt(partSize),
+                    totalSize: BigInt(partSize * rawPieceContents.length),
+                });
+
+                expect(multipartPieceCid).toEqual(expect.any(Uint8Array));
+                expect(multipartPieceCid.length).toBeGreaterThan(0);
+            });
+
+            test('Read full multipart piece', async () => {
+                expect(multipartPieceCid).toBeDefined();
+
+                const contentStream = storageNode.fileApi.read({
+                    cid: multipartPieceCid,
+                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+                });
+
+                const content = await streamToU8a(contentStream);
+
+                expect(content).toEqual(fullContent);
             });
         });
     });

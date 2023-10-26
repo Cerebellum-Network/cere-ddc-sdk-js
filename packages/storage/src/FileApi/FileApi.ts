@@ -34,7 +34,7 @@ export class FileApi {
             partSize: ceilToPowerOf2(request.partSize),
         });
 
-        return response;
+        return response.cid;
     }
 
     async storeRawPiece(metadata: PutRawPieceRequest_Metadata, content: Content) {
