@@ -72,6 +72,10 @@ export class FileApi {
                 if (body.oneofKind === 'data') {
                     yield body.data;
                 }
+
+                if (body.oneofKind === 'proof') {
+                    // TODO: validate proof
+                }
             }
         }
 

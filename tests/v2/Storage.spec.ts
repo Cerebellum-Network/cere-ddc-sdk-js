@@ -4,6 +4,7 @@ import {StorageNode, PieceContent} from '@cere-ddc-sdk/storage';
 import {createDataStream, streamToU8a} from '../../tests/helpers';
 
 const MB = 1024 * 1024;
+const DDC_BLOCK_SIZE = 16 * 1024;
 
 describe('Storage', () => {
     const bucketId = 0;
@@ -120,6 +121,30 @@ describe('Storage', () => {
 
                 expect(content.byteLength).toEqual(largePieceSize);
             });
+
+            test('Read a range of large (chunked) piece', async () => {
+                expect(largePieceCid).toBeDefined();
+
+                const rangeSize = BigInt(10 * DDC_BLOCK_SIZE);
+
+                console.log('Range', {
+                    start: 0n,
+                    end: rangeSize,
+                });
+
+                const contentStream = storageNode.fileApi.read({
+                    cid: largePieceCid,
+                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+                    range: {
+                        start: 0n,
+                        end: rangeSize,
+                    },
+                });
+
+                const content = await streamToU8a(contentStream);
+
+                expect(content.byteLength).toEqual(rangeSize);
+            });
         });
 
         describe('Multipart piece', () => {
@@ -141,6 +166,13 @@ describe('Storage', () => {
             });
 
             test('Store multipart piece', async () => {
+                console.log('Store multipart params', {
+                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+                    partHashes: rawPieceCids,
+                    partSize: BigInt(partSize),
+                    totalSize: BigInt(totalSize),
+                });
+
                 multipartPieceCid = await storageNode.fileApi.storeMultipartPiece({
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                     partHashes: rawPieceCids,
