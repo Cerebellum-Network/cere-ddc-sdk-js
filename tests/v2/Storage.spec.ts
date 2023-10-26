@@ -77,7 +77,7 @@ describe('Storage', () => {
             let smallPieceCid: Uint8Array;
             let largePieceCid: Uint8Array;
             const smallPieceSize = MB;
-            const largePieceSize = 5 * MB;
+            const largePieceSize = 4 * MB;
             const smallPieceData = new Uint8Array(randomBytes(smallPieceSize));
             const largePieceData = createDataStream(largePieceSize, MB);
 
@@ -125,7 +125,7 @@ describe('Storage', () => {
         describe('Multipart piece', () => {
             let multipartPieceCid: Uint8Array;
             let rawPieceCids: Uint8Array[];
-            const partSize = 5 * MB;
+            const partSize = 4 * MB;
             const rawPieceContents = [
                 createDataStream(partSize, MB),
                 createDataStream(partSize, MB),
