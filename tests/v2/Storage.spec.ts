@@ -126,12 +126,6 @@ describe('Storage', () => {
                 expect(largePieceCid).toBeDefined();
 
                 const rangeSize = BigInt(10 * DDC_BLOCK_SIZE);
-
-                console.log('Range', {
-                    start: 0n,
-                    end: rangeSize,
-                });
-
                 const contentStream = storageNode.fileApi.read({
                     cid: largePieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
@@ -195,6 +189,24 @@ describe('Storage', () => {
                 const content = await streamToU8a(contentStream);
 
                 expect(content.byteLength).toEqual(totalSize);
+            });
+
+            test('Read a range of multipart piece', async () => {
+                expect(multipartPieceCid).toBeDefined();
+
+                const rangeSize = BigInt(10 * DDC_BLOCK_SIZE);
+                const contentStream = storageNode.fileApi.read({
+                    cid: multipartPieceCid,
+                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type,
+                    range: {
+                        start: 0n,
+                        end: rangeSize,
+                    },
+                });
+
+                const content = await streamToU8a(contentStream);
+
+                expect(content.byteLength).toEqual(rangeSize);
             });
         });
     });
