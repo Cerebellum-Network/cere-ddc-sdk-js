@@ -23,7 +23,7 @@ export const TESTNET: GlobalNftRegistryOptions = {
 
 export const DEVNET: GlobalNftRegistryOptions = {
     rpcUrl: 'wss://archive.devnet.cere.network/ws',
-    contractAddress: '',
+    contractAddress: '6QHbrnjhSGaFiHs29o3LXojoQw27xotE2aFw4nsL1Ki3Wur6',
     abi: globalNftRegistryAbi,
 };
 
