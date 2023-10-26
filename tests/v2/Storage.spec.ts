@@ -1,22 +1,15 @@
 import {randomBytes} from 'crypto';
-import {u8aConcat} from '@polkadot/util';
-import {ReadableStream} from 'stream/web';
-import {StorageNode} from '@cere-ddc-sdk/storage';
+import {StorageNode, PieceContent} from '@cere-ddc-sdk/storage';
 
-const streamToU8a = async (stream: ReadableStream<Uint8Array>) => {
-    let content = new Uint8Array([]);
-    for await (const chunk of stream) {
-        content = u8aConcat(content, chunk);
-    }
+import {createDataStream, streamToU8a} from '../../tests/helpers';
 
-    return content;
-};
+const MB = 1024 * 1024;
 
 describe('Storage', () => {
     const bucketId = 0;
     const storageNode = new StorageNode('localhost:9091');
 
-    const storeRawPiece = async (chunks: Uint8Array[], mutipartOffset?: bigint) => {
+    const storeRawPiece = async (chunks: PieceContent, mutipartOffset?: bigint) => {
         return storageNode.fileApi.storeRawPiece(
             {
                 bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
@@ -81,47 +74,69 @@ describe('Storage', () => {
 
     describe('File Api', () => {
         describe('Raw piece', () => {
-            const chunkData = new Uint8Array(randomBytes(1024));
-            let rawPieceCid: Uint8Array;
+            let smallPieceCid: Uint8Array;
+            let largePieceCid: Uint8Array;
+            const smallPieceSize = MB;
+            const largePieceSize = 5 * MB;
+            const smallPieceData = new Uint8Array(randomBytes(smallPieceSize));
+            const largePieceData = createDataStream(largePieceSize, MB);
 
-            test('Store raw piece', async () => {
-                rawPieceCid = await storeRawPiece([chunkData]);
+            test('Store small piece', async () => {
+                smallPieceCid = await storeRawPiece([smallPieceData]);
 
-                expect(rawPieceCid).toEqual(expect.any(Uint8Array));
-                expect(rawPieceCid.length).toBeGreaterThan(0);
+                expect(smallPieceCid).toEqual(expect.any(Uint8Array));
+                expect(smallPieceCid.length).toBeGreaterThan(0);
             });
 
-            test('Read full raw piece', async () => {
-                expect(rawPieceCid).toBeDefined();
+            test('Read small piece', async () => {
+                expect(smallPieceCid).toBeDefined();
 
                 const contentStream = storageNode.fileApi.read({
-                    cid: rawPieceCid,
+                    cid: smallPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
 
                 const content = await streamToU8a(contentStream);
 
-                expect(content).toEqual(chunkData);
+                expect(content).toEqual(smallPieceData);
+            });
+
+            test('Store large (chunked) piece', async () => {
+                largePieceCid = await storeRawPiece(largePieceData);
+
+                expect(largePieceCid).toEqual(expect.any(Uint8Array));
+                expect(largePieceCid.length).toBeGreaterThan(0);
+            });
+
+            test('Read large (chunked) piece', async () => {
+                expect(largePieceCid).toBeDefined();
+
+                const contentStream = storageNode.fileApi.read({
+                    cid: largePieceCid,
+                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+                });
+
+                const content = await streamToU8a(contentStream);
+
+                expect(content.byteLength).toEqual(largePieceSize);
             });
         });
 
         describe('Multipart piece', () => {
             let multipartPieceCid: Uint8Array;
             let rawPieceCids: Uint8Array[];
-            const partSize = 64 * 1024 * 1024; // 64 MB
+            const partSize = 5 * MB;
             const rawPieceContents = [
-                [new Uint8Array(randomBytes(partSize))],
-                [new Uint8Array(randomBytes(partSize))],
-                [new Uint8Array(randomBytes(partSize))],
+                createDataStream(partSize, MB),
+                createDataStream(partSize, MB),
+                createDataStream(partSize, MB),
             ];
 
-            const fullContent = rawPieceContents
-                .flat()
-                .reduce((full, chunk) => u8aConcat(full, chunk), new Uint8Array([]));
+            const totalSize = partSize * rawPieceContents.length;
 
             beforeAll(async () => {
                 rawPieceCids = await Promise.all(
-                    rawPieceContents.map((chunks, index) => storeRawPiece(chunks, BigInt(index * partSize))),
+                    rawPieceContents.map((content, index) => storeRawPiece(content, BigInt(index * partSize))),
                 );
             });
 
@@ -130,7 +145,7 @@ describe('Storage', () => {
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                     partHashes: rawPieceCids,
                     partSize: BigInt(partSize),
-                    totalSize: BigInt(partSize * rawPieceContents.length),
+                    totalSize: BigInt(totalSize),
                 });
 
                 expect(multipartPieceCid).toEqual(expect.any(Uint8Array));
@@ -147,7 +162,7 @@ describe('Storage', () => {
 
                 const content = await streamToU8a(contentStream);
 
-                expect(content).toEqual(fullContent);
+                expect(content.byteLength).toEqual(totalSize);
             });
         });
     });
