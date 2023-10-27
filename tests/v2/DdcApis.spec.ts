@@ -128,13 +128,13 @@ describe('DDC APIs', () => {
             test('Read a range of large (chunked) piece', async () => {
                 expect(largePieceCid).toBeDefined();
 
-                const rangeSize = BigInt(10 * DDC_BLOCK_SIZE);
+                const rangeSize = 10 * DDC_BLOCK_SIZE;
                 const contentStream = fileApi.readPiece({
                     cid: largePieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                     range: {
                         start: 0n,
-                        end: rangeSize,
+                        end: BigInt(rangeSize - 1),
                     },
                 });
 
@@ -197,13 +197,13 @@ describe('DDC APIs', () => {
             test('Read a range of multipart piece', async () => {
                 expect(multipartPieceCid).toBeDefined();
 
-                const rangeSize = BigInt(10 * DDC_BLOCK_SIZE);
+                const rangeSize = 10 * DDC_BLOCK_SIZE;
                 const contentStream = fileApi.readPiece({
                     cid: multipartPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type,
                     range: {
                         start: 0n,
-                        end: rangeSize,
+                        end: BigInt(rangeSize - 1),
                     },
                 });
 
