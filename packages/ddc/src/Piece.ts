@@ -12,21 +12,17 @@ export class Piece {
 }
 
 export class PieceResponse {
-    private iterator: AsyncIterator<Uint8Array>;
-
-    constructor(readonly bucketId: bigint, readonly cid: Uint8Array, readonly body: ReadableStream<Uint8Array>) {
-        this.iterator = this.body[Symbol.asyncIterator]();
-    }
+    constructor(readonly bucketId: bigint, readonly cid: Uint8Array, readonly body: ReadableStream<Uint8Array>) {}
 
     async arrayBuffer() {
-        return arrayBuffer(this.iterator);
+        return arrayBuffer(this.body);
     }
 
     async text() {
-        return text(this.iterator);
+        return text(this.body);
     }
 
     async json() {
-        return json(this.iterator);
+        return json(this.body);
     }
 }

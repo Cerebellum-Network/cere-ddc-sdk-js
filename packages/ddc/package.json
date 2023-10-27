@@ -2,10 +2,18 @@
     "name": "@cere-ddc-sdk/ddc",
     "description": "DDC nodes API",
     "version": "1.9.3",
+    "type": "module",
     "main": "./dist/index.cjs",
     "types": "./dist/types",
     "scripts": {
-        "compile": "protoc --ts_out ./src/grpc --proto_path protos ./protos/*.proto"
+        "compile": "protoc --ts_out ./src/grpc --proto_path protos ./protos/*.proto",
+        "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
+        "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
+        "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
+        "build": "npm run clean && npm run compile && npm run types && npm run build:node",
+        "types": "tsc -p tsconfig.build.json --emitDeclarationOnly || exit 0",
+        "package": "clean-publish",
+        "clean": "rimraf dist package"
     },
     "dependencies": {
         "@protobuf-ts/grpc-transport": "^2.9.1",
