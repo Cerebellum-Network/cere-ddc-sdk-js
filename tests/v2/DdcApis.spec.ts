@@ -1,17 +1,20 @@
 import {randomBytes} from 'crypto';
-import {StorageNode, PieceContent} from '@cere-ddc-sdk/storage';
+import {PieceContent, RpcTransport, DagApi, FileApi, CnsApi} from '@cere-ddc-sdk/ddc';
 
 import {createDataStream, streamToU8a} from '../../tests/helpers';
 
 const MB = 1024 * 1024;
 const DDC_BLOCK_SIZE = 16 * 1024;
 
-describe('Storage', () => {
+describe('DDC APIs', () => {
     const bucketId = 0;
-    const storageNode = new StorageNode('localhost:9091');
+    const transport = new RpcTransport('localhost:9091');
+    const dagApi = new DagApi(transport);
+    const fileApi = new FileApi(transport);
+    const cnsApi = new CnsApi(transport);
 
     const storeRawPiece = async (chunks: PieceContent, mutipartOffset?: bigint) => {
-        return storageNode.fileApi.storeRawPiece(
+        return fileApi.storeRawPiece(
             {
                 bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 isMultipart: mutipartOffset !== undefined,
@@ -26,7 +29,7 @@ describe('Storage', () => {
         const nodeData = randomBytes(10);
 
         test('Create node', async () => {
-            nodeCid = await storageNode.dagApi.store({
+            nodeCid = await dagApi.storeNode({
                 bucketId,
                 node: {
                     data: nodeData,
@@ -41,7 +44,7 @@ describe('Storage', () => {
         test('Read node', async () => {
             expect(nodeCid).toBeDefined();
 
-            const node = await storageNode.dagApi.read({
+            const node = await dagApi.getNode({
                 cid: nodeCid,
                 bucketId,
                 path: '',
@@ -56,7 +59,7 @@ describe('Storage', () => {
         const testCid = 'test-cid';
 
         test('Create alias', async () => {
-            await storageNode.cnsApi.createAlias({
+            await cnsApi.assignName({
                 bucketId,
                 cid: testCid,
                 name: alias,
@@ -64,7 +67,7 @@ describe('Storage', () => {
         });
 
         test('Get CID by alias', async () => {
-            const cid = await storageNode.cnsApi.getCid({
+            const cid = await cnsApi.getCid({
                 bucketId,
                 name: alias,
             });
@@ -92,7 +95,7 @@ describe('Storage', () => {
             test('Read small piece', async () => {
                 expect(smallPieceCid).toBeDefined();
 
-                const contentStream = storageNode.fileApi.read({
+                const contentStream = fileApi.readPiece({
                     cid: smallPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
@@ -112,7 +115,7 @@ describe('Storage', () => {
             test('Read large (chunked) piece', async () => {
                 expect(largePieceCid).toBeDefined();
 
-                const contentStream = storageNode.fileApi.read({
+                const contentStream = fileApi.readPiece({
                     cid: largePieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
@@ -126,7 +129,7 @@ describe('Storage', () => {
                 expect(largePieceCid).toBeDefined();
 
                 const rangeSize = BigInt(10 * DDC_BLOCK_SIZE);
-                const contentStream = storageNode.fileApi.read({
+                const contentStream = fileApi.readPiece({
                     cid: largePieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                     range: {
@@ -167,7 +170,7 @@ describe('Storage', () => {
                     totalSize: BigInt(totalSize),
                 });
 
-                multipartPieceCid = await storageNode.fileApi.storeMultipartPiece({
+                multipartPieceCid = await fileApi.storeMultipartPiece({
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                     partHashes: rawPieceCids,
                     partSize: BigInt(partSize),
@@ -181,7 +184,7 @@ describe('Storage', () => {
             test('Read full multipart piece', async () => {
                 expect(multipartPieceCid).toBeDefined();
 
-                const contentStream = storageNode.fileApi.read({
+                const contentStream = fileApi.readPiece({
                     cid: multipartPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
@@ -195,7 +198,7 @@ describe('Storage', () => {
                 expect(multipartPieceCid).toBeDefined();
 
                 const rangeSize = BigInt(10 * DDC_BLOCK_SIZE);
-                const contentStream = storageNode.fileApi.read({
+                const contentStream = fileApi.readPiece({
                     cid: multipartPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type,
                     range: {

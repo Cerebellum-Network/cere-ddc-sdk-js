@@ -1,6 +1,6 @@
 {
-    "name": "@cere-ddc-sdk/storage",
-    "description": "Storage grpc PoC",
+    "name": "@cere-ddc-sdk/ddc",
+    "description": "DDC nodes API",
     "version": "1.9.3",
     "main": "./dist/index.cjs",
     "types": "./dist/types",
