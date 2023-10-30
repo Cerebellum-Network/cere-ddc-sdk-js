@@ -1,0 +1,56 @@
+{
+  "name": "@cere-ddc-sdk/blockchain",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cere Blockchain client",
+  "main": "./dist/index.cjs",
+  "types": "./dist/types",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "directory": "packages/blockchain",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "scripts": {
+    "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
+    "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
+    "build:browser": "BROWSERSLIST_ENV=browser npm run build:cjs && BROWSERSLIST_ENV=browser npm run build:mjs",
+    "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
+    "build": "npm run clean && npm run types && npm run build:browser && npm run build:node",
+    "types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "package": "clean-publish",
+    "clean": "rimraf dist package",
+    "generate:types": "npm run generate:types-from-defs && npm run generate:types-from-chain",
+    "generate:types-from-chain": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-chain --endpoint ws://localhost:9944 --output ./src/interfaces --strict",
+    "generate:types-from-defs": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-defs  --endpoint ws://localhost:9944 --input ./src/interfaces --package sample-polkadotjs-typegen/interfaces"
+  },
+  "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@polkadot/api": "9.4.1",
+    "crypto-browserify": "^3.12.0",
+    "stream-browserify": "^3.0.0"
+  },
+  "devDependencies": {
+    "@polkadot/typegen": "9.4.1",
+    "typescript": "^4.5.5"
+  },
+  "exports": {
+    ".": {
+      "browser": "./dist/browser.js",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "require": "./dist/browser.cjs",
+      "import": "./dist/browser.js",
+      "default": "./dist/browser.js"
+    },
+    "./types": {
+      "require": "./dist/types.cjs",
+      "import": "./dist/types.js",
+      "default": "./dist/types.js"
+    }
+  }
+}
