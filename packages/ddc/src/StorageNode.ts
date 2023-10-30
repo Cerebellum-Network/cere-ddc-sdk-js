@@ -38,7 +38,7 @@ export class StorageNode {
             return this.storeMultipartPiece(piece, options);
         }
 
-        const cid = await this.fileApi.storeRawPiece(
+        const cid = await this.fileApi.putRawPiece(
             {
                 bucketId: piece.bucketId.toString(), // TODO: Inconsistent bucketId type,
                 isMultipart: piece.isPart,
@@ -58,7 +58,7 @@ export class StorageNode {
     }
 
     private async storeMultipartPiece(piece: MultipartPiece, options?: PieceStoreOptions) {
-        return this.fileApi.storeMultipartPiece({
+        return this.fileApi.putMultipartPiece({
             bucketId: piece.bucketId.toString(), // TODO: Inconsistent bucketId type,
             partHashes: piece.partHashes,
             partSize: piece.meta.partSize,
@@ -67,7 +67,7 @@ export class StorageNode {
     }
 
     async storeDagNode(node: DagNode, options?: DagNodeStoreOptions) {
-        const cid = await this.dagApi.storeNode({
+        const cid = await this.dagApi.putNode({
             node: node,
             bucketId: Number(node.bucketId), // TODO: Inconsistent bucketId type
         });

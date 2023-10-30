@@ -27,7 +27,7 @@ export class FileApi {
         this.api = new FileApiClient(transport);
     }
 
-    async storeMultipartPiece(request: PutMultiPartPieceRequest) {
+    async putMultipartPiece(request: PutMultiPartPieceRequest) {
         const {response} = await this.api.putMultipartPiece({
             ...request,
             partSize: ceilToPowerOf2(request.partSize),
@@ -36,7 +36,7 @@ export class FileApi {
         return response.cid;
     }
 
-    async storeRawPiece(metadata: PutRawPieceRequest_Metadata, content: Content) {
+    async putRawPiece(metadata: PutRawPieceRequest_Metadata, content: Content) {
         const {requests, response} = this.api.putRawPiece();
 
         await requests.send({

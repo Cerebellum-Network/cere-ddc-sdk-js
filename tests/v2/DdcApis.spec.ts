@@ -11,7 +11,7 @@ describe('DDC APIs', () => {
     const cnsApi = new CnsApi(transport);
 
     const storeRawPiece = async (chunks: PieceContent, mutipartOffset?: bigint) => {
-        return fileApi.storeRawPiece(
+        return fileApi.putRawPiece(
             {
                 bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 isMultipart: mutipartOffset !== undefined,
@@ -26,7 +26,7 @@ describe('DDC APIs', () => {
         const nodeData = randomBytes(10);
 
         test('Create node', async () => {
-            nodeCid = await dagApi.storeNode({
+            nodeCid = await dagApi.putNode({
                 bucketId,
                 node: {
                     data: nodeData,
@@ -165,7 +165,7 @@ describe('DDC APIs', () => {
                  */
                 const partHashes = rawPieceCids.map((cid) => cid.slice(-32));
 
-                multipartPieceCid = await fileApi.storeMultipartPiece({
+                multipartPieceCid = await fileApi.putMultipartPiece({
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                     partHashes,
                     partSize: BigInt(partSize),
