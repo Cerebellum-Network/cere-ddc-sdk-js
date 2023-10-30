@@ -35,6 +35,6 @@ export class DDCClustersPallet {
 export type ClusterId = HexString;
 export type ClusterParams = {
     readonly params: string;
-    readonly nodeProviderAuthContract: AccountId32;
+    readonly nodeProviderAuthContract: string; //AccountId32;
 };
 export type Cluster = PalletDdcClustersCluster;

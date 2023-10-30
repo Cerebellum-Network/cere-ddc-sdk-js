@@ -1,5 +1,5 @@
 import {Blockchain} from '@cere-ddc-sdk/blockchain';
-import {createBlockhainApi, getAccount, getGasLimit, signAndSend, transferCere} from './helpers';
+import {createAccount, createBlockhainApi, getAccount, getGasLimit, signAndSend, transferCere} from './helpers';
 import {cryptoWaitReady} from '@polkadot/util-crypto';
 import {ApiPromise} from '@polkadot/api';
 import {AddressOrPair} from '@polkadot/api/types';
@@ -17,22 +17,24 @@ describe('packages/blockchain', () => {
     let nonExistentKey1: string;
     const clusterId = '0x0000000000000000000000000000000000000000';
 
-    const deployClusterNodeAuthorizationContract = async (apiPromise: ApiPromise) => {
-        const contractDir = path.resolve(__dirname, '../fixtures/contract');
+    let nodeProviderAuthContract: string;
+
+    const deployClusterNodeAuthorizationContract = async () => {
+        const contractDir = path.resolve(__dirname, './fixtures/contract');
 
         const contractContent = await fs.readFile(
             path.resolve(contractDir, 'cluster_node_candidate_authorization.contract'),
         );
         const contract = JSON.parse(contractContent.toString());
         const wasm = contract.source.wasm.toString();
-        const codePromise = new CodePromise(api, abi, wasm);
-        const tx = codePromise.tx.new({
-            value: 0,
-            gasLimit: await getGasLimit(apiPromise),
-            storageDepositLimit: 750_000_000_000,
-        });
-        const {events} = await signAndSend(tx, account);
-        const foundEvent = events.find(({event}) => api.events.contracts.Instantiated.is(event));
+        const abi = new Abi(contract);
+        const codePromise = new CodePromise(apiPromise, abi, wasm);
+        const tx = codePromise.tx.new(
+            {value: 0, gasLimit: await getGasLimit(apiPromise), storageDepositLimit: 750_000_000_000},
+            true,
+        );
+        const {events} = await signAndSend(tx, admin, apiPromise);
+        const foundEvent = events.find(({event}) => apiPromise.events.contracts.Instantiated.is(event));
         const [, address] = foundEvent?.event.toJSON().data as string[];
 
         return address;
@@ -41,12 +43,13 @@ describe('packages/blockchain', () => {
     beforeAll(async () => {
         await cryptoWaitReady();
 
-        admin = getAccount('//Alice');
-        cdnNode1Key = getAccount('//Bob').address;
-        storageNode2Key = getAccount('//Eve').address;
-        nonExistentKey1 = getAccount('//Ferdie').address;
+        admin = getAccount();
+        cdnNode1Key = await createAccount().address; //getAccount('//Bob').address;
+        storageNode2Key = await createAccount().address; //getAccount('//Eve').address;
+        nonExistentKey1 = await createAccount().address; //getAccount('//Ferdie').address;
 
         apiPromise = await createBlockhainApi();
+        nodeProviderAuthContract = await deployClusterNodeAuthorizationContract();
     });
 
     afterAll(async () => {
@@ -111,7 +114,7 @@ describe('packages/blockchain', () => {
         await blockchain.send(
             blockchain.ddcClusters.createCluster(clusterId, {
                 params: clusterParams,
-                nodeProviderAuthContract: '0x00000000000000000000',
+                nodeProviderAuthContract,
             }),
         );
 
@@ -119,7 +122,7 @@ describe('packages/blockchain', () => {
 
         expect(cluster).toBeDefined();
         expect(cluster?.clusterId).toBe(clusterId);
-        expect(cluster?.props.params).toBe('');
+        expect(cluster?.props.params).toBe(clusterParams);
     });
 
     test('Should list clusters', async () => {
@@ -129,17 +132,17 @@ describe('packages/blockchain', () => {
     });
 
     test('Should set cluster params', async () => {
-        const clusterParams = 'clusterParams';
+        const clusterParams = '0x';
         await blockchain.send(
             blockchain.ddcClusters.setClusterParams(clusterId, {
                 params: clusterParams,
-                nodeProviderAuthContract: '0x00000000000000000000',
+                nodeProviderAuthContract,
             }),
         );
 
         const cluster = await blockchain.ddcClusters.findClusterById(clusterId);
 
         expect(cluster).toBeDefined();
-        expect(cluster?.params).toBe(clusterParams);
+        expect(cluster?.props.params).toBe(clusterParams);
     });
 });
