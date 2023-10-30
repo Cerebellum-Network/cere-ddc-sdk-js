@@ -1,6 +1,6 @@
 import {CnsApi} from './CnsApi';
 import {DagApi} from './DagApi';
-import {FileApi} from './FileApi';
+import {FileApi, ReadFileRange} from './FileApi';
 import {RpcTransport} from './RpcTransport';
 import {MultipartPiece, Piece, PieceResponse} from './Piece';
 
@@ -12,6 +12,9 @@ type NamingOptions = {
 
 type PieceStoreOptions = NamingOptions & {};
 type DagNodeStoreOptions = NamingOptions & {};
+type PieceReadOptions = {
+    range?: ReadFileRange;
+};
 
 export class StorageNode {
     private dagApi: DagApi;
@@ -72,16 +75,16 @@ export class StorageNode {
         return cid;
     }
 
-    /**
-     * TODO: Implement range access
-     */
-    async getPiece(bucketId: bigint, cid: Uint8Array) {
+    async readPiece(bucketId: bigint, cid: Uint8Array, options?: PieceReadOptions) {
         const contentStream = this.fileApi.readPiece({
             cid, // TODO: Figure out how to use string CIDs
             bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+            range: options?.range,
         });
 
-        return new PieceResponse(bucketId, cid, contentStream);
+        return new PieceResponse(bucketId, cid, contentStream, {
+            range: options?.range,
+        });
     }
 
     async getDagNode(bucketId: bigint, cid: string) {

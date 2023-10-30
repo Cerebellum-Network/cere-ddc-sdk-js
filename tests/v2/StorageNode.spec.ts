@@ -1,6 +1,6 @@
 import {StorageNode, Piece, PieceResponse, DagNode, MultipartPiece} from '@cere-ddc-sdk/ddc';
 
-import {createDataStream, MB} from '../../tests/helpers';
+import {createDataStream, MB, DDC_BLOCK_SIZE} from '../../tests/helpers';
 
 describe('Storage Node', () => {
     const bucketId = 0n;
@@ -26,7 +26,7 @@ describe('Storage Node', () => {
             beforeEach(async () => {
                 expect(smallPieceCid).toBeDefined();
 
-                piece = await storageNode.getPiece(bucketId, smallPieceCid);
+                piece = await storageNode.readPiece(bucketId, smallPieceCid);
             });
 
             test('Read as Uint8Array', async () => {
@@ -85,21 +85,30 @@ describe('Storage Node', () => {
             expect(multipartPieceCid).toBeTruthy();
         });
 
-        describe('Read the piece', () => {
-            let piece: PieceResponse;
+        test('Read full piece as Uint8Array', async () => {
+            expect(multipartPieceCid).toBeDefined();
 
-            beforeEach(async () => {
-                expect(multipartPieceCid).toBeDefined();
+            const piece = await storageNode.readPiece(bucketId, multipartPieceCid);
+            const contentBuffer = await piece.arrayBuffer();
+            const content = new Uint8Array(contentBuffer);
 
-                piece = await storageNode.getPiece(bucketId, multipartPieceCid);
+            expect(content.byteLength).toEqual(totalSize);
+        });
+
+        test('Read the piece range', async () => {
+            expect(multipartPieceCid).toBeDefined();
+
+            const rangeLength = DDC_BLOCK_SIZE;
+            const piece = await storageNode.readPiece(bucketId, multipartPieceCid, {
+                range: {
+                    start: 0n,
+                    end: BigInt(rangeLength) - 1n,
+                },
             });
 
-            test('Read as Uint8Array', async () => {
-                const contentBuffer = await piece.arrayBuffer();
-                const content = new Uint8Array(contentBuffer);
+            const contentBuffer = await piece.arrayBuffer();
 
-                expect(content.byteLength).toEqual(totalSize);
-            });
+            expect(contentBuffer.byteLength).toEqual(rangeLength);
         });
     });
 

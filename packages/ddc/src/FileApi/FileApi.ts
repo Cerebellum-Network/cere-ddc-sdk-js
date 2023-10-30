@@ -4,8 +4,7 @@ import {PutMultiPartPieceRequest, GetFileRequest, PutRawPieceRequest_Metadata} f
 import {FileApiClient} from '../grpc/file_api.client';
 import {Content, createStream} from './streams';
 
-export type StoreFileOptions = {};
-export type ReadFileOptions = {};
+export type ReadFileRange = GetFileRequest['range'];
 
 function ceilToPowerOf2(n: bigint) {
     if (n <= 1n) {

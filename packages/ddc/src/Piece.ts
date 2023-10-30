@@ -1,7 +1,7 @@
 import {ReadableStream} from 'stream/web';
 import {arrayBuffer, text, json} from 'stream/consumers';
 
-import {PieceContent} from './FileApi';
+import {PieceContent, ReadFileRange} from './FileApi';
 
 export type PieceMeta = {
     multipartOffset?: bigint;
@@ -11,6 +11,10 @@ export type PieceMeta = {
 export type MultipartPieceMeta = {
     partSize: bigint;
     totalSize: bigint;
+};
+
+export type PieceResponseMeta = {
+    range?: ReadFileRange;
 };
 
 export class Piece {
@@ -40,8 +44,17 @@ export class MultipartPiece {
 export class PieceResponse {
     readonly hash: Uint8Array;
 
-    constructor(readonly bucketId: bigint, readonly cid: Uint8Array, readonly body: ReadableStream<Uint8Array>) {
+    constructor(
+        readonly bucketId: bigint,
+        readonly cid: Uint8Array,
+        readonly body: ReadableStream<Uint8Array>,
+        protected meta?: PieceResponseMeta,
+    ) {
         this.hash = cid.slice(-32); // Get content hashes from  raw pieces
+    }
+
+    get range() {
+        return this.meta?.range;
     }
 
     async arrayBuffer() {
