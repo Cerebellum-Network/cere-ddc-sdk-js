@@ -6,13 +6,17 @@ import {MultipartPiece, Piece, PieceResponse} from './Piece';
 
 import {DagNode, DagNodeResponse} from './DagNode';
 
+export type StorageNodeConfig = {
+    rpcHost: string;
+};
+
 type NamingOptions = {
     name?: string;
 };
 
-type PieceStoreOptions = NamingOptions & {};
-type DagNodeStoreOptions = NamingOptions & {};
-type PieceReadOptions = {
+export type PieceStoreOptions = NamingOptions & {};
+export type DagNodeStoreOptions = NamingOptions & {};
+export type PieceReadOptions = {
     range?: ReadFileRange;
 };
 
@@ -21,7 +25,7 @@ export class StorageNode {
     private fileApi: FileApi;
     private cnsApi: CnsApi;
 
-    constructor(rpcHost: string) {
+    constructor({rpcHost}: StorageNodeConfig) {
         const transport = new RpcTransport(rpcHost);
 
         this.dagApi = new DagApi(transport);

@@ -4,7 +4,9 @@ import {createDataStream, MB, DDC_BLOCK_SIZE} from '../../tests/helpers';
 
 describe('Storage Node', () => {
     const bucketId = 0n;
-    const storageNode = new StorageNode('localhost:9091');
+    const storageNode = new StorageNode({
+        rpcHost: 'localhost:9091',
+    });
 
     describe('Raw piece', () => {
         let smallPieceCid: Uint8Array;
