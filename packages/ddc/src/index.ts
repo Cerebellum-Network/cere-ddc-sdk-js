@@ -9,7 +9,6 @@ export * from './RpcTransport';
 /**
  * High level API
  */
-export * from './File';
 export * from './Piece';
 export * from './DagNode';
 export * from './StorageNode';

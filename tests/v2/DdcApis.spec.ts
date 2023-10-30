@@ -1,10 +1,7 @@
 import {randomBytes} from 'crypto';
 import {PieceContent, RpcTransport, DagApi, FileApi, CnsApi} from '@cere-ddc-sdk/ddc';
 
-import {createDataStream, streamToU8a} from '../../tests/helpers';
-
-const MB = 1024 * 1024;
-const DDC_BLOCK_SIZE = 16 * 1024;
+import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE} from '../../tests/helpers';
 
 describe('DDC APIs', () => {
     const bucketId = 0;
@@ -163,16 +160,14 @@ describe('DDC APIs', () => {
             });
 
             test('Store multipart piece', async () => {
-                console.log('Store multipart params', {
-                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
-                    partHashes: rawPieceCids,
-                    partSize: BigInt(partSize),
-                    totalSize: BigInt(totalSize),
-                });
+                /**
+                 * Get content hashes from  raw pieces
+                 */
+                const partHashes = rawPieceCids.map((cid) => cid.slice(-32));
 
                 multipartPieceCid = await fileApi.storeMultipartPiece({
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
-                    partHashes: rawPieceCids,
+                    partHashes,
                     partSize: BigInt(partSize),
                     totalSize: BigInt(totalSize),
                 });
