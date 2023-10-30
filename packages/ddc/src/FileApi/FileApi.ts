@@ -63,7 +63,7 @@ export class FileApi {
         return cid;
     }
 
-    readPiece(request: GetFileRequest) {
+    getFile(request: GetFileRequest) {
         const {responses} = this.api.getFile(request);
 
         async function* toDataStream() {

@@ -80,7 +80,7 @@ export class StorageNode {
     }
 
     async readPiece(bucketId: bigint, cid: Uint8Array, options?: PieceReadOptions) {
-        const contentStream = this.fileApi.readPiece({
+        const contentStream = this.fileApi.getFile({
             cid, // TODO: Figure out how to use string CIDs
             bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
             range: options?.range,

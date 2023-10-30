@@ -92,7 +92,7 @@ describe('DDC APIs', () => {
             test('Read small piece', async () => {
                 expect(smallPieceCid).toBeDefined();
 
-                const contentStream = fileApi.readPiece({
+                const contentStream = fileApi.getFile({
                     cid: smallPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
@@ -112,7 +112,7 @@ describe('DDC APIs', () => {
             test('Read large (chunked) piece', async () => {
                 expect(largePieceCid).toBeDefined();
 
-                const contentStream = fileApi.readPiece({
+                const contentStream = fileApi.getFile({
                     cid: largePieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
@@ -126,7 +126,7 @@ describe('DDC APIs', () => {
                 expect(largePieceCid).toBeDefined();
 
                 const rangeSize = 10 * DDC_BLOCK_SIZE;
-                const contentStream = fileApi.readPiece({
+                const contentStream = fileApi.getFile({
                     cid: largePieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                     range: {
@@ -179,7 +179,7 @@ describe('DDC APIs', () => {
             test('Read full multipart piece', async () => {
                 expect(multipartPieceCid).toBeDefined();
 
-                const contentStream = fileApi.readPiece({
+                const contentStream = fileApi.getFile({
                     cid: multipartPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
@@ -193,7 +193,7 @@ describe('DDC APIs', () => {
                 expect(multipartPieceCid).toBeDefined();
 
                 const rangeSize = 10 * DDC_BLOCK_SIZE;
-                const contentStream = fileApi.readPiece({
+                const contentStream = fileApi.getFile({
                     cid: multipartPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type,
                     range: {
