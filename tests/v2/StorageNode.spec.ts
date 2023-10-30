@@ -15,9 +15,9 @@ describe('Storage Node', () => {
         const smallPieceData = new TextEncoder().encode(smallPieceJson);
 
         test('Store a piece', async () => {
-            const piece = new Piece(bucketId, smallPieceData);
+            const piece = new Piece(smallPieceData);
 
-            smallPieceCid = await storageNode.storePiece(piece);
+            smallPieceCid = await storageNode.storePiece(bucketId, piece);
 
             expect(smallPieceCid).toBeTruthy();
         });
@@ -67,22 +67,22 @@ describe('Storage Node', () => {
         beforeAll(async () => {
             rawPieceCids = await Promise.all(
                 rawPieceContents.map((content, index) => {
-                    const piece = new Piece(bucketId, content, {
+                    const piece = new Piece(content, {
                         multipartOffset: BigInt(index * partSize),
                     });
 
-                    return storageNode.storePiece(piece);
+                    return storageNode.storePiece(bucketId, piece);
                 }),
             );
         });
 
         test('Store a piece', async () => {
-            const multipartPiece = new MultipartPiece(bucketId, rawPieceCids, {
+            const multipartPiece = new MultipartPiece(rawPieceCids, {
                 partSize: BigInt(partSize),
                 totalSize: BigInt(totalSize),
             });
 
-            multipartPieceCid = await storageNode.storePiece(multipartPiece);
+            multipartPieceCid = await storageNode.storePiece(bucketId, multipartPiece);
 
             expect(multipartPieceCid).toBeTruthy();
         });
@@ -119,9 +119,9 @@ describe('Storage Node', () => {
         const nodeData = new TextEncoder().encode('Hello test DAG node');
 
         test('Store a node', async () => {
-            const node = new DagNode(bucketId, nodeData);
+            const node = new DagNode(nodeData);
 
-            nodeCid = await storageNode.storeDagNode(node);
+            nodeCid = await storageNode.storeDagNode(bucketId, node);
 
             expect(nodeCid).toBeTruthy();
         });

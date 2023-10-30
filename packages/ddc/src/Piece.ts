@@ -23,7 +23,7 @@ export class Piece {
     readonly size?: bigint;
     readonly content: PieceContent;
 
-    constructor(readonly bucketId: bigint, content: PieceContent | Uint8Array, readonly meta?: PieceMeta) {
+    constructor(content: PieceContent | Uint8Array, readonly meta?: PieceMeta) {
         this.content = content instanceof Uint8Array ? [content] : content; // TODO: find a better way to use direct Uint8Array input
         this.offset = meta?.multipartOffset;
         this.size = meta?.size;
@@ -37,14 +37,13 @@ export class Piece {
 export class MultipartPiece {
     readonly partHashes: Uint8Array[];
 
-    constructor(readonly bucketId: bigint, readonly parts: string[], readonly meta: MultipartPieceMeta) {
+    constructor(readonly parts: string[], readonly meta: MultipartPieceMeta) {
         this.partHashes = parts.map((part) => new Cid(part).contentHash);
     }
 }
 
 export class PieceResponse {
     constructor(
-        readonly bucketId: bigint,
         protected cidObject: Cid,
         readonly body: ReadableStream<Uint8Array>,
         protected meta?: PieceResponseMeta,

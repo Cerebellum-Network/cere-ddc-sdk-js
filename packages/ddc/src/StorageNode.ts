@@ -33,14 +33,14 @@ export class StorageNode {
         this.cnsApi = new CnsApi(transport);
     }
 
-    async storePiece(piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
+    async storePiece(bucketId: bigint, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
         if (piece instanceof MultipartPiece) {
-            return this.storeMultipartPiece(piece, options);
+            return this.storeMultipartPiece(bucketId, piece, options);
         }
 
         const cidBytes = await this.fileApi.putRawPiece(
             {
-                bucketId: piece.bucketId.toString(), // TODO: Inconsistent bucketId type,
+                bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type,
                 isMultipart: piece.isPart,
                 offset: piece.offset,
             },
@@ -50,15 +50,15 @@ export class StorageNode {
         const cid = new Cid(cidBytes).toString();
 
         if (options?.name) {
-            await this.assignName(piece.bucketId, cid, options.name);
+            await this.assignName(bucketId, cid, options.name);
         }
 
         return cid;
     }
 
-    private async storeMultipartPiece(piece: MultipartPiece, options?: PieceStoreOptions) {
+    private async storeMultipartPiece(bucketId: bigint, piece: MultipartPiece, options?: PieceStoreOptions) {
         const cid = await this.fileApi.putMultipartPiece({
-            bucketId: piece.bucketId.toString(), // TODO: Inconsistent bucketId type,
+            bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type,
             partHashes: piece.partHashes,
             partSize: piece.meta.partSize,
             totalSize: piece.meta.totalSize,
@@ -67,16 +67,16 @@ export class StorageNode {
         return new Cid(cid).toString();
     }
 
-    async storeDagNode(node: DagNode, options?: DagNodeStoreOptions) {
+    async storeDagNode(bucketId: bigint, node: DagNode, options?: DagNodeStoreOptions) {
         const cidBytes = await this.dagApi.putNode({
             node: node,
-            bucketId: Number(node.bucketId), // TODO: Inconsistent bucketId type
+            bucketId: Number(bucketId), // TODO: Inconsistent bucketId type
         });
 
         const cid = new Cid(cidBytes).toString();
 
         if (options?.name) {
-            await this.assignName(node.bucketId, cid, options.name);
+            await this.assignName(bucketId, cid, options.name);
         }
 
         return cid;
@@ -90,7 +90,7 @@ export class StorageNode {
             range: options?.range,
         });
 
-        return new PieceResponse(bucketId, cidObject, contentStream, {
+        return new PieceResponse(cidObject, contentStream, {
             range: options?.range,
         });
     }
@@ -102,7 +102,7 @@ export class StorageNode {
             bucketId: Number(bucketId), // TODO: Inconsistent bucketId type
         });
 
-        return node && new DagNodeResponse(bucketId, cidObject, new Uint8Array(node.data), node.links, node.tags);
+        return node && new DagNodeResponse(cidObject, new Uint8Array(node.data), node.links, node.tags);
     }
 
     async assignName(bucketId: bigint, cid: string, name: string) {
