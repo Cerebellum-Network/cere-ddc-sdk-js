@@ -1,4 +1,5 @@
 import * as dag from './DagApi';
+import {Cid} from './Cid';
 
 export class Link implements dag.Link {
     constructor(public cid: string, public size: bigint, public name = '') {}
@@ -15,11 +16,15 @@ export class DagNode implements dag.Node {
 export class DagNodeResponse extends DagNode {
     constructor(
         readonly bucketId: bigint,
-        readonly cid: string,
+        protected cidObject: Cid,
         readonly data: Uint8Array,
         readonly links: Link[] = [],
         readonly tags: Tag[] = [],
     ) {
         super(bucketId, data, links, tags);
+    }
+
+    get cid() {
+        return this.cidObject.toString();
     }
 }

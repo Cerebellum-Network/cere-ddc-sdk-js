@@ -1,9 +1,9 @@
+import {Cid} from './Cid';
 import {CnsApi} from './CnsApi';
 import {DagApi} from './DagApi';
 import {FileApi, ReadFileRange} from './FileApi';
 import {RpcTransport} from './RpcTransport';
 import {MultipartPiece, Piece, PieceResponse} from './Piece';
-
 import {DagNode, DagNodeResponse} from './DagNode';
 
 export type StorageNodeConfig = {
@@ -38,7 +38,7 @@ export class StorageNode {
             return this.storeMultipartPiece(piece, options);
         }
 
-        const cid = await this.fileApi.putRawPiece(
+        const cidBytes = await this.fileApi.putRawPiece(
             {
                 bucketId: piece.bucketId.toString(), // TODO: Inconsistent bucketId type,
                 isMultipart: piece.isPart,
@@ -47,30 +47,33 @@ export class StorageNode {
             piece.content,
         );
 
+        const cid = new Cid(cidBytes).toString();
+
         if (options?.name) {
-            /**
-             * TODO: Not yet implemented API. Inconsistent CID type - figure out how to convert u8a CID to string and back
-             */
-            await this.assignName(piece.bucketId, cid.toString(), options.name);
+            await this.assignName(piece.bucketId, cid, options.name);
         }
 
         return cid;
     }
 
     private async storeMultipartPiece(piece: MultipartPiece, options?: PieceStoreOptions) {
-        return this.fileApi.putMultipartPiece({
+        const cid = await this.fileApi.putMultipartPiece({
             bucketId: piece.bucketId.toString(), // TODO: Inconsistent bucketId type,
             partHashes: piece.partHashes,
             partSize: piece.meta.partSize,
             totalSize: piece.meta.totalSize,
         });
+
+        return new Cid(cid).toString();
     }
 
     async storeDagNode(node: DagNode, options?: DagNodeStoreOptions) {
-        const cid = await this.dagApi.putNode({
+        const cidBytes = await this.dagApi.putNode({
             node: node,
             bucketId: Number(node.bucketId), // TODO: Inconsistent bucketId type
         });
+
+        const cid = new Cid(cidBytes).toString();
 
         if (options?.name) {
             await this.assignName(node.bucketId, cid, options.name);
@@ -79,25 +82,27 @@ export class StorageNode {
         return cid;
     }
 
-    async readPiece(bucketId: bigint, cid: Uint8Array, options?: PieceReadOptions) {
+    async readPiece(bucketId: bigint, cid: string, options?: PieceReadOptions) {
+        const cidObject = new Cid(cid);
         const contentStream = this.fileApi.getFile({
-            cid, // TODO: Figure out how to use string CIDs
+            cid: cidObject.toBytes(),
             bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
             range: options?.range,
         });
 
-        return new PieceResponse(bucketId, cid, contentStream, {
+        return new PieceResponse(bucketId, cidObject, contentStream, {
             range: options?.range,
         });
     }
 
     async getDagNode(bucketId: bigint, cid: string) {
+        const cidObject = new Cid(cid);
         const node = await this.dagApi.getNode({
-            cid,
+            cid: cidObject.toString(),
             bucketId: Number(bucketId), // TODO: Inconsistent bucketId type
         });
 
-        return node && new DagNodeResponse(bucketId, cid, new Uint8Array(node.data), node.links, node.tags);
+        return node && new DagNodeResponse(bucketId, cidObject, new Uint8Array(node.data), node.links, node.tags);
     }
 
     async assignName(bucketId: bigint, cid: string, name: string) {
@@ -108,7 +113,7 @@ export class StorageNode {
         });
     }
 
-    async getCidByName(bucketId: bigint, cid: string, name: string) {
+    async getCidByName(bucketId: bigint, name: string) {
         return this.cnsApi.getCid({
             name,
             bucketId: Number(bucketId), // TODO: Inconsistent bucketId type

@@ -9,7 +9,7 @@ describe('Storage Node', () => {
     });
 
     describe('Raw piece', () => {
-        let smallPieceCid: Uint8Array;
+        let smallPieceCid: string;
         const smallPieceText = 'Hello small piece';
         const smallPieceJson = JSON.stringify(smallPieceText);
         const smallPieceData = new TextEncoder().encode(smallPieceJson);
@@ -53,8 +53,8 @@ describe('Storage Node', () => {
     });
 
     describe('Multipart piece', () => {
-        let multipartPieceCid: Uint8Array;
-        let rawPieceCids: Uint8Array[];
+        let multipartPieceCid: string;
+        let rawPieceCids: string[];
         const partSize = 4 * MB;
         const rawPieceContents = [
             createDataStream(partSize, MB),
