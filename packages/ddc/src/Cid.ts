@@ -8,7 +8,7 @@ export class Cid {
     }
 
     toString() {
-        return typeof this.cid === 'string' ? this.cid : base32.stringify(this.cid);
+        return typeof this.cid === 'string' ? this.cid : base32.stringify(this.cid, {pad: false});
     }
 
     toBytes() {

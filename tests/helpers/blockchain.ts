@@ -3,9 +3,9 @@ import {DecodedEvent} from '@polkadot/api-contract/types';
 import {AddressOrPair, SubmittableExtrinsic, SubmittableResultValue} from '@polkadot/api/types';
 import {mnemonicGenerate} from '@polkadot/util-crypto';
 import {Keyring} from '@polkadot/keyring';
-import {DEVNET, SmartContractOptions} from '@cere-ddc-sdk/ddc-client';
 
 import types from '../fixtures/blockchain/types.json';
+import contractAbi from '../fixtures/contract/metadata.json';
 import {ROOT_USER_SEED} from './constants';
 
 type TxResult = SubmittableResultValue & {
@@ -55,8 +55,8 @@ export const transferCere = async (api: ApiPromise, to: string, tokens: number) 
     return signAndSend(transfer, getAccount('//Alice'));
 };
 
-export const getContractOptions = (): SmartContractOptions => ({
-    ...DEVNET,
+export const getContractOptions = () => ({
+    abi: contractAbi,
     contractAddress: global.DDC_CONTRACT_ADDRESS,
     rpcUrl: global.DDC_API_URL,
 });

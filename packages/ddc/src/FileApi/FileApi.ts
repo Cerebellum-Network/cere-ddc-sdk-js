@@ -47,8 +47,9 @@ export class FileApi {
         });
 
         const contentStream = createStream(content);
-
+        console.log('Piece stream', contentStream);
         for await (const data of contentStream) {
+            console.log('Data', data.byteLength);
             await requests.send({
                 body: {
                     oneofKind: 'content',
@@ -57,8 +58,12 @@ export class FileApi {
             });
         }
 
+        console.log('Before complete');
+
         await requests.complete();
         const {cid} = await response;
+
+        console.log('Complete');
 
         return cid;
     }
