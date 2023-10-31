@@ -46,8 +46,12 @@ export class DDCClustersPallet {
         return this.apiPromise.tx.ddcClusters.addNode(clusterId, {CDNPubKey: cdnNodePublicKey}) as Sendable;
     }
 
-    removeNodeFromCluster(clusterId: ClusterId, nodePublicKey: string) {
-        return this.apiPromise.tx.ddcClusters.removeNode(clusterId, nodePublicKey) as Sendable;
+    removeCdnNodeFromCluster(clusterId: ClusterId, cdnNodePublicKey: CdnNodePublicKey) {
+        return this.apiPromise.tx.ddcClusters.removeNode(clusterId, {CDNPubKey: cdnNodePublicKey}) as Sendable;
+    }
+
+    removeStorageNodeFromCluster(clusterId: ClusterId, storageNodePublicKey: StorageNodePublicKey) {
+        return this.apiPromise.tx.ddcClusters.removeNode(clusterId, {StoragePubKey: storageNodePublicKey}) as Sendable;
     }
 }
 
