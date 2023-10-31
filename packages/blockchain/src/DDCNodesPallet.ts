@@ -1,6 +1,7 @@
 import {ApiPromise} from '@polkadot/api';
 import {Sendable} from './Blockchain';
-import {PalletDdcNodesCdnNode, PalletDdcNodesStorageNode} from '@polkadot/types/lookup';
+import {ClusterId} from './DDCClustersPallet';
+import {AccountId} from './DDCCustomersPallet';
 
 export class DDCNodesPallet {
     constructor(private apiPromise: ApiPromise) {}
@@ -12,9 +13,9 @@ export class DDCNodesPallet {
         ) as Sendable;
     }
 
-    async findCdnNodeByPublicKey(cdnNodePublicKey: CdnNodePublicKey): Promise<CdnNode | undefined> {
+    async findCdnNodeByPublicKey(cdnNodePublicKey: CdnNodePublicKey) {
         const result = await this.apiPromise.query.ddcNodes.cdnNodes(cdnNodePublicKey);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as CdnNode;
+        return result.unwrapOr(undefined)?.toHuman() as unknown as CdnNode | undefined;
     }
 
     setCdnNodeParams(cdnNodePublicKey: CdnNodePublicKey, cdnNodeParams: CdnNodeParams) {
@@ -35,9 +36,9 @@ export class DDCNodesPallet {
         ) as Sendable;
     }
 
-    async findStorageNodeByPublicKey(storageNodePublicKey: StorageNodePublicKey): Promise<StorageNode | undefined> {
+    async findStorageNodeByPublicKey(storageNodePublicKey: StorageNodePublicKey) {
         const result = await this.apiPromise.query.ddcNodes.storageNodes(storageNodePublicKey);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as StorageNode;
+        return result.unwrapOr(undefined)?.toJSON() as unknown as StorageNode | undefined;
     }
 
     setStorageNodeParams(storageNodePublicKey: StorageNodePublicKey, storageNodeParams: StorageNodeParams) {
@@ -58,5 +59,19 @@ export type StorageNodePublicKey = NodePublicKey;
 export type NodeParams = string;
 export type CdnNodeParams = NodeParams;
 export type StorageNodeParams = NodeParams;
-export type CdnNode = PalletDdcNodesCdnNode;
-export type StorageNode = PalletDdcNodesStorageNode;
+export type CdnNode = /*PalletDdcNodesCdnNode;*/ {
+    readonly pubKey: CdnNodePublicKey;
+    readonly providerId: AccountId;
+    readonly clusterId: ClusterId;
+    readonly props: {
+        readonly params: CdnNodeParams;
+    };
+};
+export type StorageNode = /*PalletDdcNodesStorageNode;*/ {
+    readonly pubKey: StorageNodePublicKey;
+    readonly providerId: AccountId;
+    readonly clusterId: ClusterId;
+    readonly props: {
+        params: StorageNodeParams;
+    };
+};

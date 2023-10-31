@@ -1,7 +1,7 @@
 import {ApiPromise} from '@polkadot/api';
 import {HexString, Sendable} from './Blockchain';
-import {PalletDdcClustersCluster} from '@polkadot/types/lookup';
 import {CdnNodePublicKey, NodePublicKey, StorageNodePublicKey} from './DDCNodesPallet';
+import {AccountId} from './DDCCustomersPallet';
 
 export class DDCClustersPallet {
     constructor(private apiPromise: ApiPromise) {}
@@ -9,7 +9,7 @@ export class DDCClustersPallet {
     async listClusters() {
         const entries = await this.apiPromise.query.ddcClusters.clusters.entries();
 
-        return entries.map(([keyValue, _]) => keyValue[1] as unknown as Cluster);
+        return entries.map(([_, clusterOption]) => clusterOption.unwrapOr(undefined)?.toJSON() as unknown as Cluster);
     }
 
     async listNodeKeys(clusterId: ClusterId) {
@@ -19,16 +19,20 @@ export class DDCClustersPallet {
             .map(([keyValue, _]) => keyValue[1] as unknown as NodePublicKey);
     }
 
-    clusterHasCdnNode(clusterId: ClusterId, cdnNodePublicKey: CdnNodePublicKey) {
-        return this.apiPromise.query.ddcClusters.clustersNodes(clusterId, {CDNPubKey: cdnNodePublicKey});
+    async clusterHasCdnNode(clusterId: ClusterId, cdnNodePublicKey: CdnNodePublicKey) {
+        const result = await this.apiPromise.query.ddcClusters.clustersNodes(clusterId, {CDNPubKey: cdnNodePublicKey});
+        return result.toJSON() as boolean;
     }
 
-    clusterHasStorageNode(clusterId: ClusterId, storageNodePublicKey: StorageNodePublicKey) {
-        return this.apiPromise.query.ddcClusters.clustersNodes(clusterId, {StoragePubKey: storageNodePublicKey});
+    async clusterHasStorageNode(clusterId: ClusterId, storageNodePublicKey: StorageNodePublicKey) {
+        const result = await this.apiPromise.query.ddcClusters.clustersNodes(clusterId, {
+            StoragePubKey: storageNodePublicKey,
+        });
+        return result.toJSON() as boolean;
     }
 
-    createCluster(clusterId: ClusterId, clusterParams: ClusterParams) {
-        return this.apiPromise.tx.ddcClusters.createCluster(clusterId, clusterParams) as Sendable;
+    createCluster(clusterId: ClusterId, clusterProps: ClusterProps) {
+        return this.apiPromise.tx.ddcClusters.createCluster(clusterId, clusterProps) as Sendable;
     }
 
     async findClusterById(clusterId: ClusterId) {
@@ -36,8 +40,8 @@ export class DDCClustersPallet {
         return result.unwrapOr(undefined)?.toJSON() as unknown as Cluster;
     }
 
-    setClusterParams(clusterId: ClusterId, clusterParams: ClusterParams) {
-        return this.apiPromise.tx.ddcClusters.setClusterParams(clusterId, clusterParams) as Sendable;
+    setClusterParams(clusterId: ClusterId, clusterProps: ClusterProps) {
+        return this.apiPromise.tx.ddcClusters.setClusterParams(clusterId, clusterProps) as Sendable;
     }
 
     addStorageNodeToCluster(clusterId: ClusterId, storageNodePublicKey: StorageNodePublicKey) {
@@ -58,8 +62,12 @@ export class DDCClustersPallet {
 }
 
 export type ClusterId = HexString;
-export type ClusterParams = {
+export type ClusterProps = {
     readonly params: string;
-    readonly nodeProviderAuthContract: string; //AccountId32;
+    readonly nodeProviderAuthContract: AccountId;
 };
-export type Cluster = PalletDdcClustersCluster;
+export type Cluster = /*PalletDdcClustersCluster;*/ {
+    readonly clusterId: ClusterId;
+    readonly managerId: AccountId;
+    readonly props: ClusterProps;
+};

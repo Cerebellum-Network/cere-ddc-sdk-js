@@ -6,16 +6,18 @@ import {DDCClustersPallet} from './DDCClustersPallet';
 import {AddressOrPair, Signer} from '@polkadot/api/types';
 import {SubmittableExtrinsic} from '@polkadot/api-base/types';
 import {DDCStakingPallet} from './DDCStakingPallet';
+import {DDCCustomersPallet} from './DDCCustomersPallet';
 
 export class Blockchain {
     public readonly ddcNodes: DDCNodesPallet;
     public readonly ddcClusters: DDCClustersPallet;
     public readonly ddcStaking: DDCStakingPallet;
-
+    public readonly ddcCustomers: DDCCustomersPallet;
     private constructor(private apiPromise: ApiPromise, private account: AddressOrPair, private signer?: Signer) {
         this.ddcNodes = new DDCNodesPallet(apiPromise);
         this.ddcClusters = new DDCClustersPallet(apiPromise);
         this.ddcStaking = new DDCStakingPallet(apiPromise);
+        this.ddcCustomers = new DDCCustomersPallet(apiPromise);
     }
 
     send(sendable: Sendable) {

@@ -1,31 +1,36 @@
-import { ApiPromise } from "@polkadot/api";
+import {ApiPromise} from '@polkadot/api';
 import {Sendable} from './Blockchain';
 import {NodePublicKey} from './DDCNodesPallet';
+import {ClusterId} from './DDCClustersPallet';
+import {AccountId} from './DDCCustomersPallet';
 
 export class DDCStakingPallet {
     constructor(private apiPromise: ApiPromise) {}
 
-    bond(controller: string, nodePublicKey: NodePublicKey, bondAmount: number) {
-        return this.apiPromise.tx.ddcStaking.bond(controller, nodePublicKey, bondAmount) as Sendable
+    bond(controller: string, nodePublicKey: NodePublicKey, bondAmount: bigint) {
+        return this.apiPromise.tx.ddcStaking.bond(controller, nodePublicKey, bondAmount) as Sendable;
     }
 
     unbond(value: number) {
-        return this.apiPromise.tx.ddcStaking.unbond(value) as Sendable
+        return this.apiPromise.tx.ddcStaking.unbond(value) as Sendable;
     }
 
-    findStorageNodeStake (storageNodePublicKey: string) {
-        return this.apiPromise.query.ddcStaking.storages(storageNodePublicKey)
+    async findStorageNodeStake(storageNodePublicKey: string) {
+        const result = await this.apiPromise.query.ddcStaking.storages(storageNodePublicKey);
+        return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterId;
     }
 
-    findCdnNodeStake (cdnNodePublicKey: string) {
-        return this.apiPromise.query.ddcStaking.edges(cdnNodePublicKey)
+    async findCdnNodeStake(cdnNodePublicKey: string) {
+        const result = await this.apiPromise.query.ddcStaking.edges(cdnNodePublicKey);
+        return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterId;
     }
 
-    setController (nodePublicKey: NodePublicKey) {
-        return this.apiPromise.tx.ddcStaking.setController(nodePublicKey) as Sendable
+    setController(nodePublicKey: NodePublicKey) {
+        return this.apiPromise.tx.ddcStaking.setController(nodePublicKey) as Sendable;
     }
 
-    listClusterManagers () {
-        return this.apiPromise.query.ddcStaking.clusterManagers()
+    async listClusterManagers() {
+        const result = await this.apiPromise.query.ddcStaking.clusterManagers();
+        return result.toJSON() as unknown as AccountId[];
     }
 }
