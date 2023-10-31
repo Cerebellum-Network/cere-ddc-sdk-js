@@ -6,8 +6,10 @@ import {CdnNodePublicKey, NodePublicKey, StorageNodePublicKey} from './DDCNodesP
 export class DDCClustersPallet {
     constructor(private apiPromise: ApiPromise) {}
 
-    listClusters() {
-        return this.apiPromise.query.ddcClusters.clusters.entries();
+    async listClusters() {
+        const entries = await this.apiPromise.query.ddcClusters.clusters.entries();
+
+        return entries.map(([keyValue, _]) => keyValue[1] as unknown as Cluster);
     }
 
     async listNodeKeys(clusterId: ClusterId) {
