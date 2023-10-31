@@ -8,12 +8,23 @@ describe('Files', () => {
     const fileStorage = new FileStorage(storageNode);
 
     describe('Small file', () => {
-        const fileStream = createDataStream(2 * MB, KB);
+        let fileCid: string;
+        const fileSize = 4 * MB;
+        const fileStream = createDataStream(fileSize, 64 * KB);
 
-        test('Store file', async () => {
+        test('Store a file', async () => {
             const file = new File(fileStream);
 
-            await fileStorage.store(bucketId, file);
+            fileCid = await fileStorage.store(bucketId, file);
+
+            expect(fileCid).toEqual(expect.any(String));
+        });
+
+        test('Read the file', async () => {
+            const file = await fileStorage.read(bucketId, fileCid);
+            const buffer = await file.arrayBuffer();
+
+            expect(buffer.byteLength).toEqual(fileSize);
         });
     });
 });

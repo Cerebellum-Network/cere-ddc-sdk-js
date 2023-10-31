@@ -12,6 +12,6 @@ export class Cid {
     }
 
     toBytes() {
-        return typeof this.cid === 'string' ? base32.parse(this.cid) : this.cid;
+        return typeof this.cid === 'string' ? base32.parse(this.cid, {loose: true}) : this.cid;
     }
 }

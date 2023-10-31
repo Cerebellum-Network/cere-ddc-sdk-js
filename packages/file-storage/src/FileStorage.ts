@@ -1,6 +1,6 @@
-import {StorageNode, MAX_PIECE_SIZE} from '@cere-ddc-sdk/ddc';
+import {StorageNode, MAX_PIECE_SIZE, MultipartPiece} from '@cere-ddc-sdk/ddc';
 
-import {File} from './File';
+import {File, FileResponse} from './File';
 import {FilePart} from './FilePart';
 
 export type FileStorageConfig = {};
@@ -13,17 +13,19 @@ export class FileStorage {
     async store(bucketId: bigint, file: File, options?: FileStoreOptions) {
         const cids: Promise<string>[] = [];
 
+        let totalSize = 0n;
         let currentPart: FilePart | undefined;
         for await (const chunk of file.body) {
             if (!currentPart) {
-                currentPart = new FilePart();
+                currentPart = new FilePart({
+                    multipartOffset: totalSize,
+                });
 
                 cids.push(this.storageNode.storePiece(bucketId, currentPart));
             }
 
-            if (MAX_PIECE_SIZE - currentPart.size) {
-                await currentPart.writer.write(chunk.slice(0, MAX_PIECE_SIZE - currentPart.size));
-            }
+            totalSize += BigInt(chunk.byteLength);
+            await currentPart.writer.write(chunk);
 
             if (currentPart.size === MAX_PIECE_SIZE) {
                 await currentPart.writer.close();
@@ -33,9 +35,20 @@ export class FileStorage {
         }
 
         await currentPart?.writer.close();
+        const parts = await Promise.all(cids);
 
-        console.log(await Promise.all(cids));
+        return this.storageNode.storePiece(
+            bucketId,
+            new MultipartPiece(parts, {
+                totalSize,
+                partSize: BigInt(MAX_PIECE_SIZE),
+            }),
+        );
     }
 
-    async read(bucketId: bigint, cid: string, options?: FileReadOptions) {}
+    async read(bucketId: bigint, cid: string, options?: FileReadOptions) {
+        const piece = await this.storageNode.readPiece(bucketId, cid);
+
+        return new FileResponse(piece.cid, piece.body);
+    }
 }

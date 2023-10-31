@@ -90,19 +90,18 @@ export class StorageNode {
             range: options?.range,
         });
 
-        return new PieceResponse(cidObject, contentStream, {
+        return new PieceResponse(cid, contentStream, {
             range: options?.range,
         });
     }
 
     async getDagNode(bucketId: bigint, cid: string) {
-        const cidObject = new Cid(cid);
         const node = await this.dagApi.getNode({
-            cid: cidObject.toString(),
+            cid,
             bucketId: Number(bucketId), // TODO: Inconsistent bucketId type
         });
 
-        return node && new DagNodeResponse(cidObject, new Uint8Array(node.data), node.links, node.tags);
+        return node && new DagNodeResponse(cid, new Uint8Array(node.data), node.links, node.tags);
     }
 
     async assignName(bucketId: bigint, cid: string, name: string) {
