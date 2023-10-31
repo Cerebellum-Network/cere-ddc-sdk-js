@@ -36,7 +36,8 @@ message PutResponse {
 message GetRequest {
   uint32 BucketId = 1;
   string Cid = 2;
-  string Path = 3;
+
+  optional string Path = 3;
 }
 
 message GetResponse {

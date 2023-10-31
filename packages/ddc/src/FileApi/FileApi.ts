@@ -4,8 +4,7 @@ import {PutMultiPartPieceRequest, GetFileRequest, PutRawPieceRequest_Metadata} f
 import {FileApiClient} from '../grpc/file_api.client';
 import {Content, createStream} from './streams';
 
-export type StoreFileOptions = {};
-export type ReadFileOptions = {};
+export type ReadFileRange = GetFileRequest['range'];
 
 function ceilToPowerOf2(n: bigint) {
     if (n <= 1n) {
@@ -28,7 +27,7 @@ export class FileApi {
         this.api = new FileApiClient(transport);
     }
 
-    async storeMultipartPiece(request: PutMultiPartPieceRequest) {
+    async putMultipartPiece(request: PutMultiPartPieceRequest) {
         const {response} = await this.api.putMultipartPiece({
             ...request,
             partSize: ceilToPowerOf2(request.partSize),
@@ -37,7 +36,7 @@ export class FileApi {
         return response.cid;
     }
 
-    async storeRawPiece(metadata: PutRawPieceRequest_Metadata, content: Content) {
+    async putRawPiece(metadata: PutRawPieceRequest_Metadata, content: Content) {
         const {requests, response} = this.api.putRawPiece();
 
         await requests.send({
@@ -64,7 +63,7 @@ export class FileApi {
         return cid;
     }
 
-    read(request: GetFileRequest) {
+    getFile(request: GetFileRequest) {
         const {responses} = this.api.getFile(request);
 
         async function* toDataStream() {

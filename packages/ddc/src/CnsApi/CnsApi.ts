@@ -10,7 +10,7 @@ export class CnsApi {
         this.api = new CnsApiClient(transport);
     }
 
-    async createAlias(request: PutRequest) {
+    async assignName(request: PutRequest) {
         await this.api.put(request);
     }
 

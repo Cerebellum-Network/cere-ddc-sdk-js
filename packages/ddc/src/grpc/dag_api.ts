@@ -47,9 +47,9 @@ export interface GetRequest {
      */
     cid: string;
     /**
-     * @generated from protobuf field: string Path = 3 [json_name = "Path"];
+     * @generated from protobuf field: optional string Path = 3 [json_name = "Path"];
      */
-    path: string;
+    path?: string;
 }
 /**
  * @generated from protobuf message dag.GetResponse
@@ -220,11 +220,11 @@ class GetRequest$Type extends MessageType<GetRequest> {
         super("dag.GetRequest", [
             { no: 1, name: "BucketId", kind: "scalar", jsonName: "BucketId", T: 13 /*ScalarType.UINT32*/ },
             { no: 2, name: "Cid", kind: "scalar", jsonName: "Cid", T: 9 /*ScalarType.STRING*/ },
-            { no: 3, name: "Path", kind: "scalar", jsonName: "Path", T: 9 /*ScalarType.STRING*/ }
+            { no: 3, name: "Path", kind: "scalar", jsonName: "Path", opt: true, T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<GetRequest>): GetRequest {
-        const message = { bucketId: 0, cid: "", path: "" };
+        const message = { bucketId: 0, cid: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<GetRequest>(this, message, value);
@@ -241,7 +241,7 @@ class GetRequest$Type extends MessageType<GetRequest> {
                 case /* string Cid = 2 [json_name = "Cid"];*/ 2:
                     message.cid = reader.string();
                     break;
-                case /* string Path = 3 [json_name = "Path"];*/ 3:
+                case /* optional string Path = 3 [json_name = "Path"];*/ 3:
                     message.path = reader.string();
                     break;
                 default:
@@ -262,8 +262,8 @@ class GetRequest$Type extends MessageType<GetRequest> {
         /* string Cid = 2 [json_name = "Cid"]; */
         if (message.cid !== "")
             writer.tag(2, WireType.LengthDelimited).string(message.cid);
-        /* string Path = 3 [json_name = "Path"]; */
-        if (message.path !== "")
+        /* optional string Path = 3 [json_name = "Path"]; */
+        if (message.path !== undefined)
             writer.tag(3, WireType.LengthDelimited).string(message.path);
         let u = options.writeUnknownFields;
         if (u !== false)

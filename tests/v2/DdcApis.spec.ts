@@ -1,17 +1,17 @@
 import {randomBytes} from 'crypto';
-import {StorageNode, PieceContent} from '@cere-ddc-sdk/storage';
+import {PieceContent, RpcTransport, DagApi, FileApi, CnsApi} from '@cere-ddc-sdk/ddc';
 
-import {createDataStream, streamToU8a} from '../../tests/helpers';
+import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE} from '../../tests/helpers';
 
-const MB = 1024 * 1024;
-const DDC_BLOCK_SIZE = 16 * 1024;
-
-describe('Storage', () => {
+describe('DDC APIs', () => {
     const bucketId = 0;
-    const storageNode = new StorageNode('localhost:9091');
+    const transport = new RpcTransport('localhost:9091');
+    const dagApi = new DagApi(transport);
+    const fileApi = new FileApi(transport);
+    const cnsApi = new CnsApi(transport);
 
     const storeRawPiece = async (chunks: PieceContent, mutipartOffset?: bigint) => {
-        return storageNode.fileApi.storeRawPiece(
+        return fileApi.putRawPiece(
             {
                 bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 isMultipart: mutipartOffset !== undefined,
@@ -26,7 +26,7 @@ describe('Storage', () => {
         const nodeData = randomBytes(10);
 
         test('Create node', async () => {
-            nodeCid = await storageNode.dagApi.store({
+            nodeCid = await dagApi.putNode({
                 bucketId,
                 node: {
                     data: nodeData,
@@ -41,7 +41,7 @@ describe('Storage', () => {
         test('Read node', async () => {
             expect(nodeCid).toBeDefined();
 
-            const node = await storageNode.dagApi.read({
+            const node = await dagApi.getNode({
                 cid: nodeCid,
                 bucketId,
                 path: '',
@@ -56,7 +56,7 @@ describe('Storage', () => {
         const testCid = 'test-cid';
 
         test('Create alias', async () => {
-            await storageNode.cnsApi.createAlias({
+            await cnsApi.assignName({
                 bucketId,
                 cid: testCid,
                 name: alias,
@@ -64,7 +64,7 @@ describe('Storage', () => {
         });
 
         test('Get CID by alias', async () => {
-            const cid = await storageNode.cnsApi.getCid({
+            const cid = await cnsApi.getCid({
                 bucketId,
                 name: alias,
             });
@@ -92,7 +92,7 @@ describe('Storage', () => {
             test('Read small piece', async () => {
                 expect(smallPieceCid).toBeDefined();
 
-                const contentStream = storageNode.fileApi.read({
+                const contentStream = fileApi.getFile({
                     cid: smallPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
@@ -112,7 +112,7 @@ describe('Storage', () => {
             test('Read large (chunked) piece', async () => {
                 expect(largePieceCid).toBeDefined();
 
-                const contentStream = storageNode.fileApi.read({
+                const contentStream = fileApi.getFile({
                     cid: largePieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
@@ -125,13 +125,13 @@ describe('Storage', () => {
             test('Read a range of large (chunked) piece', async () => {
                 expect(largePieceCid).toBeDefined();
 
-                const rangeSize = BigInt(10 * DDC_BLOCK_SIZE);
-                const contentStream = storageNode.fileApi.read({
+                const rangeSize = 10 * DDC_BLOCK_SIZE;
+                const contentStream = fileApi.getFile({
                     cid: largePieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                     range: {
                         start: 0n,
-                        end: rangeSize,
+                        end: BigInt(rangeSize - 1),
                     },
                 });
 
@@ -160,16 +160,14 @@ describe('Storage', () => {
             });
 
             test('Store multipart piece', async () => {
-                console.log('Store multipart params', {
-                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
-                    partHashes: rawPieceCids,
-                    partSize: BigInt(partSize),
-                    totalSize: BigInt(totalSize),
-                });
+                /**
+                 * Get content hashes from  raw pieces
+                 */
+                const partHashes = rawPieceCids.map((cid) => cid.slice(-32));
 
-                multipartPieceCid = await storageNode.fileApi.storeMultipartPiece({
+                multipartPieceCid = await fileApi.putMultipartPiece({
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
-                    partHashes: rawPieceCids,
+                    partHashes,
                     partSize: BigInt(partSize),
                     totalSize: BigInt(totalSize),
                 });
@@ -181,7 +179,7 @@ describe('Storage', () => {
             test('Read full multipart piece', async () => {
                 expect(multipartPieceCid).toBeDefined();
 
-                const contentStream = storageNode.fileApi.read({
+                const contentStream = fileApi.getFile({
                     cid: multipartPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
@@ -194,13 +192,13 @@ describe('Storage', () => {
             test('Read a range of multipart piece', async () => {
                 expect(multipartPieceCid).toBeDefined();
 
-                const rangeSize = BigInt(10 * DDC_BLOCK_SIZE);
-                const contentStream = storageNode.fileApi.read({
+                const rangeSize = 10 * DDC_BLOCK_SIZE;
+                const contentStream = fileApi.getFile({
                     cid: multipartPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type,
                     range: {
                         start: 0n,
-                        end: rangeSize,
+                        end: BigInt(rangeSize - 1),
                     },
                 });
 

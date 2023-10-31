@@ -10,13 +10,13 @@ export class DagApi {
         this.api = new DagApiClient(transport);
     }
 
-    async store(request: PutRequest) {
+    async putNode(request: PutRequest) {
         const {response} = await this.api.put(request);
 
         return response.cid;
     }
 
-    async read(request: GetRequest) {
+    async getNode(request: GetRequest) {
         const {response} = await this.api.get(request);
 
         return response.node;

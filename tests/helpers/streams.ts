@@ -1,5 +1,5 @@
 import {randomBytes} from 'crypto';
-import {u8aConcat} from '@polkadot/util';
+import {arrayBuffer} from 'stream/consumers';
 import {ReadableStream} from 'stream/web';
 
 export const createDataStream = (contentSize: number, chunkSize: number) => {
@@ -19,10 +19,5 @@ export const createDataStream = (contentSize: number, chunkSize: number) => {
 };
 
 export const streamToU8a = async (stream: ReadableStream<Uint8Array>) => {
-    let content = new Uint8Array([]);
-    for await (const chunk of stream) {
-        content = u8aConcat(content, chunk);
-    }
-
-    return content;
+    return new Uint8Array(await arrayBuffer(stream[Symbol.asyncIterator]()));
 };
