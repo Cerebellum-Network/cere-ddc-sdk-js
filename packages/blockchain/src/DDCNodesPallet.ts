@@ -1,7 +1,8 @@
 import {ApiPromise} from '@polkadot/api';
-import {Sendable} from './Blockchain';
+import {HexString, Sendable} from './Blockchain';
 import {ClusterId} from './DDCClustersPallet';
 import {AccountId} from './DDCCustomersPallet';
+import {hexDecode, hexEncode} from './string-utils';
 
 export class DDCNodesPallet {
     constructor(private apiPromise: ApiPromise) {}
@@ -32,19 +33,23 @@ export class DDCNodesPallet {
     createStorageNode(storageNodePublicKey: StorageNodeParams, storageNodeParams: StorageNodeParams) {
         return this.apiPromise.tx.ddcNodes.createNode(
             {StoragePubKey: storageNodePublicKey},
-            {StorageParams: {params: storageNodeParams}},
+            {StorageParams: {params: serializeStorageNodeParams(storageNodeParams)}},
         ) as Sendable;
     }
 
     async findStorageNodeByPublicKey(storageNodePublicKey: StorageNodePublicKey) {
         const result = await this.apiPromise.query.ddcNodes.storageNodes(storageNodePublicKey);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as StorageNode | undefined;
+        const storageNode = result.unwrapOr(undefined)?.toJSON() as unknown as StorageNode | undefined;
+        if (storageNode) {
+            storageNode.props.params = deserializeStorageNodeParams(storageNode.props.params as unknown as HexString);
+        }
+        return storageNode;
     }
 
     setStorageNodeParams(storageNodePublicKey: StorageNodePublicKey, storageNodeParams: StorageNodeParams) {
         return this.apiPromise.tx.ddcNodes.setNodeParams(
             {StoragePubKey: storageNodePublicKey},
-            {StorageParams: {params: storageNodeParams}},
+            {StorageParams: {params: serializeStorageNodeParams(storageNodeParams)}},
         ) as Sendable;
     }
 
@@ -53,12 +58,20 @@ export class DDCNodesPallet {
     }
 }
 
+function serializeStorageNodeParams(params: StorageNodeParams) {
+    return hexEncode(JSON.stringify(params));
+}
+
+function deserializeStorageNodeParams(params: HexString) {
+    return JSON.parse(hexDecode(params)) as StorageNodeParams;
+}
+
 export type NodePublicKey = string;
 export type CdnNodePublicKey = NodePublicKey;
 export type StorageNodePublicKey = NodePublicKey;
 export type NodeParams = string;
 export type CdnNodeParams = NodeParams;
-export type StorageNodeParams = NodeParams;
+export type StorageNodeParams = {grpcUrl: string};
 export type CdnNode = /*PalletDdcNodesCdnNode;*/ {
     readonly pubKey: CdnNodePublicKey;
     readonly providerId: AccountId;

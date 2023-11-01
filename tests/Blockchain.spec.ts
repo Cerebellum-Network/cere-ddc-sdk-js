@@ -91,7 +91,9 @@ describe('packages/blockchain', () => {
     });
 
     test('Should create a Storage Node and find it by public key', async () => {
-        await blockchain.send(blockchain.ddcNodes.createStorageNode(storageNode2Key, ''));
+        await blockchain.send(
+            blockchain.ddcNodes.createStorageNode(storageNode2Key, {grpcUrl: 'ddc-storage-node-2:9090'}),
+        );
 
         const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode2Key);
 
@@ -100,13 +102,13 @@ describe('packages/blockchain', () => {
     });
 
     test('Should set Storage node params', async () => {
-        const storageNodeParams = '0x00000000';
+        const storageNodeParams = {grpcUrl: 'ddc-storage-node-2:8091'};
         await blockchain.send(blockchain.ddcNodes.setStorageNodeParams(storageNode2Key, storageNodeParams));
 
         const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode2Key);
 
         expect(storageNode).toBeDefined();
-        expect(storageNode?.props.params).toBe(storageNodeParams);
+        expect(storageNode?.props.params).toEqual(storageNodeParams);
     });
 
     test('Should create a cluster and find it by public key', async () => {
