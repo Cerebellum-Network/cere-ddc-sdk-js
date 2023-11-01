@@ -56,7 +56,7 @@ export class FileStorage {
     }
 
     async store(bucketId: bigint, file: File, options?: FileStoreOptions) {
-        if (file.size && file.size > MAX_PIECE_SIZE) {
+        if (file.size > MAX_PIECE_SIZE) {
             return this.storeLarge(bucketId, file, options);
         }
 
