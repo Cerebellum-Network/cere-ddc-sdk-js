@@ -11,6 +11,10 @@ export class File {
     constructor(readonly content: FileContent, readonly meta?: FileMeta) {
         this.body = createContentStream(content);
     }
+
+    get size() {
+        return this.meta?.size;
+    }
 }
 
 export class FileResponse extends PieceResponse {}
