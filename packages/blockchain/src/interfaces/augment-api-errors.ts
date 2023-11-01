@@ -403,13 +403,34 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongProposalWeight: AugmentedError<ApiType>;
     };
-    ddcAccounts: {
+    ddcClusters: {
+      AttemptToAddNonExistentNode: AugmentedError<ApiType>;
+      AttemptToRemoveNonExistentNode: AugmentedError<ApiType>;
       /**
-       * Stash is already bonded.
+       * Cluster candidate should not plan to chill.
        **/
-      AlreadyBonded: AugmentedError<ApiType>;
+      ChillingProhibited: AugmentedError<ApiType>;
+      ClusterAlreadyExists: AugmentedError<ApiType>;
+      ClusterDoesNotExist: AugmentedError<ApiType>;
+      ClusterParamsExceedsLimit: AugmentedError<ApiType>;
       /**
-       * Controller is already paired.
+       * Conditions for fast chill are not met, try the regular `chill` from
+       * `pallet-ddc-staking`.
+       **/
+      FastChillProhibited: AugmentedError<ApiType>;
+      NodeIsAlreadyAssigned: AugmentedError<ApiType>;
+      NodeIsNotAssigned: AugmentedError<ApiType>;
+      NoStake: AugmentedError<ApiType>;
+      NotAuthorized: AugmentedError<ApiType>;
+      /**
+       * Origin of the call is not a controller of the stake associated with the provided node.
+       **/
+      NotNodeController: AugmentedError<ApiType>;
+      OnlyClusterManager: AugmentedError<ApiType>;
+    };
+    ddcCustomers: {
+      /**
+       * Owner is already paired with structure representing account.
        **/
       AlreadyPaired: AugmentedError<ApiType>;
       /**
@@ -421,6 +442,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       BucketDoesNotExist: AugmentedError<ApiType>;
       /**
+       * DDC Cluster with provided id doesn't exist
+       **/
+      ClusterDoesNotExist: AugmentedError<ApiType>;
+      /**
        * Current era not set during runtime
        **/
       DDCEraNotSet: AugmentedError<ApiType>;
@@ -429,29 +454,21 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InsufficientDeposit: AugmentedError<ApiType>;
       /**
+       * Bucket with speicifed id doesn't exist.
+       **/
+      NoBucketWithId: AugmentedError<ApiType>;
+      /**
        * Can not schedule more unlock chunks.
        **/
       NoMoreChunks: AugmentedError<ApiType>;
       /**
-       * Not a controller account.
+       * Not an owner of bucket
        **/
-      NotController: AugmentedError<ApiType>;
+      NotBucketOwner: AugmentedError<ApiType>;
       /**
-       * Not a stash account.
+       * Not a owner account.
        **/
-      NotStash: AugmentedError<ApiType>;
-    };
-    ddcClusters: {
-      AttemptToAddNonExistentNode: AugmentedError<ApiType>;
-      AttemptToRemoveNonExistentNode: AugmentedError<ApiType>;
-      ClusterAlreadyExists: AugmentedError<ApiType>;
-      ClusterDoesNotExist: AugmentedError<ApiType>;
-      ClusterParamsExceedsLimit: AugmentedError<ApiType>;
-      NodeIsAlreadyAssigned: AugmentedError<ApiType>;
-      NodeIsNotAssigned: AugmentedError<ApiType>;
-      NoStake: AugmentedError<ApiType>;
-      NotAuthorized: AugmentedError<ApiType>;
-      OnlyClusterManager: AugmentedError<ApiType>;
+      NotOwner: AugmentedError<ApiType>;
     };
     ddcNodes: {
       InvalidNodeParams: AugmentedError<ApiType>;

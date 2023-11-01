@@ -1261,12 +1261,12 @@ export default {
     failureRate: 'u64'
   },
   /**
-   * Lookup114: pallet_ddc_accounts::pallet::Event<T>
+   * Lookup114: pallet_ddc_customers::pallet::Event<T>
    **/
-  PalletDdcAccountsEvent: {
+  PalletDdcCustomersEvent: {
     _enum: {
       Deposited: '(AccountId32,u128)',
-      Unbonded: '(AccountId32,u128)',
+      InitiatDepositUnlock: '(AccountId32,u128)',
       Withdrawn: '(AccountId32,u128)',
       Charged: 'u128'
     }
@@ -3041,7 +3041,7 @@ export default {
         stakersPoints: 'Vec<(AccountId32,u64)>',
       },
       charge_payments_content_owners: {
-        payingAccounts: 'Vec<PalletDdcAccountsBucketsDetails>',
+        payingAccounts: 'Vec<PalletDdcCustomersBucketsDetails>',
       },
       set_validator_key: {
         ddcValidatorPub: 'AccountId32'
@@ -3049,32 +3049,35 @@ export default {
     }
   },
   /**
-   * Lookup335: pallet_ddc_accounts::BucketsDetails<Balance>
+   * Lookup335: pallet_ddc_customers::BucketsDetails<Balance>
    **/
-  PalletDdcAccountsBucketsDetails: {
+  PalletDdcCustomersBucketsDetails: {
     bucketId: 'u128',
     amount: 'u128'
   },
   /**
-   * Lookup336: pallet_ddc_accounts::pallet::Call<T>
+   * Lookup336: pallet_ddc_customers::pallet::Call<T>
    **/
-  PalletDdcAccountsCall: {
+  PalletDdcCustomersCall: {
     _enum: {
       create_bucket: {
         publicAvailability: 'bool',
         resourcesReserved: 'u128',
       },
+      allocate_bucket_to_cluster: {
+        bucketId: 'u128',
+        clusterId: 'H160',
+      },
       deposit: {
-        controller: 'MultiAddress',
         value: 'Compact<u128>',
       },
       deposit_extra: {
         maxAdditional: 'Compact<u128>',
       },
-      unbond: {
+      unlock_deposit: {
         value: 'Compact<u128>',
       },
-      withdraw_unbonded: 'Null'
+      withdraw_unlocked_deposit: 'Null'
     }
   },
   /**
@@ -3135,7 +3138,10 @@ export default {
       },
       set_cluster_params: {
         clusterId: 'H160',
-        clusterParams: 'PalletDdcClustersClusterClusterParams'
+        clusterParams: 'PalletDdcClustersClusterClusterParams',
+      },
+      fast_chill: {
+        node: 'DdcPrimitivesNodePubKey'
       }
     }
   },
@@ -4287,38 +4293,39 @@ export default {
     _enum: ['NotController', 'NotValidatorStash', 'DDCValidatorKeyNotRegistered', 'ContentOwnersDoubleSpend', 'ValidationDecisionAlreadySet', 'NodeNotActive', 'PricingNotSet', 'DDCEraNotSet']
   },
   /**
-   * Lookup582: pallet_ddc_accounts::AccountsLedger<sp_core::crypto::AccountId32, Balance>
+   * Lookup582: pallet_ddc_customers::AccountsLedger<sp_core::crypto::AccountId32, Balance>
    **/
-  PalletDdcAccountsAccountsLedger: {
-    stash: 'AccountId32',
+  PalletDdcCustomersAccountsLedger: {
+    owner: 'AccountId32',
     total: 'Compact<u128>',
     active: 'Compact<u128>',
-    unlocking: 'Vec<PalletDdcAccountsUnlockChunk>'
+    unlocking: 'Vec<PalletDdcCustomersUnlockChunk>'
   },
   /**
-   * Lookup584: pallet_ddc_accounts::UnlockChunk<Balance>
+   * Lookup584: pallet_ddc_customers::UnlockChunk<Balance>
    **/
-  PalletDdcAccountsUnlockChunk: {
+  PalletDdcCustomersUnlockChunk: {
     value: 'Compact<u128>',
     era: 'Compact<u32>'
   },
   /**
-   * Lookup586: pallet_ddc_accounts::Bucket<sp_core::crypto::AccountId32>
+   * Lookup586: pallet_ddc_customers::Bucket<sp_core::crypto::AccountId32>
    **/
-  PalletDdcAccountsBucket: {
+  PalletDdcCustomersBucket: {
     bucketId: 'u128',
     ownerId: 'AccountId32',
+    clusterId: 'Option<H160>',
     publicAvailability: 'bool',
     resourcesReserved: 'u128'
   },
   /**
-   * Lookup587: pallet_ddc_accounts::pallet::Error<T>
+   * Lookup588: pallet_ddc_customers::pallet::Error<T>
    **/
-  PalletDdcAccountsError: {
-    _enum: ['NotController', 'NotStash', 'AlreadyBonded', 'AlreadyPaired', 'InsufficientDeposit', 'NoMoreChunks', 'BadState', 'DDCEraNotSet', 'BucketDoesNotExist']
+  PalletDdcCustomersError: {
+    _enum: ['NotOwner', 'NotBucketOwner', 'AlreadyPaired', 'InsufficientDeposit', 'NoMoreChunks', 'NoBucketWithId', 'BadState', 'DDCEraNotSet', 'BucketDoesNotExist', 'ClusterDoesNotExist']
   },
   /**
-   * Lookup588: pallet_ddc_nodes::storage_node::StorageNode<sp_core::crypto::AccountId32>
+   * Lookup589: pallet_ddc_nodes::storage_node::StorageNode<sp_core::crypto::AccountId32>
    **/
   PalletDdcNodesStorageNode: {
     pubKey: 'AccountId32',
@@ -4372,7 +4379,7 @@ export default {
    * Lookup600: pallet_ddc_clusters::pallet::Error<T>
    **/
   PalletDdcClustersError: {
-    _enum: ['ClusterAlreadyExists', 'ClusterDoesNotExist', 'ClusterParamsExceedsLimit', 'AttemptToAddNonExistentNode', 'AttemptToRemoveNonExistentNode', 'NodeIsAlreadyAssigned', 'NodeIsNotAssigned', 'OnlyClusterManager', 'NotAuthorized', 'NoStake']
+    _enum: ['ClusterAlreadyExists', 'ClusterDoesNotExist', 'ClusterParamsExceedsLimit', 'AttemptToAddNonExistentNode', 'AttemptToRemoveNonExistentNode', 'NodeIsAlreadyAssigned', 'NodeIsNotAssigned', 'OnlyClusterManager', 'NotAuthorized', 'NoStake', 'FastChillProhibited', 'ChillingProhibited', 'NotNodeController']
   },
   /**
    * Lookup602: sp_runtime::MultiSignature
