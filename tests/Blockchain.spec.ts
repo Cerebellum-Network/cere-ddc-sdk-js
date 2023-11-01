@@ -81,7 +81,7 @@ describe('packages/blockchain', () => {
     });
 
     test('Should set CDN node params', async () => {
-        const cdnNodeParams = '0x';
+        const cdnNodeParams = '0x00000000';
         await blockchain.send(blockchain.ddcNodes.setCdnNodeParams(cdnNode1Key, cdnNodeParams));
 
         const cdnNode = await blockchain.ddcNodes.findCdnNodeByPublicKey(cdnNode1Key);
@@ -100,7 +100,7 @@ describe('packages/blockchain', () => {
     });
 
     test('Should set Storage node params', async () => {
-        const storageNodeParams = '0x';
+        const storageNodeParams = '0x00000000';
         await blockchain.send(blockchain.ddcNodes.setStorageNodeParams(storageNode2Key, storageNodeParams));
 
         const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode2Key);

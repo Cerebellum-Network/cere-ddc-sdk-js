@@ -21,7 +21,7 @@ export class DDCNodesPallet {
     setCdnNodeParams(cdnNodePublicKey: CdnNodePublicKey, cdnNodeParams: CdnNodeParams) {
         return this.apiPromise.tx.ddcNodes.setNodeParams(
             {CDNPubKey: cdnNodePublicKey},
-            {CDNParams: cdnNodeParams},
+            {CDNParams: {params: cdnNodeParams}},
         ) as Sendable;
     }
 
@@ -44,7 +44,7 @@ export class DDCNodesPallet {
     setStorageNodeParams(storageNodePublicKey: StorageNodePublicKey, storageNodeParams: StorageNodeParams) {
         return this.apiPromise.tx.ddcNodes.setNodeParams(
             {StoragePubKey: storageNodePublicKey},
-            {StorageParams: storageNodeParams},
+            {StorageParams: {params: storageNodeParams}},
         ) as Sendable;
     }
 
