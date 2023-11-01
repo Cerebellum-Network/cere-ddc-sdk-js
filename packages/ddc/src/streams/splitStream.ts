@@ -1,35 +1,47 @@
 import {TransformStream, ReadableStream, WritableStreamDefaultWriter as Writer} from 'stream/web';
 
-export type SplitStreamMapper<T = any> = (stream: ReadableStream, index: number) => T;
+export type SplitStreamMapper<T = any> = (stream: ReadableStream, offset: bigint) => T;
 
 export const splitStream = async <T = any>(
     stream: ReadableStream<Uint8Array>,
-    chunkSize: bigint,
+    splitBy: number,
     mapper: SplitStreamMapper<T>,
 ) => {
-    const out: any = [];
+    const out: T[] = [];
 
-    let correntSize = 0n;
-    let currentWriter: Writer | undefined;
+    let totalSize = 0n;
+    let currentSize = 0;
+    let currentWriter: Writer<Uint8Array> | undefined;
+    let reaminingBytes = new Uint8Array([]);
 
     for await (const chunk of stream) {
+        const data = Buffer.concat([reaminingBytes, chunk]);
+
         if (!currentWriter) {
             const {readable, writable} = new TransformStream();
 
             currentWriter = writable.getWriter();
-            correntSize = 0n;
+            totalSize += BigInt(currentSize);
+            currentSize = 0;
 
-            out.push(mapper(readable, out.length));
+            out.push(mapper(readable, totalSize));
         }
 
-        await currentWriter.write(chunk);
-        correntSize += BigInt(chunk.byteLength);
+        const toWrite = Math.min(splitBy - currentSize, data.byteLength);
+        await currentWriter.write(data.slice(0, toWrite));
 
-        if (correntSize === chunkSize) {
+        currentSize += toWrite;
+        reaminingBytes = data.slice(toWrite);
+
+        if (currentSize === splitBy) {
             await currentWriter.close();
 
             currentWriter = undefined;
         }
+    }
+
+    if (reaminingBytes.byteLength) {
+        currentWriter?.write(reaminingBytes);
     }
 
     await currentWriter?.close();

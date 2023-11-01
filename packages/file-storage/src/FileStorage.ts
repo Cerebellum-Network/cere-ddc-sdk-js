@@ -27,13 +27,15 @@ export class FileStorage {
 
     private async storeLarge(bucketId: bigint, file: File, options?: FileStoreOptions) {
         const byteCounter = new ByteCounterStream();
-        const cidPromises = await splitStream(file.body.pipeThrough(byteCounter), MAX_PIECE_SIZE, (content) => {
-            const piece = new Piece(content, {
-                multipartOffset: byteCounter.processedBytes,
-            });
+        const cidPromises = await splitStream(
+            file.body.pipeThrough(byteCounter),
+            MAX_PIECE_SIZE,
+            (content, multipartOffset) => {
+                const piece = new Piece(content, {multipartOffset});
 
-            return this.storageNode.storePiece(bucketId, piece);
-        });
+                return this.storageNode.storePiece(bucketId, piece);
+            },
+        );
 
         const parts = await Promise.all(cidPromises);
 
@@ -41,7 +43,7 @@ export class FileStorage {
             bucketId,
             new MultipartPiece(parts, {
                 totalSize: byteCounter.processedBytes,
-                partSize: MAX_PIECE_SIZE,
+                partSize: BigInt(MAX_PIECE_SIZE),
             }),
             options,
         );
