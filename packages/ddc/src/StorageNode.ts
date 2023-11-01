@@ -44,7 +44,7 @@ export class StorageNode {
                 isMultipart: piece.isPart,
                 offset: piece.offset,
             },
-            piece.content,
+            piece.body,
         );
 
         const cid = new Cid(cidBytes).toString();

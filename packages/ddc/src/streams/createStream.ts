@@ -3,7 +3,7 @@ import {ReadableStream} from 'stream/web';
 export type Content = Iterable<Uint8Array> | AsyncIterable<Uint8Array>;
 export type ContentStream = ReadableStream<Uint8Array>;
 
-export const createStream = (content: Content) => {
+export const createContentStream = (content: Content): ContentStream => {
     if (content instanceof ReadableStream) {
         return content;
     }

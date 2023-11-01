@@ -17,3 +17,8 @@ export * from './StorageNode';
  * Constants
  */
 export * from './constants';
+
+/**
+ * Utilities
+ */
+export * from './streams';

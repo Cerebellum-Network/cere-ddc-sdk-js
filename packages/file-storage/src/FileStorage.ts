@@ -1,7 +1,6 @@
-import {StorageNode, MAX_PIECE_SIZE, MultipartPiece} from '@cere-ddc-sdk/ddc';
+import {StorageNode, MAX_PIECE_SIZE, Piece, MultipartPiece, ByteCounterStream, splitStream} from '@cere-ddc-sdk/ddc';
 
 import {File, FileResponse} from './File';
-import {FilePart} from './FilePart';
 
 export type FileStorageConfig = {};
 export type FileReadOptions = {};
@@ -11,37 +10,22 @@ export class FileStorage {
     constructor(private storageNode: StorageNode) {}
 
     async store(bucketId: bigint, file: File, options?: FileStoreOptions) {
-        const cids: Promise<string>[] = [];
+        const byteCounter = new ByteCounterStream();
+        const cidPromises = await splitStream(file.body.pipeThrough(byteCounter), MAX_PIECE_SIZE, (content) => {
+            const piece = new Piece(content, {
+                multipartOffset: byteCounter.processedBytes,
+            });
 
-        let totalSize = 0n;
-        let currentPart: FilePart | undefined;
-        for await (const chunk of file.body) {
-            if (!currentPart) {
-                currentPart = new FilePart({
-                    multipartOffset: totalSize,
-                });
+            return this.storageNode.storePiece(bucketId, piece);
+        });
 
-                cids.push(this.storageNode.storePiece(bucketId, currentPart));
-            }
-
-            totalSize += BigInt(chunk.byteLength);
-            await currentPart.writer.write(chunk);
-
-            if (currentPart.size === MAX_PIECE_SIZE) {
-                await currentPart.writer.close();
-
-                currentPart = undefined;
-            }
-        }
-
-        await currentPart?.writer.close();
-        const parts = await Promise.all(cids);
+        const parts = await Promise.all(cidPromises);
 
         return this.storageNode.storePiece(
             bucketId,
             new MultipartPiece(parts, {
-                totalSize,
-                partSize: BigInt(MAX_PIECE_SIZE),
+                totalSize: byteCounter.processedBytes,
+                partSize: MAX_PIECE_SIZE,
             }),
         );
     }

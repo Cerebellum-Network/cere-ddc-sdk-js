@@ -2,7 +2,7 @@ import {RpcTransport} from '@protobuf-ts/runtime-rpc';
 
 import {PutMultiPartPieceRequest, GetFileRequest, PutRawPieceRequest_Metadata} from '../grpc/file_api';
 import {FileApiClient} from '../grpc/file_api.client';
-import {Content, createStream} from './streams';
+import {Content, createContentStream} from '../streams';
 
 export type ReadFileRange = GetFileRequest['range'];
 
@@ -46,8 +46,7 @@ export class FileApi {
             },
         });
 
-        const contentStream = createStream(content);
-        for await (const data of contentStream) {
+        for await (const data of createContentStream(content)) {
             await requests.send({
                 body: {
                     oneofKind: 'content',
@@ -77,6 +76,6 @@ export class FileApi {
             }
         }
 
-        return createStream(toDataStream());
+        return createContentStream(toDataStream());
     }
 }
