@@ -10,7 +10,7 @@
         "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
         "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
         "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
-        "build": "npm run clean && npm run compile && npm run types && npm run build:node",
+        "build": "npm run clean && npm run types && npm run build:node",
         "types": "tsc -p tsconfig.build.json --emitDeclarationOnly || exit 0",
         "package": "clean-publish",
         "clean": "rimraf dist package"
