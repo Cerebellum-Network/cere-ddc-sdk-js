@@ -3,6 +3,7 @@
     "description": "Key-value storage client",
     "version": "1.9.5",
     "type": "module",
+    "private": true,
     "repository": {
         "type": "git",
         "directory": "packages/key-value-storage",
