@@ -12,3 +12,13 @@ export * from './RpcTransport';
 export * from './Piece';
 export * from './DagNode';
 export * from './StorageNode';
+
+/**
+ * Constants
+ */
+export * from './constants';
+
+/**
+ * Utilities
+ */
+export * from './streams';

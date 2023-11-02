@@ -14,13 +14,17 @@ export class DagNode implements dag.Node {
 }
 
 export class DagNodeResponse extends DagNode {
+    protected cidObject: Cid;
+
     constructor(
-        protected cidObject: Cid,
+        cid: string | Uint8Array,
         readonly data: Uint8Array,
         readonly links: Link[] = [],
         readonly tags: Tag[] = [],
     ) {
         super(data, links, tags);
+
+        this.cidObject = new Cid(cid);
     }
 
     get cid() {

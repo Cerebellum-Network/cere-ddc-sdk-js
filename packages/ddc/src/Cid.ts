@@ -8,10 +8,10 @@ export class Cid {
     }
 
     toString() {
-        return typeof this.cid === 'string' ? this.cid : base32.stringify(this.cid);
+        return typeof this.cid === 'string' ? this.cid : base32.stringify(this.cid, {pad: false});
     }
 
     toBytes() {
-        return typeof this.cid === 'string' ? base32.parse(this.cid) : this.cid;
+        return typeof this.cid === 'string' ? base32.parse(this.cid, {loose: true}) : this.cid;
     }
 }

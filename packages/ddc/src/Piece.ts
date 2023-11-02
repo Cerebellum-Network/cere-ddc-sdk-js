@@ -1,12 +1,11 @@
-import {ReadableStream} from 'stream/web';
 import {arrayBuffer, text, json} from 'stream/consumers';
 
-import {PieceContent, ReadFileRange} from './FileApi';
+import {ByteCounterStream, Content, ContentStream, createContentStream} from './streams';
+import {ReadFileRange} from './FileApi';
 import {Cid} from './Cid';
 
 export type PieceMeta = {
     multipartOffset?: bigint;
-    size?: bigint;
 };
 
 export type MultipartPieceMeta = {
@@ -19,14 +18,21 @@ export type PieceResponseMeta = {
 };
 
 export class Piece {
-    public offset?: bigint;
-    readonly size?: bigint;
-    readonly content: PieceContent;
+    private byteCounter: ByteCounterStream;
 
-    constructor(content: PieceContent | Uint8Array, readonly meta?: PieceMeta) {
-        this.content = content instanceof Uint8Array ? [content] : content; // TODO: find a better way to use direct Uint8Array input
+    public offset?: bigint;
+    readonly body: ContentStream;
+
+    constructor(content: Content | Uint8Array, readonly meta?: PieceMeta) {
+        const body = content instanceof Uint8Array ? [content] : content;
+
         this.offset = meta?.multipartOffset;
-        this.size = meta?.size;
+        this.byteCounter = new ByteCounterStream();
+        this.body = createContentStream(body).pipeThrough(this.byteCounter);
+    }
+
+    get size() {
+        return this.byteCounter.processedBytes;
     }
 
     get isPart() {
@@ -43,11 +49,11 @@ export class MultipartPiece {
 }
 
 export class PieceResponse {
-    constructor(
-        protected cidObject: Cid,
-        readonly body: ReadableStream<Uint8Array>,
-        protected meta?: PieceResponseMeta,
-    ) {}
+    protected cidObject: Cid;
+
+    constructor(cid: string | Uint8Array, readonly body: ContentStream, protected meta?: PieceResponseMeta) {
+        this.cidObject = new Cid(cid);
+    }
 
     get range() {
         return this.meta?.range;
