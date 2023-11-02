@@ -2,7 +2,7 @@ import * as dag from './DagApi';
 import {Cid} from './Cid';
 
 export class Link implements dag.Link {
-    constructor(public cid: string, public size: bigint, public name = '') {}
+    constructor(public cid: string, public size: number, public name = '') {}
 }
 
 export class Tag implements dag.Tag {

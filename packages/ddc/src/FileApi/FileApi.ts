@@ -6,19 +6,7 @@ import {Content, createContentStream} from '../streams';
 
 export type ReadFileRange = GetFileRequest['range'];
 
-function ceilToPowerOf2(n: bigint) {
-    if (n <= 1n) {
-        return 1n;
-    }
-
-    let powerOf2 = 2n;
-
-    while (powerOf2 < n) {
-        powerOf2 *= 2n;
-    }
-
-    return powerOf2;
-}
+const ceilToPowerOf2 = (n: number) => Math.pow(2, Math.ceil(Math.log2(n)));
 
 export class FileApi {
     private api: FileApiClient;

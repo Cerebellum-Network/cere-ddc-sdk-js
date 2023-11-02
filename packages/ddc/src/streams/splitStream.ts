@@ -1,6 +1,6 @@
 import {TransformStream, ReadableStream, WritableStreamDefaultWriter as Writer} from 'stream/web';
 
-export type SplitStreamMapper<T = any> = (stream: ReadableStream, offset: bigint) => T;
+export type SplitStreamMapper<T = any> = (stream: ReadableStream, offset: number) => T;
 
 export const splitStream = async <T = any>(
     stream: ReadableStream<Uint8Array>,
@@ -9,7 +9,7 @@ export const splitStream = async <T = any>(
 ) => {
     const out: T[] = [];
 
-    let totalSize = 0n;
+    let totalSize = 0;
     let currentSize = 0;
     let currentWriter: Writer<Uint8Array> | undefined;
     let reaminingBytes = new Uint8Array([]);
@@ -21,7 +21,7 @@ export const splitStream = async <T = any>(
             const {readable, writable} = new TransformStream();
 
             currentWriter = writable.getWriter();
-            totalSize += BigInt(currentSize);
+            totalSize += currentSize;
             currentSize = 0;
 
             out.push(mapper(readable, totalSize));

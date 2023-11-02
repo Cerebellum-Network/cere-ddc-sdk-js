@@ -5,12 +5,12 @@ import {ReadFileRange} from './FileApi';
 import {Cid} from './Cid';
 
 export type PieceMeta = {
-    multipartOffset?: bigint;
+    multipartOffset?: number;
 };
 
 export type MultipartPieceMeta = {
-    partSize: bigint;
-    totalSize: bigint;
+    partSize: number;
+    totalSize: number;
 };
 
 export type PieceResponseMeta = {
@@ -18,7 +18,7 @@ export type PieceResponseMeta = {
 };
 
 export class Piece {
-    public offset?: bigint;
+    public offset?: number;
     readonly body: ContentStream;
 
     constructor(content: Content | Uint8Array, readonly meta?: PieceMeta) {

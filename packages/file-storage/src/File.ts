@@ -2,7 +2,7 @@ import {Content, ContentStream, PieceResponse, createContentStream} from '@cere-
 
 export type FileContent = Content;
 export type FileMeta = {
-    size: bigint;
+    size: number;
 };
 
 export class File {

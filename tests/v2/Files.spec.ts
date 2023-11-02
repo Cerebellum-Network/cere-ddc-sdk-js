@@ -3,7 +3,7 @@ import {FileStorage, File} from '@cere-ddc-sdk/file-storage';
 import {createDataStream, MB, KB} from '../../tests/helpers';
 
 describe('Files', () => {
-    const bucketId = 0n;
+    const bucketId = 0;
     const router = new Router([
         {rpcHost: 'localhost:9091'},
         {rpcHost: 'localhost:9092'},
@@ -20,7 +20,7 @@ describe('Files', () => {
 
         test('Store a file', async () => {
             const file = new File(fileStream, {
-                size: BigInt(fileSize),
+                size: fileSize,
             });
 
             fileCid = await fileStorage.store(bucketId, file);
@@ -43,7 +43,7 @@ describe('Files', () => {
 
         test('Store a file', async () => {
             const file = new File(fileStream, {
-                size: BigInt(fileSize),
+                size: fileSize,
             });
 
             fileCid = await fileStorage.store(bucketId, file);

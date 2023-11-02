@@ -25,7 +25,7 @@ export class FileStorage {
         this.router = router;
     }
 
-    private async storeLarge(bucketId: bigint, file: File, options?: FileStoreOptions) {
+    private async storeLarge(bucketId: number, file: File, options?: FileStoreOptions) {
         const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
         const cidPromises = await splitStream(file.body, MAX_PIECE_SIZE, (content, multipartOffset) => {
             const piece = new Piece(content, {multipartOffset});
@@ -39,20 +39,20 @@ export class FileStorage {
             bucketId,
             new MultipartPiece(parts, {
                 totalSize: file.size,
-                partSize: BigInt(MAX_PIECE_SIZE),
+                partSize: MAX_PIECE_SIZE,
             }),
             options,
         );
     }
 
-    private async storeSmall(bucketId: bigint, file: File, options?: FileStoreOptions) {
+    private async storeSmall(bucketId: number, file: File, options?: FileStoreOptions) {
         const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
         const piece = new Piece(file.body);
 
         return storageNode.storePiece(bucketId, piece, options);
     }
 
-    async store(bucketId: bigint, file: File, options?: FileStoreOptions) {
+    async store(bucketId: number, file: File, options?: FileStoreOptions) {
         if (file.size > MAX_PIECE_SIZE) {
             return this.storeLarge(bucketId, file, options);
         }
@@ -60,7 +60,7 @@ export class FileStorage {
         return this.storeSmall(bucketId, file, options);
     }
 
-    async read(bucketId: bigint, cid: string, options?: FileReadOptions) {
+    async read(bucketId: number, cid: string, options?: FileReadOptions) {
         const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
         const piece = await storageNode.readPiece(bucketId, cid);
 

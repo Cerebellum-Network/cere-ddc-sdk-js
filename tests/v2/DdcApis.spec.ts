@@ -1,5 +1,5 @@
 import {randomBytes} from 'crypto';
-import {PieceContent, RpcTransport, DagApi, FileApi, CnsApi} from '@cere-ddc-sdk/ddc';
+import {Content, RpcTransport, DagApi, FileApi, CnsApi} from '@cere-ddc-sdk/ddc';
 
 import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE} from '../../tests/helpers';
 
@@ -10,7 +10,7 @@ describe('DDC APIs', () => {
     const fileApi = new FileApi(transport);
     const cnsApi = new CnsApi(transport);
 
-    const storeRawPiece = async (chunks: PieceContent, mutipartOffset?: bigint) => {
+    const storeRawPiece = async (chunks: Content, mutipartOffset?: number) => {
         return fileApi.putRawPiece(
             {
                 bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
@@ -130,8 +130,8 @@ describe('DDC APIs', () => {
                     cid: largePieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                     range: {
-                        start: 0n,
-                        end: BigInt(rangeSize - 1),
+                        start: 0,
+                        end: rangeSize - 1,
                     },
                 });
 
@@ -155,7 +155,7 @@ describe('DDC APIs', () => {
 
             beforeAll(async () => {
                 rawPieceCids = await Promise.all(
-                    rawPieceContents.map((content, index) => storeRawPiece(content, BigInt(index * partSize))),
+                    rawPieceContents.map((content, index) => storeRawPiece(content, index * partSize)),
                 );
             });
 
@@ -168,8 +168,8 @@ describe('DDC APIs', () => {
                 multipartPieceCid = await fileApi.putMultipartPiece({
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                     partHashes,
-                    partSize: BigInt(partSize),
-                    totalSize: BigInt(totalSize),
+                    partSize,
+                    totalSize,
                 });
 
                 expect(multipartPieceCid).toEqual(expect.any(Uint8Array));
@@ -197,8 +197,8 @@ describe('DDC APIs', () => {
                     cid: multipartPieceCid,
                     bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type,
                     range: {
-                        start: 0n,
-                        end: BigInt(rangeSize - 1),
+                        start: 0,
+                        end: rangeSize - 1,
                     },
                 });
 
