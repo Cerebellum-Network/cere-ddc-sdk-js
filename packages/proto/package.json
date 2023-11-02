@@ -3,6 +3,7 @@
     "description": "Storage protocol buffer models",
     "version": "1.9.5",
     "type": "module",
+    "private": true,
     "main": "./dist/index.cjs",
     "types": "./dist/types",
     "exports": {

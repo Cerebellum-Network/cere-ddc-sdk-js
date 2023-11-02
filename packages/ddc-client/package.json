@@ -12,22 +12,9 @@
     "types": "./dist/types",
     "exports": {
         ".": {
-            "browser": "./dist/browser.js",
             "require": "./dist/index.cjs",
             "import": "./dist/index.js",
             "default": "./dist/index.js"
-        },
-        "./browser": {
-            "require": "./dist/browser.cjs",
-            "import": "./dist/browser.js",
-            "default": "./dist/browser.js"
-        }
-    },
-    "typesVersions": {
-        "*": {
-            "browser": [
-                "./dist/types/browser.d.ts"
-            ]
         }
     },
     "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
@@ -35,27 +22,20 @@
     "scripts": {
         "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
         "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
-        "build:browser": "BROWSERSLIST_ENV=browser npm run build:cjs && BROWSERSLIST_ENV=browser npm run build:mjs",
-        "build:browser:module": "TARGET=build:mjs BROWSERSLIST_ENV=browser NODE_ENV=production webpack",
         "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
-        "build": "npm run clean && npm run types && npm run build:browser && npm run build:node",
+        "build": "npm run clean && npm run types && npm run build:node",
         "types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
         "package": "clean-publish",
         "clean": "rimraf dist package"
     },
     "dependencies": {
-        "@cere-ddc-sdk/content-addressable-storage": "1.9.5",
         "@cere-ddc-sdk/core": "1.9.5",
+        "@cere-ddc-sdk/ddc": "1.9.5",
         "@cere-ddc-sdk/file-storage": "1.9.5",
-        "@cere-ddc-sdk/key-value-storage": "1.9.5",
-        "@cere-ddc-sdk/smart-contract": "1.9.5",
-        "@polkadot/util": "^10.1.8",
-        "@polkadot/util-crypto": "^10.1.8"
+        "@cere-ddc-sdk/smart-contract": "1.9.5"
     },
     "devDependencies": {
-        "@polkadot/extension-inject": "0.44.9",
         "@types/node": "^16.0.0",
-        "buffer": "^6.0.3",
-        "tweetnacl": "^1.0.3"
+        "buffer": "^6.0.3"
     }
 }

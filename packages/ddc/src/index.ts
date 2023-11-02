@@ -9,6 +9,7 @@ export * from './RpcTransport';
 /**
  * High level API
  */
+export * from './Router';
 export * from './Piece';
 export * from './DagNode';
 export * from './StorageNode';

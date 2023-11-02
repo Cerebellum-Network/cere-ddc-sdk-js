@@ -1,61 +1,58 @@
 import {
     PieceStoreOptions,
     PieceReadOptions,
-    StorageNode,
     MAX_PIECE_SIZE,
     Piece,
     MultipartPiece,
-    ByteCounterStream,
     splitStream,
+    Router,
+    RouterOperation,
 } from '@cere-ddc-sdk/ddc';
 
 import {File, FileResponse} from './File';
 
 export type FileStorageConfig = {
-    storageNode: StorageNode;
+    router: Router;
 };
 
 export type FileReadOptions = PieceReadOptions;
 export type FileStoreOptions = PieceStoreOptions;
 
 export class FileStorage {
-    private storageNode: StorageNode;
+    private router: Router;
 
-    constructor({storageNode}: FileStorageConfig) {
-        this.storageNode = storageNode;
+    constructor({router}: FileStorageConfig) {
+        this.router = router;
     }
 
-    private async storeLarge(bucketId: bigint, file: File, options?: FileStoreOptions) {
-        const byteCounter = new ByteCounterStream();
-        const cidPromises = await splitStream(
-            file.body.pipeThrough(byteCounter),
-            MAX_PIECE_SIZE,
-            (content, multipartOffset) => {
-                const piece = new Piece(content, {multipartOffset});
+    private async storeLarge(bucketId: number, file: File, options?: FileStoreOptions) {
+        const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
+        const cidPromises = await splitStream(file.body, MAX_PIECE_SIZE, (content, multipartOffset) => {
+            const piece = new Piece(content, {multipartOffset});
 
-                return this.storageNode.storePiece(bucketId, piece);
-            },
-        );
+            return storageNode.storePiece(bucketId, piece);
+        });
 
         const parts = await Promise.all(cidPromises);
 
-        return this.storageNode.storePiece(
+        return storageNode.storePiece(
             bucketId,
             new MultipartPiece(parts, {
-                totalSize: byteCounter.processedBytes,
-                partSize: BigInt(MAX_PIECE_SIZE),
+                totalSize: file.size,
+                partSize: MAX_PIECE_SIZE,
             }),
             options,
         );
     }
 
-    private async storeSmall(bucketId: bigint, file: File, options?: FileStoreOptions) {
-        const piece = new Piece(file.content);
+    private async storeSmall(bucketId: number, file: File, options?: FileStoreOptions) {
+        const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
+        const piece = new Piece(file.body);
 
-        return this.storageNode.storePiece(bucketId, piece, options);
+        return storageNode.storePiece(bucketId, piece, options);
     }
 
-    async store(bucketId: bigint, file: File, options?: FileStoreOptions) {
+    async store(bucketId: number, file: File, options?: FileStoreOptions) {
         if (file.size > MAX_PIECE_SIZE) {
             return this.storeLarge(bucketId, file, options);
         }
@@ -63,8 +60,9 @@ export class FileStorage {
         return this.storeSmall(bucketId, file, options);
     }
 
-    async read(bucketId: bigint, cid: string, options?: FileReadOptions) {
-        const piece = await this.storageNode.readPiece(bucketId, cid);
+    async read(bucketId: number, cid: string, options?: FileReadOptions) {
+        const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
+        const piece = await storageNode.readPiece(bucketId, cid, options);
 
         return new FileResponse(piece.cid, piece.body, options);
     }

@@ -1,19 +1,24 @@
 import {Content, ContentStream, PieceResponse, createContentStream} from '@cere-ddc-sdk/ddc';
 
 export type FileContent = Content;
-export type FileMeta = {
-    size: bigint;
+
+type StreamMeta = {
+    size: number;
+};
+
+type StaticContentMeta = {
+    size?: number;
 };
 
 export class File {
     readonly body: ContentStream;
+    readonly size: number;
 
-    constructor(readonly content: FileContent, readonly meta: FileMeta) {
+    constructor(content: FileContent, meta: StreamMeta);
+    constructor(content: Uint8Array, meta?: StaticContentMeta);
+    constructor(content: FileContent, readonly meta: StreamMeta | StaticContentMeta = {}) {
         this.body = createContentStream(content);
-    }
-
-    get size() {
-        return this.meta.size;
+        this.size = content instanceof Uint8Array ? content.byteLength : meta.size!;
     }
 }
 

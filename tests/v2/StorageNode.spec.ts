@@ -3,7 +3,7 @@ import {StorageNode, Piece, PieceResponse, DagNode, MultipartPiece} from '@cere-
 import {createDataStream, MB, DDC_BLOCK_SIZE} from '../../tests/helpers';
 
 describe('Storage Node', () => {
-    const bucketId = 0n;
+    const bucketId = 0;
     const storageNode = new StorageNode({
         rpcHost: 'localhost:9091',
     });
@@ -68,7 +68,7 @@ describe('Storage Node', () => {
             rawPieceCids = await Promise.all(
                 rawPieceContents.map((content, index) => {
                     const piece = new Piece(content, {
-                        multipartOffset: BigInt(index * partSize),
+                        multipartOffset: index * partSize,
                     });
 
                     return storageNode.storePiece(bucketId, piece);
@@ -78,8 +78,8 @@ describe('Storage Node', () => {
 
         test('Store a piece', async () => {
             const multipartPiece = new MultipartPiece(rawPieceCids, {
-                partSize: BigInt(partSize),
-                totalSize: BigInt(totalSize),
+                partSize,
+                totalSize,
             });
 
             multipartPieceCid = await storageNode.storePiece(bucketId, multipartPiece);
@@ -103,8 +103,8 @@ describe('Storage Node', () => {
             const rangeLength = DDC_BLOCK_SIZE;
             const piece = await storageNode.readPiece(bucketId, multipartPieceCid, {
                 range: {
-                    start: 0n,
-                    end: BigInt(rangeLength) - 1n,
+                    start: 0,
+                    end: rangeLength - 1,
                 },
             });
 
@@ -131,7 +131,7 @@ describe('Storage Node', () => {
 
             const node = await storageNode.getDagNode(bucketId, nodeCid);
 
-            expect(node?.data).toEqual(nodeData);
+            expect(node?.data).toEqual(Buffer.from(nodeData));
         });
     });
 });

@@ -6,7 +6,7 @@
     "main": "./dist/index.cjs",
     "types": "./dist/types",
     "scripts": {
-        "compile": "protoc --ts_out ./src/grpc --proto_path protos ./protos/*.proto",
+        "compile": "protoc --ts_opt long_type_number --ts_out ./src/grpc --proto_path protos ./protos/*.proto",
         "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
         "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
         "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
