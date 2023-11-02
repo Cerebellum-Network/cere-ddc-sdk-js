@@ -23,6 +23,10 @@ export class Router {
     async getNode(operation: RouterOperation) {
         const node = this.nodes[Math.floor(Math.random() * this.nodes.length)];
 
+        if (!node) {
+            throw new Error('No nodes available to handle the operation');
+        }
+
         return new StorageNode(node);
     }
 }
