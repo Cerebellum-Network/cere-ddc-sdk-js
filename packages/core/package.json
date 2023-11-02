@@ -53,5 +53,8 @@
         "@polkadot/extension-inject": "0.44.9",
         "@types/node": "^16.0.0",
         "multiformats": "^9.6.5"
+    },
+    "publishConfig": {
+        "access": "public"
     }
 }

@@ -65,5 +65,8 @@
         "@polkadot/keyring": "^10.1.8",
         "@polkadot/types": "9.4.1",
         "@polkadot/util-crypto": "^10.1.8"
+    },
+    "publishConfig": {
+        "access": "public"
     }
 }
