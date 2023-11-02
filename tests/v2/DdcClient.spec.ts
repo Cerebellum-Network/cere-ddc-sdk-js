@@ -1,7 +1,6 @@
-import {DagNode, DdcClient, DdcUri, File, KB, MB, Tag} from '@cere-ddc-sdk/ddc-client';
+import {DagNode, DagNodeUri, DdcClient, File, FileUri, KB, MB, Tag} from '@cere-ddc-sdk/ddc-client';
 
 import {ROOT_USER_SEED, createDataStream, getContractOptions} from '../helpers';
-import {randomBytes} from 'crypto';
 
 describe('DDC Client', () => {
     const bucketId = 0n;
@@ -27,7 +26,7 @@ describe('DDC Client', () => {
     });
 
     describe('Files', () => {
-        let uri: DdcUri<'file'>;
+        let uri: FileUri;
         const fileSize = 2 * MB;
         const fileStream = createDataStream(fileSize, 64 * KB);
         const tinyFileText = 'Tiny file';
@@ -77,7 +76,7 @@ describe('DDC Client', () => {
     });
 
     describe('DAG Node', () => {
-        let uri: DdcUri<'dag-node'>;
+        let uri: DagNodeUri;
         const nodeData = 'Hello Dag node test';
 
         test('Store DAG node', async () => {
