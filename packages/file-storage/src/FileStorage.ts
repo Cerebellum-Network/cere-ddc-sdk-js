@@ -1,11 +1,9 @@
 import {
     PieceStoreOptions,
     PieceReadOptions,
-    StorageNode,
     MAX_PIECE_SIZE,
     Piece,
     MultipartPiece,
-    ByteCounterStream,
     splitStream,
     Router,
     RouterOperation,
@@ -29,23 +27,18 @@ export class FileStorage {
 
     private async storeLarge(bucketId: bigint, file: File, options?: FileStoreOptions) {
         const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
-        const byteCounter = new ByteCounterStream();
-        const cidPromises = await splitStream(
-            file.body.pipeThrough(byteCounter),
-            MAX_PIECE_SIZE,
-            (content, multipartOffset) => {
-                const piece = new Piece(content, {multipartOffset});
+        const cidPromises = await splitStream(file.body, MAX_PIECE_SIZE, (content, multipartOffset) => {
+            const piece = new Piece(content, {multipartOffset});
 
-                return storageNode.storePiece(bucketId, piece);
-            },
-        );
+            return storageNode.storePiece(bucketId, piece);
+        });
 
         const parts = await Promise.all(cidPromises);
 
         return storageNode.storePiece(
             bucketId,
             new MultipartPiece(parts, {
-                totalSize: byteCounter.processedBytes,
+                totalSize: file.size,
                 partSize: BigInt(MAX_PIECE_SIZE),
             }),
             options,
@@ -54,7 +47,7 @@ export class FileStorage {
 
     private async storeSmall(bucketId: bigint, file: File, options?: FileStoreOptions) {
         const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
-        const piece = new Piece(file.content);
+        const piece = new Piece(file.body);
 
         return storageNode.storePiece(bucketId, piece, options);
     }

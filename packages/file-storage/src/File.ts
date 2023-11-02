@@ -8,7 +8,7 @@ export type FileMeta = {
 export class File {
     readonly body: ContentStream;
 
-    constructor(readonly content: FileContent, readonly meta: FileMeta) {
+    constructor(content: FileContent, readonly meta: FileMeta) {
         this.body = createContentStream(content);
     }
 

@@ -1,6 +1,6 @@
 import {arrayBuffer, text, json} from 'stream/consumers';
 
-import {ByteCounterStream, Content, ContentStream, createContentStream} from './streams';
+import {Content, ContentStream, createContentStream} from './streams';
 import {ReadFileRange} from './FileApi';
 import {Cid} from './Cid';
 
@@ -18,21 +18,12 @@ export type PieceResponseMeta = {
 };
 
 export class Piece {
-    private byteCounter: ByteCounterStream;
-
     public offset?: bigint;
     readonly body: ContentStream;
 
     constructor(content: Content | Uint8Array, readonly meta?: PieceMeta) {
-        const body = content instanceof Uint8Array ? [content] : content;
-
         this.offset = meta?.multipartOffset;
-        this.byteCounter = new ByteCounterStream();
-        this.body = createContentStream(body).pipeThrough(this.byteCounter);
-    }
-
-    get size() {
-        return this.byteCounter.processedBytes;
+        this.body = createContentStream(content);
     }
 
     get isPart() {
