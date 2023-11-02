@@ -54,9 +54,7 @@ describe('DDC Client', () => {
         });
 
         test('Store tiny file', async () => {
-            const file = new File(tinyFileData, {
-                size: tinyFileData.byteLength,
-            });
+            const file = new File(tinyFileData);
 
             uri = await client.store(bucketId, file);
 

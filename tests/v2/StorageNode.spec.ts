@@ -131,7 +131,7 @@ describe('Storage Node', () => {
 
             const node = await storageNode.getDagNode(bucketId, nodeCid);
 
-            expect(node?.data).toEqual(nodeData);
+            expect(node?.data).toEqual(Buffer.from(nodeData));
         });
     });
 });
