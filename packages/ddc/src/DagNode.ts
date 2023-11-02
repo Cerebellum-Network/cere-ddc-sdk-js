@@ -10,19 +10,18 @@ export class Tag implements dag.Tag {
 }
 
 export class DagNode implements dag.Node {
-    constructor(public data: Uint8Array, public links: Link[] = [], public tags: Tag[] = []) {}
+    public data: Buffer;
+
+    constructor(data: Uint8Array | string | Buffer, public links: Link[] = [], public tags: Tag[] = []) {
+        this.data = Buffer.from(data);
+    }
 }
 
 export class DagNodeResponse extends DagNode {
     protected cidObject: Cid;
 
-    constructor(
-        cid: string | Uint8Array,
-        readonly data: Uint8Array,
-        readonly links: Link[] = [],
-        readonly tags: Tag[] = [],
-    ) {
-        super(data, links, tags);
+    constructor(cid: string | Uint8Array, data: Uint8Array, readonly links: Link[] = [], readonly tags: Tag[] = []) {
+        super(new Uint8Array(data), links, tags);
 
         this.cidObject = new Cid(cid);
     }

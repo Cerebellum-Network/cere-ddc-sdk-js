@@ -1,8 +1,8 @@
 import {Router} from '@cere-ddc-sdk/ddc';
 import {FileStorage, File} from '@cere-ddc-sdk/file-storage';
-import {createDataStream, MB, KB} from '../../tests/helpers';
+import {createDataStream, MB, KB} from '../helpers';
 
-describe('Files', () => {
+describe('File storage', () => {
     const bucketId = 0;
     const router = new Router([
         {rpcHost: 'localhost:9091'},
