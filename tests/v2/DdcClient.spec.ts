@@ -27,6 +27,7 @@ describe('DDC Client', () => {
 
     describe('Files', () => {
         let uri: FileUri;
+        let tinyUri: FileUri;
         const fileSize = 2 * MB;
         const fileStream = createDataStream(fileSize, 64 * KB);
         const tinyFileText = 'Tiny file';
@@ -53,12 +54,25 @@ describe('DDC Client', () => {
             expect(buffer.byteLength).toEqual(fileSize);
         });
 
+        test('Read a range of medium file', async () => {
+            const file = await client.read(uri, {
+                range: {
+                    start: 0,
+                    end: 32 * KB - 1,
+                },
+            });
+
+            const buffer = await file.arrayBuffer();
+
+            expect(buffer.byteLength).toEqual(32 * KB);
+        });
+
         test('Store tiny file', async () => {
             const file = new File(tinyFileData);
 
-            uri = await client.store(bucketId, file);
+            tinyUri = await client.store(bucketId, file);
 
-            expect(uri).toEqual({
+            expect(tinyUri).toEqual({
                 bucketId: 0,
                 entity: 'file',
                 cid: expect.any(String),
@@ -66,7 +80,7 @@ describe('DDC Client', () => {
         });
 
         test('Read tiny file', async () => {
-            const file = await client.read(uri);
+            const file = await client.read(tinyUri);
             const text = await file.text();
 
             expect(text).toEqual(tinyFileText);

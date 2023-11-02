@@ -62,7 +62,7 @@ export class FileStorage {
 
     async read(bucketId: number, cid: string, options?: FileReadOptions) {
         const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
-        const piece = await storageNode.readPiece(bucketId, cid);
+        const piece = await storageNode.readPiece(bucketId, cid, options);
 
         return new FileResponse(piece.cid, piece.body, options);
     }

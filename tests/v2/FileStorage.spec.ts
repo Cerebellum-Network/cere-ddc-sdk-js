@@ -57,5 +57,18 @@ describe('File storage', () => {
 
             expect(buffer.byteLength).toEqual(fileSize);
         });
+
+        test('Read a range of the file', async () => {
+            const file = await fileStorage.read(bucketId, fileCid, {
+                range: {
+                    start: 0,
+                    end: 64 * MB - 1,
+                },
+            });
+
+            const buffer = await file.arrayBuffer();
+
+            expect(buffer.byteLength).toEqual(64 * MB);
+        });
     });
 });

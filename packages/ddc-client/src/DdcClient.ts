@@ -1,7 +1,7 @@
 import {Scheme} from '@cere-ddc-sdk/core';
 import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
 import {DagNode, DagNodeResponse, DagNodeStoreOptions, Router, RouterNode, RouterOperation} from '@cere-ddc-sdk/ddc';
-import {FileStorage, File, FileStoreOptions, FileResponse} from '@cere-ddc-sdk/file-storage';
+import {FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions} from '@cere-ddc-sdk/file-storage';
 
 import {DdcEntity, DdcUri} from './DdcUri';
 
@@ -114,11 +114,11 @@ export class DdcClient {
         return new DdcUri(numBucketId, cid, entityType);
     }
 
-    async read(uri: DdcUri<'file'>): Promise<FileResponse>;
+    async read(uri: DdcUri<'file'>, options?: FileReadOptions): Promise<FileResponse>;
     async read(uri: DdcUri<'dag-node'>): Promise<DagNodeResponse>;
-    async read(uri: DdcUri) {
+    async read(uri: DdcUri, options?: FileReadOptions) {
         if (uri.entity === 'file') {
-            return this.fileStorage.read(uri.bucketId, uri.cid);
+            return this.fileStorage.read(uri.bucketId, uri.cid, options);
         }
 
         const ddcNode = await this.router.getNode(RouterOperation.READ_DAG_NODE);
