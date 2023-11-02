@@ -1,11 +1,17 @@
-import {StorageNode} from '@cere-ddc-sdk/ddc';
+import {Router} from '@cere-ddc-sdk/ddc';
 import {FileStorage, File} from '@cere-ddc-sdk/file-storage';
 import {createDataStream, MB, KB} from '../../tests/helpers';
 
 describe('Files', () => {
     const bucketId = 0n;
-    const storageNode = new StorageNode({rpcHost: 'localhost:9091'});
-    const fileStorage = new FileStorage({storageNode});
+    const router = new Router([
+        {rpcHost: 'localhost:9091'},
+        {rpcHost: 'localhost:9092'},
+        {rpcHost: 'localhost:9093'},
+        {rpcHost: 'localhost:9094'},
+    ]);
+
+    const fileStorage = new FileStorage({router});
 
     describe('Small file', () => {
         let fileCid: string;

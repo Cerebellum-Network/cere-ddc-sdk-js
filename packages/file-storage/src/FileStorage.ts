@@ -7,25 +7,28 @@ import {
     MultipartPiece,
     ByteCounterStream,
     splitStream,
+    Router,
+    RouterOperation,
 } from '@cere-ddc-sdk/ddc';
 
 import {File, FileResponse} from './File';
 
 export type FileStorageConfig = {
-    storageNode: StorageNode;
+    router: Router;
 };
 
 export type FileReadOptions = PieceReadOptions;
 export type FileStoreOptions = PieceStoreOptions;
 
 export class FileStorage {
-    private storageNode: StorageNode;
+    private router: Router;
 
-    constructor({storageNode}: FileStorageConfig) {
-        this.storageNode = storageNode;
+    constructor({router}: FileStorageConfig) {
+        this.router = router;
     }
 
     private async storeLarge(bucketId: bigint, file: File, options?: FileStoreOptions) {
+        const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
         const byteCounter = new ByteCounterStream();
         const cidPromises = await splitStream(
             file.body.pipeThrough(byteCounter),
@@ -33,13 +36,13 @@ export class FileStorage {
             (content, multipartOffset) => {
                 const piece = new Piece(content, {multipartOffset});
 
-                return this.storageNode.storePiece(bucketId, piece);
+                return storageNode.storePiece(bucketId, piece);
             },
         );
 
         const parts = await Promise.all(cidPromises);
 
-        return this.storageNode.storePiece(
+        return storageNode.storePiece(
             bucketId,
             new MultipartPiece(parts, {
                 totalSize: byteCounter.processedBytes,
@@ -50,9 +53,10 @@ export class FileStorage {
     }
 
     private async storeSmall(bucketId: bigint, file: File, options?: FileStoreOptions) {
+        const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
         const piece = new Piece(file.content);
 
-        return this.storageNode.storePiece(bucketId, piece, options);
+        return storageNode.storePiece(bucketId, piece, options);
     }
 
     async store(bucketId: bigint, file: File, options?: FileStoreOptions) {
@@ -64,7 +68,8 @@ export class FileStorage {
     }
 
     async read(bucketId: bigint, cid: string, options?: FileReadOptions) {
-        const piece = await this.storageNode.readPiece(bucketId, cid);
+        const storageNode = await this.router.getNode(RouterOperation.STORE_PIECE);
+        const piece = await storageNode.readPiece(bucketId, cid);
 
         return new FileResponse(piece.cid, piece.body, options);
     }
