@@ -1,18 +1,26 @@
 import {ApiPromise} from '@polkadot/api';
 import {Sendable} from './Blockchain';
-import {NodePublicKey} from './DDCNodesPallet';
+import {CdnNodePublicKey, NodePublicKey, StorageNodePublicKey} from './DDCNodesPallet';
 import {ClusterId} from './DDCClustersPallet';
 import {AccountId} from './DDCCustomersPallet';
 
 export class DDCStakingPallet {
     constructor(private apiPromise: ApiPromise) {}
 
-    bond(controller: string, nodePublicKey: NodePublicKey, bondAmount: bigint) {
-        return this.apiPromise.tx.ddcStaking.bond(controller, nodePublicKey, bondAmount) as Sendable;
+    bondStorageNode(controller: AccountId, storageNodePublicKey: StorageNodePublicKey, bondAmount: Amount) {
+        return this.apiPromise.tx.ddcStaking.bond(
+            controller,
+            {StoragePubKey: storageNodePublicKey},
+            bondAmount,
+        ) as Sendable;
     }
 
-    unbond(value: number) {
-        return this.apiPromise.tx.ddcStaking.unbond(value) as Sendable;
+    bondCdnNode(controller: AccountId, cdnNodePublicKey: CdnNodePublicKey, bondAmount: Amount) {
+        return this.apiPromise.tx.ddcStaking.bond(controller, {CDNPubKey: cdnNodePublicKey}, bondAmount) as Sendable;
+    }
+
+    unbond(amount: Amount) {
+        return this.apiPromise.tx.ddcStaking.unbond(amount) as Sendable;
     }
 
     async findStorageNodeStake(storageNodePublicKey: string) {
@@ -25,12 +33,32 @@ export class DDCStakingPallet {
         return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterId;
     }
 
-    setController(nodePublicKey: NodePublicKey) {
-        return this.apiPromise.tx.ddcStaking.setController(nodePublicKey) as Sendable;
+    setController(accountId: AccountId) {
+        return this.apiPromise.tx.ddcStaking.setController(accountId) as Sendable;
     }
 
     async listClusterManagers() {
         const result = await this.apiPromise.query.ddcStaking.clusterManagers();
         return result.toJSON() as unknown as AccountId[];
     }
+
+    store(storageNodePublicKey: StorageNodePublicKey) {
+        return this.apiPromise.tx.ddcStaking.store(storageNodePublicKey) as Sendable;
+    }
+
+    serve(cdnNodePublicKey: CdnNodePublicKey) {
+        return this.apiPromise.tx.ddcStaking.serve(cdnNodePublicKey) as Sendable;
+    }
+
+    getSettings() {
+        const defaultStorageBondSize = this.apiPromise.consts.ddcStaking.defaultStorageBondSize.toJSON() as bigint;
+        const defaultEdgeBondSize = this.apiPromise.consts.ddcStaking.defaultEdgeBondSize.toJSON() as bigint;
+
+        return {
+            defaultStorageBondSize,
+            defaultEdgeBondSize,
+        };
+    }
 }
+
+export type Amount = bigint;

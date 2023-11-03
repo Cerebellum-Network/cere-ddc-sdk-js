@@ -25,7 +25,17 @@ export class Blockchain {
             sendable
                 .signAndSend(this.account, (result) => {
                     if (result.status.isFinalized) {
-                        resolve(result);
+                        const events = result.events.map(({event}) => ({
+                            method: event.method,
+                            section: event.section,
+                            meta: event.meta.toJSON(),
+                            data: event.data.toJSON(),
+                        }));
+
+                        resolve({
+                            events,
+                            txHash: result.status.asFinalized.toHex(),
+                        });
                     } else if (result.dispatchError) {
                         let errorMessage: string;
 
@@ -59,5 +69,8 @@ export class Blockchain {
 }
 
 export type Sendable = SubmittableExtrinsic<'promise'>;
-export type SendResult = unknown;
+export type SendResult = {
+    events: any[];
+    txHash: string;
+};
 export type HexString = `0x${string}`;

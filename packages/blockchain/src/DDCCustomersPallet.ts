@@ -3,6 +3,7 @@ import {PalletDdcCustomersUnlockChunk} from '@polkadot/types/lookup';
 import {ClusterId} from './DDCClustersPallet';
 import {AccountId32} from '@polkadot/types/interfaces/runtime';
 import {Vec} from '@polkadot/types-codec';
+import {Sendable} from './Blockchain';
 
 export class DDCCustomersPallet {
     constructor(private apiPromise: ApiPromise) {}
@@ -23,11 +24,11 @@ export class DDCCustomersPallet {
     }
 
     allocateBucketToCluster(bucketId: BucketId, clusterId: ClusterId) {
-        return this.apiPromise.tx.ddcCustomers.allocateBucketToCluster(bucketId, clusterId);
+        return this.apiPromise.tx.ddcCustomers.allocateBucketToCluster(bucketId, clusterId) as Sendable;
     }
 
     createBucket(publicAvailability: boolean, resourcesUsed: bigint) {
-        return this.apiPromise.tx.ddcCustomers.createBucket(publicAvailability, resourcesUsed);
+        return this.apiPromise.tx.ddcCustomers.createBucket(publicAvailability, resourcesUsed) as Sendable;
     }
 
     deposit(value: bigint) {
@@ -55,7 +56,7 @@ export type Bucket = /*PalletDdcCustomersBucket;*/ {
     readonly publicAvailability: boolean;
     readonly resourcesReserved: bigint;
 };
-export type AccountId = AccountId32;
+export type AccountId = string;
 export type StakingInfo = /*PalletDdcCustomersAccountsLedger;*/ {
     readonly owner: AccountId;
     readonly total: bigint;

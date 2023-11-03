@@ -6,14 +6,17 @@ import {AddressOrPair} from '@polkadot/api/types';
 import path from 'path';
 import fs from 'fs/promises';
 import {Abi, CodePromise} from '@polkadot/api-contract';
+import {KeyringPair} from '@polkadot/keyring/types';
 
 describe('packages/blockchain', () => {
     let apiPromise: ApiPromise;
     let blockchain: Blockchain;
 
-    let admin: AddressOrPair;
+    let admin: KeyringPair;
     let cdnNode1Key: string;
+    let storageNode1Key: string;
     let storageNode2Key: string;
+    let storageNode3Key: string;
     let nonExistentKey1: string;
     const clusterId = '0x0000000000000000000000000000000000000000';
 
@@ -44,9 +47,11 @@ describe('packages/blockchain', () => {
         await cryptoWaitReady();
 
         admin = getAccount();
-        cdnNode1Key = await createAccount().address; //getAccount('//Bob').address;
-        storageNode2Key = await createAccount().address; //getAccount('//Eve').address;
-        nonExistentKey1 = await createAccount().address; //getAccount('//Ferdie').address;
+        cdnNode1Key = getAccount('//Alice').address;
+        storageNode1Key = getAccount('//Bob').address;
+        storageNode2Key = getAccount('//Charlie').address;
+        storageNode3Key = getAccount('//Dave').address;
+        nonExistentKey1 = getAccount('//Eve').address;
 
         apiPromise = await createBlockhainApi();
         nodeProviderAuthContract = await deployClusterNodeAuthorizationContract();
@@ -92,20 +97,20 @@ describe('packages/blockchain', () => {
 
     test('Should create a Storage Node and find it by public key', async () => {
         await blockchain.send(
-            blockchain.ddcNodes.createStorageNode(storageNode2Key, {grpcUrl: 'ddc-storage-node-2:9090'}),
+            blockchain.ddcNodes.createStorageNode(storageNode1Key, {grpcUrl: 'ddc-storage-node-2:9090'}),
         );
 
-        const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode2Key);
+        const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode1Key);
 
         expect(storageNode).toBeDefined();
-        expect(storageNode?.pubKey).toBe(storageNode2Key);
+        expect(storageNode?.pubKey).toBe(storageNode1Key);
     });
 
     test('Should set Storage node params', async () => {
         const storageNodeParams = {grpcUrl: 'ddc-storage-node-2:8091'};
-        await blockchain.send(blockchain.ddcNodes.setStorageNodeParams(storageNode2Key, storageNodeParams));
+        await blockchain.send(blockchain.ddcNodes.setStorageNodeParams(storageNode1Key, storageNodeParams));
 
-        const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode2Key);
+        const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode1Key);
 
         expect(storageNode).toBeDefined();
         expect(storageNode?.props.params).toEqual(storageNodeParams);
@@ -150,7 +155,7 @@ describe('packages/blockchain', () => {
 
     test('Should add a Storage Node to a cluster', async () => {
         await expect(() =>
-            blockchain.send(blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNode1Key)),
+            blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key)),
         ).rejects.toThrow('ddcClusters.NoStake');
     });
 
@@ -158,5 +163,38 @@ describe('packages/blockchain', () => {
         await expect(() =>
             blockchain.send(blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNode1Key)),
         ).rejects.toThrow('ddcClusters.NoStake');
+    });
+
+    test('Should create 2 Storage nodes in batch', async () => {
+        await blockchain.batchSend([
+            blockchain.ddcNodes.createStorageNode(storageNode2Key, {grpcUrl: 'ddc-storage-node-2:9090'}),
+            blockchain.ddcNodes.createStorageNode(storageNode3Key, {grpcUrl: 'ddc-storage-node-3:9090'}),
+        ]);
+
+        const storageNode2 = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode2Key);
+        const storageNode3 = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode3Key);
+
+        expect(storageNode2).toBeDefined();
+        expect(storageNode3).toBeDefined();
+    });
+
+    test('Should bond storage node', async () => {
+        await blockchain.batchSend([
+            blockchain.ddcStaking.bondStorageNode(admin.address, storageNode1Key, 100n * 10_000_000_000n),
+            blockchain.ddcStaking.store(clusterId),
+            blockchain.ddcStaking.setController(storageNode1Key),
+        ]);
+    });
+
+    test('Should add storage node to cluster', async () => {
+        await blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key));
+        const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode1Key);
+        expect(storageNode?.clusterId).toBe(clusterId);
+        const nodeKeys = await blockchain.ddcClusters.listNodeKeys(clusterId);
+        expect(nodeKeys).toContain(storageNode1Key);
+    });
+
+    test('Should create bucket', async () => {
+        await blockchain.send(blockchain.ddcCustomers.createBucket(true, 1n));
     });
 });

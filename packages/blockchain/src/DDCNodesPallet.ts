@@ -30,7 +30,7 @@ export class DDCNodesPallet {
         return this.apiPromise.tx.ddcNodes.deleteNode({CDNPubKey: cdnNodePublicKey}) as Sendable;
     }
 
-    createStorageNode(storageNodePublicKey: StorageNodeParams, storageNodeParams: StorageNodeParams) {
+    createStorageNode(storageNodePublicKey: StorageNodePublicKey, storageNodeParams: StorageNodeParams) {
         return this.apiPromise.tx.ddcNodes.createNode(
             {StoragePubKey: storageNodePublicKey},
             {StorageParams: {params: serializeStorageNodeParams(storageNodeParams)}},

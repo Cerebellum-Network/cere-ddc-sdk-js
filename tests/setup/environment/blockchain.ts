@@ -115,7 +115,7 @@ export const startBlockchain = async (): Promise<Blockchain> => {
         .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
         .up();
 
-    const contractData: ContractData = isCached ? getContractData() : await setupContract();
+    const contractData: ContractData = !process.env.CI && isCached ? getContractData() : await setupContract();
 
     if (!isCached) {
         const contractDataJson = JSON.stringify(
