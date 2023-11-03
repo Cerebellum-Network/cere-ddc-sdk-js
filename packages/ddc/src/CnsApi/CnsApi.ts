@@ -17,6 +17,6 @@ export class CnsApi {
     async getCid(request: GetRequest) {
         const {response} = await this.api.get(request);
 
-        return response.cid;
+        return response.record;
     }
 }

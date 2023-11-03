@@ -11,8 +11,8 @@ export * from './RpcTransport';
  */
 export * from './Router';
 export * from './Piece';
-export * from './DagNode';
 export * from './StorageNode';
+export {DagNode, DagNodeResponse, Link, Tag} from './DagNode';
 
 /**
  * Constants

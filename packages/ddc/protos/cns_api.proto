@@ -9,32 +9,47 @@ import "google/api/annotations.proto";
 service CnsApi {
   rpc Put(PutRequest) returns (PutResponse) {
     option (google.api.http) = {
-      post: "/v1/cns/{BucketId}"
+      post: "/v1/cns/{bucketId}"
       body: "*"
     };
   }
 
   rpc Get(GetRequest) returns (GetResponse) {
     option (google.api.http) = {
-      get: "/v1/cns/{BucketId}/{Name}"
+      get: "/v1/cns/{bucketId}/{name}"
     };
   }
 }
 
 message PutRequest {
-  uint32 BucketId = 1;
-  string Name = 2;
-  string Cid = 3;
+  uint64 bucketId = 1;
+  Record record = 2;
 }
 
 message PutResponse {}
 
 message GetRequest {
-  // either bucketId or bucketName should be provided
-  uint32 BucketId = 1;
-  string Name = 3;
+  uint64 bucketId = 1;
+  string name = 2;
 }
 
 message GetResponse {
-  string Cid = 1;
+  Record record = 1;
+}
+
+message Record {
+  Signature signature = 1; // signature of a CnsRecord serialised to protobuf (excluding Signature itself) by a client that have an access to a bucket so requester can verify the validity of the CNS record
+  bytes cid = 2;
+  string name = 3;
+
+  message Signature {
+    Algorithm algorithm = 1;
+    bytes signer = 2;
+    bytes value = 3;
+
+    enum Algorithm {
+      ED_25519 = 0;
+      SR_25519 = 1;
+    }
+  }
 }
