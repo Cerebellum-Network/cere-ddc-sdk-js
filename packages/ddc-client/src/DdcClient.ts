@@ -3,7 +3,7 @@ import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract'
 import {DagNode, DagNodeResponse, DagNodeStoreOptions, Router, RouterNode, RouterOperation} from '@cere-ddc-sdk/ddc';
 import {FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions} from '@cere-ddc-sdk/file-storage';
 
-import {DdcEntity, DdcUri} from './DdcUri';
+import {DagNodeUri, DdcEntity, DdcUri, FileUri} from './DdcUri';
 
 import {
     BucketParams,
@@ -96,8 +96,8 @@ export class DdcClient {
         return this.smartContract.bucketList(offset, limit, filterOwnerId);
     }
 
-    async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<DdcUri<'file'>>;
-    async store(bucketId: BucketId, entity: DagNode, options?: DagNodeStoreOptions): Promise<DdcUri<'dag-node'>>;
+    async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<FileUri>;
+    async store(bucketId: BucketId, entity: DagNode, options?: DagNodeStoreOptions): Promise<DagNodeUri>;
     async store(bucketId: BucketId, entity: File | DagNode, options?: DagNodeStoreOptions | FileStoreOptions) {
         const numBucketId = Number(bucketId); // TODO: Convert bucketId to number everywhere
         const entityType: DdcEntity = entity instanceof File ? 'file' : 'dag-node';
@@ -114,8 +114,8 @@ export class DdcClient {
         return new DdcUri(numBucketId, cid, entityType);
     }
 
-    async read(uri: DdcUri<'file'>, options?: FileReadOptions): Promise<FileResponse>;
-    async read(uri: DdcUri<'dag-node'>): Promise<DagNodeResponse>;
+    async read(uri: FileUri, options?: FileReadOptions): Promise<FileResponse>;
+    async read(uri: DagNodeUri): Promise<DagNodeResponse>;
     async read(uri: DdcUri, options?: FileReadOptions) {
         if (uri.entity === 'file') {
             return this.fileStorage.read(uri.bucketId, uri.cid, options);

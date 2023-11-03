@@ -19,5 +19,5 @@ export const createDataStream = (contentSize: number, chunkSize: number) => {
 };
 
 export const streamToU8a = async (stream: ReadableStream<Uint8Array>) => {
-    return new Uint8Array(await arrayBuffer(stream[Symbol.asyncIterator]()));
+    return new Uint8Array(await arrayBuffer(stream));
 };

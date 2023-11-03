@@ -1,6 +1,6 @@
-export {TESTNET, DEVNET, STAGENET, type SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
-export {KB, MB, DagNode, Tag, Link} from '@cere-ddc-sdk/ddc';
-export {DdcClient, DdcClientConfig} from './DdcClient';
-
+export * from './DdcClient';
 export * from './DdcUri';
-export * from '@cere-ddc-sdk/file-storage';
+
+export {TESTNET, DEVNET, STAGENET, MAINNET, type SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
+export {KB, MB, DagNode, Tag, Link, DagNodeResponse, DagNodeStoreOptions} from '@cere-ddc-sdk/ddc';
+export {File, FileResponse, FileStoreOptions, FileReadOptions, FileContent} from '@cere-ddc-sdk/file-storage';
