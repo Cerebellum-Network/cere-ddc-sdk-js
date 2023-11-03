@@ -40,13 +40,13 @@ export interface PutRawPieceRequest {
  */
 export interface PutRawPieceRequest_Metadata {
     /**
-     * @generated from protobuf field: optional bytes cid = 1;
+     * @generated from protobuf field: uint64 bucketId = 1;
+     */
+    bucketId: number;
+    /**
+     * @generated from protobuf field: optional bytes cid = 2;
      */
     cid?: Uint8Array;
-    /**
-     * @generated from protobuf field: string bucketId = 2;
-     */
-    bucketId: string;
     /**
      * @generated from protobuf field: optional uint64 offset = 3;
      */
@@ -79,13 +79,13 @@ export interface PutRawPieceResponse {
  */
 export interface PutMultiPartPieceRequest {
     /**
-     * @generated from protobuf field: optional bytes cid = 1;
+     * @generated from protobuf field: uint64 bucketId = 1;
+     */
+    bucketId: number; // bucket where file is stored
+    /**
+     * @generated from protobuf field: optional bytes cid = 2;
      */
     cid?: Uint8Array; // root hash of the file hash tree
-    /**
-     * @generated from protobuf field: string bucketId = 2;
-     */
-    bucketId: string; // bucket where file is stored
     /**
      * @generated from protobuf field: uint64 totalSize = 3;
      */
@@ -113,13 +113,13 @@ export interface PutMultiPartPieceResponse {
  */
 export interface GetFileRequest {
     /**
-     * @generated from protobuf field: bytes cid = 1;
+     * @generated from protobuf field: uint64 bucketId = 1;
+     */
+    bucketId: number;
+    /**
+     * @generated from protobuf field: bytes cid = 2;
      */
     cid: Uint8Array; // CID of either raw or multi-part piece
-    /**
-     * @generated from protobuf field: string bucketId = 2;
-     */
-    bucketId: string;
     /**
      * @generated from protobuf field: optional file.GetFileRequest.Range range = 3;
      */
@@ -234,14 +234,14 @@ export const PutRawPieceRequest = new PutRawPieceRequest$Type();
 class PutRawPieceRequest_Metadata$Type extends MessageType<PutRawPieceRequest_Metadata> {
     constructor() {
         super("file.PutRawPieceRequest.Metadata", [
-            { no: 1, name: "cid", kind: "scalar", opt: true, T: 12 /*ScalarType.BYTES*/ },
-            { no: 2, name: "bucketId", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 1, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
+            { no: 2, name: "cid", kind: "scalar", opt: true, T: 12 /*ScalarType.BYTES*/ },
             { no: 3, name: "offset", kind: "scalar", opt: true, T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
             { no: 4, name: "isMultipart", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
         ]);
     }
     create(value?: PartialMessage<PutRawPieceRequest_Metadata>): PutRawPieceRequest_Metadata {
-        const message = { bucketId: "", isMultipart: false };
+        const message = { bucketId: 0, isMultipart: false };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<PutRawPieceRequest_Metadata>(this, message, value);
@@ -252,11 +252,11 @@ class PutRawPieceRequest_Metadata$Type extends MessageType<PutRawPieceRequest_Me
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* optional bytes cid */ 1:
-                    message.cid = reader.bytes();
+                case /* uint64 bucketId */ 1:
+                    message.bucketId = reader.uint64().toNumber();
                     break;
-                case /* string bucketId */ 2:
-                    message.bucketId = reader.string();
+                case /* optional bytes cid */ 2:
+                    message.cid = reader.bytes();
                     break;
                 case /* optional uint64 offset */ 3:
                     message.offset = reader.uint64().toNumber();
@@ -276,12 +276,12 @@ class PutRawPieceRequest_Metadata$Type extends MessageType<PutRawPieceRequest_Me
         return message;
     }
     internalBinaryWrite(message: PutRawPieceRequest_Metadata, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* optional bytes cid = 1; */
+        /* uint64 bucketId = 1; */
+        if (message.bucketId !== 0)
+            writer.tag(1, WireType.Varint).uint64(message.bucketId);
+        /* optional bytes cid = 2; */
         if (message.cid !== undefined)
-            writer.tag(1, WireType.LengthDelimited).bytes(message.cid);
-        /* string bucketId = 2; */
-        if (message.bucketId !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.bucketId);
+            writer.tag(2, WireType.LengthDelimited).bytes(message.cid);
         /* optional uint64 offset = 3; */
         if (message.offset !== undefined)
             writer.tag(3, WireType.Varint).uint64(message.offset);
@@ -396,15 +396,15 @@ export const PutRawPieceResponse = new PutRawPieceResponse$Type();
 class PutMultiPartPieceRequest$Type extends MessageType<PutMultiPartPieceRequest> {
     constructor() {
         super("file.PutMultiPartPieceRequest", [
-            { no: 1, name: "cid", kind: "scalar", opt: true, T: 12 /*ScalarType.BYTES*/ },
-            { no: 2, name: "bucketId", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 1, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
+            { no: 2, name: "cid", kind: "scalar", opt: true, T: 12 /*ScalarType.BYTES*/ },
             { no: 3, name: "totalSize", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
             { no: 4, name: "partSize", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
             { no: 5, name: "partHashes", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 12 /*ScalarType.BYTES*/ }
         ]);
     }
     create(value?: PartialMessage<PutMultiPartPieceRequest>): PutMultiPartPieceRequest {
-        const message = { bucketId: "", totalSize: 0, partSize: 0, partHashes: [] };
+        const message = { bucketId: 0, totalSize: 0, partSize: 0, partHashes: [] };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<PutMultiPartPieceRequest>(this, message, value);
@@ -415,11 +415,11 @@ class PutMultiPartPieceRequest$Type extends MessageType<PutMultiPartPieceRequest
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* optional bytes cid */ 1:
-                    message.cid = reader.bytes();
+                case /* uint64 bucketId */ 1:
+                    message.bucketId = reader.uint64().toNumber();
                     break;
-                case /* string bucketId */ 2:
-                    message.bucketId = reader.string();
+                case /* optional bytes cid */ 2:
+                    message.cid = reader.bytes();
                     break;
                 case /* uint64 totalSize */ 3:
                     message.totalSize = reader.uint64().toNumber();
@@ -442,12 +442,12 @@ class PutMultiPartPieceRequest$Type extends MessageType<PutMultiPartPieceRequest
         return message;
     }
     internalBinaryWrite(message: PutMultiPartPieceRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* optional bytes cid = 1; */
+        /* uint64 bucketId = 1; */
+        if (message.bucketId !== 0)
+            writer.tag(1, WireType.Varint).uint64(message.bucketId);
+        /* optional bytes cid = 2; */
         if (message.cid !== undefined)
-            writer.tag(1, WireType.LengthDelimited).bytes(message.cid);
-        /* string bucketId = 2; */
-        if (message.bucketId !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.bucketId);
+            writer.tag(2, WireType.LengthDelimited).bytes(message.cid);
         /* uint64 totalSize = 3; */
         if (message.totalSize !== 0)
             writer.tag(3, WireType.Varint).uint64(message.totalSize);
@@ -518,13 +518,13 @@ export const PutMultiPartPieceResponse = new PutMultiPartPieceResponse$Type();
 class GetFileRequest$Type extends MessageType<GetFileRequest> {
     constructor() {
         super("file.GetFileRequest", [
-            { no: 1, name: "cid", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
-            { no: 2, name: "bucketId", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 1, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
+            { no: 2, name: "cid", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
             { no: 3, name: "range", kind: "message", T: () => GetFileRequest_Range }
         ]);
     }
     create(value?: PartialMessage<GetFileRequest>): GetFileRequest {
-        const message = { cid: new Uint8Array(0), bucketId: "" };
+        const message = { bucketId: 0, cid: new Uint8Array(0) };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<GetFileRequest>(this, message, value);
@@ -535,11 +535,11 @@ class GetFileRequest$Type extends MessageType<GetFileRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* bytes cid */ 1:
-                    message.cid = reader.bytes();
+                case /* uint64 bucketId */ 1:
+                    message.bucketId = reader.uint64().toNumber();
                     break;
-                case /* string bucketId */ 2:
-                    message.bucketId = reader.string();
+                case /* bytes cid */ 2:
+                    message.cid = reader.bytes();
                     break;
                 case /* optional file.GetFileRequest.Range range */ 3:
                     message.range = GetFileRequest_Range.internalBinaryRead(reader, reader.uint32(), options, message.range);
@@ -556,12 +556,12 @@ class GetFileRequest$Type extends MessageType<GetFileRequest> {
         return message;
     }
     internalBinaryWrite(message: GetFileRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* bytes cid = 1; */
+        /* uint64 bucketId = 1; */
+        if (message.bucketId !== 0)
+            writer.tag(1, WireType.Varint).uint64(message.bucketId);
+        /* bytes cid = 2; */
         if (message.cid.length)
-            writer.tag(1, WireType.LengthDelimited).bytes(message.cid);
-        /* string bucketId = 2; */
-        if (message.bucketId !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.bucketId);
+            writer.tag(2, WireType.LengthDelimited).bytes(message.cid);
         /* optional file.GetFileRequest.Range range = 3; */
         if (message.range)
             GetFileRequest_Range.internalBinaryWrite(message.range, writer.tag(3, WireType.LengthDelimited).fork(), options).join();

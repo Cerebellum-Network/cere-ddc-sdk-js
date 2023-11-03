@@ -25,18 +25,17 @@ service DagApi {
 }
 
 message PutRequest {
-  uint32 BucketId = 1;
+  uint64 BucketId = 1;
   Node Node = 2;
 }
 
 message PutResponse {
-  string Cid = 1;
+  bytes Cid = 1;
 }
 
 message GetRequest {
-  uint32 BucketId = 1;
-  string Cid = 2;
-
+  uint64 BucketId = 1;
+  bytes Cid = 2;
   optional string Path = 3;
 }
 
@@ -52,7 +51,7 @@ message Node {
 
 message Link {
   // CID of the target object
-  string Cid = 1;
+  bytes Cid = 1;
   // UTF-8 string name
   string Name = 2;
   // cumulative size of target object

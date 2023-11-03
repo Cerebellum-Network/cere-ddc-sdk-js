@@ -13,7 +13,7 @@ describe('DDC APIs', () => {
     const storeRawPiece = async (chunks: Content, mutipartOffset?: number) => {
         return fileApi.putRawPiece(
             {
-                bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+                bucketId,
                 isMultipart: mutipartOffset !== undefined,
                 offset: mutipartOffset,
             },
@@ -22,7 +22,7 @@ describe('DDC APIs', () => {
     };
 
     describe('Dag Api', () => {
-        let nodeCid: string;
+        let nodeCid: Uint8Array;
         const nodeData = randomBytes(10);
 
         test('Create node', async () => {
@@ -35,7 +35,7 @@ describe('DDC APIs', () => {
                 },
             });
 
-            expect(nodeCid).toEqual(expect.any(String));
+            expect(nodeCid).toEqual(expect.any(Uint8Array));
         });
 
         test('Read node', async () => {
@@ -44,7 +44,6 @@ describe('DDC APIs', () => {
             const node = await dagApi.getNode({
                 cid: nodeCid,
                 bucketId,
-                path: '',
             });
 
             expect(node?.data).toEqual(nodeData);
@@ -53,13 +52,15 @@ describe('DDC APIs', () => {
 
     describe.skip('Cns Api', () => {
         const alias = 'test-cid-alias';
-        const testCid = 'test-cid';
+        const testCid = new Uint8Array(randomBytes(32));
 
         test('Create alias', async () => {
             await cnsApi.assignName({
                 bucketId,
-                cid: testCid,
-                name: alias,
+                record: {
+                    cid: testCid,
+                    name: alias,
+                },
             });
         });
 
@@ -93,8 +94,8 @@ describe('DDC APIs', () => {
                 expect(smallPieceCid).toBeDefined();
 
                 const contentStream = fileApi.getFile({
+                    bucketId,
                     cid: smallPieceCid,
-                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
 
                 const content = await streamToU8a(contentStream);
@@ -113,8 +114,8 @@ describe('DDC APIs', () => {
                 expect(largePieceCid).toBeDefined();
 
                 const contentStream = fileApi.getFile({
+                    bucketId,
                     cid: largePieceCid,
-                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
 
                 const content = await streamToU8a(contentStream);
@@ -127,8 +128,8 @@ describe('DDC APIs', () => {
 
                 const rangeSize = 10 * DDC_BLOCK_SIZE;
                 const contentStream = fileApi.getFile({
+                    bucketId,
                     cid: largePieceCid,
-                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                     range: {
                         start: 0,
                         end: rangeSize - 1,
@@ -166,7 +167,7 @@ describe('DDC APIs', () => {
                 const partHashes = rawPieceCids.map((cid) => cid.slice(-32));
 
                 multipartPieceCid = await fileApi.putMultipartPiece({
-                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
+                    bucketId,
                     partHashes,
                     partSize,
                     totalSize,
@@ -180,8 +181,8 @@ describe('DDC APIs', () => {
                 expect(multipartPieceCid).toBeDefined();
 
                 const contentStream = fileApi.getFile({
+                    bucketId,
                     cid: multipartPieceCid,
-                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type
                 });
 
                 const content = await streamToU8a(contentStream);
@@ -194,8 +195,8 @@ describe('DDC APIs', () => {
 
                 const rangeSize = 10 * DDC_BLOCK_SIZE;
                 const contentStream = fileApi.getFile({
+                    bucketId,
                     cid: multipartPieceCid,
-                    bucketId: bucketId.toString(), // TODO: Inconsistent bucketId type,
                     range: {
                         start: 0,
                         end: rangeSize - 1,

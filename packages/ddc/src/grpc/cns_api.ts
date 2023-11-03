@@ -17,17 +17,13 @@ import { MessageType } from "@protobuf-ts/runtime";
  */
 export interface PutRequest {
     /**
-     * @generated from protobuf field: uint32 BucketId = 1 [json_name = "BucketId"];
+     * @generated from protobuf field: uint64 bucketId = 1;
      */
     bucketId: number;
     /**
-     * @generated from protobuf field: string Name = 2 [json_name = "Name"];
+     * @generated from protobuf field: cns.Record record = 2;
      */
-    name: string;
-    /**
-     * @generated from protobuf field: string Cid = 3 [json_name = "Cid"];
-     */
-    cid: string;
+    record?: Record;
 }
 /**
  * @generated from protobuf message cns.PutResponse
@@ -39,13 +35,11 @@ export interface PutResponse {
  */
 export interface GetRequest {
     /**
-     * either bucketId or bucketName should be provided
-     *
-     * @generated from protobuf field: uint32 BucketId = 1 [json_name = "BucketId"];
+     * @generated from protobuf field: uint64 bucketId = 1;
      */
     bucketId: number;
     /**
-     * @generated from protobuf field: string Name = 3 [json_name = "Name"];
+     * @generated from protobuf field: string name = 2;
      */
     name: string;
 }
@@ -54,21 +48,67 @@ export interface GetRequest {
  */
 export interface GetResponse {
     /**
-     * @generated from protobuf field: string Cid = 1 [json_name = "Cid"];
+     * @generated from protobuf field: cns.Record record = 1;
      */
-    cid: string;
+    record?: Record;
+}
+/**
+ * @generated from protobuf message cns.Record
+ */
+export interface Record {
+    /**
+     * @generated from protobuf field: cns.Record.Signature signature = 1;
+     */
+    signature?: Record_Signature; // signature of a CnsRecord serialised to protobuf (excluding Signature itself) by a client that have an access to a bucket so requester can verify the validity of the CNS record
+    /**
+     * @generated from protobuf field: bytes cid = 2;
+     */
+    cid: Uint8Array;
+    /**
+     * @generated from protobuf field: string name = 3;
+     */
+    name: string;
+}
+/**
+ * @generated from protobuf message cns.Record.Signature
+ */
+export interface Record_Signature {
+    /**
+     * @generated from protobuf field: cns.Record.Signature.Algorithm algorithm = 1;
+     */
+    algorithm: Record_Signature_Algorithm;
+    /**
+     * @generated from protobuf field: bytes signer = 2;
+     */
+    signer: Uint8Array;
+    /**
+     * @generated from protobuf field: bytes value = 3;
+     */
+    value: Uint8Array;
+}
+/**
+ * @generated from protobuf enum cns.Record.Signature.Algorithm
+ */
+export enum Record_Signature_Algorithm {
+    /**
+     * @generated from protobuf enum value: ED_25519 = 0;
+     */
+    ED_25519 = 0,
+    /**
+     * @generated from protobuf enum value: SR_25519 = 1;
+     */
+    SR_25519 = 1
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class PutRequest$Type extends MessageType<PutRequest> {
     constructor() {
         super("cns.PutRequest", [
-            { no: 1, name: "BucketId", kind: "scalar", jsonName: "BucketId", T: 13 /*ScalarType.UINT32*/ },
-            { no: 2, name: "Name", kind: "scalar", jsonName: "Name", T: 9 /*ScalarType.STRING*/ },
-            { no: 3, name: "Cid", kind: "scalar", jsonName: "Cid", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
+            { no: 2, name: "record", kind: "message", T: () => Record }
         ]);
     }
     create(value?: PartialMessage<PutRequest>): PutRequest {
-        const message = { bucketId: 0, name: "", cid: "" };
+        const message = { bucketId: 0 };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<PutRequest>(this, message, value);
@@ -79,14 +119,11 @@ class PutRequest$Type extends MessageType<PutRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* uint32 BucketId = 1 [json_name = "BucketId"];*/ 1:
-                    message.bucketId = reader.uint32();
+                case /* uint64 bucketId */ 1:
+                    message.bucketId = reader.uint64().toNumber();
                     break;
-                case /* string Name = 2 [json_name = "Name"];*/ 2:
-                    message.name = reader.string();
-                    break;
-                case /* string Cid = 3 [json_name = "Cid"];*/ 3:
-                    message.cid = reader.string();
+                case /* cns.Record record */ 2:
+                    message.record = Record.internalBinaryRead(reader, reader.uint32(), options, message.record);
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -100,15 +137,12 @@ class PutRequest$Type extends MessageType<PutRequest> {
         return message;
     }
     internalBinaryWrite(message: PutRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* uint32 BucketId = 1 [json_name = "BucketId"]; */
+        /* uint64 bucketId = 1; */
         if (message.bucketId !== 0)
-            writer.tag(1, WireType.Varint).uint32(message.bucketId);
-        /* string Name = 2 [json_name = "Name"]; */
-        if (message.name !== "")
-            writer.tag(2, WireType.LengthDelimited).string(message.name);
-        /* string Cid = 3 [json_name = "Cid"]; */
-        if (message.cid !== "")
-            writer.tag(3, WireType.LengthDelimited).string(message.cid);
+            writer.tag(1, WireType.Varint).uint64(message.bucketId);
+        /* cns.Record record = 2; */
+        if (message.record)
+            Record.internalBinaryWrite(message.record, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -149,8 +183,8 @@ export const PutResponse = new PutResponse$Type();
 class GetRequest$Type extends MessageType<GetRequest> {
     constructor() {
         super("cns.GetRequest", [
-            { no: 1, name: "BucketId", kind: "scalar", jsonName: "BucketId", T: 13 /*ScalarType.UINT32*/ },
-            { no: 3, name: "Name", kind: "scalar", jsonName: "Name", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
+            { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<GetRequest>): GetRequest {
@@ -165,10 +199,10 @@ class GetRequest$Type extends MessageType<GetRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* uint32 BucketId = 1 [json_name = "BucketId"];*/ 1:
-                    message.bucketId = reader.uint32();
+                case /* uint64 bucketId */ 1:
+                    message.bucketId = reader.uint64().toNumber();
                     break;
-                case /* string Name = 3 [json_name = "Name"];*/ 3:
+                case /* string name */ 2:
                     message.name = reader.string();
                     break;
                 default:
@@ -183,12 +217,12 @@ class GetRequest$Type extends MessageType<GetRequest> {
         return message;
     }
     internalBinaryWrite(message: GetRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* uint32 BucketId = 1 [json_name = "BucketId"]; */
+        /* uint64 bucketId = 1; */
         if (message.bucketId !== 0)
-            writer.tag(1, WireType.Varint).uint32(message.bucketId);
-        /* string Name = 3 [json_name = "Name"]; */
+            writer.tag(1, WireType.Varint).uint64(message.bucketId);
+        /* string name = 2; */
         if (message.name !== "")
-            writer.tag(3, WireType.LengthDelimited).string(message.name);
+            writer.tag(2, WireType.LengthDelimited).string(message.name);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -203,11 +237,11 @@ export const GetRequest = new GetRequest$Type();
 class GetResponse$Type extends MessageType<GetResponse> {
     constructor() {
         super("cns.GetResponse", [
-            { no: 1, name: "Cid", kind: "scalar", jsonName: "Cid", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "record", kind: "message", T: () => Record }
         ]);
     }
     create(value?: PartialMessage<GetResponse>): GetResponse {
-        const message = { cid: "" };
+        const message = {};
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<GetResponse>(this, message, value);
@@ -218,8 +252,8 @@ class GetResponse$Type extends MessageType<GetResponse> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string Cid = 1 [json_name = "Cid"];*/ 1:
-                    message.cid = reader.string();
+                case /* cns.Record record */ 1:
+                    message.record = Record.internalBinaryRead(reader, reader.uint32(), options, message.record);
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -233,9 +267,9 @@ class GetResponse$Type extends MessageType<GetResponse> {
         return message;
     }
     internalBinaryWrite(message: GetResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string Cid = 1 [json_name = "Cid"]; */
-        if (message.cid !== "")
-            writer.tag(1, WireType.LengthDelimited).string(message.cid);
+        /* cns.Record record = 1; */
+        if (message.record)
+            Record.internalBinaryWrite(message.record, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -246,10 +280,132 @@ class GetResponse$Type extends MessageType<GetResponse> {
  * @generated MessageType for protobuf message cns.GetResponse
  */
 export const GetResponse = new GetResponse$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class Record$Type extends MessageType<Record> {
+    constructor() {
+        super("cns.Record", [
+            { no: 1, name: "signature", kind: "message", T: () => Record_Signature },
+            { no: 2, name: "cid", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
+            { no: 3, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<Record>): Record {
+        const message = { cid: new Uint8Array(0), name: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<Record>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Record): Record {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* cns.Record.Signature signature */ 1:
+                    message.signature = Record_Signature.internalBinaryRead(reader, reader.uint32(), options, message.signature);
+                    break;
+                case /* bytes cid */ 2:
+                    message.cid = reader.bytes();
+                    break;
+                case /* string name */ 3:
+                    message.name = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: Record, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* cns.Record.Signature signature = 1; */
+        if (message.signature)
+            Record_Signature.internalBinaryWrite(message.signature, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* bytes cid = 2; */
+        if (message.cid.length)
+            writer.tag(2, WireType.LengthDelimited).bytes(message.cid);
+        /* string name = 3; */
+        if (message.name !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.name);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message cns.Record
+ */
+export const Record = new Record$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class Record_Signature$Type extends MessageType<Record_Signature> {
+    constructor() {
+        super("cns.Record.Signature", [
+            { no: 1, name: "algorithm", kind: "enum", T: () => ["cns.Record.Signature.Algorithm", Record_Signature_Algorithm] },
+            { no: 2, name: "signer", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
+            { no: 3, name: "value", kind: "scalar", T: 12 /*ScalarType.BYTES*/ }
+        ]);
+    }
+    create(value?: PartialMessage<Record_Signature>): Record_Signature {
+        const message = { algorithm: 0, signer: new Uint8Array(0), value: new Uint8Array(0) };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<Record_Signature>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Record_Signature): Record_Signature {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* cns.Record.Signature.Algorithm algorithm */ 1:
+                    message.algorithm = reader.int32();
+                    break;
+                case /* bytes signer */ 2:
+                    message.signer = reader.bytes();
+                    break;
+                case /* bytes value */ 3:
+                    message.value = reader.bytes();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: Record_Signature, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* cns.Record.Signature.Algorithm algorithm = 1; */
+        if (message.algorithm !== 0)
+            writer.tag(1, WireType.Varint).int32(message.algorithm);
+        /* bytes signer = 2; */
+        if (message.signer.length)
+            writer.tag(2, WireType.LengthDelimited).bytes(message.signer);
+        /* bytes value = 3; */
+        if (message.value.length)
+            writer.tag(3, WireType.LengthDelimited).bytes(message.value);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message cns.Record.Signature
+ */
+export const Record_Signature = new Record_Signature$Type();
 /**
  * @generated ServiceType for protobuf service cns.CnsApi
  */
 export const CnsApi = new ServiceType("cns.CnsApi", [
-    { name: "Put", options: { "google.api.http": { post: "/v1/cns/{BucketId}", body: "*" } }, I: PutRequest, O: PutResponse },
-    { name: "Get", options: { "google.api.http": { get: "/v1/cns/{BucketId}/{Name}" } }, I: GetRequest, O: GetResponse }
+    { name: "Put", options: { "google.api.http": { post: "/v1/cns/{bucketId}", body: "*" } }, I: PutRequest, O: PutResponse },
+    { name: "Get", options: { "google.api.http": { get: "/v1/cns/{bucketId}/{name}" } }, I: GetRequest, O: GetResponse }
 ]);
