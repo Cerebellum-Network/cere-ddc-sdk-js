@@ -3,18 +3,21 @@ import * as fs from 'fs';
 import {Readable} from 'stream';
 import {pipeline} from 'stream/promises';
 import {createHash} from 'crypto';
-import {Router} from '@cere-ddc-sdk/ddc';
+import {Router, UriSigner} from '@cere-ddc-sdk/ddc';
 import {FileStorage, File} from '@cere-ddc-sdk/file-storage';
-import {createDataStream, MB, KB} from '../helpers';
+import {createDataStream, MB, KB, ROOT_USER_SEED} from '../helpers';
 
 describe('File storage', () => {
     const bucketId = 0;
-    const router = new Router([
-        {rpcHost: 'localhost:9091'},
-        {rpcHost: 'localhost:9092'},
-        {rpcHost: 'localhost:9093'},
-        {rpcHost: 'localhost:9094'},
-    ]);
+    const router = new Router({
+        signer: new UriSigner(ROOT_USER_SEED),
+        nodes: [
+            {rpcHost: 'localhost:9091'},
+            {rpcHost: 'localhost:9092'},
+            {rpcHost: 'localhost:9093'},
+            {rpcHost: 'localhost:9094'},
+        ],
+    });
 
     const fileStorage = new FileStorage({router});
 
@@ -81,7 +84,8 @@ describe('File storage', () => {
         let fileCid: string;
 
         const fileHash = '420e4db24f5874bc5e585b73e50cbf9f';
-        const filePath = path.resolve(__dirname, '../fixtures/files/2.2mb.jpg');
+        const fileName = '2.2mb.jpg';
+        const filePath = path.resolve(__dirname, '../fixtures/files', fileName);
         const fileStats = fs.statSync(filePath);
         const fileStream = fs.createReadStream(filePath);
 
@@ -90,18 +94,35 @@ describe('File storage', () => {
                 size: fileStats.size,
             });
 
-            fileCid = await fileStorage.store(bucketId, file);
+            fileCid = await fileStorage.store(bucketId, file, {
+                name: fileName,
+            });
 
             expect(fileCid).toEqual(expect.any(String));
         });
 
         test('Read the file', async () => {
+            expect(fileCid).toBeDefined();
+
             const file = await fileStorage.read(bucketId, fileCid);
             const hash = createHash('md5');
-
             await pipeline(Readable.fromWeb(file.body), hash);
 
             expect(hash.digest('hex')).toEqual(fileHash);
+        });
+
+        test('Read the file by name', async () => {
+            expect(fileCid).toBeDefined();
+
+            const file = await fileStorage.read(bucketId, fileName);
+            const hash = createHash('md5');
+            await pipeline(Readable.fromWeb(file.body), hash);
+
+            expect(hash.digest('hex')).toEqual(fileHash);
+        });
+
+        test('Read a non-existing file by name', async () => {
+            expect(fileStorage.read(bucketId, 'random/file/name')).rejects.toThrow();
         });
     });
 });

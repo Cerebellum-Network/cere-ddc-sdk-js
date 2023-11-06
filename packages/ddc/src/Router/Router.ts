@@ -4,7 +4,7 @@
  * TODO: Repalce with real implementation
  */
 
-import {StorageNode} from '../StorageNode';
+import {StorageNode, StorageNodeConfig} from '../StorageNode';
 
 export enum RouterOperation {
     READ_DAG_NODE = 'read-dag-node',
@@ -13,20 +13,23 @@ export enum RouterOperation {
     STORE_PIECE = 'read-piece',
 }
 
-export type RouterNode = {
-    rpcHost: string;
+export type RouterNode = Pick<StorageNodeConfig, 'rpcHost'>;
+export type RouterConfig = {
+    nodes: RouterNode[];
+    signer: StorageNodeConfig['signer'];
 };
 
 export class Router {
-    constructor(private nodes: RouterNode[]) {}
+    constructor(private config: RouterConfig) {}
 
     async getNode(operation: RouterOperation) {
-        const node = this.nodes[Math.floor(Math.random() * this.nodes.length)];
+        const nodes = this.config.nodes;
+        const node = nodes[Math.floor(Math.random() * nodes.length)];
 
         if (!node) {
             throw new Error('No nodes available to handle the operation');
         }
 
-        return new StorageNode(node);
+        return new StorageNode({...node, signer: this.config.signer});
     }
 }

@@ -6,6 +6,7 @@ export {DagApi} from './DagApi';
 export * from './FileApi';
 export * from './RpcTransport';
 export * from './Signer';
+export * from './Cid';
 
 /**
  * High level API

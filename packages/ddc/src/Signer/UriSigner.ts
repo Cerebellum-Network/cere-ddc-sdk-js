@@ -49,6 +49,10 @@ export class UriSigner implements Signer {
         return this.getPair().publicKey;
     }
 
+    get addressRaw() {
+        return this.getPair().addressRaw;
+    }
+
     sign(data: Uint8Array, options?: SignOptions) {
         return this.getPair().sign(data, options);
     }
