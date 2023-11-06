@@ -1,30 +1,35 @@
 import {ApiPromise} from '@polkadot/api';
 import {KeyringPair} from '@polkadot/keyring/types';
 import {ContractPromise} from '@polkadot/api-contract';
-import {GlobalNftRegistry} from '@cere-ddc-sdk/global-nft-registry/src';
-import {AccountId, ChainId, ContractAddress, TokenId} from '@cere-ddc-sdk/global-nft-registry/src/types';
+import {GlobalNftRegistry, addressToAccountId} from '@cere-ddc-sdk/global-nft-registry';
+import {AccountId, ChainId, ContractAddress, TokenId, Role, EvmAddress} from '@cere-ddc-sdk/global-nft-registry/types';
 
 import {bootstrapRegistry, createBlockhainApi, getAccount} from './helpers';
-import {Role} from 'packages/global-nft-registry/dist/types/types';
-import exp from 'constants';
 
 describe('Global NFT Registry', () => {
     let api: ApiPromise;
-    let admin: KeyringPair;
     let deployedContract: ContractPromise;
+    let admin: KeyringPair;
     let user: KeyringPair;
     let adminRegistry: GlobalNftRegistry;
     let userRegistry: GlobalNftRegistry;
 
     const chainId: ChainId = 1n;
-    const owner: AccountId = '0xa4d8d7c9f7b4489e8cb616fca9d677901d7d9b2a';
-    const receiver: AccountId = '0x5a8edac6d9c6b8c7c3f9d2c8f8a3a0b0f9c0a2e6';
-    const tokenContract: ContractAddress = '0x7a250d5630b4cf539739df2c5dacb4c659f2488d';
+    const owner: EvmAddress = '0x56Af158900A0Ca1909438a9392a3b047080c46c1';
+    const receiver: EvmAddress = '0xd6a8381d04E412FB16a4e99850B33eBC75Cf9133';
+    const tokenContract: ContractAddress = '0xa6F451CaD9bB834EB5804b976149A5C3b82de21E';
     const tokenId: TokenId = 100n;
-    const zeroAddress: AccountId = '0x0000000000000000000000000000000000000000';
+    const zeroAddress: EvmAddress = '0x0000000000000000000000000000000000000000';
 
     const updateRegistry = async () => {
         await adminRegistry.updateRegistry(chainId, tokenContract, tokenId, owner, 100n);
+    };
+
+    const grantTrustedServiceRole = async (_user: KeyringPair) => {
+        await adminRegistry.grantRole(Role.TrustedService, _user.address);
+
+        const hasRole = await adminRegistry.hasRole(Role.TrustedService, _user.address);
+        expect(hasRole).toEqual(true);
     };
 
     beforeAll(async () => {
@@ -36,20 +41,43 @@ describe('Global NFT Registry', () => {
 
         adminRegistry = new GlobalNftRegistry(admin, deployedContract);
         userRegistry = new GlobalNftRegistry(user, deployedContract);
+
+        await grantTrustedServiceRole(admin);
+
+        // @ts-ignore
+        console.log(adminRegistry.contract);
     });
 
     afterAll(async () => {
         await api.disconnect();
     });
 
+    describe('convert addresses', () => {
+        it('should be able to convert the owner address to an account id', () => {
+            const accountId: AccountId = '0x00000000000000000000000056af158900a0ca1909438a9392a3b047080c46c1';
+            expect(addressToAccountId(owner)).toEqual(accountId);
+        });
+
+        it('should be able to convert the receiver address to an account id', () => {
+            const accountId: AccountId = '0x000000000000000000000000d6a8381d04e412fb16a4e99850b33ebc75cf9133';
+            expect(addressToAccountId(receiver)).toEqual(accountId);
+        });
+
+        it('should be able to convert the zero address to an account id', () => {
+            const accountId: AccountId = '0x0000000000000000000000000000000000000000000000000000000000000000';
+            expect(addressToAccountId(zeroAddress)).toEqual(accountId);
+        });
+    });
+
     describe('updateRegistry', () => {
         it('should directly update the token balance in the registry', async () => {
-            expect(await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract})).toEqual(0n);
+            const balance = await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract});
+            expect(balance).toEqual(0n);
 
             await updateRegistry();
 
-            const balance = await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract});
-            expect(balance).toEqual(100n);
+            const newBalance = await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract});
+            expect(newBalance).toEqual(100n);
         });
 
         it('should throw an error if not an admin', async () => {
@@ -98,7 +126,7 @@ describe('Global NFT Registry', () => {
 
             expect(await adminRegistry.getBalanceByKey({chainId, owner, tokenId, tokenContract})).toEqual(0n);
             expect(await adminRegistry.getBalanceByKey({chainId, owner: zeroAddress, tokenId, tokenContract})).toEqual(
-                0n,
+                100n,
             );
         });
 
@@ -128,8 +156,12 @@ describe('Global NFT Registry', () => {
 
     describe('isOwner', () => {
         it('should return true if the owner owns the token and false if they do not', async () => {
+            await adminRegistry.updateRegistry(chainId, tokenContract, tokenId, owner, 0n);
+
             expect(await adminRegistry.isOwner(chainId, tokenContract, tokenId, owner)).toEqual(false);
-            await updateRegistry();
+
+            await adminRegistry.updateRegistry(chainId, tokenContract, tokenId, owner, 100n);
+
             expect(await adminRegistry.isOwner(chainId, tokenContract, tokenId, owner)).toEqual(true);
         });
     });
@@ -171,6 +203,7 @@ describe('Global NFT Registry', () => {
         });
 
         it('should return false if the account does not have the role', async () => {
+            await adminRegistry.revokeRole(Role.TrustedService, user.address);
             expect(await adminRegistry.hasRole(Role.TrustedService, user.address)).toEqual(false);
         });
     });

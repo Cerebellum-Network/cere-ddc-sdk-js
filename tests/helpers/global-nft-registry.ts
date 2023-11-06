@@ -7,7 +7,7 @@ import {KeyringPair} from '@polkadot/keyring/types';
 import {getGasLimit, signAndSend} from './blockchain';
 
 const readRegistry = async () => {
-    const contractDir = path.resolve(__dirname, '../fixtures/contract');
+    const contractDir = path.resolve(__dirname, '../fixtures/global-nft-registry');
 
     const contractContent = await fs.readFile(path.resolve(contractDir, 'global_nft_registry.contract'));
     const metadata = await fs.readFile(path.resolve(contractDir, 'metadata.json'));
@@ -36,6 +36,7 @@ const deployRegistry = async (api: ApiPromise, account: KeyringPair, abi: Abi, w
 
 export const bootstrapRegistry = async (api: ApiPromise, signer: KeyringPair) => {
     const {abi, wasm} = await readRegistry();
+
     const address = await deployRegistry(api, signer, abi, wasm);
     const contract = new ContractPromise(api, abi, address);
 

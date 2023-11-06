@@ -45,12 +45,14 @@ export class GlobalNftRegistry extends SmartContractBase implements GlobalNftReg
         }
 
         const contract = new ContractPromise(api, options.abi, options.contractAddress);
-        const registry = new GlobalNftRegistry(addressOrPair, contract, signer);
+        const smartContract = new GlobalNftRegistry(addressOrPair, contract, signer);
 
-        // In case an external API instance is used - don't disconnect it
-        registry.shouldDisconnectAPI = !options.api;
+        /**
+         * In case an external API instance is used - don't diconnect it
+         */
+        smartContract.shouldDisconnectAPI = !options.api;
 
-        return registry.connect();
+        return smartContract.connect();
     }
 
     async connect() {
@@ -118,7 +120,15 @@ export class GlobalNftRegistry extends SmartContractBase implements GlobalNftReg
         const ownerAccountId = addressToAccountId(owner);
         const tokenContractAccountId = addressToAccountId(tokenContract);
 
-        return this.queryOne(this.contract.query.getBalance, chainId, tokenContractAccountId, tokenId, ownerAccountId);
+        return BigInt(
+            await this.query<Balance>(
+                this.contract.query.getBalance,
+                chainId,
+                tokenContractAccountId,
+                tokenId,
+                ownerAccountId,
+            ),
+        );
     }
 
     async getBalanceByKey({
@@ -132,10 +142,7 @@ export class GlobalNftRegistry extends SmartContractBase implements GlobalNftReg
         tokenId: TokenId;
         owner: EvmAddress;
     }): Promise<Balance> {
-        const ownerAccountId = addressToAccountId(owner);
-        const tokenContractAccountId = addressToAccountId(tokenContract);
-
-        return this.getBalance(chainId, tokenContractAccountId, tokenId, ownerAccountId);
+        return this.getBalance(chainId, tokenContract, tokenId, owner);
     }
 
     async isOwner(
@@ -144,10 +151,8 @@ export class GlobalNftRegistry extends SmartContractBase implements GlobalNftReg
         tokenId: TokenId,
         owner: EvmAddress,
     ): Promise<boolean> {
-        const ownerAccountId = addressToAccountId(owner);
-        const tokenContractAccountId = addressToAccountId(tokenContract);
-
-        return this.queryOne(this.contract.query.isOwner, chainId, tokenContractAccountId, tokenId, ownerAccountId);
+        const balance = await this.getBalance(chainId, tokenContract, tokenId, owner);
+        return balance > 0n;
     }
 
     async grantRole(role: Role, account: AccountId): Promise<Required<SubmitResult>> {
@@ -159,6 +164,6 @@ export class GlobalNftRegistry extends SmartContractBase implements GlobalNftReg
     }
 
     async hasRole(role: Role, account: AccountId): Promise<boolean> {
-        return this.queryOne(this.contract.query.hasRole, role, account);
+        return this.query(this.contract.query.hasRole, role, account);
     }
 }

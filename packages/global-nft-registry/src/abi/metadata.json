@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0xa53b324789e5f59c13d32b4d82169425479ebeb48982599b12ded5a7952cffec",
+    "hash": "0x4f50841822619dcdb54242b056d7881e8e91011bc1a444666e9c8a3a76d024da",
     "language": "ink! 3.4.0",
     "compiler": "rustc 1.69.0-nightly"
   },
@@ -60,8 +60,10 @@
               }
             },
             {
-              "docs": [],
-              "indexed": true,
+              "docs": [
+                " The account that owns this token"
+              ],
+              "indexed": false,
               "label": "owner",
               "type": {
                 "displayName": [

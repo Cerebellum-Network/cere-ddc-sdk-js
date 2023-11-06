@@ -63,6 +63,25 @@ The `GlobalNftRegistry` instance can be created in two ways:
 
 # API
 
+### Address Structure
+
+> When using the SDK, always format input addresses (including token owners and token contract addresses) as EVM addresses.
+
+The Global NFT Registry substrate smart contract stores addresses for EVM wallet token owners and smart contracts as 32 Byte Account Ids, but when using these types outside of the registry we expect them to be 20 Byte Ethereum addresses. For this reason, the SDK endpoints take input as EVM addresses and converts them to Account Ids using helpers which are exposed by the SDK. 
+
+To use the helpers manually, see the following:
+
+```tsx
+import {EvmAddress, AccountId} from '@cere-ddc-sdk/global-nft-registry/types';
+import {accountIdToAddress, addressToAccountId} from '@cere-ddc-sdk/global-nft-registry';
+
+const evmAddress: EvmAddress = '0x7a250d5630b4cf539739df2c5dacb4c659f2488d';
+const accountId: AccountId = '0x0000000000000000000000007a250d5630b4cf539739df2c5dacb4c659f2488d';
+
+const accountIdEquivalent = addressToAccountId(evmAddress);
+const evmEquivalent = accountIdToAddress(accountId);
+```
+
 ### Initialise (Build and Connect)
 
 - Using the Class Constructor

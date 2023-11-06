@@ -3,7 +3,6 @@ import {GlobalNftRegistryAbi, globalNftRegistryAbi} from '../abi';
 
 export type GlobalNftRegistryOptions = {
     contractAddress: string;
-    // abi: Record<string, unknown>;
     abi: GlobalNftRegistryAbi;
     rpcUrl?: string;
     api?: ApiPromise;

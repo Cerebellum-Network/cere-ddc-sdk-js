@@ -1,4 +1,4 @@
-import {EvmAddress, AccountId} from '@cere-ddc-sdk/global-nft-registry/src/types';
+import {EvmAddress, AccountId} from '@cere-ddc-sdk/global-nft-registry/types';
 import {accountIdToAddress, addressToAccountId} from '@cere-ddc-sdk/global-nft-registry';
 
 const evmAddress: EvmAddress = '0x7a250d5630b4cf539739df2c5dacb4c659f2488d';
