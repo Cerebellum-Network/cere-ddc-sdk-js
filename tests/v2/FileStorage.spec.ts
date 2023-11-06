@@ -1,3 +1,8 @@
+import * as path from 'path';
+import * as fs from 'fs';
+import {Readable} from 'stream';
+import {pipeline} from 'stream/promises';
+import {createHash} from 'crypto';
 import {Router} from '@cere-ddc-sdk/ddc';
 import {FileStorage, File} from '@cere-ddc-sdk/file-storage';
 import {createDataStream, MB, KB} from '../helpers';
@@ -69,6 +74,34 @@ describe('File storage', () => {
             const buffer = await file.arrayBuffer();
 
             expect(buffer.byteLength).toEqual(64 * MB);
+        });
+    });
+
+    describe('Real file', () => {
+        let fileCid: string;
+
+        const fileHash = '420e4db24f5874bc5e585b73e50cbf9f';
+        const filePath = path.resolve(__dirname, '../fixtures/files/2.2mb.jpg');
+        const fileStats = fs.statSync(filePath);
+        const fileStream = fs.createReadStream(filePath);
+
+        test('Store a file', async () => {
+            const file = new File(fileStream, {
+                size: fileStats.size,
+            });
+
+            fileCid = await fileStorage.store(bucketId, file);
+
+            expect(fileCid).toEqual(expect.any(String));
+        });
+
+        test('Read the file', async () => {
+            const file = await fileStorage.read(bucketId, fileCid);
+            const hash = createHash('md5');
+
+            await pipeline(Readable.fromWeb(file.body), hash);
+
+            expect(hash.digest('hex')).toEqual(fileHash);
         });
     });
 });
