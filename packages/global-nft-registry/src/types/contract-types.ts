@@ -3,6 +3,7 @@ import {Codec} from '@polkadot/types/types';
 export type AccountId = string;
 export type TokenId = bigint;
 export type ContractAddress = string;
+export type EvmAddress = string;
 export type ChainId = bigint;
 export type Balance = bigint;
 export type Offset = bigint;

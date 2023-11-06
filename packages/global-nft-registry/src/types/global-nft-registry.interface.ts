@@ -1,5 +1,5 @@
 import {SubmitResult} from '../smart-contract-base';
-import {AccountId, Balance, Role} from './contract-types';
+import {AccountId, Balance, ChainId, ContractAddress, EvmAddress, Role, TokenId} from './contract-types';
 
 export interface GlobalNftRegistryInterface {
     connect(): Promise<this>;
@@ -12,15 +12,15 @@ export interface GlobalNftRegistryInterface {
      * @param chainId The chain ID of the chain on which the token exists
      * @param tokenContract The address of the token contract
      * @param tokenId The ID of the token
-     * @param owner The address of the owner
+     * @param owner The address of the owner -- this should be their EVM address
      * @param balance The new balance of the owner
      */
     updateRegistry(
-        chainId: bigint,
-        tokenContract: string,
-        tokenId: bigint,
-        owner: string,
-        balance: bigint,
+        chainId: ChainId,
+        tokenContract: ContractAddress,
+        tokenId: TokenId,
+        owner: EvmAddress,
+        balance: Balance,
     ): Promise<Required<SubmitResult>>;
 
     /**
@@ -31,17 +31,17 @@ export interface GlobalNftRegistryInterface {
      * @param chainId The chain ID of the chain on which the token exists
      * @param tokenContract The address of the token contract
      * @param tokenId The ID of the token
-     * @param from The address of the current owner
-     * @param to The address of the new owner
+     * @param from The address of the current owner -- this should be their EVM address
+     * @param to The address of the new owner -- this should be their EVM address
      * @param amount The amount to transfer
      */
     transfer(
-        chainId: bigint,
-        tokenContract: string,
-        tokenId: bigint,
-        from: AccountId,
-        to: string,
-        amount: bigint,
+        chainId: ChainId,
+        tokenContract: ContractAddress,
+        tokenId: TokenId,
+        from: EvmAddress,
+        to: EvmAddress,
+        amount: Balance,
     ): Promise<Required<SubmitResult>>;
 
     /**
@@ -52,7 +52,7 @@ export interface GlobalNftRegistryInterface {
      * @param owner The address of the owner
      * @returns The balance of the owner
      */
-    getBalance(chainId: bigint, tokenContract: string, tokenId: bigint, owner: AccountId): Promise<Balance>;
+    getBalance(chainId: ChainId, tokenContract: ContractAddress, tokenId: TokenId, owner: EvmAddress): Promise<Balance>;
 
     /**
      * Check the balance of an owner in the registry
@@ -62,7 +62,12 @@ export interface GlobalNftRegistryInterface {
      * @param key.owner The address of the owner
      * @returns The balance of the owner
      */
-    getBalanceByKey(key: {chainId: bigint; tokenContract: string; tokenId: bigint; owner: AccountId}): Promise<Balance>;
+    getBalanceByKey(key: {
+        chainId: ChainId;
+        tokenContract: ContractAddress;
+        tokenId: TokenId;
+        owner: EvmAddress;
+    }): Promise<Balance>;
 
     /**
      * Check if an account is the owner of a token
@@ -72,7 +77,7 @@ export interface GlobalNftRegistryInterface {
      * @param owner The address of the owner
      * @returns True if the account is the owner, false otherwise
      */
-    isOwner(chainId: bigint, tokenContract: string, tokenId: bigint, owner: AccountId): Promise<boolean>;
+    isOwner(chainId: ChainId, tokenContract: ContractAddress, tokenId: TokenId, owner: EvmAddress): Promise<boolean>;
 
     /**
      * - Requires being called by the contract owner/administrator

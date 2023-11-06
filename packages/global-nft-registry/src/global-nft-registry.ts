@@ -6,7 +6,18 @@ import {cryptoWaitReady, isAddress} from '@polkadot/util-crypto';
 
 import {SmartContractBase, SubmitResult} from './smart-contract-base';
 import {GlobalNftRegistryOptions, TESTNET} from './options';
-import {Balance, GlobalNftRegistryInterface, Role, cereTypes} from './types';
+import {
+    AccountId,
+    Balance,
+    ChainId,
+    ContractAddress,
+    EvmAddress,
+    GlobalNftRegistryInterface,
+    Role,
+    TokenId,
+    cereTypes,
+} from './types';
+import {addressToAccountId} from './utils';
 
 export class GlobalNftRegistry extends SmartContractBase implements GlobalNftRegistryInterface {
     private shouldDisconnectAPI = false;
@@ -56,28 +67,58 @@ export class GlobalNftRegistry extends SmartContractBase implements GlobalNftReg
     }
 
     async updateRegistry(
-        chainId: bigint,
-        tokenContract: string,
-        tokenId: bigint,
-        owner: string,
-        balance: bigint,
+        chainId: ChainId,
+        tokenContract: ContractAddress,
+        tokenId: TokenId,
+        owner: EvmAddress,
+        balance: Balance,
     ): Promise<Required<SubmitResult>> {
-        return this.submit(this.contract.tx.updateRegistry, chainId, tokenContract, tokenId, owner, balance);
+        const ownerAccountId = addressToAccountId(owner);
+        const tokenContractAccountId = addressToAccountId(tokenContract);
+
+        return this.submit(
+            this.contract.tx.updateRegistry,
+            chainId,
+            tokenContractAccountId,
+            tokenId,
+            ownerAccountId,
+            balance,
+        );
     }
 
     async transfer(
-        chainId: bigint,
-        tokenContract: string,
-        tokenId: bigint,
-        from: string,
-        to: string,
-        amount: bigint,
+        chainId: ChainId,
+        tokenContract: ContractAddress,
+        tokenId: TokenId,
+        from: EvmAddress,
+        to: EvmAddress,
+        amount: Balance,
     ): Promise<Required<SubmitResult>> {
-        return this.submit(this.contract.tx.transfer, chainId, tokenContract, tokenId, from, to, amount);
+        const fromAccountId = addressToAccountId(from);
+        const toAccountId = addressToAccountId(to);
+        const tokenContractAccountId = addressToAccountId(tokenContract);
+
+        return this.submit(
+            this.contract.tx.transfer,
+            chainId,
+            tokenContractAccountId,
+            tokenId,
+            fromAccountId,
+            toAccountId,
+            amount,
+        );
     }
 
-    async getBalance(chainId: bigint, tokenContract: string, tokenId: bigint, owner: string): Promise<Balance> {
-        return this.queryOne(this.contract.query.getBalance, chainId, tokenContract, tokenId, owner);
+    async getBalance(
+        chainId: ChainId,
+        tokenContract: ContractAddress,
+        tokenId: TokenId,
+        owner: EvmAddress,
+    ): Promise<Balance> {
+        const ownerAccountId = addressToAccountId(owner);
+        const tokenContractAccountId = addressToAccountId(tokenContract);
+
+        return this.queryOne(this.contract.query.getBalance, chainId, tokenContractAccountId, tokenId, ownerAccountId);
     }
 
     async getBalanceByKey({
@@ -86,27 +127,38 @@ export class GlobalNftRegistry extends SmartContractBase implements GlobalNftReg
         tokenId,
         owner,
     }: {
-        chainId: bigint;
-        tokenContract: string;
-        tokenId: bigint;
-        owner: string;
+        chainId: ChainId;
+        tokenContract: ContractAddress;
+        tokenId: TokenId;
+        owner: EvmAddress;
     }): Promise<Balance> {
-        return this.getBalance(chainId, tokenContract, tokenId, owner);
+        const ownerAccountId = addressToAccountId(owner);
+        const tokenContractAccountId = addressToAccountId(tokenContract);
+
+        return this.getBalance(chainId, tokenContractAccountId, tokenId, ownerAccountId);
     }
 
-    async isOwner(chainId: bigint, tokenContract: string, tokenId: bigint, owner: string): Promise<boolean> {
-        return this.queryOne(this.contract.query.isOwner, chainId, tokenContract, tokenId, owner);
+    async isOwner(
+        chainId: ChainId,
+        tokenContract: ContractAddress,
+        tokenId: TokenId,
+        owner: EvmAddress,
+    ): Promise<boolean> {
+        const ownerAccountId = addressToAccountId(owner);
+        const tokenContractAccountId = addressToAccountId(tokenContract);
+
+        return this.queryOne(this.contract.query.isOwner, chainId, tokenContractAccountId, tokenId, ownerAccountId);
     }
 
-    async grantRole(role: Role, account: string): Promise<Required<SubmitResult>> {
+    async grantRole(role: Role, account: AccountId): Promise<Required<SubmitResult>> {
         return this.submit(this.contract.tx.grantRole, role, account);
     }
 
-    async revokeRole(role: Role, account: string): Promise<Required<SubmitResult>> {
+    async revokeRole(role: Role, account: AccountId): Promise<Required<SubmitResult>> {
         return this.submit(this.contract.tx.revokeRole, role, account);
     }
 
-    async hasRole(role: Role, account: string): Promise<boolean> {
+    async hasRole(role: Role, account: AccountId): Promise<boolean> {
         return this.queryOne(this.contract.query.hasRole, role, account);
     }
 }
