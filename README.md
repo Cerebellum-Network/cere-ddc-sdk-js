@@ -48,8 +48,16 @@ To build the project:
 
 To run the tests for the entire project:
 
+> Blockchain state is cached by default between local test runs
+
 ```shell
 npm run test
+```
+
+Clean tests cache:
+
+```shell
+npm run test:clean
 ```
 
 ## Changing the schema

@@ -1,4 +1,5 @@
 import {v4 as uuid} from 'uuid';
+import {fetch} from 'cross-fetch';
 import {Request as PbRequest} from '@cere-ddc-sdk/proto';
 import {encode} from 'varint';
 import {BucketId, ClusterId} from '@cere-ddc-sdk/smart-contract/types';

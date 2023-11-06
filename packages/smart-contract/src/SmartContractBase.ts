@@ -10,7 +10,7 @@ import {ApiPromise} from '@polkadot/api';
 const MGAS = 1_000_000n;
 const defaultOptions: ContractOptions = {
     storageDepositLimit: null,
-    gasLimit: 200_000n * MGAS,
+    gasLimit: 50_000n * MGAS,
 };
 
 const dryRunOptions: ContractOptions = {

@@ -1,4 +1,6 @@
-import {DdcClient, Piece, File} from '@cere-ddc-sdk/ddc-client';
+import {DdcClient, Piece, File, DEVNET} from '@cere-ddc-sdk/ddc-client';
+
+import {ROOT_USER_SEED, getContractOptions} from './helpers';
 
 const readFileData = async (file: File) => {
     const data = [];
@@ -10,7 +12,6 @@ const readFileData = async (file: File) => {
 };
 
 describe('Routing', () => {
-    const seed = '0x2cf8a6819aa7f2a2e7a62ce8cf0dca2aca48d87b2001652de779f43fecbc5a03';
     const clusterId = 0;
     const bucketId = 1n;
     const pieceData = new Uint8Array([1, 2, 3]);
@@ -21,13 +22,14 @@ describe('Routing', () => {
     beforeAll(async () => {
         client = await DdcClient.buildAndConnect(
             {
+                smartContract: getContractOptions(),
                 clusterAddress: clusterId,
                 fileOptions: {
                     parallel: 4,
                     pieceSizeInBytes: 1,
                 },
             },
-            seed,
+            ROOT_USER_SEED,
         );
     });
 

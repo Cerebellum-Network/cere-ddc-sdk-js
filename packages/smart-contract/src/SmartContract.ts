@@ -52,7 +52,7 @@ export class SmartContract extends SmartContractBase {
         if (typeof secretPhraseOrAddress === 'string') {
             addressOrPair = isAddress(secretPhraseOrAddress)
                 ? secretPhraseOrAddress
-                : new Keyring({type: 'sr25519'}).addFromMnemonic(secretPhraseOrAddress);
+                : new Keyring({type: 'sr25519', ss58Format: 54}).addFromMnemonic(secretPhraseOrAddress);
         }
 
         const contract = new ContractPromise(api, options.abi, options.contractAddress);
@@ -318,7 +318,6 @@ export class SmartContract extends SmartContractBase {
     }
 
     async hasPermission(accountId: AccountId, permission: Permission) {
-        const result = await this.submit(this.contract.tx.hasPermission, accountId, permission);
-        return Boolean(result);
+        return this.query(this.contract.query.hasPermission, accountId, permission);
     }
 }

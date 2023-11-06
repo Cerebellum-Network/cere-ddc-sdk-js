@@ -1,7 +1,7 @@
 {
     "name": "@cere-ddc-sdk/key-value-storage",
     "description": "Key-value storage client",
-    "version": "1.9.1",
+    "version": "1.9.5",
     "type": "module",
     "repository": {
         "type": "git",
@@ -31,10 +31,9 @@
         "clean": "rimraf dist package"
     },
     "dependencies": {
-        "@cere-ddc-sdk/content-addressable-storage": "1.9.1"
+        "@cere-ddc-sdk/content-addressable-storage": "1.9.5"
     },
     "devDependencies": {
-        "@types/node": "^16.0.0",
-        "rimraf": "^3.0.2"
+        "@types/node": "^16.0.0"
     }
 }
