@@ -136,8 +136,10 @@ describe('Storage Node', () => {
         });
     });
 
-    describe.only('CNS record', () => {
+    describe('CNS record', () => {
         let testCid: string;
+        let signature: any;
+
         const testName = 'piece/name';
 
         beforeAll(async () => {
@@ -148,11 +150,20 @@ describe('Storage Node', () => {
             const record = new CnsRecord(testCid, testName);
 
             await storageNode.storeCnsRecord(bucketId, record);
+
+            signature = record.signature;
+
+            expect(signature).toEqual({
+                algorithm: 'sr25519',
+                signer: expect.any(Uint8Array),
+                value: expect.any(Uint8Array),
+            });
         });
 
         test('Read the record', async () => {
             const record = await storageNode.getCnsRecord(bucketId, testName);
 
+            expect(record?.signature).toEqual(signature);
             expect(record?.cid).toEqual(testCid);
         });
     });
