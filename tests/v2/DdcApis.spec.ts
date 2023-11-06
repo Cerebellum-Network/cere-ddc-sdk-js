@@ -1,9 +1,11 @@
 import {randomBytes} from 'crypto';
-import {Content, RpcTransport, DagApi, FileApi, CnsApi} from '@cere-ddc-sdk/ddc';
+import {Content, RpcTransport, DagApi, FileApi, CnsApi, Signer, UriSigner} from '@cere-ddc-sdk/ddc';
 
-import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE} from '../../tests/helpers';
+import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED} from '../../tests/helpers';
 
 describe('DDC APIs', () => {
+    let signer: Signer;
+
     const bucketId = 0;
     const transport = new RpcTransport('localhost:9091');
     const dagApi = new DagApi(transport);
@@ -20,6 +22,10 @@ describe('DDC APIs', () => {
             chunks,
         );
     };
+
+    beforeAll(async () => {
+        signer = await UriSigner.create(ROOT_USER_SEED);
+    });
 
     describe('Dag Api', () => {
         let nodeCid: Uint8Array;
@@ -50,27 +56,46 @@ describe('DDC APIs', () => {
         });
     });
 
-    describe.skip('Cns Api', () => {
-        const alias = 'test-cid-alias';
-        const testCid = new Uint8Array(randomBytes(32));
+    describe('Cns Api', () => {
+        let testCid: Uint8Array;
+        let signature: any;
+
+        const alias = 'dir/file-name';
+
+        beforeAll(async () => {
+            testCid = await storeRawPiece(randomBytes(32));
+        });
 
         test('Create alias', async () => {
-            await cnsApi.assignName({
+            const sigMessage = cnsApi.createSignatureMessage({
+                cid: testCid,
+                name: alias,
+            });
+
+            signature = {
+                signer: signer.publicKey,
+                algorithm: signer.type as any,
+                value: signer.sign(sigMessage),
+            };
+
+            await cnsApi.putRecord({
                 bucketId,
                 record: {
                     cid: testCid,
                     name: alias,
+                    signature,
                 },
             });
         });
 
         test('Get CID by alias', async () => {
-            const cid = await cnsApi.getCid({
+            const record = await cnsApi.getRecord({
                 bucketId,
                 name: alias,
             });
 
-            expect(cid).toEqual(testCid);
+            expect(record?.signature).toEqual(signature);
+            expect(record?.cid).toEqual(testCid);
         });
     });
 

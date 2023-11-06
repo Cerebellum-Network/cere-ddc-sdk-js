@@ -5,9 +5,11 @@ import {FileApi, ReadFileRange} from './FileApi';
 import {RpcTransport} from './RpcTransport';
 import {MultipartPiece, Piece, PieceResponse} from './Piece';
 import {DagNode, DagNodeResponse, mapDagNodeToAPI} from './DagNode';
+import {Signer} from './Signer';
 
 export type StorageNodeConfig = {
     rpcHost: string;
+    signer: Signer;
 };
 
 type NamingOptions = {
@@ -21,13 +23,15 @@ export type PieceReadOptions = {
 };
 
 export class StorageNode {
+    private signer: Signer;
     private dagApi: DagApi;
     private fileApi: FileApi;
     private cnsApi: CnsApi;
 
-    constructor({rpcHost}: StorageNodeConfig) {
+    constructor({rpcHost, signer}: StorageNodeConfig) {
         const transport = new RpcTransport(rpcHost);
 
+        this.signer = signer;
         this.dagApi = new DagApi(transport);
         this.fileApi = new FileApi(transport);
         this.cnsApi = new CnsApi(transport);
