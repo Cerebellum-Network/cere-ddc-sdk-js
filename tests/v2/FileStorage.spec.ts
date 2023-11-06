@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import {Readable} from 'stream';
+import {pipeline} from 'stream/promises';
 import {createHash} from 'crypto';
 import {Router} from '@cere-ddc-sdk/ddc';
 import {FileStorage, File} from '@cere-ddc-sdk/file-storage';
@@ -97,9 +98,8 @@ describe('File storage', () => {
         test('Read the file', async () => {
             const file = await fileStorage.read(bucketId, fileCid);
             const hash = createHash('md5');
-            const hashStream = Readable.fromWeb(file.body).pipe(hash);
 
-            await new Promise((resolve) => hashStream.on('finish', resolve));
+            await pipeline(Readable.fromWeb(file.body), hash);
 
             expect(hash.digest('hex')).toEqual(fileHash);
         });
