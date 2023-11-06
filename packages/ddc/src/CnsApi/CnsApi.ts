@@ -51,8 +51,13 @@ export class CnsApi {
     }
 
     async getRecord(request: GetRequest): Promise<Record | undefined> {
-        const {response} = await this.api.get(request);
-        const record = response.record;
+        let record: ProtRecord | undefined;
+
+        try {
+            const {response} = await this.api.get(request);
+
+            record = response.record;
+        } catch {}
 
         if (!record || !record.signature) {
             return undefined;

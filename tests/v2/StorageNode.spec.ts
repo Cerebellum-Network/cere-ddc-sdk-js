@@ -166,5 +166,11 @@ describe('Storage Node', () => {
             expect(record?.signature).toEqual(signature);
             expect(record?.cid).toEqual(testCid);
         });
+
+        test('Not found record', async () => {
+            const record = await storageNode.getCnsRecord(bucketId, 'non-existing-record-name');
+
+            expect(record).toEqual(undefined);
+        });
     });
 });
