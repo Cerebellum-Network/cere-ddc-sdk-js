@@ -14,6 +14,7 @@ export * from './Router';
 export * from './Piece';
 export * from './StorageNode';
 export {DagNode, DagNodeResponse, Link, Tag} from './DagNode';
+export {CnsRecord, CnsRecordResponse} from './CnsRecord';
 
 /**
  * Constants

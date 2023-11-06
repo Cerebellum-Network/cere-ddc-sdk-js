@@ -7,31 +7,56 @@ import {Signer} from './Signer';
 export type UriSignerOptions = Pick<KeyringOptions, 'type'>;
 
 export class UriSigner implements Signer {
-    private pair: KeyringPair;
+    private pair?: KeyringPair;
 
-    constructor(uri: string, options: UriSignerOptions = {type: 'sr25519'}) {
-        this.pair = new Keyring({ss58Format: 54, type: options.type}).addFromUri(uri);
+    constructor(private uri: string, private options: UriSignerOptions = {}) {
+        this.isReady();
+    }
+
+    async isReady() {
+        if (this.pair) {
+            return true;
+        }
+
+        const isCryptoReady = await cryptoWaitReady();
+
+        if (!isCryptoReady) {
+            return false;
+        }
+
+        this.pair = new Keyring({ss58Format: 54, type: this.type}).addFromUri(this.uri);
+
+        return true;
+    }
+
+    private getPair() {
+        if (this.pair) {
+            return this.pair;
+        }
+
+        throw new Error('Signer is not ready');
     }
 
     get type() {
-        return this.pair.type;
+        return this.options.type || 'sr25519';
     }
 
     get address() {
-        return this.pair.address;
+        return this.getPair().address;
     }
 
     get publicKey() {
-        return this.pair.publicKey;
+        return this.getPair().publicKey;
     }
 
     sign(data: Uint8Array, options?: SignOptions) {
-        return this.pair.sign(data, options);
+        return this.getPair().sign(data, options);
     }
 
-    static async create(uri: string, options: UriSignerOptions = {type: 'sr25519'}) {
-        await cryptoWaitReady();
+    static async create(uri: string, options: UriSignerOptions = {}) {
+        const signer = new UriSigner(uri, options);
+        await signer.isReady();
 
-        return new UriSigner(uri, options);
+        return signer;
     }
 }

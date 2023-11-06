@@ -67,7 +67,7 @@ describe('DDC APIs', () => {
         });
 
         test('Create alias', async () => {
-            const sigMessage = cnsApi.createSignatureMessage({
+            const sigMessage = CnsApi.createSignatureMessage({
                 cid: testCid,
                 name: alias,
             });

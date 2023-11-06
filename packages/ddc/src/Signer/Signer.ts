@@ -8,4 +8,6 @@ export type SignerType = KeyringPair['type'];
  */
 export interface Signer extends Pick<IKeyringPair, 'address' | 'publicKey' | 'sign'> {
     readonly type: SignerType;
+
+    isReady(): Promise<boolean>;
 }

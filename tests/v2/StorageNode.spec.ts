@@ -1,11 +1,12 @@
-import {StorageNode, Piece, PieceResponse, DagNode, MultipartPiece} from '@cere-ddc-sdk/ddc';
+import {StorageNode, Piece, PieceResponse, DagNode, MultipartPiece, CnsRecord, UriSigner} from '@cere-ddc-sdk/ddc';
 
-import {createDataStream, MB, DDC_BLOCK_SIZE} from '../../tests/helpers';
+import {createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED} from '../../tests/helpers';
 
 describe('Storage Node', () => {
     const bucketId = 0;
     const storageNode = new StorageNode({
         rpcHost: 'localhost:9091',
+        signer: new UriSigner(ROOT_USER_SEED),
     });
 
     describe('Raw piece', () => {
@@ -132,6 +133,27 @@ describe('Storage Node', () => {
             const node = await storageNode.getDagNode(bucketId, nodeCid);
 
             expect(node?.data).toEqual(Buffer.from(nodeData));
+        });
+    });
+
+    describe.only('CNS record', () => {
+        let testCid: string;
+        const testName = 'piece/name';
+
+        beforeAll(async () => {
+            testCid = await storageNode.storePiece(bucketId, new Piece(new TextEncoder().encode('Small piece')));
+        });
+
+        test('Store a record', async () => {
+            const record = new CnsRecord(testCid, testName);
+
+            await storageNode.storeCnsRecord(bucketId, record);
+        });
+
+        test('Read the record', async () => {
+            const record = await storageNode.getCnsRecord(bucketId, testName);
+
+            expect(record?.cid).toEqual(testCid);
         });
     });
 });

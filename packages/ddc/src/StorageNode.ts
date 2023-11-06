@@ -6,24 +6,19 @@ import {RpcTransport} from './RpcTransport';
 import {MultipartPiece, Piece, PieceResponse} from './Piece';
 import {DagNode, DagNodeResponse, mapDagNodeToAPI} from './DagNode';
 import {Signer} from './Signer';
+import {CnsRecord, CnsRecordResponse, mapCnsRecordToAPI} from './CnsRecord';
 
 export type StorageNodeConfig = {
     rpcHost: string;
-    signer: Signer;
+    signer?: Signer;
 };
 
-type NamingOptions = {
-    name?: string;
-};
-
-export type PieceStoreOptions = NamingOptions & {};
-export type DagNodeStoreOptions = NamingOptions & {};
 export type PieceReadOptions = {
     range?: ReadFileRange;
 };
 
 export class StorageNode {
-    private signer: Signer;
+    private signer?: Signer;
     private dagApi: DagApi;
     private fileApi: FileApi;
     private cnsApi: CnsApi;
@@ -37,9 +32,9 @@ export class StorageNode {
         this.cnsApi = new CnsApi(transport);
     }
 
-    async storePiece(bucketId: number, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
+    async storePiece(bucketId: number, piece: Piece | MultipartPiece) {
         if (piece instanceof MultipartPiece) {
-            return this.storeMultipartPiece(bucketId, piece, options);
+            return this.storeMultipartPiece(bucketId, piece);
         }
 
         const cidBytes = await this.fileApi.putRawPiece(
@@ -51,16 +46,10 @@ export class StorageNode {
             piece.body,
         );
 
-        const cid = new Cid(cidBytes).toString();
-
-        if (options?.name) {
-            await this.assignName(bucketId, cid, options.name);
-        }
-
-        return cid;
+        return new Cid(cidBytes).toString();
     }
 
-    private async storeMultipartPiece(bucketId: number, piece: MultipartPiece, options?: PieceStoreOptions) {
+    private async storeMultipartPiece(bucketId: number, piece: MultipartPiece) {
         const cid = await this.fileApi.putMultipartPiece({
             bucketId,
             partHashes: piece.partHashes,
@@ -71,19 +60,13 @@ export class StorageNode {
         return new Cid(cid).toString();
     }
 
-    async storeDagNode(bucketId: number, node: DagNode, options?: DagNodeStoreOptions) {
+    async storeDagNode(bucketId: number, node: DagNode) {
         const cidBytes = await this.dagApi.putNode({
             bucketId,
             node: mapDagNodeToAPI(node),
         });
 
-        const cid = new Cid(cidBytes).toString();
-
-        if (options?.name) {
-            await this.assignName(bucketId, cid, options.name);
-        }
-
-        return cid;
+        return new Cid(cidBytes).toString();
     }
 
     async readPiece(bucketId: number, cid: string, options?: PieceReadOptions) {
@@ -109,11 +92,22 @@ export class StorageNode {
         return node && new DagNodeResponse(cid, new Uint8Array(node.data), node.links, node.tags);
     }
 
-    async assignName(bucketId: number, cid: string, name: string) {
-        throw new Error('Not implemented');
+    async storeCnsRecord(bucketId: number, record: CnsRecord) {
+        if (!record.signature && this.signer) {
+            await this.signer.isReady();
+
+            record.sign(this.signer);
+        }
+
+        return this.cnsApi.putRecord({
+            bucketId,
+            record: mapCnsRecordToAPI(record),
+        });
     }
 
-    async getCidByName(bucketId: number, name: string) {
-        throw new Error('Not implemented');
+    async getCnsRecord(bucketId: number, name: string) {
+        const record = await this.cnsApi.getRecord({bucketId, name});
+
+        return record && new CnsRecordResponse(record.cid, record.name, record.signature);
     }
 }

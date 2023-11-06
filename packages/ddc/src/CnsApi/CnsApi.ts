@@ -3,22 +3,28 @@ import {RpcTransport} from '@protobuf-ts/runtime-rpc';
 import {CnsApiClient} from '../grpc/cns_api.client';
 import {
     GetRequest,
-    PutRequest,
+    PutRequest as ProtoPutRequest,
     Record as ProtRecord,
     Record_Signature,
     Record_Signature_Algorithm as SigAlg,
 } from '../grpc/cns_api';
 
-type CnsRecordSignature = Omit<Record_Signature, 'algorithm'> & {
+export type RecordSignature = Omit<Record_Signature, 'algorithm'> & {
     algorithm: 'ed25519' | 'sr25519';
 };
 
-export type CnsRecord = Omit<ProtRecord, 'signature'> & {
-    signature: CnsRecordSignature;
+export type Record = Omit<ProtRecord, 'signature'> & {
+    signature: RecordSignature;
 };
 
-type CnsPutRequest = Omit<PutRequest, 'record'> & {
-    record: CnsRecord;
+type PutRequest = Omit<ProtoPutRequest, 'record'> & {
+    record: Record;
+};
+
+export const createSignatureMessage = (record: Omit<Record, 'signature'>) => {
+    const message = ProtRecord.create(record);
+
+    return ProtRecord.toBinary(message);
 };
 
 export class CnsApi {
@@ -28,13 +34,11 @@ export class CnsApi {
         this.api = new CnsApiClient(transport);
     }
 
-    createSignatureMessage(record: Omit<CnsRecord, 'signature'>) {
-        const message = ProtRecord.create(record);
+    async putRecord({bucketId, record}: PutRequest) {
+        if (!record.signature) {
+            throw new Error('Unnable to store unsigned CNS record');
+        }
 
-        return ProtRecord.toBinary(message);
-    }
-
-    async putRecord({bucketId, record}: CnsPutRequest) {
         const signature = {
             ...record.signature,
             algorithm: record.signature.algorithm === 'ed25519' ? SigAlg.ED_25519 : SigAlg.SR_25519,
@@ -46,7 +50,7 @@ export class CnsApi {
         });
     }
 
-    async getRecord(request: GetRequest) {
+    async getRecord(request: GetRequest): Promise<Record | undefined> {
         const {response} = await this.api.get(request);
         const record = response.record;
 
@@ -54,12 +58,20 @@ export class CnsApi {
             return undefined;
         }
 
-        const signature: CnsRecordSignature = {
-            ...record.signature,
-            algorithm: record.signature?.algorithm === SigAlg.ED_25519 ? 'ed25519' : 'sr25519',
+        const signature: RecordSignature = {
+            algorithm: record.signature.algorithm === SigAlg.ED_25519 ? 'ed25519' : 'sr25519',
             value: new Uint8Array(record.signature.value),
+            signer: new Uint8Array(record.signature.signer),
         };
 
-        return {...response.record, signature};
+        return {
+            ...record,
+            signature,
+            cid: new Uint8Array(record.cid),
+        };
+    }
+
+    static createSignatureMessage(record: Omit<Record, 'signature'>) {
+        return createSignatureMessage(record);
     }
 }
