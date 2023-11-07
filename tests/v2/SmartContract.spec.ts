@@ -2,7 +2,7 @@ import {ApiPromise} from '@polkadot/api';
 import {KeyringPair} from '@polkadot/keyring/types';
 import {ContractPromise} from '@polkadot/api-contract';
 import {SmartContract} from '@cere-ddc-sdk/smart-contract';
-import {NodeStatusInCluster, Permission} from '@cere-ddc-sdk/smart-contract/types';
+import {NodeStatusInCluster} from '@cere-ddc-sdk/smart-contract/types';
 
 import {bootstrapContract, createAccount, createBlockhainApi, getAccount} from '../helpers';
 
