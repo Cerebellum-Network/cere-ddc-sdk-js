@@ -30,9 +30,9 @@ describe('Storage Node', () => {
             expect(smallPieceCid).toBeDefined();
 
             const piece = await storageNode.readPiece(bucketId, smallPieceName);
-            const text = await piece.text();
+            const text = await piece.json();
 
-            expect(text).toEqual(smallPieceData);
+            expect(text).toEqual(smallPieceText);
         });
 
         describe('Read the piece', () => {

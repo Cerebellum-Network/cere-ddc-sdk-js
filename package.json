@@ -12,7 +12,7 @@
     "scripts": {
         "format": "prettier --write \"packages/**/*.ts\"",
         "lint": "tslint -p tsconfig.json",
-        "test": "jest --passWithNoTests --silent",
+        "test": "jest --passWithNoTests",
         "test:clean": "rimraf ./tests/data/*",
         "compile": "lerna run compile",
         "clean": "lerna run clean",
