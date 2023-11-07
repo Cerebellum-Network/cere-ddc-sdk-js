@@ -6,7 +6,7 @@ import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { FileApi } from "./file_api";
 import type { GetFileResponse } from "./file_api";
 import type { GetFileRequest } from "./file_api";
-import type { ServerStreamingCall } from "@protobuf-ts/runtime-rpc";
+import type { DuplexStreamingCall } from "@protobuf-ts/runtime-rpc";
 import type { PutMultiPartPieceResponse } from "./file_api";
 import type { PutMultiPartPieceRequest } from "./file_api";
 import type { UnaryCall } from "@protobuf-ts/runtime-rpc";
@@ -28,9 +28,9 @@ export interface IFileApiClient {
      */
     putMultipartPiece(input: PutMultiPartPieceRequest, options?: RpcOptions): UnaryCall<PutMultiPartPieceRequest, PutMultiPartPieceResponse>;
     /**
-     * @generated from protobuf rpc: getFile(file.GetFileRequest) returns (stream file.GetFileResponse);
+     * @generated from protobuf rpc: getFile(stream file.GetFileRequest) returns (stream file.GetFileResponse);
      */
-    getFile(input: GetFileRequest, options?: RpcOptions): ServerStreamingCall<GetFileRequest, GetFileResponse>;
+    getFile(options?: RpcOptions): DuplexStreamingCall<GetFileRequest, GetFileResponse>;
 }
 /**
  * @generated from protobuf service file.FileApi
@@ -56,10 +56,10 @@ export class FileApiClient implements IFileApiClient, ServiceInfo {
         return stackIntercept<PutMultiPartPieceRequest, PutMultiPartPieceResponse>("unary", this._transport, method, opt, input);
     }
     /**
-     * @generated from protobuf rpc: getFile(file.GetFileRequest) returns (stream file.GetFileResponse);
+     * @generated from protobuf rpc: getFile(stream file.GetFileRequest) returns (stream file.GetFileResponse);
      */
-    getFile(input: GetFileRequest, options?: RpcOptions): ServerStreamingCall<GetFileRequest, GetFileResponse> {
+    getFile(options?: RpcOptions): DuplexStreamingCall<GetFileRequest, GetFileResponse> {
         const method = this.methods[2], opt = this._transport.mergeOptions(options);
-        return stackIntercept<GetFileRequest, GetFileResponse>("serverStreaming", this._transport, method, opt, input);
+        return stackIntercept<GetFileRequest, GetFileResponse>("duplex", this._transport, method, opt);
     }
 }

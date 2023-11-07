@@ -118,7 +118,7 @@ describe('DDC APIs', () => {
             test('Read small piece', async () => {
                 expect(smallPieceCid).toBeDefined();
 
-                const contentStream = fileApi.getFile({
+                const contentStream = await fileApi.getFile({
                     bucketId,
                     cid: smallPieceCid,
                 });
@@ -138,7 +138,7 @@ describe('DDC APIs', () => {
             test('Read large (chunked) piece', async () => {
                 expect(largePieceCid).toBeDefined();
 
-                const contentStream = fileApi.getFile({
+                const contentStream = await fileApi.getFile({
                     bucketId,
                     cid: largePieceCid,
                 });
@@ -152,7 +152,7 @@ describe('DDC APIs', () => {
                 expect(largePieceCid).toBeDefined();
 
                 const rangeSize = 10 * DDC_BLOCK_SIZE;
-                const contentStream = fileApi.getFile({
+                const contentStream = await fileApi.getFile({
                     bucketId,
                     cid: largePieceCid,
                     range: {
@@ -205,7 +205,7 @@ describe('DDC APIs', () => {
             test('Read full multipart piece', async () => {
                 expect(multipartPieceCid).toBeDefined();
 
-                const contentStream = fileApi.getFile({
+                const contentStream = await fileApi.getFile({
                     bucketId,
                     cid: multipartPieceCid,
                 });
@@ -219,7 +219,7 @@ describe('DDC APIs', () => {
                 expect(multipartPieceCid).toBeDefined();
 
                 const rangeSize = 10 * DDC_BLOCK_SIZE;
-                const contentStream = fileApi.getFile({
+                const contentStream = await fileApi.getFile({
                     bucketId,
                     cid: multipartPieceCid,
                     range: {

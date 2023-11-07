@@ -113,22 +113,39 @@ export interface PutMultiPartPieceResponse {
  */
 export interface GetFileRequest {
     /**
-     * @generated from protobuf field: uint64 bucketId = 1;
+     * @generated from protobuf oneof: Body
      */
-    bucketId: number;
+    body: {
+        oneofKind: "request";
+        /**
+         * @generated from protobuf field: file.GetFileRequest.Request request = 1;
+         */
+        request: GetFileRequest_Request;
+    } | {
+        oneofKind: undefined;
+    };
+}
+/**
+ * @generated from protobuf message file.GetFileRequest.Request
+ */
+export interface GetFileRequest_Request {
     /**
-     * @generated from protobuf field: bytes cid = 2;
+     * @generated from protobuf field: bytes cid = 1;
      */
     cid: Uint8Array; // CID of either raw or multi-part piece
     /**
-     * @generated from protobuf field: optional file.GetFileRequest.Range range = 3;
+     * @generated from protobuf field: uint64 bucketId = 2;
      */
-    range?: GetFileRequest_Range; // indicates part of the file to be returned (return whole file if range is missing)
+    bucketId: number;
+    /**
+     * @generated from protobuf field: optional file.GetFileRequest.Request.Range range = 3;
+     */
+    range?: GetFileRequest_Request_Range; // indicates part of the file to be returned (return whole file if range is missing)
 }
 /**
- * @generated from protobuf message file.GetFileRequest.Range
+ * @generated from protobuf message file.GetFileRequest.Request.Range
  */
-export interface GetFileRequest_Range {
+export interface GetFileRequest_Request_Range {
     /**
      * @generated from protobuf field: uint64 start = 1;
      */
@@ -518,13 +535,11 @@ export const PutMultiPartPieceResponse = new PutMultiPartPieceResponse$Type();
 class GetFileRequest$Type extends MessageType<GetFileRequest> {
     constructor() {
         super("file.GetFileRequest", [
-            { no: 1, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
-            { no: 2, name: "cid", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
-            { no: 3, name: "range", kind: "message", T: () => GetFileRequest_Range }
+            { no: 1, name: "request", kind: "message", oneof: "body", T: () => GetFileRequest_Request }
         ]);
     }
     create(value?: PartialMessage<GetFileRequest>): GetFileRequest {
-        const message = { bucketId: 0, cid: new Uint8Array(0) };
+        const message = { body: { oneofKind: undefined } };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<GetFileRequest>(this, message, value);
@@ -535,14 +550,11 @@ class GetFileRequest$Type extends MessageType<GetFileRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* uint64 bucketId */ 1:
-                    message.bucketId = reader.uint64().toNumber();
-                    break;
-                case /* bytes cid */ 2:
-                    message.cid = reader.bytes();
-                    break;
-                case /* optional file.GetFileRequest.Range range */ 3:
-                    message.range = GetFileRequest_Range.internalBinaryRead(reader, reader.uint32(), options, message.range);
+                case /* file.GetFileRequest.Request request */ 1:
+                    message.body = {
+                        oneofKind: "request",
+                        request: GetFileRequest_Request.internalBinaryRead(reader, reader.uint32(), options, (message.body as any).request)
+                    };
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -556,15 +568,9 @@ class GetFileRequest$Type extends MessageType<GetFileRequest> {
         return message;
     }
     internalBinaryWrite(message: GetFileRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* uint64 bucketId = 1; */
-        if (message.bucketId !== 0)
-            writer.tag(1, WireType.Varint).uint64(message.bucketId);
-        /* bytes cid = 2; */
-        if (message.cid.length)
-            writer.tag(2, WireType.LengthDelimited).bytes(message.cid);
-        /* optional file.GetFileRequest.Range range = 3; */
-        if (message.range)
-            GetFileRequest_Range.internalBinaryWrite(message.range, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        /* file.GetFileRequest.Request request = 1; */
+        if (message.body.oneofKind === "request")
+            GetFileRequest_Request.internalBinaryWrite(message.body.request, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -576,21 +582,82 @@ class GetFileRequest$Type extends MessageType<GetFileRequest> {
  */
 export const GetFileRequest = new GetFileRequest$Type();
 // @generated message type with reflection information, may provide speed optimized methods
-class GetFileRequest_Range$Type extends MessageType<GetFileRequest_Range> {
+class GetFileRequest_Request$Type extends MessageType<GetFileRequest_Request> {
     constructor() {
-        super("file.GetFileRequest.Range", [
+        super("file.GetFileRequest.Request", [
+            { no: 1, name: "cid", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
+            { no: 2, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
+            { no: 3, name: "range", kind: "message", T: () => GetFileRequest_Request_Range }
+        ]);
+    }
+    create(value?: PartialMessage<GetFileRequest_Request>): GetFileRequest_Request {
+        const message = { cid: new Uint8Array(0), bucketId: 0 };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<GetFileRequest_Request>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: GetFileRequest_Request): GetFileRequest_Request {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* bytes cid */ 1:
+                    message.cid = reader.bytes();
+                    break;
+                case /* uint64 bucketId */ 2:
+                    message.bucketId = reader.uint64().toNumber();
+                    break;
+                case /* optional file.GetFileRequest.Request.Range range */ 3:
+                    message.range = GetFileRequest_Request_Range.internalBinaryRead(reader, reader.uint32(), options, message.range);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: GetFileRequest_Request, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* bytes cid = 1; */
+        if (message.cid.length)
+            writer.tag(1, WireType.LengthDelimited).bytes(message.cid);
+        /* uint64 bucketId = 2; */
+        if (message.bucketId !== 0)
+            writer.tag(2, WireType.Varint).uint64(message.bucketId);
+        /* optional file.GetFileRequest.Request.Range range = 3; */
+        if (message.range)
+            GetFileRequest_Request_Range.internalBinaryWrite(message.range, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message file.GetFileRequest.Request
+ */
+export const GetFileRequest_Request = new GetFileRequest_Request$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class GetFileRequest_Request_Range$Type extends MessageType<GetFileRequest_Request_Range> {
+    constructor() {
+        super("file.GetFileRequest.Request.Range", [
             { no: 1, name: "start", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
             { no: 2, name: "end", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ }
         ]);
     }
-    create(value?: PartialMessage<GetFileRequest_Range>): GetFileRequest_Range {
+    create(value?: PartialMessage<GetFileRequest_Request_Range>): GetFileRequest_Request_Range {
         const message = { start: 0, end: 0 };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
-            reflectionMergePartial<GetFileRequest_Range>(this, message, value);
+            reflectionMergePartial<GetFileRequest_Request_Range>(this, message, value);
         return message;
     }
-    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: GetFileRequest_Range): GetFileRequest_Range {
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: GetFileRequest_Request_Range): GetFileRequest_Request_Range {
         let message = target ?? this.create(), end = reader.pos + length;
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
@@ -612,7 +679,7 @@ class GetFileRequest_Range$Type extends MessageType<GetFileRequest_Range> {
         }
         return message;
     }
-    internalBinaryWrite(message: GetFileRequest_Range, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+    internalBinaryWrite(message: GetFileRequest_Request_Range, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
         /* uint64 start = 1; */
         if (message.start !== 0)
             writer.tag(1, WireType.Varint).uint64(message.start);
@@ -626,9 +693,9 @@ class GetFileRequest_Range$Type extends MessageType<GetFileRequest_Range> {
     }
 }
 /**
- * @generated MessageType for protobuf message file.GetFileRequest.Range
+ * @generated MessageType for protobuf message file.GetFileRequest.Request.Range
  */
-export const GetFileRequest_Range = new GetFileRequest_Range$Type();
+export const GetFileRequest_Request_Range = new GetFileRequest_Request_Range$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class GetFileResponse$Type extends MessageType<GetFileResponse> {
     constructor() {
@@ -742,5 +809,5 @@ export const GetFileResponse_Proof = new GetFileResponse_Proof$Type();
 export const FileApi = new ServiceType("file.FileApi", [
     { name: "putRawPiece", clientStreaming: true, options: {}, I: PutRawPieceRequest, O: PutRawPieceResponse },
     { name: "putMultipartPiece", options: {}, I: PutMultiPartPieceRequest, O: PutMultiPartPieceResponse },
-    { name: "getFile", serverStreaming: true, options: {}, I: GetFileRequest, O: GetFileResponse }
+    { name: "getFile", serverStreaming: true, clientStreaming: true, options: {}, I: GetFileRequest, O: GetFileResponse }
 ]);
