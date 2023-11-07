@@ -7,7 +7,7 @@ option go_package = "api/external/file";
 service FileApi {
   rpc putRawPiece(stream PutRawPieceRequest) returns (PutRawPieceResponse) {}
   rpc putMultipartPiece(PutMultiPartPieceRequest) returns (PutMultiPartPieceResponse) {}
-  rpc getFile(GetFileRequest) returns (stream GetFileResponse) {}
+  rpc getFile(stream GetFileRequest) returns (stream GetFileResponse) {}
 }
 
 message PutRawPieceRequest {
@@ -47,13 +47,19 @@ message PutMultiPartPieceResponse {
 }
 
 message GetFileRequest {
-  uint64 bucketId = 1;
-  bytes cid = 2; // CID of either raw or multi-part piece
-  optional Range range = 3; // indicates part of the file to be returned (return whole file if range is missing)
+  message Request {
+    bytes cid = 1; // CID of either raw or multi-part piece
+    uint64 bucketId = 2;
+    optional Range range = 3; // indicates part of the file to be returned (return whole file if range is missing)
 
-  message Range {
-    uint64 start = 1;
-    uint64 end = 2;
+    message Range {
+      uint64 start = 1;
+      uint64 end = 2;
+    }
+  }
+
+  oneof Body {
+    Request request = 1;
   }
 }
 

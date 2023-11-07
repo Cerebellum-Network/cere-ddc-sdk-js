@@ -1,10 +1,12 @@
 import {RpcTransport} from '@protobuf-ts/runtime-rpc';
 
-import {PutMultiPartPieceRequest, GetFileRequest, PutRawPieceRequest_Metadata} from '../grpc/file_api';
+import {PutMultiPartPieceRequest, GetFileRequest_Request, PutRawPieceRequest_Metadata} from '../grpc/file_api';
 import {FileApiClient} from '../grpc/file_api.client';
 import {Content, createContentStream} from '../streams';
 
-export type ReadFileRange = GetFileRequest['range'];
+export type GetFileRequest = GetFileRequest_Request;
+export type ReadFileRange = GetFileRequest_Request['range'];
+export type PutFileMetadata = PutRawPieceRequest_Metadata;
 
 const ceilToPowerOf2 = (n: number) => Math.pow(2, Math.ceil(Math.log2(n)));
 
@@ -49,8 +51,15 @@ export class FileApi {
         return new Uint8Array(cid);
     }
 
-    getFile(request: GetFileRequest) {
-        const {responses} = this.api.getFile(request);
+    async getFile(request: GetFileRequest) {
+        const {responses, requests} = this.api.getFile();
+
+        await requests.send({
+            body: {
+                oneofKind: 'request',
+                request,
+            },
+        });
 
         async function* toDataStream() {
             for await (const {body} of responses) {

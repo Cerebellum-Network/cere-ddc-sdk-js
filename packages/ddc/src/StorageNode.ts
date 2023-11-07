@@ -86,7 +86,7 @@ export class StorageNode {
 
     async readPiece(bucketId: number, cidOrName: string, options?: PieceReadOptions) {
         const cid = await this.resolveName(bucketId, cidOrName);
-        const contentStream = this.fileApi.getFile({
+        const contentStream = await this.fileApi.getFile({
             bucketId,
             cid: cid.toBytes(),
             range: options?.range,
