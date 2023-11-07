@@ -61,6 +61,8 @@ export class FileApi {
             },
         });
 
+        await requests.complete();
+
         async function* toDataStream() {
             for await (const {body} of responses) {
                 if (body.oneofKind === 'data') {
