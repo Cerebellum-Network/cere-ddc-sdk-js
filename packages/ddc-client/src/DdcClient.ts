@@ -1,4 +1,14 @@
 import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
+import {
+    DagNode,
+    DagNodeResponse,
+    Router,
+    RouterOperation,
+    Signer,
+    UriSigner,
+    DagNodeStoreOptions,
+    RouterNode,
+} from '@cere-ddc-sdk/ddc';
 import {FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions} from '@cere-ddc-sdk/file-storage';
 
 import {
@@ -12,24 +22,14 @@ import {
     Offset,
 } from '@cere-ddc-sdk/smart-contract/types';
 
-import {
-    DagNode,
-    DagNodeResponse,
-    Router,
-    RouterConfig,
-    RouterOperation,
-    Signer,
-    UriSigner,
-    DagNodeStoreOptions,
-} from '@cere-ddc-sdk/ddc';
-
 import {DagNodeUri, DdcEntity, DdcUri, FileUri} from './DdcUri';
 import {TESTNET} from './presets';
 
 const MAX_BUCKET_SIZE = 5n;
 
-export type DdcClientConfig = Omit<RouterConfig, 'signer'> & {
+export type DdcClientConfig = {
     smartContract: SmartContractOptions;
+    nodes: RouterNode[];
 };
 
 export {FileStoreOptions, DagNodeStoreOptions};

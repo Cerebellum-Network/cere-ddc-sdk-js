@@ -5,8 +5,7 @@
  */
 
 import {StorageNode, StorageNodeConfig} from '../StorageNode';
-import {Blockchain} from '@cere-ddc-sdk/blockchain';
-import {BucketId} from '@cere-ddc-sdk/smart-contract/types';
+import {Blockchain, BucketId} from '@cere-ddc-sdk/blockchain';
 
 export enum RouterOperation {
     READ_DAG_NODE = 'read-dag-node',
