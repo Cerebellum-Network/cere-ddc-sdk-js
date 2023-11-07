@@ -31,13 +31,12 @@ const dataDir = path.resolve(__dirname, '../../data');
 const uuid = {nextUuid: () => 'blockchain'};
 const hostIp = getHostIP();
 
-const setupContract = async (): Promise<ContractData> => {
+const setupContract = async (api: ApiPromise): Promise<ContractData> => {
     console.group('Setup smart contract');
     console.time('Done');
 
     await cryptoWaitReady();
 
-    const api = await createBlockhainApi();
     const admin = getAccount();
 
     const clusterId = 0; // Always the same for fresh SC
@@ -121,7 +120,7 @@ export const startBlockchain = async (): Promise<BlockchainConfig> => {
         .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
         .up();
 
-    const contractData: ContractData = !process.env.CI && isCached ? getContractData() : await setupContract();
+    const contractData: ContractData = !process.env.CI && isCached ? getContractData() : await setupBlockchain();
 
     if (!isCached) {
         const contractDataJson = JSON.stringify(
@@ -201,7 +200,7 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
 };
 
 const deployClusterNodeAuthorizationContract = async (apiPromise: ApiPromise, admin: KeyringPair) => {
-    const contractDir = path.resolve(__dirname, './fixtures/contract');
+    const contractDir = path.resolve(__dirname, '../../fixtures/contract');
 
     const contractContent = fs.readFileSync(path.resolve(contractDir, 'cluster_node_candidate_authorization.contract'));
     const contract = JSON.parse(contractContent.toString());
@@ -218,3 +217,12 @@ const deployClusterNodeAuthorizationContract = async (apiPromise: ApiPromise, ad
 
     return address;
 };
+
+export async function setupBlockchain() {
+    const api = await createBlockhainApi();
+
+    const contract = await setupContract(api);
+    await setupPallets(api);
+
+    return contract;
+}

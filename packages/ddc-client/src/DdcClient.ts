@@ -21,6 +21,7 @@ import {
     AccountId,
     Offset,
 } from '@cere-ddc-sdk/smart-contract/types';
+import {Blockchain} from '@cere-ddc-sdk/blockchain';
 
 import {DagNodeUri, DdcEntity, DdcUri, FileUri} from './DdcUri';
 import {TESTNET} from './presets';
@@ -46,6 +47,17 @@ export class DdcClient {
     static async create(uriOrSigner: Signer | string, config: DdcClientConfig = TESTNET) {
         const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
         const contract = await SmartContract.buildAndConnect(signer, config.smartContract);
+        const wsEndpoint = config.smartContract.rpcUrl;
+        const blockchain =
+            wsEndpoint == null
+                ? undefined
+                : await Blockchain.create({
+                      account: signer,
+                      wsEndpoint,
+                  });
+        const router =
+            blockchain == null ? new Router({signer, nodes: config.nodes}) : new Router({signer, blockchain});
+        const fs = new FileStorage(router);
 
         return new DdcClient(signer, contract, config);
     }
