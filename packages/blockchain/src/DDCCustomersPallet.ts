@@ -48,7 +48,7 @@ export class DDCCustomersPallet {
     }
 }
 
-export type BucketId = bigint;
+export type BucketId = bigint; // TODO ask Yahor about this
 export type Bucket = /*PalletDdcCustomersBucket;*/ {
     readonly bucketId: BucketId;
     readonly ownerId: AccountId;

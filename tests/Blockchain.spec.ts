@@ -153,13 +153,13 @@ describe('packages/blockchain', () => {
         expect(cluster?.props.params).toBe(clusterParams);
     });
 
-    test('Should add a Storage Node to a cluster', async () => {
+    test('Should fail to add a Storage Node to a cluster when not staked', async () => {
         await expect(() =>
             blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key)),
         ).rejects.toThrow('ddcClusters.NoStake');
     });
 
-    test('Should add a CDN Node to a cluster', async () => {
+    test('Should fail to add a CDN Node to a cluster when not staked', async () => {
         await expect(() =>
             blockchain.send(blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNode1Key)),
         ).rejects.toThrow('ddcClusters.NoStake');

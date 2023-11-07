@@ -13,9 +13,15 @@ import {
     transferCere,
     ContractData,
     getContractData,
+    getGasLimit,
+    signAndSend,
 } from '../../helpers';
+import {Blockchain} from '@cere-ddc-sdk/blockchain';
+import {Abi, CodePromise} from '@polkadot/api-contract';
+import {ApiPromise} from '@polkadot/api';
+import {KeyringPair} from '@polkadot/keyring/types';
 
-export type Blockchain = ContractData & {
+export type BlockchainConfig = ContractData & {
     apiUrl: string;
 };
 
@@ -103,7 +109,7 @@ const setupContract = async (): Promise<ContractData> => {
     };
 };
 
-export const startBlockchain = async (): Promise<Blockchain> => {
+export const startBlockchain = async (): Promise<BlockchainConfig> => {
     console.group('Blockchain');
 
     const bcStateFile = path.resolve(dataDir, './ddc.json');
@@ -144,4 +150,73 @@ export const stopBlockchain = async () => {
     await environment?.down();
 
     console.log('Blockchain');
+};
+
+export const setupPallets = async (apiPromise: ApiPromise) => {
+    await cryptoWaitReady();
+    const admin = getAccount();
+    const blockchain = await Blockchain.create({account: admin, apiPromise});
+    const api = await createBlockhainApi();
+
+    const clusterId = '0x0000000000000000000000000000000000000000'; // Always the same for fresh SC
+    const bucketIds = [0n, 1n, 2n]; // Always the same for fresh SC
+    const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
+    const storageNodeAccounts = [
+        getAccount('//Eve'),
+        getAccount('//Ferdie'),
+        getAccount('//Charlie'),
+        getAccount('//Alice'),
+    ];
+
+    const clusterNodeAuthorizationContractAddress = await deployClusterNodeAuthorizationContract(apiPromise, admin);
+
+    await blockchain.batchSend([
+        blockchain.ddcClusters.createCluster(clusterId, {
+            params: '',
+            nodeProviderAuthContract: clusterNodeAuthorizationContractAddress,
+        }),
+        ...storageNodeAccounts.flatMap((storageNodeAccount, index) => [
+            blockchain.ddcNodes.createStorageNode(storageNodeAccount.address, {
+                grpcUrl: `ddc-storage-node-${index}:9099`,
+            }),
+            blockchain.ddcStaking.bondStorageNode(admin.address, storageNodeAccount.address, 100n * 10_000_000_000n),
+            blockchain.ddcStaking.store(clusterId),
+            blockchain.ddcStaking.setController(storageNodeAccount.address),
+            blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNodeAccount.address),
+        ]),
+        ...cdnNodeAccounts.flatMap((cdnNodeAccount) => [
+            blockchain.ddcNodes.createCdnNode(cdnNodeAccount.address, ''),
+            blockchain.ddcStaking.bondCdnNode(admin.address, cdnNodeAccount.address, 100n * 10_000_000_000n),
+            blockchain.ddcStaking.setController(cdnNodeAccount.address),
+            blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNodeAccount.address),
+        ]),
+    ]);
+
+    await blockchain.batchSend(
+        bucketIds.flatMap((bucketId) => [
+            blockchain.ddcCustomers.createBucket(true, 1n),
+            blockchain.ddcCustomers.allocateBucketToCluster(bucketId, clusterId),
+        ]),
+    );
+};
+
+const deployClusterNodeAuthorizationContract = async (apiPromise: ApiPromise, admin: KeyringPair) => {
+    const contractDir = path.resolve(__dirname, './fixtures/contract');
+
+    const contractContent = await fs.readFileSync(
+        path.resolve(contractDir, 'cluster_node_candidate_authorization.contract'),
+    );
+    const contract = JSON.parse(contractContent.toString());
+    const wasm = contract.source.wasm.toString();
+    const abi = new Abi(contract);
+    const codePromise = new CodePromise(apiPromise, abi, wasm);
+    const tx = codePromise.tx.new(
+        {value: 0, gasLimit: await getGasLimit(apiPromise), storageDepositLimit: 750_000_000_000},
+        true,
+    );
+    const {events} = await signAndSend(tx, admin, apiPromise);
+    const foundEvent = events.find(({event}) => apiPromise.events.contracts.Instantiated.is(event));
+    const [, address] = foundEvent?.event.toJSON().data as string[];
+
+    return address;
 };
