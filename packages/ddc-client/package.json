@@ -1,7 +1,7 @@
 {
     "name": "@cere-ddc-sdk/ddc-client",
     "description": "DDC client",
-    "version": "2.0.0-rc.2",
+    "version": "2.0.0-rc.3",
     "type": "module",
     "repository": {
         "type": "git",
@@ -29,10 +29,10 @@
         "clean": "rimraf dist package"
     },
     "dependencies": {
-        "@cere-ddc-sdk/core": "2.0.0-rc.2",
-        "@cere-ddc-sdk/ddc": "2.0.0-rc.2",
-        "@cere-ddc-sdk/file-storage": "2.0.0-rc.2",
-        "@cere-ddc-sdk/smart-contract": "2.0.0-rc.2"
+        "@cere-ddc-sdk/core": "2.0.0-rc.3",
+        "@cere-ddc-sdk/ddc": "2.0.0-rc.3",
+        "@cere-ddc-sdk/file-storage": "2.0.0-rc.3",
+        "@cere-ddc-sdk/smart-contract": "2.0.0-rc.3"
     },
     "devDependencies": {
         "@types/node": "^16.0.0",
