@@ -7,7 +7,7 @@ describe('DDC Client', () => {
     let client: DdcClient;
 
     beforeAll(async () => {
-        client = await DdcClient.buildAndConnect(
+        client = await DdcClient.create(
             {
                 smartContract: getContractOptions(),
                 nodes: [
@@ -30,6 +30,7 @@ describe('DDC Client', () => {
         let tinyUri: FileUri;
         const fileSize = 2 * MB;
         const fileStream = createDataStream(fileSize, 64 * KB);
+        const tinyFileName = 'test/tiny-file';
         const tinyFileText = 'Tiny file';
         const tinyFileData = new TextEncoder().encode('Tiny file');
 
@@ -41,8 +42,9 @@ describe('DDC Client', () => {
             uri = await client.store(bucketId, file);
 
             expect(uri).toEqual({
-                bucketId: 0,
+                bucketId,
                 entity: 'file',
+                cidOrName: expect.any(String),
                 cid: expect.any(String),
             });
         });
@@ -73,8 +75,9 @@ describe('DDC Client', () => {
             tinyUri = await client.store(bucketId, file);
 
             expect(tinyUri).toEqual({
-                bucketId: 0,
+                bucketId,
                 entity: 'file',
+                cidOrName: expect.any(String),
                 cid: expect.any(String),
             });
         });
@@ -85,10 +88,34 @@ describe('DDC Client', () => {
 
             expect(text).toEqual(tinyFileText);
         });
+
+        test('Store named tiny file', async () => {
+            const file = new File(tinyFileData);
+            const uri = await client.store(bucketId, file, {
+                name: tinyFileName,
+            });
+
+            expect(uri).toEqual({
+                bucketId,
+                entity: 'file',
+                cidOrName: expect.any(String),
+                cid: expect.any(String),
+            });
+        });
+
+        test('Read tiny file by name', async () => {
+            const namedUri = new FileUri(bucketId, tinyFileName);
+            const file = await client.read(namedUri);
+            const text = await file.text();
+
+            expect(namedUri.name).toEqual(tinyFileName);
+            expect(text).toEqual(tinyFileText);
+        });
     });
 
     describe('DAG Node', () => {
         let uri: DagNodeUri;
+        const nodeName = 'ddc-client/test-dag-node';
         const nodeData = 'Hello Dag node test';
 
         test('Store DAG node', async () => {
@@ -97,8 +124,9 @@ describe('DDC Client', () => {
             uri = await client.store(bucketId, dagNode);
 
             expect(uri).toEqual({
-                bucketId: 0,
+                bucketId,
                 entity: 'dag-node',
+                cidOrName: expect.any(String),
                 cid: expect.any(String),
             });
         });
@@ -108,6 +136,66 @@ describe('DDC Client', () => {
 
             expect(dagNode.data.toString()).toEqual(nodeData);
             expect(dagNode.tags).toEqual([new Tag('key', 'value')]);
+        });
+
+        test('Store named DAG node', async () => {
+            const dagNode = new DagNode(nodeData, [], [new Tag('key', 'value')]);
+            const uri = await client.store(bucketId, dagNode, {
+                name: nodeName,
+            });
+
+            expect(uri).toEqual({
+                bucketId,
+                entity: 'dag-node',
+                cidOrName: expect.any(String),
+                cid: expect.any(String),
+            });
+        });
+
+        test('Read DAG node by name', async () => {
+            const namedUri = new DagNodeUri(bucketId, nodeName);
+            const dagNode = await client.read(namedUri);
+
+            expect(namedUri.name).toEqual(nodeName);
+            expect(dagNode.data.toString()).toEqual(nodeData);
+        });
+    });
+
+    /**
+     * Moke tests of blockchain operation methods exposed on the client instance
+     *
+     * TODO: Revise these methods during migration to palettes
+     */
+    describe('Blockhain operations', () => {
+        let createdBucketId: bigint;
+
+        test('Account deposit', async () => {
+            await client.accountDeposit(10n);
+        });
+
+        test('Create bucket', async () => {
+            const bucket = await client.createBucket(10n, 1n, 0);
+
+            createdBucketId = bucket.bucketId;
+
+            expect(createdBucketId).toEqual(expect.any(BigInt));
+        });
+
+        test('Bucket allocate into cluster', async () => {
+            await client.bucketAllocIntoCluster(createdBucketId, 1n);
+        });
+
+        test('Get bucket', async () => {
+            const bucket = await client.bucketGet(createdBucketId);
+
+            expect(bucket.bucketId).toEqual(createdBucketId);
+        });
+
+        test('Get bucket list', async () => {
+            const [buckets, totalCount] = await client.bucketList(0n, 10n);
+
+            expect(totalCount).toBeGreaterThan(0);
+            expect(buckets.length).toEqual(Number(totalCount));
         });
     });
 });

@@ -1,3 +1,5 @@
+import * as path from 'path';
+import * as fs from 'fs';
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {DecodedEvent} from '@polkadot/api-contract/types';
 import {AddressOrPair, SubmittableExtrinsic, SubmittableResultValue} from '@polkadot/api/types';
@@ -12,12 +14,21 @@ type TxResult = SubmittableResultValue & {
     contractEvents?: DecodedEvent[];
 };
 
+export type ContractData = {
+    account: string;
+    clusterId: number;
+    bucketIds: bigint[];
+    contractAddress: string;
+};
+
 export type SignAndSendResult = Required<Pick<TxResult, 'events' | 'contractEvents'>> & {
     blockHash: string;
 };
 
+export const BLOCKCHAIN_RPC_URL = 'ws://localhost:9944';
+
 export const createBlockhainApi = async () => {
-    const provider = new WsProvider('ws://localhost:9944');
+    const provider = new WsProvider(BLOCKCHAIN_RPC_URL);
     const api = await ApiPromise.create({provider, types});
 
     return api.isReady;
@@ -55,11 +66,29 @@ export const transferCere = async (api: ApiPromise, to: string, tokens: number) 
     return signAndSend(transfer, getAccount('//Alice'));
 };
 
-export const getContractOptions = () => ({
-    abi: contractAbi,
-    contractAddress: global.DDC_CONTRACT_ADDRESS,
-    rpcUrl: global.DDC_API_URL,
-});
+export const getContractData = (): ContractData => {
+    const ddcConfigFile = path.resolve(__dirname, '../data/ddc.json');
+
+    if (!fs.existsSync(ddcConfigFile)) {
+        throw new Error('Blockhain environment is not stated or missing data');
+    }
+
+    const contractData = JSON.parse(fs.readFileSync(ddcConfigFile).toString('utf8'), (key, value) =>
+        key === 'bucketIds' ? value.map(BigInt) : value,
+    );
+
+    return contractData;
+};
+
+export const getContractOptions = () => {
+    const {contractAddress} = getContractData();
+
+    return {
+        contractAddress,
+        abi: contractAbi,
+        rpcUrl: BLOCKCHAIN_RPC_URL,
+    };
+};
 
 export const signAndSend = (tx: SubmittableExtrinsic<'promise'>, account: AddressOrPair) =>
     new Promise<SignAndSendResult>((resolve, reject) =>

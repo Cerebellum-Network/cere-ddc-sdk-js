@@ -13,7 +13,7 @@ export class DagApi {
     async putNode(request: PutRequest) {
         const {response} = await this.api.put(request);
 
-        return response.cid;
+        return new Uint8Array(response.cid);
     }
 
     async getNode(request: GetRequest) {

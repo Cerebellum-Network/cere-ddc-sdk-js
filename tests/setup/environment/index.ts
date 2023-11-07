@@ -13,9 +13,6 @@ export const startEnvironment = async () => {
     await startDDC(bcEnv);
 
     console.groupEnd();
-
-    global.DDC_API_URL = bcEnv.apiUrl;
-    global.DDC_CONTRACT_ADDRESS = bcEnv.contractAddress;
 };
 
 export const stopEnvironment = async () => {

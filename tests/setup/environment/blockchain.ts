@@ -5,14 +5,15 @@ import {cryptoWaitReady} from '@polkadot/util-crypto';
 import {SmartContract} from '@cere-ddc-sdk/smart-contract';
 import {NodeStatusInCluster} from '@cere-ddc-sdk/smart-contract/types';
 
-import {bootstrapContract, createBlockhainApi, getAccount, getHostIP, transferCere} from '../../helpers';
-
-export type ContractData = {
-    account: string;
-    clusterId: number;
-    bucketIds: bigint[];
-    contractAddress: string;
-};
+import {
+    bootstrapContract,
+    createBlockhainApi,
+    getAccount,
+    getHostIP,
+    transferCere,
+    ContractData,
+    getContractData,
+} from '../../helpers';
 
 export type Blockchain = ContractData & {
     apiUrl: string;
@@ -114,11 +115,7 @@ export const startBlockchain = async (): Promise<Blockchain> => {
         .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
         .up();
 
-    const contractData: ContractData = isCached
-        ? JSON.parse(fs.readFileSync(bcStateFile).toString('utf8'), (key, value) =>
-              key === 'bucketIds' ? value.map(BigInt) : value,
-          )
-        : await setupContract();
+    const contractData: ContractData = isCached ? getContractData() : await setupContract();
 
     if (!isCached) {
         const contractDataJson = JSON.stringify(

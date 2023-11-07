@@ -1,6 +1,14 @@
-import {Scheme} from '@cere-ddc-sdk/core';
 import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
-import {DagNode, DagNodeResponse, DagNodeStoreOptions, Router, RouterNode, RouterOperation} from '@cere-ddc-sdk/ddc';
+import {
+    DagNode,
+    DagNodeResponse,
+    Router,
+    RouterConfig,
+    RouterOperation,
+    Signer,
+    UriSigner,
+    DagNodeStoreOptions,
+} from '@cere-ddc-sdk/ddc';
 import {FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions} from '@cere-ddc-sdk/file-storage';
 
 import {DagNodeUri, DdcEntity, DdcUri, FileUri} from './DdcUri';
@@ -18,28 +26,27 @@ import {
 
 const MAX_BUCKET_SIZE = 5n;
 
-export type DdcClientConfig = {
-    nodes: RouterNode[];
+export type DdcClientConfig = Omit<RouterConfig, 'signer'> & {
     smartContract: SmartContractOptions;
 };
+
+export {FileStoreOptions, DagNodeStoreOptions};
 
 export class DdcClient {
     protected constructor(
         readonly smartContract: SmartContract,
-        private scheme: Scheme,
+        private signer: Signer,
         private fileStorage: FileStorage,
         private router: Router,
     ) {}
 
-    static async buildAndConnect(config: DdcClientConfig, secretPhrase: string) {
-        const scheme = await Scheme.createScheme('sr25519', secretPhrase);
-        const contract = await SmartContract.buildAndConnect(secretPhrase, config.smartContract);
-        const router = new Router(config.nodes);
-        const fs = new FileStorage({
-            router,
-        });
+    static async create(config: DdcClientConfig, uriOrSigner: Signer | string) {
+        const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
+        const contract = await SmartContract.buildAndConnect(signer, config.smartContract);
+        const router = new Router({signer, nodes: config.nodes});
+        const fs = new FileStorage(router);
 
-        return new DdcClient(contract, scheme, fs, router);
+        return new DdcClient(contract, signer, fs, router);
     }
 
     async disconnect() {
@@ -58,7 +65,7 @@ export class DdcClient {
             resource = 1n;
         }
 
-        const bucketId = await this.smartContract.bucketCreate(this.scheme.publicKeyHex, clusterId, bucketParams);
+        const bucketId = await this.smartContract.bucketCreate(this.signer.address, clusterId, bucketParams);
 
         if (balance > 0) {
             await this.smartContract.accountDeposit(balance);
@@ -98,31 +105,35 @@ export class DdcClient {
 
     async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<FileUri>;
     async store(bucketId: BucketId, entity: DagNode, options?: DagNodeStoreOptions): Promise<DagNodeUri>;
-    async store(bucketId: BucketId, entity: File | DagNode, options?: DagNodeStoreOptions | FileStoreOptions) {
+    async store(bucketId: BucketId, entity: File | DagNode, options?: FileStoreOptions | DagNodeStoreOptions) {
         const numBucketId = Number(bucketId); // TODO: Convert bucketId to number everywhere
         const entityType: DdcEntity = entity instanceof File ? 'file' : 'dag-node';
-        let cid: string;
 
-        if (entity instanceof File) {
-            cid = await this.fileStorage.store(numBucketId, entity, options);
-        } else {
-            const ddcNode = await this.router.getNode(RouterOperation.STORE_DAG_NODE);
+        const cid =
+            entity instanceof File
+                ? await this.fileStorage.store(numBucketId, entity, options)
+                : await this.storeDagNode(numBucketId, entity, options);
 
-            cid = await ddcNode.storeDagNode(numBucketId, entity, options);
-        }
+        return new DdcUri(bucketId, cid, entityType);
+    }
 
-        return new DdcUri(numBucketId, cid, entityType);
+    private async storeDagNode(bucketId: number, node: DagNode, options?: DagNodeStoreOptions) {
+        const ddcNode = await this.router.getNode(RouterOperation.STORE_DAG_NODE);
+
+        return ddcNode.storeDagNode(bucketId, node, options);
     }
 
     async read(uri: FileUri, options?: FileReadOptions): Promise<FileResponse>;
     async read(uri: DagNodeUri): Promise<DagNodeResponse>;
     async read(uri: DdcUri, options?: FileReadOptions) {
+        const numBucketId = Number(uri.bucketId); // TODO: Convert bucketId to number everywhere
+
         if (uri.entity === 'file') {
-            return this.fileStorage.read(uri.bucketId, uri.cid, options);
+            return this.fileStorage.read(numBucketId, uri.cidOrName, options);
         }
 
         const ddcNode = await this.router.getNode(RouterOperation.READ_DAG_NODE);
 
-        return ddcNode.getDagNode(uri.bucketId, uri.cid);
+        return ddcNode.getDagNode(numBucketId, uri.cidOrName);
     }
 }

@@ -21,7 +21,7 @@ export class FileApi {
             partSize: ceilToPowerOf2(request.partSize),
         });
 
-        return response.cid;
+        return new Uint8Array(response.cid);
     }
 
     async putRawPiece(metadata: PutRawPieceRequest_Metadata, content: Content) {
@@ -46,7 +46,7 @@ export class FileApi {
         await requests.complete();
         const {cid} = await response;
 
-        return cid;
+        return new Uint8Array(cid);
     }
 
     getFile(request: GetFileRequest) {
