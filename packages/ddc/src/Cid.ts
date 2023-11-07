@@ -1,7 +1,11 @@
 import {base32} from 'rfc4648';
 
 export class Cid {
-    constructor(private cid: string | Uint8Array) {}
+    private cid: Uint8Array | string;
+
+    constructor(cid: string | Uint8Array | Cid) {
+        this.cid = cid instanceof Cid ? cid.toBytes() : cid;
+    }
 
     get contentHash() {
         return this.toBytes().slice(-32);

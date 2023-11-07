@@ -4,7 +4,7 @@ import {ContractPromise} from '@polkadot/api-contract';
 import {SmartContract} from '@cere-ddc-sdk/smart-contract';
 import {NodeStatusInCluster, Permission} from '@cere-ddc-sdk/smart-contract/types';
 
-import {bootstrapContract, createAccount, createBlockhainApi, getAccount} from './helpers';
+import {bootstrapContract, createAccount, createBlockhainApi, getAccount} from '../helpers';
 
 describe('Smart Contract', () => {
     let api: ApiPromise;
@@ -37,8 +37,8 @@ describe('Smart Contract', () => {
 
     beforeAll(async () => {
         api = await createBlockhainApi();
-        admin = await getAccount('//Alice');
-        user = await getAccount('//Bob');
+        admin = getAccount('//Alice');
+        user = getAccount('//Bob');
 
         deployedContract = await bootstrapContract(api, admin);
 

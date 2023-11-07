@@ -11,6 +11,7 @@ describe('Storage Node', () => {
 
     describe('Raw piece', () => {
         let smallPieceCid: string;
+        const smallPieceName = 'small-test-piece';
         const smallPieceText = 'Hello small piece';
         const smallPieceJson = JSON.stringify(smallPieceText);
         const smallPieceData = new TextEncoder().encode(smallPieceJson);
@@ -18,9 +19,20 @@ describe('Storage Node', () => {
         test('Store a piece', async () => {
             const piece = new Piece(smallPieceData);
 
-            smallPieceCid = await storageNode.storePiece(bucketId, piece);
+            smallPieceCid = await storageNode.storePiece(bucketId, piece, {
+                name: smallPieceName,
+            });
 
             expect(smallPieceCid).toBeTruthy();
+        });
+
+        test('Read the piece by name', async () => {
+            expect(smallPieceCid).toBeDefined();
+
+            const piece = await storageNode.readPiece(bucketId, smallPieceName);
+            const text = await piece.text();
+
+            expect(text).toEqual(smallPieceData);
         });
 
         describe('Read the piece', () => {
@@ -56,6 +68,7 @@ describe('Storage Node', () => {
     describe('Multipart piece', () => {
         let multipartPieceCid: string;
         let rawPieceCids: string[];
+        const pieceName = 'multipart-test-piece';
         const partSize = 4 * MB;
         const rawPieceContents = [
             createDataStream(partSize, MB),
@@ -83,7 +96,9 @@ describe('Storage Node', () => {
                 totalSize,
             });
 
-            multipartPieceCid = await storageNode.storePiece(bucketId, multipartPiece);
+            multipartPieceCid = await storageNode.storePiece(bucketId, multipartPiece, {
+                name: pieceName,
+            });
 
             expect(multipartPieceCid).toBeTruthy();
         });
@@ -93,9 +108,8 @@ describe('Storage Node', () => {
 
             const piece = await storageNode.readPiece(bucketId, multipartPieceCid);
             const contentBuffer = await piece.arrayBuffer();
-            const content = new Uint8Array(contentBuffer);
 
-            expect(content.byteLength).toEqual(totalSize);
+            expect(contentBuffer.byteLength).toEqual(totalSize);
         });
 
         test('Read the piece range', async () => {
@@ -113,16 +127,28 @@ describe('Storage Node', () => {
 
             expect(contentBuffer.byteLength).toEqual(rangeLength);
         });
+
+        test('Read the piece by name', async () => {
+            expect(multipartPieceCid).toBeDefined();
+
+            const piece = await storageNode.readPiece(bucketId, pieceName);
+            const contentBuffer = await piece.arrayBuffer();
+
+            expect(contentBuffer.byteLength).toEqual(totalSize);
+        });
     });
 
     describe('DAG node', () => {
         let nodeCid: string;
+        const nodeName = 'dag-node-name';
         const nodeData = new TextEncoder().encode('Hello test DAG node');
 
         test('Store a node', async () => {
             const node = new DagNode(nodeData);
 
-            nodeCid = await storageNode.storeDagNode(bucketId, node);
+            nodeCid = await storageNode.storeDagNode(bucketId, node, {
+                name: nodeName,
+            });
 
             expect(nodeCid).toBeTruthy();
         });
@@ -131,6 +157,14 @@ describe('Storage Node', () => {
             expect(nodeCid).toBeDefined();
 
             const node = await storageNode.getDagNode(bucketId, nodeCid);
+
+            expect(node?.data).toEqual(Buffer.from(nodeData));
+        });
+
+        test('Read the node by name', async () => {
+            expect(nodeCid).toBeDefined();
+
+            const node = await storageNode.getDagNode(bucketId, nodeName);
 
             expect(node?.data).toEqual(Buffer.from(nodeData));
         });

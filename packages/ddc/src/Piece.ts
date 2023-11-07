@@ -42,8 +42,8 @@ export class MultipartPiece {
 export class PieceResponse {
     protected cidObject: Cid;
 
-    constructor(cid: string | Uint8Array, readonly body: ContentStream, protected meta?: PieceResponseMeta) {
-        this.cidObject = new Cid(cid);
+    constructor(cid: string | Uint8Array | Cid, readonly body: ContentStream, protected meta?: PieceResponseMeta) {
+        this.cidObject = cid instanceof Cid ? cid : new Cid(cid);
     }
 
     get range() {

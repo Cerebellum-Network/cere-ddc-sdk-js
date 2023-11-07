@@ -3,13 +3,12 @@ import * as fs from 'fs';
 import {Readable} from 'stream';
 import {pipeline} from 'stream/promises';
 import {createHash} from 'crypto';
-import {Router, UriSigner} from '@cere-ddc-sdk/ddc';
-import {FileStorage, File} from '@cere-ddc-sdk/file-storage';
+import {FileStorage, File, UriSigner} from '@cere-ddc-sdk/file-storage';
 import {createDataStream, MB, KB, ROOT_USER_SEED} from '../helpers';
 
 describe('File storage', () => {
     const bucketId = 0;
-    const router = new Router({
+    const fileStorage = new FileStorage({
         signer: new UriSigner(ROOT_USER_SEED),
         nodes: [
             {rpcHost: 'localhost:9091'},
@@ -18,8 +17,6 @@ describe('File storage', () => {
             {rpcHost: 'localhost:9094'},
         ],
     });
-
-    const fileStorage = new FileStorage({router});
 
     describe('Small file', () => {
         let fileCid: string;

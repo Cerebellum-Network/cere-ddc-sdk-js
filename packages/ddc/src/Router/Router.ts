@@ -22,7 +22,13 @@ export type RouterConfig = {
 export class Router {
     constructor(private config: RouterConfig) {}
 
+    async isRead() {
+        return this.config.signer.isReady();
+    }
+
     async getNode(operation: RouterOperation) {
+        await this.isRead();
+
         const nodes = this.config.nodes;
         const node = nodes[Math.floor(Math.random() * nodes.length)];
 

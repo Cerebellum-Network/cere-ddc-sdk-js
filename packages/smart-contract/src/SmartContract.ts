@@ -114,6 +114,7 @@ export class SmartContract extends SmartContractBase {
 
         bucketStatus.bucketId = BigInt(bucketStatus.bucketId);
         bucketStatus.params = JSON.parse(bucketStatus.params as any);
+        bucketStatus.bucket.resourceReserved = BigInt(bucketStatus.bucket.resourceReserved);
 
         return bucketStatus;
     }
