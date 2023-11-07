@@ -119,7 +119,7 @@ export class DdcClient {
     }
 
     private async storeDagNode(bucketId: number, node: DagNode, options?: DagNodeStoreOptions) {
-        const ddcNode = await this.router.getNode(RouterOperation.STORE_DAG_NODE);
+        const ddcNode = await this.router.getNode(RouterOperation.STORE_DAG_NODE, bucketId);
 
         return ddcNode.storeDagNode(bucketId, node, options);
     }
@@ -133,7 +133,7 @@ export class DdcClient {
             return this.fileStorage.read(numBucketId, uri.cidOrName, options);
         }
 
-        const ddcNode = await this.router.getNode(RouterOperation.READ_DAG_NODE);
+        const ddcNode = await this.router.getNode(RouterOperation.READ_DAG_NODE, numBucketId);
 
         return ddcNode.getDagNode(numBucketId, uri.cidOrName);
     }

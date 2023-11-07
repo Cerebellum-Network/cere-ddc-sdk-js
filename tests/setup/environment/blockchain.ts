@@ -203,9 +203,7 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
 const deployClusterNodeAuthorizationContract = async (apiPromise: ApiPromise, admin: KeyringPair) => {
     const contractDir = path.resolve(__dirname, './fixtures/contract');
 
-    const contractContent = await fs.readFileSync(
-        path.resolve(contractDir, 'cluster_node_candidate_authorization.contract'),
-    );
+    const contractContent = fs.readFileSync(path.resolve(contractDir, 'cluster_node_candidate_authorization.contract'));
     const contract = JSON.parse(contractContent.toString());
     const wasm = contract.source.wasm.toString();
     const abi = new Abi(contract);

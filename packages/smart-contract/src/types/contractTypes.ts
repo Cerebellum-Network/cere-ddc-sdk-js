@@ -1,7 +1,7 @@
 import {Codec} from '@polkadot/types/types';
 
 export type ClusterId = number;
-export type BucketId = bigint;
+export type BucketId = number;
 export type AccountId = string;
 export type NodeKey = string;
 export type Resource = bigint;

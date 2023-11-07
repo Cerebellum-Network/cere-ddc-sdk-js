@@ -10,7 +10,7 @@ export class DDCCustomersPallet {
 
     async getBucket(bucketId: BucketId) {
         const result = await this.apiPromise.query.ddcCustomers.buckets(bucketId);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as Bucket;
+        return result.unwrapOr(undefined)?.toJSON() as unknown as Bucket | undefined;
     }
 
     async getBucketsCount() {
@@ -48,7 +48,7 @@ export class DDCCustomersPallet {
     }
 }
 
-export type BucketId = bigint; // TODO ask Yahor about this
+export type BucketId = number;
 export type Bucket = /*PalletDdcCustomersBucket;*/ {
     readonly bucketId: BucketId;
     readonly ownerId: AccountId;
