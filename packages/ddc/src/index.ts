@@ -5,6 +5,7 @@ export {CnsApi} from './CnsApi';
 export {DagApi} from './DagApi';
 export * from './FileApi';
 export * from './RpcTransport';
+export * from './WebTransport';
 export * from './Signer';
 export * from './Cid';
 
