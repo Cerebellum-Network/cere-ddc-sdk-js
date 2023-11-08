@@ -155,10 +155,9 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
     await cryptoWaitReady();
     const admin = getAccount();
     const blockchain = await Blockchain.create({account: admin, apiPromise});
-    const api = await createBlockhainApi();
 
     const clusterId = '0x0000000000000000000000000000000000000000'; // Always the same for fresh SC
-    const bucketIds = [0n, 1n, 2n]; // Always the same for fresh SC
+    const bucketIds = [0, 1, 2]; // Always the same for fresh SC
     const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
     const storageNodeAccounts = [
         getAccount('//Eve'),
