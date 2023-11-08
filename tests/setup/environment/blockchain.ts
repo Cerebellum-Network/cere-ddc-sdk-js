@@ -204,7 +204,7 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
     await blockchain.batchSend(bucketIds.flatMap((bucketId) => [blockchain.ddcCustomers.createBucket(clusterId)]));
     console.timeEnd('Create buckets');
 
-    console.time('Done');
+    console.timeEnd('Done');
     console.groupEnd();
 };
 

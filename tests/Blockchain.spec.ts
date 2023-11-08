@@ -195,6 +195,6 @@ describe('packages/blockchain', () => {
     });
 
     test('Should create bucket', async () => {
-        await blockchain.send(blockchain.ddcCustomers.createBucket(true, 1n));
+        await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId));
     });
 });
