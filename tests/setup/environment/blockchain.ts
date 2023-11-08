@@ -152,6 +152,8 @@ export const stopBlockchain = async () => {
 };
 
 export const setupPallets = async (apiPromise: ApiPromise) => {
+    console.group('Setup pallets');
+    console.time('Done');
     await cryptoWaitReady();
     const admin = getAccount();
     const blockchain = await Blockchain.create({account: admin, apiPromise});
@@ -166,8 +168,11 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
         getAccount('//Alice'),
     ];
 
+    console.time('Deploy cluster node auth contract');
     const clusterNodeAuthorizationContractAddress = await deployClusterNodeAuthorizationContract(apiPromise, admin);
+    console.timeEnd('Deploy cluster node auth contract');
 
+    console.time('Create cluster and nodes');
     await blockchain.batchSend([
         blockchain.ddcClusters.createCluster(clusterId, {
             params: '',
@@ -189,13 +194,19 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
             blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNodeAccount.address),
         ]),
     ]);
+    console.timeEnd('Create cluster and nodes');
 
+    console.time('Create buckets');
     await blockchain.batchSend(
         bucketIds.flatMap((bucketId) => [
             blockchain.ddcCustomers.createBucket(true, 1n),
             blockchain.ddcCustomers.allocateBucketToCluster(bucketId, clusterId),
         ]),
     );
+    console.timeEnd('Create buckets');
+
+    console.time('Done');
+    console.groupEnd();
 };
 
 const deployClusterNodeAuthorizationContract = async (apiPromise: ApiPromise, admin: KeyringPair) => {
