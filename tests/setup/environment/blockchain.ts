@@ -155,10 +155,9 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
     console.group('Setup pallets');
     console.time('Done');
     await cryptoWaitReady();
-    const admin = getAccount();
-    const blockchain = await Blockchain.create({account: admin, apiPromise});
 
-    const clusterId = '0x0000000000000000000000000000000000000000'; // Always the same for fresh SC
+    const admin = getAccount();
+    const clusterId = '0x0000000000000000000000000000000000000000';
     const bucketIds = [0, 1, 2]; // Always the same for fresh SC
     const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
     const storageNodeAccounts = [
@@ -168,10 +167,15 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
         getAccount('//Alice'),
     ];
 
+    console.time('Top-up user');
+    await transferCere(apiPromise, admin.address, 1000);
+    console.timeEnd('Top-up user');
+
     console.time('Deploy cluster node auth contract');
     const clusterNodeAuthorizationContractAddress = await deployClusterNodeAuthorizationContract(apiPromise, admin);
     console.timeEnd('Deploy cluster node auth contract');
 
+    const blockchain = await Blockchain.create({account: admin, apiPromise});
     console.time('Create cluster and nodes');
     await blockchain.batchSend([
         blockchain.ddcClusters.createCluster(clusterId, {
@@ -231,8 +235,7 @@ const deployClusterNodeAuthorizationContract = async (apiPromise: ApiPromise, ad
 export async function setupBlockchain() {
     const api = await createBlockhainApi();
 
-    const contract = await setupContract(api);
     await setupPallets(api);
 
-    return contract;
+    return setupContract(api);
 }

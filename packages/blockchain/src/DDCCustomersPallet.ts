@@ -23,28 +23,24 @@ export class DDCCustomersPallet {
         return result.unwrapOr(undefined)?.toJSON() as unknown as StakingInfo;
     }
 
-    allocateBucketToCluster(bucketId: BucketId, clusterId: ClusterId) {
-        return this.apiPromise.tx.ddcCustomers.allocateBucketToCluster(bucketId, clusterId) as Sendable;
-    }
-
-    createBucket(publicAvailability: boolean, resourcesUsed: bigint) {
-        return this.apiPromise.tx.ddcCustomers.createBucket(publicAvailability, resourcesUsed) as Sendable;
+    createBucket(clusterId: ClusterId) {
+        return this.apiPromise.tx.ddcCustomers.createBucket(clusterId) as Sendable;
     }
 
     deposit(value: bigint) {
-        return this.apiPromise.tx.ddcCustomers.deposit(value);
+        return this.apiPromise.tx.ddcCustomers.deposit(value) as Sendable;
     }
 
     depositExtra(maxAdditional: bigint) {
-        return this.apiPromise.tx.ddcCustomers.depositExtra(maxAdditional);
+        return this.apiPromise.tx.ddcCustomers.depositExtra(maxAdditional) as Sendable;
     }
 
     unlockDeposit(value: bigint) {
-        return this.apiPromise.tx.ddcCustomers.unlockDeposit(value);
+        return this.apiPromise.tx.ddcCustomers.unlockDeposit(value) as Sendable;
     }
 
     withdrawUnlockedDeposit() {
-        return this.apiPromise.tx.ddcCustomers.withdrawUnlockedDeposit();
+        return this.apiPromise.tx.ddcCustomers.withdrawUnlockedDeposit() as Sendable;
     }
 }
 
