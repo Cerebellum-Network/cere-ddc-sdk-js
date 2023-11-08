@@ -212,3 +212,10 @@ services:
       REDIS_HOST: redis
     ports:
       - "7379:7379"
+
+  envoy:
+    image: envoyproxy/envoy:dev-4b65ba175a72e5ca3248819f95ca9b8799d360ea
+    ports:
+      - "8071:8071"
+    volumes:
+      - ./envoy-grpc.yaml:/etc/envoy/envoy.yaml
