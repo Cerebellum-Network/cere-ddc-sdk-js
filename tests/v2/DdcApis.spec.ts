@@ -29,7 +29,7 @@ describe('DDC APIs', () => {
 
     describe('Dag Api', () => {
         let nodeCid: Uint8Array;
-        const nodeData = randomBytes(10);
+        const nodeData = new Uint8Array(randomBytes(10));
 
         test('Create node', async () => {
             nodeCid = await dagApi.putNode({
