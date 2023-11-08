@@ -1,17 +1,5 @@
 import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
-import {
-    DagNode,
-    DagNodeResponse,
-    Router,
-    RouterConfig,
-    RouterOperation,
-    Signer,
-    UriSigner,
-    DagNodeStoreOptions,
-} from '@cere-ddc-sdk/ddc';
 import {FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions} from '@cere-ddc-sdk/file-storage';
-
-import {DagNodeUri, DdcEntity, DdcUri, FileUri} from './DdcUri';
 
 import {
     BucketParams,
@@ -24,6 +12,20 @@ import {
     Offset,
 } from '@cere-ddc-sdk/smart-contract/types';
 
+import {
+    DagNode,
+    DagNodeResponse,
+    Router,
+    RouterConfig,
+    RouterOperation,
+    Signer,
+    UriSigner,
+    DagNodeStoreOptions,
+} from '@cere-ddc-sdk/ddc';
+
+import {DagNodeUri, DdcEntity, DdcUri, FileUri} from './DdcUri';
+import {TESTNET} from './presets';
+
 const MAX_BUCKET_SIZE = 5n;
 
 export type DdcClientConfig = Omit<RouterConfig, 'signer'> & {
@@ -34,19 +36,19 @@ export {FileStoreOptions, DagNodeStoreOptions};
 
 export class DdcClient {
     protected constructor(
-        readonly smartContract: SmartContract,
         private signer: Signer,
+        readonly smartContract: SmartContract,
         private fileStorage: FileStorage,
         private router: Router,
     ) {}
 
-    static async create(config: DdcClientConfig, uriOrSigner: Signer | string) {
+    static async create(uriOrSigner: Signer | string, config: DdcClientConfig = TESTNET) {
         const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
         const contract = await SmartContract.buildAndConnect(signer, config.smartContract);
         const router = new Router({signer, nodes: config.nodes});
         const fs = new FileStorage(router);
 
-        return new DdcClient(contract, signer, fs, router);
+        return new DdcClient(signer, contract, fs, router);
     }
 
     async disconnect() {

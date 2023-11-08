@@ -3,6 +3,7 @@
     "description": "Core with common logic",
     "version": "2.0.0-rc.4",
     "type": "module",
+    "private": true,
     "repository": {
         "type": "git",
         "directory": "packages/core",
