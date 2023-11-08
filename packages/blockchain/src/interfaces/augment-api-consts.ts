@@ -234,21 +234,6 @@ declare module '@polkadot/api-base/types/consts' {
              **/
             defaultStorageChillDelay: u32 & AugmentedConst<ApiType>;
         };
-        ddcValidator: {
-            /**
-             * Number of validators expected to produce an individual validation decision to form a
-             * consensus. Tasks assignment procedure use this value to determine the number of
-             * validators are getting the same task. Must be an odd number.
-             **/
-            ddcValidatorsQuorumSize: u32 & AugmentedConst<ApiType>;
-            /**
-             * Proof-of-Delivery parameter specifies an allowed deviation between bytes sent and bytes
-             * received. The deviation is expressed as a percentage. For example, if the value is 10,
-             * then the difference between bytes sent and bytes received is allowed to be up to 10%.
-             * The value must be in range [0, 100].
-             **/
-            validationThreshold: u32 & AugmentedConst<ApiType>;
-        };
         democracy: {
             /**
              * Period in blocks where an external proposal may not be re-submitted after being vetoed.

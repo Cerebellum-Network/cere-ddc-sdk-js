@@ -406,26 +406,19 @@ declare module '@polkadot/api-base/types/errors' {
     ddcClusters: {
       AttemptToAddNonExistentNode: AugmentedError<ApiType>;
       AttemptToRemoveNonExistentNode: AugmentedError<ApiType>;
-      /**
-       * Cluster candidate should not plan to chill.
-       **/
-      ChillingProhibited: AugmentedError<ApiType>;
       ClusterAlreadyExists: AugmentedError<ApiType>;
       ClusterDoesNotExist: AugmentedError<ApiType>;
       ClusterParamsExceedsLimit: AugmentedError<ApiType>;
+      NodeAuthContractCallFailed: AugmentedError<ApiType>;
       /**
-       * Conditions for fast chill are not met, try the regular `chill` from
-       * `pallet-ddc-staking`.
+       * Cluster candidate should not plan to chill.
        **/
-      FastChillProhibited: AugmentedError<ApiType>;
+      NodeChillingIsProhibited: AugmentedError<ApiType>;
+      NodeHasNoStake: AugmentedError<ApiType>;
       NodeIsAlreadyAssigned: AugmentedError<ApiType>;
       NodeIsNotAssigned: AugmentedError<ApiType>;
-      NoStake: AugmentedError<ApiType>;
-      NotAuthorized: AugmentedError<ApiType>;
-      /**
-       * Origin of the call is not a controller of the stake associated with the provided node.
-       **/
-      NotNodeController: AugmentedError<ApiType>;
+      NodeIsNotAuthorized: AugmentedError<ApiType>;
+      NodeStakeIsInvalid: AugmentedError<ApiType>;
       OnlyClusterManager: AugmentedError<ApiType>;
     };
     ddcCustomers: {
@@ -518,11 +511,23 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       EraNotValidated: AugmentedError<ApiType>;
       /**
+       * Conditions for fast chill are not met, try the regular `chill` from
+       **/
+      FastChillProhibited: AugmentedError<ApiType>;
+      /**
        * Cannot have a storage network or CDN participant, with the size less than defined by
        * governance (see `BondSize`). If unbonding is the intention, `chill` first to remove
        * one's role as storage/edge.
        **/
       InsufficientBond: AugmentedError<ApiType>;
+      /**
+       * No cluster governance params found for cluster
+       **/
+      NoClusterGovParams: AugmentedError<ApiType>;
+      /**
+       * No stake found associated with the provided node.
+       **/
+      NodeHasNoStake: AugmentedError<ApiType>;
       /**
        * Can not schedule more unlock chunks.
        **/
@@ -531,6 +536,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Not a controller account.
        **/
       NotController: AugmentedError<ApiType>;
+      /**
+       * Origin of the call is not a controller of the stake associated with the provided node.
+       **/
+      NotNodeController: AugmentedError<ApiType>;
       /**
        * Not a stash account.
        **/
@@ -543,40 +552,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Action is allowed at some point of time in future not reached yet.
        **/
       TooEarly: AugmentedError<ApiType>;
-    };
-    ddcValidator: {
-      /**
-       * Attempt to charge content owners twice
-       **/
-      ContentOwnersDoubleSpend: AugmentedError<ApiType>;
-      /**
-       * Current era not set during runtime
-       **/
-      DDCEraNotSet: AugmentedError<ApiType>;
-      /**
-       * OCW key has not been registered by validator
-       **/
-      DDCValidatorKeyNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Node is not participating in the network
-       **/
-      NodeNotActive: AugmentedError<ApiType>;
-      /**
-       * Caller is not controller of validator node
-       **/
-      NotController: AugmentedError<ApiType>;
-      /**
-       * Checked stash is not an active validator
-       **/
-      NotValidatorStash: AugmentedError<ApiType>;
-      /**
-       * Pricing has not been set by sudo
-       **/
-      PricingNotSet: AugmentedError<ApiType>;
-      /**
-       * Validation decision has been already set for CDN node for some era
-       **/
-      ValidationDecisionAlreadySet: AugmentedError<ApiType>;
     };
     democracy: {
       /**

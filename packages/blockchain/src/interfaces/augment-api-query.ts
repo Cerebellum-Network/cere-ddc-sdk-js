@@ -58,7 +58,6 @@ import {
     PalletDdcStakingEraRewardPointsPerNode,
     PalletDdcStakingEraRewardsPaid,
     PalletDdcStakingStakingLedger,
-    PalletDdcValidatorValidationDecision,
     PalletDemocracyPreimageStatus,
     PalletDemocracyReferendumInfo,
     PalletDemocracyReleases,
@@ -119,6 +118,7 @@ import {
     SpNposElectionsElectionScore,
     SpRuntimeDigest,
     SpStakingOffenceOffenceDetails,
+    PalletDdcClustersClusterClusterGovParams,
 } from '@polkadot/types/lookup';
 
 export type __AugmentedQuery<ApiType extends ApiTypes> = AugmentedQuery<ApiType, () => unknown>;
@@ -544,12 +544,17 @@ declare module '@polkadot/api-base/types/storage' {
                 (arg: H160 | string | Uint8Array) => Observable<Option<PalletDdcClustersCluster>>,
                 [H160]
             >;
+            clustersGovParams: AugmentedQuery<
+                ApiType,
+                (arg: H160 | string | Uint8Array) => Observable<Option<PalletDdcClustersClusterClusterGovParams>>,
+                [H160]
+            >;
             clustersNodes: AugmentedQuery<
                 ApiType,
                 (
                     arg1: H160 | string | Uint8Array,
                     arg2: DdcPrimitivesNodePubKey | {StoragePubKey: any} | {CDNPubKey: any} | string | Uint8Array,
-                ) => Observable<bool>,
+                ) => Observable<Option<bool>>,
                 [H160, DdcPrimitivesNodePubKey]
             >;
         };
@@ -559,10 +564,10 @@ declare module '@polkadot/api-base/types/storage' {
              **/
             buckets: AugmentedQuery<
                 ApiType,
-                (arg: u128 | AnyNumber | Uint8Array) => Observable<Option<PalletDdcCustomersBucket>>,
-                [u128]
+                (arg: u64 | AnyNumber | Uint8Array) => Observable<Option<PalletDdcCustomersBucket>>,
+                [u64]
             >;
-            bucketsCount: AugmentedQuery<ApiType, () => Observable<u128>, []>;
+            bucketsCount: AugmentedQuery<ApiType, () => Observable<u64>, []>;
             /**
              * Map from all (unlocked) "owner" accounts to the info regarding the staking.
              **/
@@ -700,69 +705,6 @@ declare module '@polkadot/api-base/types/storage' {
                 ApiType,
                 (arg: AccountId32 | string | Uint8Array) => Observable<Option<H160>>,
                 [AccountId32]
-            >;
-        };
-        ddcValidator: {
-            /**
-             * The map from the era and validator stash key to the list of CDN nodes to validate.
-             **/
-            assignments: AugmentedQuery<
-                ApiType,
-                (
-                    arg1: u32 | AnyNumber | Uint8Array,
-                    arg2: AccountId32 | string | Uint8Array,
-                ) => Observable<Option<Vec<AccountId32>>>,
-                [u32, AccountId32]
-            >;
-            /**
-             * The mapping of ddc validator keys to validator stash keys
-             *
-             * Keys registered by validators are mapped to validator stash accounts.
-             * The mapping is formed in the way that facilitates fast checking that storage contains key.
-             * Similarly the validator stash is checked if he is still in the list of validators.
-             **/
-            ddcValidatorToStashKeys: AugmentedQuery<
-                ApiType,
-                (arg: AccountId32 | string | Uint8Array) => Observable<Option<AccountId32>>,
-                [AccountId32]
-            >;
-            /**
-             * Map to from era and account ID to bool indicateing that a particular content owner was
-             * charged for the era
-             **/
-            eraContentOwnersCharged: AugmentedQuery<
-                ApiType,
-                (arg1: u32 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<bool>,
-                [u32, AccountId32]
-            >;
-            /**
-             * The last era for which the tasks assignment produced.
-             **/
-            lastManagedEra: AugmentedQuery<ApiType, () => Observable<Option<u32>>, []>;
-            rewardPointsSetForNode: AugmentedQuery<
-                ApiType,
-                (arg1: u32 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<bool>,
-                [u32, AccountId32]
-            >;
-            /**
-             * A signal to start a process on all the validators.
-             **/
-            signal: AugmentedQuery<ApiType, () => Observable<Option<bool>>, []>;
-            /**
-             * The map from the era and CDN participant stash key to the validation decision related.
-             **/
-            validationDecisions: AugmentedQuery<
-                ApiType,
-                (
-                    arg1: u32 | AnyNumber | Uint8Array,
-                    arg2: AccountId32 | string | Uint8Array,
-                ) => Observable<Option<PalletDdcValidatorValidationDecision>>,
-                [u32, AccountId32]
-            >;
-            validationDecisionSetForNode: AugmentedQuery<
-                ApiType,
-                (arg1: u32 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<bool>,
-                [u32, AccountId32]
             >;
         };
         democracy: {

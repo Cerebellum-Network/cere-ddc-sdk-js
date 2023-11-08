@@ -5598,6 +5598,8 @@ declare module '@polkadot/types/lookup' {
         readonly nodeProviderAuthContract: AccountId32;
     }
 
+    export interface PalletDdcClustersClusterClusterGovParams extends Struct {}
+
     /** @name PalletDdcClustersError (600) */
     interface PalletDdcClustersError extends Enum {
         readonly isClusterAlreadyExists: boolean;

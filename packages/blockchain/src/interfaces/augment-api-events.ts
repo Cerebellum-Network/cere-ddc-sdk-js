@@ -30,7 +30,6 @@ import {
     FrameSupportScheduleLookupError,
     FrameSupportTokensMiscBalanceStatus,
     PalletDdcStakingEraRewardPoints,
-    PalletDdcValidatorValidationDecision,
     PalletDemocracyVoteAccountVote,
     PalletDemocracyVoteThreshold,
     PalletElectionProviderMultiPhaseElectionCompute,
@@ -379,6 +378,7 @@ declare module '@polkadot/api-base/types/events' {
         };
         ddcClusters: {
             ClusterCreated: AugmentedEvent<ApiType, [clusterId: H160], {clusterId: H160}>;
+            ClusterGovParamsSet: AugmentedEvent<ApiType, [clusterId: H160], {clusterId: H160}>;
             ClusterNodeAdded: AugmentedEvent<
                 ApiType,
                 [clusterId: H160, nodePubKey: DdcPrimitivesNodePubKey],
@@ -392,6 +392,10 @@ declare module '@polkadot/api-base/types/events' {
             ClusterParamsSet: AugmentedEvent<ApiType, [clusterId: H160], {clusterId: H160}>;
         };
         ddcCustomers: {
+            /**
+             * Bucket with specific id created
+             **/
+            BucketCreated: AugmentedEvent<ApiType, [u64]>;
             /**
              * Total amount charged from all accounts to pay CDN nodes
              **/
@@ -461,10 +465,6 @@ declare module '@polkadot/api-base/types/events' {
              * from the unlocking queue. \[stash, amount\]
              **/
             Withdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
-        };
-        ddcValidator: {
-            EraRewardPoints: AugmentedEvent<ApiType, [u32, Vec<ITuple<[AccountId32, u64]>>]>;
-            ValidationDecision: AugmentedEvent<ApiType, [u32, AccountId32, PalletDdcValidatorValidationDecision]>;
         };
         democracy: {
             /**

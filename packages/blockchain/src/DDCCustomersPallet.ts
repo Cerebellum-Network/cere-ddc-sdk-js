@@ -1,8 +1,5 @@
 import {ApiPromise} from '@polkadot/api';
-import {PalletDdcCustomersUnlockChunk} from '@polkadot/types/lookup';
 import {ClusterId} from './DDCClustersPallet';
-import {AccountId32} from '@polkadot/types/interfaces/runtime';
-import {Vec} from '@polkadot/types-codec';
 import {Sendable} from './Blockchain';
 
 export class DDCCustomersPallet {
@@ -57,5 +54,4 @@ export type StakingInfo = /*PalletDdcCustomersAccountsLedger;*/ {
     readonly owner: AccountId;
     readonly total: bigint;
     readonly active: bigint;
-    readonly unlocking: Vec<PalletDdcCustomersUnlockChunk>;
 };

@@ -45,10 +45,8 @@ import {
     DdcPrimitivesNodePubKey,
     FrameSupportScheduleMaybeHashed,
     PalletDdcClustersClusterClusterParams,
-    PalletDdcCustomersBucketsDetails,
     PalletDdcNodesNodeNodeParams,
     PalletDdcStakingClusterSettings,
-    PalletDdcValidatorValidationDecision,
     PalletDemocracyConviction,
     PalletDemocracyVoteAccountVote,
     PalletElectionProviderMultiPhaseRawSolution,
@@ -80,6 +78,7 @@ import {
     SpNposElectionsSupport,
     SpRuntimeHeader,
     SpSessionMembershipProof,
+    PalletDdcClustersClusterClusterGovParams
 } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
@@ -1254,23 +1253,37 @@ declare module '@polkadot/api-base/types/submittable' {
                 ) => SubmittableExtrinsic<ApiType>,
                 [H160, PalletDdcClustersClusterClusterParams]
             >;
-            /**
-             * Allow cluster node candidate to chill in the next DDC era.
-             *
-             * The dispatch origin for this call must be _Signed_ by the controller.
-             **/
-            fastChill: AugmentedSubmittable<
-                (
-                    node: DdcPrimitivesNodePubKey | {StoragePubKey: any} | {CDNPubKey: any} | string | Uint8Array,
-                ) => SubmittableExtrinsic<ApiType>,
-                [DdcPrimitivesNodePubKey]
-            >;
             removeNode: AugmentedSubmittable<
                 (
                     clusterId: H160 | string | Uint8Array,
                     nodePubKey: DdcPrimitivesNodePubKey | {StoragePubKey: any} | {CDNPubKey: any} | string | Uint8Array,
                 ) => SubmittableExtrinsic<ApiType>,
                 [H160, DdcPrimitivesNodePubKey]
+            >;
+            setClusterGovParams: AugmentedSubmittable<
+                (
+                    clusterId: H160 | string | Uint8Array,
+                    clusterGovParams:
+                        | PalletDdcClustersClusterClusterGovParams
+                        | {
+                              treasuryShare?: any;
+                              validatorsShare?: any;
+                              clusterReserveShare?: any;
+                              cdnBondSize?: any;
+                              cdnChillDelay?: any;
+                              cdnUnbondingDelay?: any;
+                              storageBondSize?: any;
+                              storageChillDelay?: any;
+                              storageUnbondingDelay?: any;
+                              unitPerMbStored?: any;
+                              unitPerMbStreamed?: any;
+                              unitPerPutRequest?: any;
+                              unitPerGetRequest?: any;
+                          }
+                        | string
+                        | Uint8Array,
+                ) => SubmittableExtrinsic<ApiType>,
+                [H160, PalletDdcClustersClusterClusterGovParams]
             >;
             setClusterParams: AugmentedSubmittable<
                 (
@@ -1286,28 +1299,13 @@ declare module '@polkadot/api-base/types/submittable' {
         };
         ddcCustomers: {
             /**
-             * Allocates specified bucket into specified cluster
-             *
-             * Only bucket owner can call this method
-             **/
-            allocateBucketToCluster: AugmentedSubmittable<
-                (
-                    bucketId: u128 | AnyNumber | Uint8Array,
-                    clusterId: H160 | string | Uint8Array,
-                ) => SubmittableExtrinsic<ApiType>,
-                [u128, H160]
-            >;
-            /**
-             * Create new bucket with provided public availability & reserved resources
+             * Create new bucket with specified cluster id
              *
              * Anyone can create a bucket
              **/
             createBucket: AugmentedSubmittable<
-                (
-                    publicAvailability: bool | boolean | Uint8Array,
-                    resourcesReserved: u128 | AnyNumber | Uint8Array,
-                ) => SubmittableExtrinsic<ApiType>,
-                [bool, u128]
+                (clusterId: H160 | string | Uint8Array) => SubmittableExtrinsic<ApiType>,
+                [H160]
             >;
             /**
              * Take the origin account as a owner and lock up `value` of its balance. `Owner` will
@@ -1489,6 +1487,17 @@ declare module '@polkadot/api-base/types/submittable' {
                 [MultiAddress]
             >;
             /**
+             * Allow cluster node candidate to chill in the next DDC era.
+             *
+             * The dispatch origin for this call must be _Signed_ by the controller.
+             **/
+            fastChill: AugmentedSubmittable<
+                (
+                    nodePubKey: DdcPrimitivesNodePubKey | {StoragePubKey: any} | {CDNPubKey: any} | string | Uint8Array,
+                ) => SubmittableExtrinsic<ApiType>,
+                [DdcPrimitivesNodePubKey]
+            >;
+            /**
              * Pay out all the stakers for a single era.
              **/
             payoutStakers: AugmentedSubmittable<
@@ -1504,7 +1513,10 @@ declare module '@polkadot/api-base/types/submittable' {
              * The dispatch origin for this call must be _Signed_ by the controller, not the stash. The
              * bond size must be greater than or equal to the `EdgeBondSize`.
              **/
-            serve: AugmentedSubmittable<(cluster: H160 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H160]>;
+            serve: AugmentedSubmittable<
+                (clusterId: H160 | string | Uint8Array) => SubmittableExtrinsic<ApiType>,
+                [H160]
+            >;
             /**
              * (Re-)set the controller of a stash.
              *
@@ -1579,7 +1591,10 @@ declare module '@polkadot/api-base/types/submittable' {
              * The dispatch origin for this call must be _Signed_ by the controller, not the stash. The
              * bond size must be greater than or equal to the `StorageBondSize`.
              **/
-            store: AugmentedSubmittable<(cluster: H160 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H160]>;
+            store: AugmentedSubmittable<
+                (clusterId: H160 | string | Uint8Array) => SubmittableExtrinsic<ApiType>,
+                [H160]
+            >;
             /**
              * Schedule a portion of the stash to be unlocked ready for transfer out after the bond
              * period ends. If this leaves an amount actively bonded less than
@@ -1618,75 +1633,6 @@ declare module '@polkadot/api-base/types/submittable' {
              * See also [`Call::unbond`].
              **/
             withdrawUnbonded: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-        };
-        ddcValidator: {
-            /**
-             * Exstrinsic deducts balances of content owners
-             *
-             * Only registered validator keys can call this exstrinsic.
-             * Reward points can be set only once per era per validator.
-             **/
-            chargePaymentsContentOwners: AugmentedSubmittable<
-                (
-                    payingAccounts:
-                        | Vec<PalletDdcCustomersBucketsDetails>
-                        | (PalletDdcCustomersBucketsDetails | {bucketId?: any; amount?: any} | string | Uint8Array)[],
-                ) => SubmittableExtrinsic<ApiType>,
-                [Vec<PalletDdcCustomersBucketsDetails>]
-            >;
-            /**
-             * Run a process at the same time on all the validators.
-             **/
-            sendSignal: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-            /**
-             * Set reward points for CDN participants at the given era.
-             *
-             * Only registered validator keys can call this exstrinsic.
-             * Reward points can be set only once per era per CDN node.
-             * CDN node should be active.
-             *
-             * `stakers_points` is a vector of (stash account ID, reward points) pairs. The rewards
-             * distribution will be based on total reward points, with each CDN participant receiving a
-             * proportionate reward based on their individual reward points.
-             **/
-            setEraRewardPoints: AugmentedSubmittable<
-                (
-                    era: u32 | AnyNumber | Uint8Array,
-                    stakersPoints:
-                        | Vec<ITuple<[AccountId32, u64]>>
-                        | [AccountId32 | string | Uint8Array, u64 | AnyNumber | Uint8Array][],
-                ) => SubmittableExtrinsic<ApiType>,
-                [u32, Vec<ITuple<[AccountId32, u64]>>]
-            >;
-            /**
-             * Set validation decision for a given CDN node in an era.
-             *
-             * Only registered validator keys can call this exstrinsic.
-             * Validation decision can be set only once per era per CDN node.
-             * CDN node should be active.
-             **/
-            setValidationDecision: AugmentedSubmittable<
-                (
-                    era: u32 | AnyNumber | Uint8Array,
-                    cdnNode: AccountId32 | string | Uint8Array,
-                    validationDecision:
-                        | PalletDdcValidatorValidationDecision
-                        | {edge?: any; result?: any; payload?: any; totals?: any}
-                        | string
-                        | Uint8Array,
-                ) => SubmittableExtrinsic<ApiType>,
-                [u32, AccountId32, PalletDdcValidatorValidationDecision]
-            >;
-            /**
-             * Exstrinsic registers a ddc validator key for future use
-             *
-             * Only controller of validator can call this exstrinsic
-             * Validator has to be in the active set
-             **/
-            setValidatorKey: AugmentedSubmittable<
-                (ddcValidatorPub: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>,
-                [AccountId32]
-            >;
         };
         democracy: {
             /**
