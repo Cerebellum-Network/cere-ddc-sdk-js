@@ -1,5 +1,5 @@
 import {randomBytes} from 'crypto';
-import {Content, WebTransport, RpcTransport, DagApi, FileApi, CnsApi, Signer, UriSigner} from '@cere-ddc-sdk/ddc';
+import {Content, WebTransport, RpcTransport, DagApi, FileApi, CnsApi, Signer, UriSigner, Cid} from '@cere-ddc-sdk/ddc';
 
 import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED} from '../../tests/helpers';
 
@@ -57,14 +57,10 @@ describe('DDC APIs', () => {
     });
 
     describe('Cns Api', () => {
-        let testCid: Uint8Array;
         let signature: any;
 
+        const testCid = new Cid('AEBB4IEIDC5HNY76TBBV5CK5WQT7FXCGNJATYVLW5WRMJ7IMNOQECYYCDQ').toBytes();
         const alias = 'dir/file-name';
-
-        beforeAll(async () => {
-            testCid = await storeRawPiece(randomBytes(32));
-        });
 
         test('Create alias', async () => {
             const sigMessage = CnsApi.createSignatureMessage({

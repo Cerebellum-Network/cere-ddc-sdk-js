@@ -171,14 +171,10 @@ describe('Storage Node', () => {
     });
 
     describe('CNS record', () => {
-        let testCid: string;
         let signature: any;
 
+        const testCid = 'AEBB4IEIDC5HNY76TBBV5CK5WQT7FXCGNJATYVLW5WRMJ7IMNOQECYYCDQ';
         const testName = 'piece/name';
-
-        beforeAll(async () => {
-            testCid = await storageNode.storePiece(bucketId, new Piece(new TextEncoder().encode('Small piece')));
-        });
 
         test('Store a record', async () => {
             const record = new CnsRecord(testCid, testName);
