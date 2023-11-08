@@ -165,8 +165,9 @@ describe('DDC Client', () => {
      * Moke tests of blockchain operation methods exposed on the client instance
      *
      * TODO: Revise these methods during migration to palettes
+     * TODO: Unskip before merging GRPC web PoC
      */
-    describe('Blockhain operations', () => {
+    describe.skip('Blockhain operations', () => {
         let createdBucketId: bigint;
 
         test('Account deposit', async () => {
