@@ -213,9 +213,13 @@ services:
     ports:
       - "7379:7379"
 
-  envoy:
-    image: envoyproxy/envoy:dev-4b65ba175a72e5ca3248819f95ca9b8799d360ea
+  grpc-web-proxy:
+    build: ./grpcWeb
+    container_name: grpc-web-proxy
     ports:
-      - "8071:8071"
-    volumes:
-      - ./envoy-grpc.yaml:/etc/envoy/envoy.yaml
+      - 8071:8080
+    depends_on:
+      - ddc-storage-node-1
+    command: |
+      grpcwebproxy --backend_addr=ddc-storage-node-1:9091 --run_tls_server=false --use_websockets
+  
