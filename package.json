@@ -56,7 +56,8 @@
         "buffer": "^6.0.3",
         "detect-port": "^1.5.1",
         "lerna": "^7.2.0",
-        "tweetnacl": "^1.0.3"
+        "tweetnacl": "^1.0.3",
+        "ws": "^8.14.2"
     },
     "overrides": {
         "@polkadot/api": "9.4.1"

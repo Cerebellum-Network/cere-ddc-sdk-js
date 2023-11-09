@@ -1,7 +1,7 @@
 import {randomBytes} from 'crypto';
 import {
     Content,
-    FetchTransport,
+    WebsocketTransport,
     RpcTransport,
     DagApi,
     FileApi,
@@ -17,7 +17,7 @@ describe('DDC APIs', () => {
     let signer: Signer;
 
     const bucketId = 0;
-    const transport = new FetchTransport('localhost:9091');
+    const transport = new WebsocketTransport('localhost:9091');
     const dagApi = new DagApi(transport);
     const fileApi = new FileApi(transport);
     const cnsApi = new CnsApi(transport);
