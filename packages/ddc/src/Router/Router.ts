@@ -15,7 +15,15 @@ export enum RouterOperation {
 }
 
 export type RouterNode = Pick<StorageNodeConfig, 'rpcHost'>;
-export type RouterConfig = {signer: StorageNodeConfig['signer']} & ({nodes: RouterNode[]} | {blockchain: Blockchain});
+export type RouterStaticConfig = {
+    signer: StorageNodeConfig['signer'];
+    nodes: RouterNode[];
+};
+export type RouterDynamicConfig = {
+    signer: StorageNodeConfig['signer'];
+    blockchain: Blockchain;
+};
+export type RouterConfig = RouterStaticConfig | RouterDynamicConfig;
 
 export class Router {
     constructor(private config: RouterConfig) {}

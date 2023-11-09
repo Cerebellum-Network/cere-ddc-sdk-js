@@ -11,11 +11,12 @@ import {
     RouterConfig,
     Signer,
     UriSigner,
+    RouterStaticConfig,
 } from '@cere-ddc-sdk/ddc';
 
 import {File, FileResponse} from './File';
 
-export type FileStorageConfig = RouterConfig;
+export type FileStorageConfig = RouterStaticConfig;
 export type FileReadOptions = PieceReadOptions;
 export type FileStoreOptions = PieceStoreOptions;
 
