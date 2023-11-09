@@ -95,6 +95,7 @@ describe('DDC Client', () => {
             expect(uri).toEqual({
                 bucketId,
                 entity: 'file',
+                name: tinyFileName,
                 cidOrName: expect.any(String),
                 cid: expect.any(String),
             });
