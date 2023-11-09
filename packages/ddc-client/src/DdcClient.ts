@@ -115,7 +115,7 @@ export class DdcClient {
                 ? await this.fileStorage.store(numBucketId, entity, options)
                 : await this.storeDagNode(numBucketId, entity, options);
 
-        return new DdcUri(bucketId, cid, entityType);
+        return new DdcUri(bucketId, cid, entityType, options);
     }
 
     private async storeDagNode(bucketId: number, node: DagNode, options?: DagNodeStoreOptions) {
