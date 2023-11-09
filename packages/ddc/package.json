@@ -3,8 +3,22 @@
     "description": "DDC nodes API",
     "version": "2.0.0-rc.5",
     "type": "module",
+    "repository": {
+        "type": "git",
+        "directory": "packages/ddc",
+        "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+    },
     "main": "./dist/index.cjs",
     "types": "./dist/types",
+    "exports": {
+        ".": {
+            "require": "./dist/index.cjs",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        }
+    },
+    "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+    "license": "Apache-2.0",
     "scripts": {
         "compile": "protoc --ts_opt long_type_number --ts_out ./src/grpc --proto_path protos ./protos/*.proto",
         "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",

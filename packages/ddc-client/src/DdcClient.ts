@@ -35,20 +35,19 @@ export type DdcClientConfig = Omit<RouterConfig, 'signer'> & {
 export {FileStoreOptions, DagNodeStoreOptions};
 
 export class DdcClient {
-    protected constructor(
-        private signer: Signer,
-        readonly smartContract: SmartContract,
-        private fileStorage: FileStorage,
-        private router: Router,
-    ) {}
+    private fileStorage: FileStorage;
+    private router: Router;
+
+    protected constructor(private signer: Signer, readonly smartContract: SmartContract, config: DdcClientConfig) {
+        this.router = new Router({signer, nodes: config.nodes});
+        this.fileStorage = new FileStorage(this.router);
+    }
 
     static async create(uriOrSigner: Signer | string, config: DdcClientConfig = TESTNET) {
         const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
         const contract = await SmartContract.buildAndConnect(signer, config.smartContract);
-        const router = new Router({signer, nodes: config.nodes});
-        const fs = new FileStorage(router);
 
-        return new DdcClient(signer, contract, fs, router);
+        return new DdcClient(signer, contract, config);
     }
 
     async disconnect() {
@@ -116,7 +115,7 @@ export class DdcClient {
                 ? await this.fileStorage.store(numBucketId, entity, options)
                 : await this.storeDagNode(numBucketId, entity, options);
 
-        return new DdcUri(bucketId, cid, entityType);
+        return new DdcUri(bucketId, cid, entityType, options);
     }
 
     private async storeDagNode(bucketId: number, node: DagNode, options?: DagNodeStoreOptions) {
