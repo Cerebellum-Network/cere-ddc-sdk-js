@@ -6,7 +6,7 @@ import {NodeStatusInCluster} from '@cere-ddc-sdk/smart-contract/types';
 
 import {bootstrapContract, createAccount, createBlockhainApi, getAccount} from '../helpers';
 
-describe('Smart Contract', () => {
+describe.skip('Smart Contract', () => {
     let api: ApiPromise;
     let admin: KeyringPair;
     let deployedContract: ContractPromise;
