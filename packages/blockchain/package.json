@@ -11,6 +11,13 @@
     "directory": "packages/blockchain",
     "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
   },
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
     "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
