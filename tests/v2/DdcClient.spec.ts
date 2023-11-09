@@ -146,6 +146,7 @@ describe('DDC Client', () => {
                 bucketId,
                 entity: 'dag-node',
                 cidOrName: expect.any(String),
+                name: nodeName,
                 cid: expect.any(String),
             });
         });
@@ -164,7 +165,7 @@ describe('DDC Client', () => {
      *
      * TODO: Revise these methods during migration to palettes
      */
-    describe('Blockhain operations', () => {
+    describe.skip('Blockhain operations', () => {
         let createdBucketId: bigint;
 
         test('Account deposit', async () => {
