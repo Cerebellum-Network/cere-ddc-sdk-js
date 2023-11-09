@@ -1,6 +1,6 @@
 import {ApiPromise} from '@polkadot/api';
 import {ClusterId} from './DDCClustersPallet';
-import {Sendable} from './Blockchain';
+import {Sendable, Event} from './Blockchain';
 
 export class DDCCustomersPallet {
     constructor(private apiPromise: ApiPromise) {}
@@ -38,6 +38,13 @@ export class DDCCustomersPallet {
 
     withdrawUnlockedDeposit() {
         return this.apiPromise.tx.ddcCustomers.withdrawUnlockedDeposit() as Sendable;
+    }
+
+    extractCreatedBucketIds(events: Event[]) {
+        return events
+            .filter((event) => event.section === 'ddcCustomers' && event.method === 'BucketCreated')
+            .map((event) => event.data?.[0] as BucketId | undefined)
+            .filter((bucketId) => bucketId !== undefined) as BucketId[];
     }
 }
 

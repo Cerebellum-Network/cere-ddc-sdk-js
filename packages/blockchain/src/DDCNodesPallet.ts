@@ -16,7 +16,7 @@ export class DDCNodesPallet {
 
     async findCdnNodeByPublicKey(cdnNodePublicKey: CdnNodePublicKey) {
         const result = await this.apiPromise.query.ddcNodes.cdnNodes(cdnNodePublicKey);
-        return result.unwrapOr(undefined)?.toHuman() as unknown as CdnNode | undefined;
+        return result.unwrapOr(undefined)?.toJSON() as unknown as CdnNode | undefined;
     }
 
     setCdnNodeParams(cdnNodePublicKey: CdnNodePublicKey, cdnNodeParams: CdnNodeParams) {

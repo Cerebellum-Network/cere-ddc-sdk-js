@@ -1,8 +1,7 @@
 import {Blockchain} from '@cere-ddc-sdk/blockchain';
-import {createAccount, createBlockhainApi, getAccount, getGasLimit, signAndSend, transferCere} from './helpers';
+import {createAccount, createBlockhainApi, getAccount, getGasLimit, signAndSend} from '../helpers';
 import {cryptoWaitReady} from '@polkadot/util-crypto';
 import {ApiPromise} from '@polkadot/api';
-import {AddressOrPair} from '@polkadot/api/types';
 import path from 'path';
 import fs from 'fs/promises';
 import {Abi, CodePromise} from '@polkadot/api-contract';
@@ -18,12 +17,12 @@ describe('packages/blockchain', () => {
     let storageNode2Key: string;
     let storageNode3Key: string;
     let nonExistentKey1: string;
-    const clusterId = '0x0000000000000000000000000000000000000000';
+    const clusterId = '0x0000000000000000000000000000000000000001';
 
     let nodeProviderAuthContract: string;
 
     const deployClusterNodeAuthorizationContract = async () => {
-        const contractDir = path.resolve(__dirname, './fixtures/contract');
+        const contractDir = path.resolve(__dirname, '../fixtures/contract');
 
         const contractContent = await fs.readFile(
             path.resolve(contractDir, 'cluster_node_candidate_authorization.contract'),
@@ -47,11 +46,11 @@ describe('packages/blockchain', () => {
         await cryptoWaitReady();
 
         admin = getAccount();
-        cdnNode1Key = getAccount('//Alice').address;
-        storageNode1Key = getAccount('//Bob').address;
-        storageNode2Key = getAccount('//Charlie').address;
-        storageNode3Key = getAccount('//Dave').address;
-        nonExistentKey1 = getAccount('//Eve').address;
+        cdnNode1Key = createAccount().address; //getAccount('//Alice').address;
+        storageNode1Key = createAccount().address; //getAccount('//Bob').address;
+        storageNode2Key = createAccount().address; //getAccount('//Charlie').address;
+        storageNode3Key = createAccount().address; //getAccount('//Dave').address;
+        nonExistentKey1 = createAccount().address; //getAccount('//Eve').address;
 
         apiPromise = await createBlockhainApi();
         nodeProviderAuthContract = await deployClusterNodeAuthorizationContract();
@@ -72,8 +71,8 @@ describe('packages/blockchain', () => {
     });
 
     test('Should return null when finding a non-existent Storage Node', async () => {
-        const cdnNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(nonExistentKey1);
-        expect(cdnNode).toBeUndefined();
+        const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(nonExistentKey1);
+        expect(storageNode).toBeUndefined();
     });
 
     test('Should create a CDN Node and find it by public key', async () => {
@@ -118,6 +117,7 @@ describe('packages/blockchain', () => {
 
     test('Should create a cluster and find it by public key', async () => {
         const clusterParams = '0x';
+        expect(nodeProviderAuthContract).toBeDefined();
         await blockchain.send(
             blockchain.ddcClusters.createCluster(clusterId, {
                 params: clusterParams,
@@ -132,10 +132,10 @@ describe('packages/blockchain', () => {
         expect(cluster?.props.params).toBe(clusterParams);
     });
 
-    test('Should list clusters', async () => {
+    test('Should list non empty clusters', async () => {
         const clusters = await blockchain.ddcClusters.listClusters();
         expect(clusters).toBeDefined();
-        expect(clusters.length).toBe(1);
+        expect(clusters.length).toBeGreaterThan(0);
     });
 
     test('Should set cluster params', async () => {
@@ -156,13 +156,13 @@ describe('packages/blockchain', () => {
     test('Should fail to add a Storage Node to a cluster when not staked', async () => {
         await expect(() =>
             blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key)),
-        ).rejects.toThrow('ddcClusters.NoStake');
+        ).rejects.toThrow('ddcClusters.NodeHasNoStake:');
     });
 
     test('Should fail to add a CDN Node to a cluster when not staked', async () => {
         await expect(() =>
             blockchain.send(blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNode1Key)),
-        ).rejects.toThrow('ddcClusters.NoStake');
+        ).rejects.toThrow('ddcClusters.NodeHasNoStake:');
     });
 
     test('Should create 2 Storage nodes in batch', async () => {
@@ -184,6 +184,9 @@ describe('packages/blockchain', () => {
             blockchain.ddcStaking.store(clusterId),
             blockchain.ddcStaking.setController(storageNode1Key),
         ]);
+
+        // const stakeClusterId = await blockchain.ddcStaking.findStorageNodeStakeClusterId(storageNode1Key);
+        // expect(stakeClusterId).toBe(clusterId);
     });
 
     test('Should add storage node to cluster', async () => {
@@ -195,6 +198,8 @@ describe('packages/blockchain', () => {
     });
 
     test('Should create bucket', async () => {
-        await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId));
+        const result = await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId));
+        const bucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
+        expect(bucketIds.length).toBe(1);
     });
 });

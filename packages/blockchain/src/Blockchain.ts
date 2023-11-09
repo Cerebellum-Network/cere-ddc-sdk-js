@@ -70,7 +70,12 @@ export class Blockchain {
 
 export type Sendable = SubmittableExtrinsic<'promise'>;
 export type SendResult = {
-    events: any[];
+    events: Event[];
     txHash: string;
+};
+export type Event = {
+    section: string;
+    method: string;
+    data?: any;
 };
 export type HexString = `0x${string}`;

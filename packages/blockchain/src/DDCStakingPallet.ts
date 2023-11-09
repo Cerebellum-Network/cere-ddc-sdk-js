@@ -23,14 +23,14 @@ export class DDCStakingPallet {
         return this.apiPromise.tx.ddcStaking.unbond(amount) as Sendable;
     }
 
-    async findStorageNodeStake(storageNodePublicKey: string) {
+    async findStorageNodeStakeClusterId(storageNodePublicKey: string) {
         const result = await this.apiPromise.query.ddcStaking.storages(storageNodePublicKey);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterId;
+        return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterId | undefined;
     }
 
-    async findCdnNodeStake(cdnNodePublicKey: string) {
+    async findCdnNodeStakeClusterId(cdnNodePublicKey: string) {
         const result = await this.apiPromise.query.ddcStaking.edges(cdnNodePublicKey);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterId;
+        return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterId | undefined;
     }
 
     setController(accountId: AccountId) {
@@ -42,12 +42,12 @@ export class DDCStakingPallet {
         return result.toJSON() as unknown as AccountId[];
     }
 
-    store(storageNodePublicKey: StorageNodePublicKey) {
-        return this.apiPromise.tx.ddcStaking.store(storageNodePublicKey) as Sendable;
+    store(clusterId: ClusterId) {
+        return this.apiPromise.tx.ddcStaking.store(clusterId) as Sendable;
     }
 
-    serve(cdnNodePublicKey: CdnNodePublicKey) {
-        return this.apiPromise.tx.ddcStaking.serve(cdnNodePublicKey) as Sendable;
+    serve(clusterId: ClusterId) {
+        return this.apiPromise.tx.ddcStaking.serve(clusterId) as Sendable;
     }
 
     getSettings() {
