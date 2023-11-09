@@ -1,8 +1,9 @@
 {
     "name": "@cere-ddc-sdk/core",
     "description": "Core with common logic",
-    "version": "2.0.0-rc.4",
+    "version": "2.0.0-rc.6",
     "type": "module",
+    "private": true,
     "repository": {
         "type": "git",
         "directory": "packages/core",

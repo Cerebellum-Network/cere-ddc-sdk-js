@@ -7,18 +7,15 @@ describe('DDC Client', () => {
     let client: DdcClient;
 
     beforeAll(async () => {
-        client = await DdcClient.create(
-            {
-                smartContract: getContractOptions(),
-                nodes: [
-                    {rpcHost: 'localhost:9091'},
-                    {rpcHost: 'localhost:9092'},
-                    {rpcHost: 'localhost:9093'},
-                    {rpcHost: 'localhost:9094'},
-                ],
-            },
-            ROOT_USER_SEED,
-        );
+        client = await DdcClient.create(ROOT_USER_SEED, {
+            smartContract: getContractOptions(),
+            nodes: [
+                {rpcHost: 'localhost:9091'},
+                {rpcHost: 'localhost:9092'},
+                {rpcHost: 'localhost:9093'},
+                {rpcHost: 'localhost:9094'},
+            ],
+        });
     });
 
     afterAll(async () => {
@@ -98,6 +95,7 @@ describe('DDC Client', () => {
             expect(uri).toEqual({
                 bucketId,
                 entity: 'file',
+                name: tinyFileName,
                 cidOrName: expect.any(String),
                 cid: expect.any(String),
             });
@@ -148,6 +146,7 @@ describe('DDC Client', () => {
                 bucketId,
                 entity: 'dag-node',
                 cidOrName: expect.any(String),
+                name: nodeName,
                 cid: expect.any(String),
             });
         });

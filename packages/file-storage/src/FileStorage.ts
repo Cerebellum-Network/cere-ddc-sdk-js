@@ -9,6 +9,8 @@ import {
     StorageNode,
     PieceStoreOptions,
     RouterConfig,
+    Signer,
+    UriSigner,
 } from '@cere-ddc-sdk/ddc';
 
 import {File, FileResponse} from './File';
@@ -24,6 +26,12 @@ export class FileStorage {
     constructor(config: FileStorageConfig);
     constructor(configOrRouter: FileStorageConfig | Router) {
         this.router = configOrRouter instanceof Router ? configOrRouter : new Router(configOrRouter);
+    }
+
+    static async create(uriOrSigner: Signer | string, config: Omit<FileStorageConfig, 'signer'>) {
+        const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
+
+        return new FileStorage(new Router({...config, signer}));
     }
 
     private async storeLarge(node: StorageNode, bucketId: number, file: File, options?: FileStoreOptions) {
