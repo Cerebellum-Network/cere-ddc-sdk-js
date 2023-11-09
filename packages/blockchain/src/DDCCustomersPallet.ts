@@ -7,7 +7,8 @@ export class DDCCustomersPallet {
 
     async getBucket(bucketId: BucketId) {
         const result = await this.apiPromise.query.ddcCustomers.buckets(bucketId);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as Bucket | undefined;
+        const bucket = result.unwrapOr(undefined)?.toJSON() as unknown as Bucket | undefined;
+        return bucket == null ? undefined : ({...bucket, bucketId: BigInt(bucket.bucketId)} as Bucket);
     }
 
     async getBucketsCount() {
@@ -43,7 +44,10 @@ export class DDCCustomersPallet {
     extractCreatedBucketIds(events: Event[]) {
         return events
             .filter((event) => event.section === 'ddcCustomers' && event.method === 'BucketCreated')
-            .map((event) => event.data?.[0] as BucketId | undefined)
-            .filter((bucketId) => bucketId !== undefined) as BucketId[];
+            .map((event) => event.data?.[0])
+            .filter(
+                (bucketId) => bucketId !== undefined && (typeof bucketId === 'number' || typeof bucketId === 'string'),
+            )
+            .map((bucketId) => BigInt(bucketId) as BucketId);
     }
 }
