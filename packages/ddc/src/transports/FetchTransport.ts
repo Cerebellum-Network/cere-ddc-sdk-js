@@ -1,10 +1,10 @@
 import {ChannelCredentials} from '@grpc/grpc-js';
-import {GrpcTransport} from '@protobuf-ts/grpc-transport';
+import {GrpcWebFetchTransport} from '@protobuf-ts/grpcweb-transport';
 
-export class RpcTransport extends GrpcTransport {
+export class FetchTransport extends GrpcWebFetchTransport {
     constructor(host: string) {
         super({
-            host,
+            baseUrl: 'http://0.0.0.0:8071',
             channelCredentials: ChannelCredentials.createInsecure(),
         });
     }

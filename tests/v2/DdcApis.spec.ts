@@ -1,5 +1,15 @@
 import {randomBytes} from 'crypto';
-import {Content, WebTransport, RpcTransport, DagApi, FileApi, CnsApi, Signer, UriSigner, Cid} from '@cere-ddc-sdk/ddc';
+import {
+    Content,
+    FetchTransport,
+    RpcTransport,
+    DagApi,
+    FileApi,
+    CnsApi,
+    Signer,
+    UriSigner,
+    Cid,
+} from '@cere-ddc-sdk/ddc';
 
 import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED} from '../../tests/helpers';
 
@@ -7,7 +17,7 @@ describe('DDC APIs', () => {
     let signer: Signer;
 
     const bucketId = 0;
-    const transport = new WebTransport('localhost:9091');
+    const transport = new FetchTransport('localhost:9091');
     const dagApi = new DagApi(transport);
     const fileApi = new FileApi(transport);
     const cnsApi = new CnsApi(transport);
