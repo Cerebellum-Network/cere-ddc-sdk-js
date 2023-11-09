@@ -78,4 +78,3 @@ export type Event = {
     method: string;
     data?: any;
 };
-export type HexString = `0x${string}`;

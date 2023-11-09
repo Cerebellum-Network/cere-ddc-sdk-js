@@ -1,8 +1,15 @@
 import {ApiPromise} from '@polkadot/api';
-import {HexString, Sendable} from './Blockchain';
-import {ClusterId} from './DDCClustersPallet';
-import {AccountId} from './DDCCustomersPallet';
-import {hexDecode, hexEncode} from './string-utils';
+import {Sendable} from './Blockchain';
+import type {
+    CdnNode,
+    CdnNodeParams,
+    CdnNodePublicKey,
+    StorageNode,
+    StorageNodeParams,
+    StorageNodePublicKey,
+} from './types';
+import {hexToString, hexToU8a, stringToHex} from '@polkadot/util';
+import {HexString} from '@polkadot/util/types';
 
 export class DDCNodesPallet {
     constructor(private apiPromise: ApiPromise) {}
@@ -59,32 +66,9 @@ export class DDCNodesPallet {
 }
 
 function serializeStorageNodeParams(params: StorageNodeParams) {
-    return hexEncode(JSON.stringify(params));
+    return stringToHex(JSON.stringify(params));
 }
 
 function deserializeStorageNodeParams(params: HexString) {
-    return JSON.parse(hexDecode(params)) as StorageNodeParams;
+    return JSON.parse(hexToString(params)) as StorageNodeParams;
 }
-
-export type NodePublicKey = string;
-export type CdnNodePublicKey = NodePublicKey;
-export type StorageNodePublicKey = NodePublicKey;
-export type NodeParams = string;
-export type CdnNodeParams = NodeParams;
-export type StorageNodeParams = {grpcUrl: string};
-export type CdnNode = /*PalletDdcNodesCdnNode;*/ {
-    readonly pubKey: CdnNodePublicKey;
-    readonly providerId: AccountId;
-    readonly clusterId: ClusterId;
-    readonly props: {
-        readonly params: CdnNodeParams;
-    };
-};
-export type StorageNode = /*PalletDdcNodesStorageNode;*/ {
-    readonly pubKey: StorageNodePublicKey;
-    readonly providerId: AccountId;
-    readonly clusterId: ClusterId;
-    readonly props: {
-        params: StorageNodeParams;
-    };
-};

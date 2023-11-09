@@ -1,6 +1,6 @@
 import {ApiPromise} from '@polkadot/api';
-import {ClusterId} from './DDCClustersPallet';
 import {Sendable, Event} from './Blockchain';
+import type {AccountId, Bucket, BucketId, ClusterId, StakingInfo} from './types';
 
 export class DDCCustomersPallet {
     constructor(private apiPromise: ApiPromise) {}
@@ -47,18 +47,3 @@ export class DDCCustomersPallet {
             .filter((bucketId) => bucketId !== undefined) as BucketId[];
     }
 }
-
-export type BucketId = number;
-export type Bucket = /*PalletDdcCustomersBucket;*/ {
-    readonly bucketId: BucketId;
-    readonly ownerId: AccountId;
-    readonly clusterId: ClusterId | null | undefined;
-    readonly publicAvailability: boolean;
-    readonly resourcesReserved: bigint;
-};
-export type AccountId = string;
-export type StakingInfo = /*PalletDdcCustomersAccountsLedger;*/ {
-    readonly owner: AccountId;
-    readonly total: bigint;
-    readonly active: bigint;
-};

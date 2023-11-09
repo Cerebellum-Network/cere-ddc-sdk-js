@@ -1,7 +1,6 @@
 import {ApiPromise} from '@polkadot/api';
-import {HexString, Sendable} from './Blockchain';
-import {CdnNodePublicKey, NodePublicKey, StorageNodePublicKey} from './DDCNodesPallet';
-import {AccountId} from './DDCCustomersPallet';
+import {Sendable} from './Blockchain';
+import type {CdnNodePublicKey, Cluster, ClusterId, ClusterProps, StorageNodePublicKey} from './types';
 
 export class DDCClustersPallet {
     constructor(private apiPromise: ApiPromise) {}
@@ -62,14 +61,3 @@ export class DDCClustersPallet {
         return this.apiPromise.tx.ddcClusters.removeNode(clusterId, {StoragePubKey: storageNodePublicKey}) as Sendable;
     }
 }
-
-export type ClusterId = HexString;
-export type ClusterProps = {
-    readonly params: string;
-    readonly nodeProviderAuthContract: AccountId;
-};
-export type Cluster = /*PalletDdcClustersCluster;*/ {
-    readonly clusterId: ClusterId;
-    readonly managerId: AccountId;
-    readonly props: ClusterProps;
-};
