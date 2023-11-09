@@ -55,7 +55,7 @@ export class FileStorage {
 
     async store(bucketId: number, file: File, options?: FileStoreOptions) {
         const isLarge = file.size > MAX_PIECE_SIZE;
-        const node = await this.router.getNode(RouterOperation.STORE_PIECE, bucketId);
+        const node = await this.router.getNode(RouterOperation.STORE_PIECE, BigInt(bucketId));
         const cid = isLarge
             ? await this.storeLarge(node, bucketId, file, options)
             : await this.storeSmall(node, bucketId, file, options);
@@ -64,7 +64,7 @@ export class FileStorage {
     }
 
     async read(bucketId: number, cidOrName: string, options?: FileReadOptions) {
-        const node = await this.router.getNode(RouterOperation.READ_PIECE, bucketId);
+        const node = await this.router.getNode(RouterOperation.READ_PIECE, BigInt(bucketId));
         const piece = await node.readPiece(bucketId, cidOrName, options);
 
         return new FileResponse(piece.cid, piece.body, options);

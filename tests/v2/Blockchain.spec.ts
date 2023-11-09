@@ -31,10 +31,11 @@ describe('packages/blockchain', () => {
         const wasm = contract.source.wasm.toString();
         const abi = new Abi(contract);
         const codePromise = new CodePromise(apiPromise, abi, wasm);
-        const tx = codePromise.tx.new(
-            {value: 0, gasLimit: await getGasLimit(apiPromise), storageDepositLimit: 750_000_000_000},
-            true,
-        );
+        const tx = codePromise.tx.new({
+            value: 0,
+            gasLimit: await getGasLimit(apiPromise),
+            storageDepositLimit: 750_000_000_000,
+        });
         const {events} = await signAndSend(tx, admin, apiPromise);
         const foundEvent = events.find(({event}) => apiPromise.events.contracts.Instantiated.is(event));
         const [, address] = foundEvent?.event.toJSON().data as string[];
@@ -45,7 +46,7 @@ describe('packages/blockchain', () => {
     beforeAll(async () => {
         await cryptoWaitReady();
 
-        admin = getAccount();
+        admin = getAccount('//Alice');
         cdnNode1Key = createAccount().address; //getAccount('//Alice').address;
         storageNode1Key = createAccount().address; //getAccount('//Bob').address;
         storageNode2Key = createAccount().address; //getAccount('//Charlie').address;
@@ -76,60 +77,109 @@ describe('packages/blockchain', () => {
     });
 
     test('Should create a CDN Node and find it by public key', async () => {
-        await blockchain.send(blockchain.ddcNodes.createCdnNode(cdnNode1Key, ''));
+        const cdnNodeProps = {
+            host: 'ddc-cdn-node-0',
+            httpPort: 9090,
+            grpcPort: 8080,
+            p2pPort: 7070,
+        };
+
+        await blockchain.send(blockchain.ddcNodes.createCdnNode(cdnNode1Key, cdnNodeProps));
 
         const cdnNode = await blockchain.ddcNodes.findCdnNodeByPublicKey(cdnNode1Key);
 
         expect(cdnNode).toBeDefined();
         expect(cdnNode?.pubKey).toBe(cdnNode1Key);
+        expect(cdnNode?.props).toEqual(cdnNodeProps);
     });
 
-    test('Should set CDN node params', async () => {
-        const cdnNodeParams = '0x00000000';
-        await blockchain.send(blockchain.ddcNodes.setCdnNodeParams(cdnNode1Key, cdnNodeParams));
+    test('Should set CDN node props', async () => {
+        const cdnNodeProps = {
+            host: 'ddc-cdn-node-0',
+            httpPort: 1010,
+            grpcPort: 2020,
+            p2pPort: 3030,
+        };
+        await blockchain.send(blockchain.ddcNodes.setCdnNodeProps(cdnNode1Key, cdnNodeProps));
 
         const cdnNode = await blockchain.ddcNodes.findCdnNodeByPublicKey(cdnNode1Key);
 
         expect(cdnNode).toBeDefined();
-        expect(cdnNode?.props.params).toBe(cdnNodeParams);
+        expect(cdnNode?.props).toEqual(cdnNodeProps);
     });
 
     test('Should create a Storage Node and find it by public key', async () => {
-        await blockchain.send(
-            blockchain.ddcNodes.createStorageNode(storageNode1Key, {grpcUrl: 'ddc-storage-node-2:9090'}),
-        );
+        const storageNodeProps = {
+            host: 'ddc-storage-node-0',
+            httpPort: 4010,
+            grpcPort: 5020,
+            p2pPort: 6030,
+        };
+        await blockchain.send(blockchain.ddcNodes.createStorageNode(storageNode1Key, storageNodeProps));
 
         const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode1Key);
 
         expect(storageNode).toBeDefined();
         expect(storageNode?.pubKey).toBe(storageNode1Key);
+        expect(storageNode?.props).toEqual(storageNodeProps);
     });
 
-    test('Should set Storage node params', async () => {
-        const storageNodeParams = {grpcUrl: 'ddc-storage-node-2:8091'};
-        await blockchain.send(blockchain.ddcNodes.setStorageNodeParams(storageNode1Key, storageNodeParams));
+    test('Should set Storage node props', async () => {
+        const storageNodeProps = {
+            host: 'ddc-storage-node-0',
+            httpPort: 3010,
+            grpcPort: 3020,
+            p2pPort: 3030,
+        };
+        await blockchain.send(blockchain.ddcNodes.setStorageNodeProps(storageNode1Key, storageNodeProps));
 
         const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode1Key);
 
         expect(storageNode).toBeDefined();
-        expect(storageNode?.props.params).toEqual(storageNodeParams);
+        expect(storageNode?.props).toEqual(storageNodeProps);
     });
 
     test('Should create a cluster and find it by public key', async () => {
-        const clusterParams = '0x';
         expect(nodeProviderAuthContract).toBeDefined();
+
+        const clusterGovernmentParams = {
+            treasuryShare: 0,
+            validatorsShare: 0,
+            clusterReserveShare: 0,
+            cdnBondSize: 0n,
+            cdnChillDelay: 0,
+            cdnUnbondingDelay: 0,
+            storageBondSize: 0n,
+            storageChillDelay: 0,
+            storageUnbondingDelay: 0,
+            unitPerMbStored: 0n,
+            unitPerMbStreamed: 0n,
+            unitPerPutRequest: 0n,
+            unitPerGetRequest: 0n,
+        };
+        const clusterProps = {
+            nodeProviderAuthContract,
+        };
+
         await blockchain.send(
-            blockchain.ddcClusters.createCluster(clusterId, {
-                params: clusterParams,
-                nodeProviderAuthContract,
-            }),
+            blockchain.sudo(
+                blockchain.ddcClusters.createCluster(
+                    clusterId,
+                    admin.address,
+                    admin.address,
+                    clusterProps,
+                    clusterGovernmentParams,
+                ),
+            ),
         );
 
         const cluster = await blockchain.ddcClusters.findClusterById(clusterId);
 
         expect(cluster).toBeDefined();
         expect(cluster?.clusterId).toBe(clusterId);
-        expect(cluster?.props.params).toBe(clusterParams);
+        expect(cluster?.props).toEqual(clusterProps);
+        expect(cluster?.managerId).toBe(admin.address);
+        expect(cluster?.reserveId).toBe(admin.address);
     });
 
     test('Should list non empty clusters', async () => {
@@ -138,19 +188,16 @@ describe('packages/blockchain', () => {
         expect(clusters.length).toBeGreaterThan(0);
     });
 
-    test('Should set cluster params', async () => {
-        const clusterParams = '0x';
-        await blockchain.send(
-            blockchain.ddcClusters.setClusterParams(clusterId, {
-                params: clusterParams,
-                nodeProviderAuthContract,
-            }),
-        );
+    test('Should set cluster props', async () => {
+        const clusterProps = {
+            nodeProviderAuthContract,
+        };
+        await blockchain.send(blockchain.ddcClusters.setClusterParams(clusterId, clusterProps));
 
         const cluster = await blockchain.ddcClusters.findClusterById(clusterId);
 
         expect(cluster).toBeDefined();
-        expect(cluster?.props.params).toBe(clusterParams);
+        expect(cluster?.props).toEqual(clusterProps);
     });
 
     test('Should fail to add a Storage Node to a cluster when not staked', async () => {
@@ -166,9 +213,23 @@ describe('packages/blockchain', () => {
     });
 
     test('Should create 2 Storage nodes in batch', async () => {
+        const storageNode2Props = {
+            host: 'ddc-storage-node-2',
+            httpPort: 3010,
+            grpcPort: 3020,
+            p2pPort: 3030,
+        };
+
+        const storageNode3Props = {
+            host: 'ddc-storage-node-3',
+            httpPort: 3010,
+            grpcPort: 3020,
+            p2pPort: 3030,
+        };
+
         await blockchain.batchSend([
-            blockchain.ddcNodes.createStorageNode(storageNode2Key, {grpcUrl: 'ddc-storage-node-2:9090'}),
-            blockchain.ddcNodes.createStorageNode(storageNode3Key, {grpcUrl: 'ddc-storage-node-3:9090'}),
+            blockchain.ddcNodes.createStorageNode(storageNode2Key, storageNode2Props),
+            blockchain.ddcNodes.createStorageNode(storageNode3Key, storageNode3Props),
         ]);
 
         const storageNode2 = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode2Key);

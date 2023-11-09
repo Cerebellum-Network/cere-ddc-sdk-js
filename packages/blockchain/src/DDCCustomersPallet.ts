@@ -12,12 +12,12 @@ export class DDCCustomersPallet {
 
     async getBucketsCount() {
         const result = await this.apiPromise.query.ddcCustomers.bucketsCount();
-        return result.toJSON();
+        return result.toJSON() as number;
     }
 
     async getStackingInfo(accountId: AccountId) {
         const result = await this.apiPromise.query.ddcCustomers.ledger(accountId);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as StakingInfo;
+        return result.unwrapOr(undefined)?.toJSON() as unknown as StakingInfo | undefined;
     }
 
     createBucket(clusterId: ClusterId) {

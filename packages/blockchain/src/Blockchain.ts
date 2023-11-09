@@ -56,6 +56,10 @@ export class Blockchain {
         return this.send(this.apiPromise.tx.utility.batch(sendables));
     }
 
+    sudo(sendable: Sendable) {
+        return this.apiPromise.tx.sudo.sudo(sendable) as Sendable;
+    }
+
     static async create(
         options: {account: AddressOrPair; signer?: Signer} & ({apiPromise: ApiPromise} | {wsEndpoint: string}),
     ) {

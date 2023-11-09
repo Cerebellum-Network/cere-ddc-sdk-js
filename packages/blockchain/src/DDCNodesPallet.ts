@@ -2,34 +2,35 @@ import {ApiPromise} from '@polkadot/api';
 import {Sendable} from './Blockchain';
 import type {
     CdnNode,
-    CdnNodeParams,
+    CdnNodeProps,
     CdnNodePublicKey,
     StorageNode,
-    StorageNodeParams,
+    StorageNodeProps,
     StorageNodePublicKey,
 } from './types';
-import {hexToString, hexToU8a, stringToHex} from '@polkadot/util';
-import {HexString} from '@polkadot/util/types';
+import {NodeParams} from '@cere-ddc-sdk/smart-contract/types';
+import {hexToString, stringToHex} from '@polkadot/util';
 
 export class DDCNodesPallet {
     constructor(private apiPromise: ApiPromise) {}
 
-    createCdnNode(cdnNodePublicKey: CdnNodePublicKey, cdnNodeParams: CdnNodeParams) {
+    createCdnNode(cdnNodePublicKey: CdnNodePublicKey, cdnNodeProps: CdnNodeProps) {
         return this.apiPromise.tx.ddcNodes.createNode(
             {CDNPubKey: cdnNodePublicKey},
-            {CDNParams: {params: cdnNodeParams}},
+            {CDNParams: encodeNodeProps(cdnNodeProps)},
         ) as Sendable;
     }
 
     async findCdnNodeByPublicKey(cdnNodePublicKey: CdnNodePublicKey) {
         const result = await this.apiPromise.query.ddcNodes.cdnNodes(cdnNodePublicKey);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as CdnNode | undefined;
+        const cdnNode = result.unwrapOr(undefined)?.toJSON() as unknown as CdnNode | undefined;
+        return cdnNode == null ? undefined : ({...cdnNode, props: decodeNodeProps(cdnNode.props)} as CdnNode);
     }
 
-    setCdnNodeParams(cdnNodePublicKey: CdnNodePublicKey, cdnNodeParams: CdnNodeParams) {
+    setCdnNodeProps(cdnNodePublicKey: CdnNodePublicKey, cdnNodeProps: CdnNodeProps) {
         return this.apiPromise.tx.ddcNodes.setNodeParams(
             {CDNPubKey: cdnNodePublicKey},
-            {CDNParams: {params: cdnNodeParams}},
+            {CDNParams: encodeNodeProps(cdnNodeProps)},
         ) as Sendable;
     }
 
@@ -37,26 +38,25 @@ export class DDCNodesPallet {
         return this.apiPromise.tx.ddcNodes.deleteNode({CDNPubKey: cdnNodePublicKey}) as Sendable;
     }
 
-    createStorageNode(storageNodePublicKey: StorageNodePublicKey, storageNodeParams: StorageNodeParams) {
+    createStorageNode(storageNodePublicKey: StorageNodePublicKey, storageNodeProps: StorageNodeProps) {
         return this.apiPromise.tx.ddcNodes.createNode(
             {StoragePubKey: storageNodePublicKey},
-            {StorageParams: {params: serializeStorageNodeParams(storageNodeParams)}},
+            {StorageParams: encodeNodeProps(storageNodeProps)},
         ) as Sendable;
     }
 
     async findStorageNodeByPublicKey(storageNodePublicKey: StorageNodePublicKey) {
         const result = await this.apiPromise.query.ddcNodes.storageNodes(storageNodePublicKey);
         const storageNode = result.unwrapOr(undefined)?.toJSON() as unknown as StorageNode | undefined;
-        if (storageNode) {
-            storageNode.props.params = deserializeStorageNodeParams(storageNode.props.params as unknown as HexString);
-        }
-        return storageNode;
+        return storageNode == null
+            ? undefined
+            : ({...storageNode, props: decodeNodeProps(storageNode.props)} as StorageNode);
     }
 
-    setStorageNodeParams(storageNodePublicKey: StorageNodePublicKey, storageNodeParams: StorageNodeParams) {
+    setStorageNodeProps(storageNodePublicKey: StorageNodePublicKey, storageNodeProps: StorageNodeProps) {
         return this.apiPromise.tx.ddcNodes.setNodeParams(
             {StoragePubKey: storageNodePublicKey},
-            {StorageParams: {params: serializeStorageNodeParams(storageNodeParams)}},
+            {StorageParams: encodeNodeProps(storageNodeProps)},
         ) as Sendable;
     }
 
@@ -65,10 +65,16 @@ export class DDCNodesPallet {
     }
 }
 
-function serializeStorageNodeParams(params: StorageNodeParams) {
-    return stringToHex(JSON.stringify(params));
+function decodeNodeProps(nodeProps: StorageNodeProps) {
+    return {
+        ...nodeProps,
+        host: hexToString(nodeProps.host),
+    };
 }
 
-function deserializeStorageNodeParams(params: HexString) {
-    return JSON.parse(hexToString(params)) as StorageNodeParams;
+function encodeNodeProps(nodeProps: StorageNodeProps) {
+    return {
+        ...nodeProps,
+        host: stringToHex(nodeProps.host),
+    };
 }

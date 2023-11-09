@@ -1,6 +1,14 @@
 import {ApiPromise} from '@polkadot/api';
 import {Sendable} from './Blockchain';
-import type {CdnNodePublicKey, Cluster, ClusterId, ClusterProps, StorageNodePublicKey} from './types';
+import type {
+    AccountId,
+    CdnNodePublicKey,
+    Cluster,
+    ClusterGovernmentParams,
+    ClusterId,
+    ClusterProps,
+    StorageNodePublicKey,
+} from './types';
 
 export class DDCClustersPallet {
     constructor(private apiPromise: ApiPromise) {}
@@ -32,8 +40,20 @@ export class DDCClustersPallet {
         return result.toJSON() as boolean;
     }
 
-    createCluster(clusterId: ClusterId, clusterProps: ClusterProps) {
-        return this.apiPromise.tx.ddcClusters.createCluster(clusterId, clusterProps) as Sendable;
+    createCluster(
+        clusterId: ClusterId,
+        clusterManagerId: AccountId,
+        clusterReserveId: AccountId,
+        clusterProps: ClusterProps,
+        clusterGovernmentParams: ClusterGovernmentParams,
+    ) {
+        return this.apiPromise.tx.ddcClusters.createCluster(
+            clusterId,
+            clusterManagerId,
+            clusterReserveId,
+            clusterProps,
+            clusterGovernmentParams,
+        ) as Sendable;
     }
 
     async findClusterById(clusterId: ClusterId) {
@@ -59,5 +79,10 @@ export class DDCClustersPallet {
 
     removeStorageNodeFromCluster(clusterId: ClusterId, storageNodePublicKey: StorageNodePublicKey) {
         return this.apiPromise.tx.ddcClusters.removeNode(clusterId, {StoragePubKey: storageNodePublicKey}) as Sendable;
+    }
+
+    async getClusterGovernmentParams(clusterId: ClusterId) {
+        const result = await this.apiPromise.query.ddcClusters.clustersGovParams(clusterId);
+        return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterGovernmentParams | undefined;
     }
 }

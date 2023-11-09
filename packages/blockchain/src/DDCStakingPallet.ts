@@ -16,17 +16,43 @@ export class DDCStakingPallet {
         return this.apiPromise.tx.ddcStaking.bond(controller, {CDNPubKey: cdnNodePublicKey}, bondAmount) as Sendable;
     }
 
+    chill() {
+        return this.apiPromise.tx.ddcStaking.chill() as Sendable;
+    }
+
+    fastChillCdn(cdnNodePublicKey: CdnNodePublicKey) {
+        return this.apiPromise.tx.ddcStaking.fastChill({CDNPubKey: cdnNodePublicKey}) as Sendable;
+    }
+
+    fastChillStorage(storageNodePubKey: StorageNodePublicKey) {
+        return this.apiPromise.tx.ddcStaking.fastChill({StoragePubKey: storageNodePubKey}) as Sendable;
+    }
+
     unbond(amount: Amount) {
         return this.apiPromise.tx.ddcStaking.unbond(amount) as Sendable;
     }
 
-    async findStorageNodeStakeClusterId(storageNodePublicKey: string) {
-        const result = await this.apiPromise.query.ddcStaking.storages(storageNodePublicKey);
+    withdrawUnbonded() {
+        return this.apiPromise.tx.ddcStaking.withdrawUnbonded() as Sendable;
+    }
+
+    async findStashAccountIdByCdnNodePublicKey(cdnNodePublicKey: CdnNodePublicKey) {
+        const result = await this.apiPromise.query.ddcStaking.nodes({CDNPubKey: cdnNodePublicKey});
+        return result.unwrapOr(undefined)?.toJSON() as unknown as AccountId | undefined;
+    }
+
+    async findStashAccountIdByStorageNodePublicKey(storageNodePublicKey: StorageNodePublicKey) {
+        const result = await this.apiPromise.query.ddcStaking.nodes({StoragePubKey: storageNodePublicKey});
+        return result.unwrapOr(undefined)?.toJSON() as unknown as AccountId | undefined;
+    }
+
+    async findStakedClusterIdByCdnNodeStashAccountId(stashAccountId: AccountId) {
+        const result = await this.apiPromise.query.ddcStaking.cdNs(stashAccountId);
         return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterId | undefined;
     }
 
-    async findCdnNodeStakeClusterId(cdnNodePublicKey: string) {
-        const result = await this.apiPromise.query.ddcStaking.edges(cdnNodePublicKey);
+    async findStakedClusterIdByStorageNodeStashAccountId(stashAccountId: AccountId) {
+        const result = await this.apiPromise.query.ddcStaking.storages(stashAccountId);
         return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterId | undefined;
     }
 
@@ -34,9 +60,12 @@ export class DDCStakingPallet {
         return this.apiPromise.tx.ddcStaking.setController(accountId) as Sendable;
     }
 
-    async listClusterManagers() {
-        const result = await this.apiPromise.query.ddcStaking.clusterManagers();
-        return result.toJSON() as unknown as AccountId[];
+    setStorageNode(storageNodePublicKey: StorageNodePublicKey) {
+        return this.apiPromise.tx.ddcStaking.setNode({StoragePubKey: storageNodePublicKey}) as Sendable;
+    }
+
+    setCdnNode(cdnNodePublicKey: CdnNodePublicKey) {
+        return this.apiPromise.tx.ddcStaking.setNode({CDNPubKey: cdnNodePublicKey}) as Sendable;
     }
 
     store(clusterId: ClusterId) {
@@ -45,15 +74,5 @@ export class DDCStakingPallet {
 
     serve(clusterId: ClusterId) {
         return this.apiPromise.tx.ddcStaking.serve(clusterId) as Sendable;
-    }
-
-    getSettings() {
-        const defaultStorageBondSize = this.apiPromise.consts.ddcStaking.defaultStorageBondSize.toJSON() as bigint;
-        const defaultEdgeBondSize = this.apiPromise.consts.ddcStaking.defaultEdgeBondSize.toJSON() as bigint;
-
-        return {
-            defaultStorageBondSize,
-            defaultEdgeBondSize,
-        };
     }
 }

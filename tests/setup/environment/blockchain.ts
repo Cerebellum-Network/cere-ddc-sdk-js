@@ -37,7 +37,7 @@ const setupContract = async (api: ApiPromise): Promise<ContractData> => {
 
     await cryptoWaitReady();
 
-    const admin = getAccount();
+    const admin = getAccount('//Alice');
 
     const clusterId = 0; // Always the same for fresh SC
     const bucketIds = [0n, 1n, 2n]; // Always the same for fresh SC
@@ -166,6 +166,8 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
         getAccount('//Charlie'),
         getAccount('//Alice'),
     ];
+    const oneToken = 10_000_000_000n;
+    const bondAmount = 100n * oneToken;
 
     console.time('Top-up user');
     await transferCere(apiPromise, admin.address, 1000);
@@ -178,22 +180,51 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
     const blockchain = await Blockchain.create({account: admin, apiPromise});
     console.time('Create cluster and nodes');
     await blockchain.batchSend([
-        blockchain.ddcClusters.createCluster(clusterId, {
-            params: '',
-            nodeProviderAuthContract: clusterNodeAuthorizationContractAddress,
-        }),
+        blockchain.sudo(
+            blockchain.ddcClusters.createCluster(
+                clusterId,
+                admin.address,
+                admin.address,
+                {
+                    nodeProviderAuthContract: clusterNodeAuthorizationContractAddress,
+                },
+                {
+                    treasuryShare: 100000000,
+                    validatorsShare: 100000000,
+                    clusterReserveShare: 100000000,
+                    cdnBondSize: bondAmount,
+                    cdnChillDelay: 20,
+                    cdnUnbondingDelay: 20,
+                    storageBondSize: bondAmount,
+                    storageChillDelay: 20,
+                    storageUnbondingDelay: 20,
+                    unitPerMbStored: 0n,
+                    unitPerMbStreamed: 0n,
+                    unitPerPutRequest: 0n,
+                    unitPerGetRequest: 0n,
+                },
+            ),
+        ),
         ...storageNodeAccounts.flatMap((storageNodeAccount, index) => [
             blockchain.ddcNodes.createStorageNode(storageNodeAccount.address, {
-                grpcUrl: `ddc-storage-node-${index}:9099`,
+                host: `ddc-storage-node-${index}`,
+                httpPort: 8081 + index,
+                grpcPort: 9091 + index,
+                p2pPort: 9071 + index,
             }),
-            blockchain.ddcStaking.bondStorageNode(admin.address, storageNodeAccount.address, 100n * 10_000_000_000n),
+            blockchain.ddcStaking.bondStorageNode(admin.address, storageNodeAccount.address, bondAmount),
             blockchain.ddcStaking.store(clusterId),
             blockchain.ddcStaking.setController(storageNodeAccount.address),
             blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNodeAccount.address),
         ]),
-        ...cdnNodeAccounts.flatMap((cdnNodeAccount) => [
-            blockchain.ddcNodes.createCdnNode(cdnNodeAccount.address, ''),
-            blockchain.ddcStaking.bondCdnNode(admin.address, cdnNodeAccount.address, 100n * 10_000_000_000n),
+        ...cdnNodeAccounts.flatMap((cdnNodeAccount, index) => [
+            blockchain.ddcNodes.createCdnNode(cdnNodeAccount.address, {
+                host: `ddc-cdn-node-${index}`,
+                httpPort: 8081 + index,
+                grpcPort: 9091 + index,
+                p2pPort: 9071 + index,
+            }),
+            blockchain.ddcStaking.bondCdnNode(admin.address, cdnNodeAccount.address, bondAmount),
             blockchain.ddcStaking.setController(cdnNodeAccount.address),
             blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNodeAccount.address),
         ]),
@@ -201,7 +232,12 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
     console.timeEnd('Create cluster and nodes');
 
     console.time('Create buckets');
-    await blockchain.batchSend(bucketIds.flatMap((bucketId) => [blockchain.ddcCustomers.createBucket(clusterId)]));
+    const bucketsSendResult = await blockchain.batchSend(
+        bucketIds.flatMap((bucketId) => [blockchain.ddcCustomers.createBucket(clusterId)]),
+    );
+    const createdBucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(bucketsSendResult.events);
+    console.log('bucketIds', bucketIds);
+    console.log('createdBucketIds', createdBucketIds);
     console.timeEnd('Create buckets');
 
     console.timeEnd('Done');
@@ -216,10 +252,11 @@ const deployClusterNodeAuthorizationContract = async (apiPromise: ApiPromise, ad
     const wasm = contract.source.wasm.toString();
     const abi = new Abi(contract);
     const codePromise = new CodePromise(apiPromise, abi, wasm);
-    const tx = codePromise.tx.new(
-        {value: 0, gasLimit: await getGasLimit(apiPromise), storageDepositLimit: 750_000_000_000},
-        true,
-    );
+    const tx = codePromise.tx.new({
+        value: 0,
+        gasLimit: await getGasLimit(apiPromise),
+        storageDepositLimit: 750_000_000_000,
+    });
     const {events} = await signAndSend(tx, admin, apiPromise);
     const foundEvent = events.find(({event}) => apiPromise.events.contracts.Instantiated.is(event));
     const [, address] = foundEvent?.event.toJSON().data as string[];
