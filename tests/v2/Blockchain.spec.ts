@@ -263,4 +263,9 @@ describe('packages/blockchain', () => {
         const bucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
         expect(bucketIds.length).toBe(1);
     });
+
+    test('Should list buckets', async () => {
+        const buckets = await blockchain.ddcCustomers.listBuckets();
+        expect(buckets.length).toBeGreaterThan(0);
+    });
 });

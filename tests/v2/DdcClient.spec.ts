@@ -160,9 +160,6 @@ describe('DDC Client', () => {
         });
     });
 
-    /**
-     * Moke tests of blockchain operation methods exposed on the client instance
-     */
     describe('Blockhain operations', () => {
         let createdBucketId: bigint;
         const clusterId = '0x0000000000000000000000000000000000000000';
