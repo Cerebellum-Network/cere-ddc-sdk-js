@@ -15,6 +15,7 @@ import {
     RpcStatus,
     RpcError,
     RpcInputStream,
+    RpcOutputStreamController,
 } from '@protobuf-ts/runtime-rpc';
 
 export class WebsocketTransport implements RpcTransport {
@@ -97,7 +98,78 @@ export class WebsocketTransport implements RpcTransport {
         method: MethodInfo<I, O>,
         options: RpcOptions,
     ): DuplexStreamingCall<I, O> {
-        throw new Error('Not implemented');
+        const InputType = mapType(method.I);
+        const defHeader = new Deferred<RpcMetadata>();
+        const outStream = new RpcOutputStreamController<O>();
+        const defStatus = new Deferred<RpcStatus>();
+        const defTrailer = new Deferred<RpcMetadata>();
+
+        const client = grpc.client(
+            {
+                methodName: method.name,
+                requestStream: true,
+                responseStream: true,
+                requestType: InputType,
+                responseType: mapType(method.O),
+                service: {
+                    serviceName: method.service.typeName,
+                },
+            },
+            {
+                host: 'http://localhost:8071',
+                transport: grpc.WebsocketTransport(),
+            },
+        );
+
+        client.onHeaders((headers) => {
+            defHeader.resolvePending(headers.headersMap);
+        });
+
+        client.onMessage((message) => {
+            outStream.notifyMessage(message.toObject() as any);
+        });
+
+        client.onEnd((status, statusMessage, trailers) => {
+            defStatus.resolvePending({
+                code: grpc.Code[status],
+                detail: statusMessage,
+            });
+
+            defTrailer.resolvePending(trailers.headersMap);
+
+            if (status !== grpc.Code.OK) {
+                const error = new RpcError(statusMessage, grpc.Code[status]);
+
+                defHeader.rejectPending(error);
+                defStatus.rejectPending(error);
+                defTrailer.rejectPending(error);
+
+                if (!outStream.closed) {
+                    outStream.notifyError(error);
+                }
+            }
+
+            if (!outStream.closed) {
+                outStream.notifyComplete();
+            }
+        });
+
+        client.start(new grpc.Metadata(options.meta));
+
+        const inputStream: RpcInputStream<any> = {
+            send: async (message) => client.send(new InputType(message)),
+            complete: async () => client.finishSend(),
+        };
+
+        return new DuplexStreamingCall(
+            method,
+            options.meta ?? {},
+            inputStream,
+            defHeader.promise,
+            outStream,
+            defStatus.promise,
+            defTrailer.promise,
+        );
     }
 
     mergeOptions(options?: Partial<RpcOptions>): RpcOptions {
