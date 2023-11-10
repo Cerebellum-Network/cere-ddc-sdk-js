@@ -1,7 +1,6 @@
 import {DagNode, DagNodeUri, DdcClient, File, FileUri, KB, MB, Tag} from '@cere-ddc-sdk/ddc-client';
 
 import {ROOT_USER_SEED, createDataStream, getContractOptions} from '../helpers';
-import * as cluster from 'cluster';
 
 describe('DDC Client', () => {
     const bucketId = 0n;
@@ -163,8 +162,6 @@ describe('DDC Client', () => {
 
     /**
      * Moke tests of blockchain operation methods exposed on the client instance
-     *
-     * TODO: Revise these methods during migration to palettes
      */
     describe('Blockhain operations', () => {
         let createdBucketId: bigint;
