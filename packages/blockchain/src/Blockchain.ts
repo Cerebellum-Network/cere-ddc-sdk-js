@@ -60,7 +60,11 @@ export class Blockchain {
         return this.apiPromise.tx.sudo.sudo(sendable) as Sendable;
     }
 
-    static async create(
+    disconnect() {
+        return this.apiPromise.disconnect();
+    }
+
+    static async connect(
         options: {account: AddressOrPair; signer?: Signer} & ({apiPromise: ApiPromise} | {wsEndpoint: string}),
     ) {
         const apiPromise =

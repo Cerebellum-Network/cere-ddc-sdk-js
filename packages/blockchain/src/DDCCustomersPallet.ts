@@ -41,6 +41,16 @@ export class DDCCustomersPallet {
         return this.apiPromise.tx.ddcCustomers.withdrawUnlockedDeposit() as Sendable;
     }
 
+    async listBuckets() {
+        const entries = await this.apiPromise.query.ddcCustomers.buckets.entries();
+        return entries
+            .map(([bucketId, bucketOption]) => {
+                const bucket = bucketOption.unwrapOr(undefined)?.toJSON() as unknown as Bucket | undefined;
+                return bucket == null ? undefined : ({...bucket, bucketId: BigInt(bucket.bucketId)} as Bucket);
+            })
+            .filter((bucket) => bucket !== undefined) as Bucket[];
+    }
+
     extractCreatedBucketIds(events: Event[]) {
         return events
             .filter((event) => event.section === 'ddcCustomers' && event.method === 'BucketCreated')
