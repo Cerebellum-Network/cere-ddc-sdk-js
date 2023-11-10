@@ -8,7 +8,6 @@ import type {
     StorageNodeProps,
     StorageNodePublicKey,
 } from './types';
-import {NodeParams} from '@cere-ddc-sdk/smart-contract/types';
 import {hexToString, stringToHex} from '@polkadot/util';
 
 export class DDCNodesPallet {
