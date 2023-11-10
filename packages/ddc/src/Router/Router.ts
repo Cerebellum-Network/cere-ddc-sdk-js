@@ -53,7 +53,7 @@ export class Router {
             if (node == null) {
                 throw new Error(`Failed to get info for node ${nodeKey} on blockchain`);
             }
-            return new StorageNode({rpcHost: node.params.rpcHost, signer: this.config.signer});
+            return new StorageNode({rpcHost: `${node.props.host}:${node.props.grpcPort}`, signer: this.config.signer});
         } else {
             const nodes = this.config.nodes;
             const node = nodes[Math.floor(Math.random() * nodes.length)];
