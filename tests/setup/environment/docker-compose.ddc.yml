@@ -220,6 +220,11 @@ services:
       - 8071:8080
     depends_on:
       - ddc-storage-node-1
-    command: |
-      grpcwebproxy --backend_addr=ddc-storage-node-1:9091 --run_tls_server=false --use_websockets --enable_request_debug --allow_all_origins
+    command: >
+      grpcwebproxy --backend_addr=ddc-storage-node-1:9091
+        --run_tls_server=false
+        --use_websockets
+        --enable_request_debug
+        --allow_all_origins
+        --websocket_read_limit=66560
   

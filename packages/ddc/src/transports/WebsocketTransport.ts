@@ -1,4 +1,4 @@
-import {grpc as web} from '@improbable-eng/grpc-web';
+import {grpc} from '@improbable-eng/grpc-web';
 import {IMessageType} from '@protobuf-ts/runtime';
 
 import {
@@ -14,6 +14,7 @@ import {
     RpcMetadata,
     RpcStatus,
     RpcError,
+    RpcInputStream,
 } from '@protobuf-ts/runtime-rpc';
 
 export class WebsocketTransport implements RpcTransport {
@@ -25,7 +26,71 @@ export class WebsocketTransport implements RpcTransport {
         method: MethodInfo<I, O>,
         options: RpcOptions,
     ): ClientStreamingCall<I, O> {
-        throw new Error('Not implemented');
+        const InputType = mapType(method.I);
+        const defHeader = new Deferred<RpcMetadata>();
+        const defMessage = new Deferred<O>();
+        const defStatus = new Deferred<RpcStatus>();
+        const defTrailer = new Deferred<RpcMetadata>();
+
+        const client = grpc.client(
+            {
+                methodName: method.name,
+                requestStream: true,
+                responseStream: false,
+                requestType: InputType,
+                responseType: mapType(method.O),
+                service: {
+                    serviceName: method.service.typeName,
+                },
+            },
+            {
+                host: 'http://localhost:8071',
+                transport: grpc.WebsocketTransport(),
+            },
+        );
+
+        client.onHeaders((headers) => {
+            defHeader.resolvePending(headers.headersMap);
+        });
+
+        client.onMessage((message) => {
+            defMessage.resolvePending(message.toObject() as any);
+        });
+
+        client.onEnd((status, statusMessage, trailers) => {
+            defStatus.resolvePending({
+                code: grpc.Code[status],
+                detail: statusMessage,
+            });
+
+            defTrailer.resolvePending(trailers.headersMap);
+
+            if (status !== grpc.Code.OK) {
+                const error = new RpcError(statusMessage, grpc.Code[status]);
+
+                defHeader.rejectPending(error);
+                defMessage.rejectPending(error);
+                defStatus.rejectPending(error);
+                defTrailer.rejectPending(error);
+            }
+        });
+
+        client.start(new grpc.Metadata(options.meta));
+
+        const inputStream: RpcInputStream<any> = {
+            send: async (message) => client.send(new InputType(message)),
+            complete: async () => client.finishSend(),
+        };
+
+        return new ClientStreamingCall<I, O>(
+            method,
+            options.meta ?? {},
+            inputStream,
+            defHeader.promise,
+            defMessage.promise,
+            defStatus.promise,
+            defTrailer.promise,
+        );
     }
 
     duplex<I extends object, O extends object>(
@@ -58,8 +123,8 @@ export class WebsocketTransport implements RpcTransport {
         const defStatus = new Deferred<RpcStatus>();
         const defTrailer = new Deferred<RpcMetadata>();
 
-        const request = new Promise<web.UnaryOutput<web.ProtobufMessage>>((onEnd) =>
-            web.unary(
+        const request = new Promise<grpc.UnaryOutput<grpc.ProtobufMessage>>((onEnd) =>
+            grpc.unary(
                 {
                     methodName: method.name,
                     requestStream: false,
@@ -72,8 +137,8 @@ export class WebsocketTransport implements RpcTransport {
                 },
                 {
                     host: 'http://localhost:8071',
-                    transport: web.WebsocketTransport(),
-                    metadata: new web.Metadata(options.meta),
+                    transport: grpc.WebsocketTransport(),
+                    metadata: new grpc.Metadata(options.meta),
                     request: new InputType(input),
                     onEnd,
                 },
@@ -85,12 +150,12 @@ export class WebsocketTransport implements RpcTransport {
                 defHeader.resolvePending(output.headers.headersMap);
                 defTrailer.resolvePending(output.headers.headersMap);
                 defStatus.resolvePending({
-                    code: web.Code[output.status],
+                    code: grpc.Code[output.status],
                     detail: output.statusMessage,
                 });
 
-                if (output.status !== web.Code.OK) {
-                    throw new RpcError(output.statusMessage, web.Code[output.status]);
+                if (output.status !== grpc.Code.OK) {
+                    throw new RpcError(output.statusMessage, grpc.Code[output.status]);
                 }
 
                 if (output.message) {
@@ -119,7 +184,7 @@ export class WebsocketTransport implements RpcTransport {
 }
 
 const mapType = (NativeType: IMessageType<any>) => {
-    class WebType implements web.ProtobufMessage {
+    class WebType implements grpc.ProtobufMessage {
         constructor(public payload = NativeType.create()) {}
 
         serializeBinary(): Uint8Array {
