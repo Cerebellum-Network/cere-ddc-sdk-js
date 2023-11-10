@@ -6,7 +6,7 @@ import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED} from 
 describe('DDC APIs', () => {
     let signer: Signer;
 
-    const bucketId = 0;
+    const bucketId = 1;
     const transport = new RpcTransport('localhost:9091');
     const dagApi = new DagApi(transport);
     const fileApi = new FileApi(transport);

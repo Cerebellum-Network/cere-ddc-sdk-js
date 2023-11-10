@@ -3,7 +3,7 @@ import {DagNode, DagNodeUri, DdcClient, File, FileUri, KB, MB, Tag} from '@cere-
 import {ROOT_USER_SEED, createDataStream, getContractOptions} from '../helpers';
 
 describe('DDC Client', () => {
-    const bucketId = 0n;
+    const bucketId = 1n;
     let client: DdcClient;
 
     beforeAll(async () => {
