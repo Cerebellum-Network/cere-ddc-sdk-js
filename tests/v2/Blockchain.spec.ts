@@ -62,7 +62,7 @@ describe('packages/blockchain', () => {
     });
 
     test('Should create a Blockchain instance asynchronously', async () => {
-        blockchain = await Blockchain.create({account: admin, apiPromise});
+        blockchain = await Blockchain.connect({account: admin, apiPromise});
         expect(blockchain).toBeInstanceOf(Blockchain);
     });
 

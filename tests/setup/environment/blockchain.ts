@@ -177,7 +177,7 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
     const clusterNodeAuthorizationContractAddress = await deployClusterNodeAuthorizationContract(apiPromise, admin);
     console.timeEnd('Deploy cluster node auth contract');
 
-    const blockchain = await Blockchain.create({account: admin, apiPromise});
+    const blockchain = await Blockchain.connect({account: admin, apiPromise});
     console.time('Create cluster and nodes');
     await blockchain.batchSend([
         blockchain.sudo(
