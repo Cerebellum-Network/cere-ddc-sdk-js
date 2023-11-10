@@ -12,9 +12,10 @@ import {
     getHostIP,
     transferCere,
     ContractData,
-    getContractData,
+    readBlockchainStateFromDisk,
     getGasLimit,
     signAndSend,
+    BlockchainState,
 } from '../../helpers';
 import {Blockchain} from '@cere-ddc-sdk/blockchain';
 import {Abi, CodePromise} from '@polkadot/api-contract';
@@ -120,11 +121,12 @@ export const startBlockchain = async (): Promise<BlockchainConfig> => {
         .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
         .up();
 
-    const contractData: ContractData = !process.env.CI && isCached ? getContractData() : await setupBlockchain();
+    const blockchainState: BlockchainState =
+        !process.env.CI && isCached ? readBlockchainStateFromDisk() : await setupBlockchain();
 
     if (!isCached) {
         const contractDataJson = JSON.stringify(
-            contractData,
+            blockchainState,
             (key, value) => (typeof value === 'bigint' ? value.toString() : value),
             2,
         );
@@ -132,15 +134,12 @@ export const startBlockchain = async (): Promise<BlockchainConfig> => {
         fs.writeFileSync(bcStateFile, contractDataJson);
     }
 
-    console.log('Contract address', contractData.contractAddress);
-    console.log('Account', contractData.account);
-    console.log('Cluster ID', contractData.clusterId);
-    console.log('Bucket IDs', contractData.bucketIds);
+    console.dir(blockchainState, {depth: null});
 
     console.groupEnd();
 
     return {
-        ...contractData,
+        ...blockchainState.contract,
         apiUrl: `ws://${hostIp}:9944`,
     };
 };
@@ -236,22 +235,21 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
     console.timeEnd('Create cluster and nodes');
 
     console.time('Create buckets');
-    // const bucketsSendResult = await blockchain.batchSend(
-    //     bucketIds.map((bucketId) => blockchain.ddcCustomers.createBucket(clusterId)),
-    // );
-    // const createdBucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(bucketsSendResult.events);
-    const createdBucketIds = [];
-    for (const bucketId of bucketIds) {
-        const result = await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId));
-        const [createdBucketId] = blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
-        createdBucketIds.push(createdBucketId);
-    }
-    console.log('bucketIds', bucketIds);
-    console.log('createdBucketIds', createdBucketIds);
+    const bucketsSendResult = await blockchain.batchSend(
+        bucketIds.map((bucketId) => blockchain.ddcCustomers.createBucket(clusterId)),
+    );
+    const createdBucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(bucketsSendResult.events);
+
     console.timeEnd('Create buckets');
 
     console.timeEnd('Done');
     console.groupEnd();
+
+    return {
+        clusterId,
+        bucketIds: createdBucketIds,
+        account: rootAccount.address,
+    };
 };
 
 const deployClusterNodeAuthorizationContract = async (apiPromise: ApiPromise, admin: KeyringPair) => {
@@ -277,7 +275,9 @@ const deployClusterNodeAuthorizationContract = async (apiPromise: ApiPromise, ad
 export async function setupBlockchain() {
     const api = await createBlockhainApi();
 
-    await setupPallets(api);
+    const pallets = await setupPallets(api);
 
-    return setupContract(api);
+    const contract = await setupContract(api);
+
+    return {pallets, contract};
 }

@@ -21,6 +21,17 @@ export type ContractData = {
     contractAddress: string;
 };
 
+export type PalletsState = {
+    clusterId: string;
+    bucketIds: bigint[];
+    account: string;
+};
+
+export type BlockchainState = {
+    contract: ContractData;
+    pallets: PalletsState;
+};
+
 export type SignAndSendResult = Required<Pick<TxResult, 'events' | 'contractEvents'>> & {
     blockHash: string;
 };
@@ -66,7 +77,7 @@ export const transferCere = async (api: ApiPromise, to: string, tokens: number) 
     return signAndSend(transfer, getAccount('//Alice'));
 };
 
-export const getContractData = (): ContractData => {
+export const readBlockchainStateFromDisk = (): BlockchainState => {
     const ddcConfigFile = path.resolve(__dirname, '../data/ddc.json');
 
     if (!fs.existsSync(ddcConfigFile)) {
@@ -81,7 +92,7 @@ export const getContractData = (): ContractData => {
 };
 
 export const getContractOptions = () => {
-    const {contractAddress} = getContractData();
+    const {contractAddress} = readBlockchainStateFromDisk().contract;
 
     return {
         contractAddress,
