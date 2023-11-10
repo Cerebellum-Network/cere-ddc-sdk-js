@@ -156,9 +156,9 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
     console.time('Done');
     await cryptoWaitReady();
 
-    const admin = getAccount();
+    const rootAccount = getAccount('//Alice');
     const clusterId = '0x0000000000000000000000000000000000000000';
-    const bucketIds = [0, 1, 2]; // Always the same for fresh SC
+    const bucketIds = [1n, 2n, 3n];
     const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
     const storageNodeAccounts = [
         getAccount('//Eve'),
@@ -170,21 +170,24 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
     const bondAmount = 100n * oneToken;
 
     console.time('Top-up user');
-    await transferCere(apiPromise, admin.address, 1000);
+    await transferCere(apiPromise, rootAccount.address, 1000);
     console.timeEnd('Top-up user');
 
     console.time('Deploy cluster node auth contract');
-    const clusterNodeAuthorizationContractAddress = await deployClusterNodeAuthorizationContract(apiPromise, admin);
+    const clusterNodeAuthorizationContractAddress = await deployClusterNodeAuthorizationContract(
+        apiPromise,
+        rootAccount,
+    );
     console.timeEnd('Deploy cluster node auth contract');
 
-    const blockchain = await Blockchain.connect({account: admin, apiPromise});
+    const blockchain = await Blockchain.connect({account: rootAccount, apiPromise});
     console.time('Create cluster and nodes');
     await blockchain.batchSend([
         blockchain.sudo(
             blockchain.ddcClusters.createCluster(
                 clusterId,
-                admin.address,
-                admin.address,
+                rootAccount.address,
+                rootAccount.address,
                 {
                     nodeProviderAuthContract: clusterNodeAuthorizationContractAddress,
                 },
@@ -212,7 +215,7 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
                 grpcPort: 9091 + index,
                 p2pPort: 9071 + index,
             }),
-            blockchain.ddcStaking.bondStorageNode(admin.address, storageNodeAccount.address, bondAmount),
+            blockchain.ddcStaking.bondStorageNode(rootAccount.address, storageNodeAccount.address, bondAmount),
             blockchain.ddcStaking.store(clusterId),
             blockchain.ddcStaking.setController(storageNodeAccount.address),
             blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNodeAccount.address),
@@ -224,18 +227,25 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
                 grpcPort: 9091 + index,
                 p2pPort: 9071 + index,
             }),
-            blockchain.ddcStaking.bondCdnNode(admin.address, cdnNodeAccount.address, bondAmount),
+            blockchain.ddcStaking.bondCdnNode(rootAccount.address, cdnNodeAccount.address, bondAmount),
             blockchain.ddcStaking.setController(cdnNodeAccount.address),
             blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNodeAccount.address),
         ]),
     ]);
+
     console.timeEnd('Create cluster and nodes');
 
     console.time('Create buckets');
-    const bucketsSendResult = await blockchain.batchSend(
-        bucketIds.map((bucketId) => blockchain.ddcCustomers.createBucket(clusterId)),
-    );
-    const createdBucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(bucketsSendResult.events);
+    // const bucketsSendResult = await blockchain.batchSend(
+    //     bucketIds.map((bucketId) => blockchain.ddcCustomers.createBucket(clusterId)),
+    // );
+    // const createdBucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(bucketsSendResult.events);
+    const createdBucketIds = [];
+    for (const bucketId of bucketIds) {
+        const result = await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId));
+        const [createdBucketId] = blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
+        createdBucketIds.push(createdBucketId);
+    }
     console.log('bucketIds', bucketIds);
     console.log('createdBucketIds', createdBucketIds);
     console.timeEnd('Create buckets');

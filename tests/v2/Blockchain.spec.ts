@@ -11,7 +11,7 @@ describe('packages/blockchain', () => {
     let apiPromise: ApiPromise;
     let blockchain: Blockchain;
 
-    let admin: KeyringPair;
+    let rootAccount: KeyringPair;
     let cdnNode1Key: string;
     let storageNode1Key: string;
     let storageNode2Key: string;
@@ -36,7 +36,7 @@ describe('packages/blockchain', () => {
             gasLimit: await getGasLimit(apiPromise),
             storageDepositLimit: 750_000_000_000,
         });
-        const {events} = await signAndSend(tx, admin, apiPromise);
+        const {events} = await signAndSend(tx, rootAccount, apiPromise);
         const foundEvent = events.find(({event}) => apiPromise.events.contracts.Instantiated.is(event));
         const [, address] = foundEvent?.event.toJSON().data as string[];
 
@@ -46,7 +46,7 @@ describe('packages/blockchain', () => {
     beforeAll(async () => {
         await cryptoWaitReady();
 
-        admin = getAccount('//Alice');
+        rootAccount = getAccount('//Alice');
         cdnNode1Key = createAccount().address; //getAccount('//Alice').address;
         storageNode1Key = createAccount().address; //getAccount('//Bob').address;
         storageNode2Key = createAccount().address; //getAccount('//Charlie').address;
@@ -62,7 +62,7 @@ describe('packages/blockchain', () => {
     });
 
     test('Should create a Blockchain instance asynchronously', async () => {
-        blockchain = await Blockchain.connect({account: admin, apiPromise});
+        blockchain = await Blockchain.connect({account: rootAccount, apiPromise});
         expect(blockchain).toBeInstanceOf(Blockchain);
     });
 
@@ -165,8 +165,8 @@ describe('packages/blockchain', () => {
             blockchain.sudo(
                 blockchain.ddcClusters.createCluster(
                     clusterId,
-                    admin.address,
-                    admin.address,
+                    rootAccount.address,
+                    rootAccount.address,
                     clusterProps,
                     clusterGovernmentParams,
                 ),
@@ -178,8 +178,8 @@ describe('packages/blockchain', () => {
         expect(cluster).toBeDefined();
         expect(cluster?.clusterId).toBe(clusterId);
         expect(cluster?.props).toEqual(clusterProps);
-        expect(cluster?.managerId).toBe(admin.address);
-        expect(cluster?.reserveId).toBe(admin.address);
+        expect(cluster?.managerId).toBe(rootAccount.address);
+        expect(cluster?.reserveId).toBe(rootAccount.address);
     });
 
     test('Should list non empty clusters', async () => {
@@ -241,7 +241,7 @@ describe('packages/blockchain', () => {
 
     test('Should bond storage node', async () => {
         await blockchain.batchSend([
-            blockchain.ddcStaking.bondStorageNode(admin.address, storageNode1Key, 100n * 10_000_000_000n),
+            blockchain.ddcStaking.bondStorageNode(rootAccount.address, storageNode1Key, 100n * 10_000_000_000n),
             blockchain.ddcStaking.store(clusterId),
             blockchain.ddcStaking.setController(storageNode1Key),
         ]);
