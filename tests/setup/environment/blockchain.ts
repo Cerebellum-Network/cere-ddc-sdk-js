@@ -219,7 +219,7 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
         ]),
         ...cdnNodeAccounts.flatMap((cdnNodeAccount, index) => [
             blockchain.ddcNodes.createCdnNode(cdnNodeAccount.address, {
-                host: `ddc-cdn-node-${index}`,
+                host: hostIp,
                 httpPort: 8081 + index,
                 grpcPort: 9091 + index,
                 p2pPort: 9071 + index,
@@ -233,7 +233,7 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
 
     console.time('Create buckets');
     const bucketsSendResult = await blockchain.batchSend(
-        bucketIds.flatMap((bucketId) => [blockchain.ddcCustomers.createBucket(clusterId)]),
+        bucketIds.map((bucketId) => blockchain.ddcCustomers.createBucket(clusterId)),
     );
     const createdBucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(bucketsSendResult.events);
     console.log('bucketIds', bucketIds);

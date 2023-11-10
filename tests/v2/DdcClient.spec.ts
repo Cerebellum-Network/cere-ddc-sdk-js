@@ -9,12 +9,6 @@ describe('DDC Client', () => {
     beforeAll(async () => {
         client = await DdcClient.create(ROOT_USER_SEED, {
             smartContract: getContractOptions(),
-            nodes: [
-                {rpcHost: 'localhost:9091'},
-                {rpcHost: 'localhost:9092'},
-                {rpcHost: 'localhost:9093'},
-                {rpcHost: 'localhost:9094'},
-            ],
         });
     });
 
