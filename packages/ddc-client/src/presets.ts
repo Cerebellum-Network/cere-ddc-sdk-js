@@ -9,7 +9,16 @@ export const MAINNET: DdcClientConfig = {
 
 export const DEVNET: DdcClientConfig = {
     smartContract: sc.DEVNET,
-    nodes: [],
+    nodes: [
+        {rpcHost: '38.242.236.247:9090'},
+        {rpcHost: '38.242.236.247:9091'},
+        {rpcHost: '158.220.87.61:9090'},
+        {rpcHost: '158.220.87.61:9091'},
+        {rpcHost: '89.117.79.111:9090'},
+        {rpcHost: '89.117.79.111:9091'},
+        {rpcHost: '154.53.57.124:9090'},
+        {rpcHost: '154.53.57.124:9091'},
+    ],
 };
 
 export const TESTNET: DdcClientConfig = {

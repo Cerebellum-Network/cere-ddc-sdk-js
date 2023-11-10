@@ -32,7 +32,7 @@ export type DdcClientConfig = Omit<RouterConfig, 'signer'> & {
     smartContract: SmartContractOptions;
 };
 
-export {FileStoreOptions, DagNodeStoreOptions};
+export type {FileStoreOptions, DagNodeStoreOptions};
 
 export class DdcClient {
     private fileStorage: FileStorage;
