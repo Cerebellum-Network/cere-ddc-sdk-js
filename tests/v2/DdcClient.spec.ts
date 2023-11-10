@@ -1,6 +1,7 @@
 import {DagNode, DagNodeUri, DdcClient, File, FileUri, KB, MB, Tag} from '@cere-ddc-sdk/ddc-client';
 
 import {ROOT_USER_SEED, createDataStream, getContractOptions} from '../helpers';
+import * as cluster from 'cluster';
 
 describe('DDC Client', () => {
     const bucketId = 0n;
@@ -167,34 +168,26 @@ describe('DDC Client', () => {
      */
     describe('Blockhain operations', () => {
         let createdBucketId: bigint;
-
-        test('Account deposit', async () => {
-            await client.accountDeposit(10n);
-        });
+        const clusterId = '0x0000000000000000000000000000000000000000';
 
         test('Create bucket', async () => {
-            const bucket = await client.createBucket(10n, 1n, 0);
+            const bucket = await client.createBucket(clusterId);
 
             createdBucketId = bucket.bucketId;
 
             expect(createdBucketId).toEqual(expect.any(BigInt));
         });
 
-        test('Bucket allocate into cluster', async () => {
-            await client.bucketAllocIntoCluster(createdBucketId, 1n);
-        });
-
         test('Get bucket', async () => {
             const bucket = await client.bucketGet(createdBucketId);
 
-            expect(bucket.bucketId).toEqual(createdBucketId);
+            expect(bucket?.bucketId).toEqual(createdBucketId);
         });
 
         test('Get bucket list', async () => {
-            const [buckets, totalCount] = await client.bucketList(0n, 10n);
+            const buckets = await client.bucketList();
 
-            expect(totalCount).toBeGreaterThan(0);
-            expect(buckets.length).toEqual(Number(totalCount));
+            expect(buckets.length).toBeGreaterThan(0);
         });
     });
 });
