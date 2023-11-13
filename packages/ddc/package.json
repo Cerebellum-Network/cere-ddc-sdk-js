@@ -35,7 +35,7 @@
         "@protobuf-ts/grpcweb-transport": "^2.9.1",
         "@protobuf-ts/runtime": "^2.9.1",
         "rfc4648": "^1.5.3",
-        "@cere-ddc-sdk/blockchain": "*"
+        "@cere-ddc-sdk/blockchain": "2.0.0-rc.6"
     },
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.9.1"
