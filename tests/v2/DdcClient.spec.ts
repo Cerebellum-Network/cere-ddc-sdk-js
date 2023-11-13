@@ -165,7 +165,7 @@ describe('DDC Client', () => {
      *
      * TODO: Revise these methods during migration to palettes
      */
-    describe.skip('Blockhain operations', () => {
+    describe('Blockhain operations', () => {
         let createdBucketId: bigint;
 
         test('Account deposit', async () => {
