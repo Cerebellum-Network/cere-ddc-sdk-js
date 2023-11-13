@@ -112,7 +112,7 @@ export class SmartContract extends SmartContractBase {
     async bucketGet(bucketId: BucketId) {
         const bucketStatus = await this.queryOne<BucketStatus>(this.contract.query.bucketGet, bucketId);
 
-        bucketStatus.bucketId = BigInt(bucketStatus.bucketId);
+        bucketStatus.bucketId = bucketStatus.bucketId;
         bucketStatus.params = JSON.parse(bucketStatus.params as any);
         bucketStatus.bucket.resourceReserved = BigInt(bucketStatus.bucket.resourceReserved);
 

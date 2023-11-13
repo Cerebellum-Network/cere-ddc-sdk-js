@@ -11,11 +11,12 @@ import {
     RouterConfig,
     Signer,
     UriSigner,
+    RouterStaticConfig,
 } from '@cere-ddc-sdk/ddc';
 
 import {File, FileResponse} from './File';
 
-export type FileStorageConfig = RouterConfig;
+export type FileStorageConfig = RouterStaticConfig;
 export type FileReadOptions = PieceReadOptions;
 export type FileStoreOptions = PieceStoreOptions;
 
@@ -54,7 +55,7 @@ export class FileStorage {
 
     async store(bucketId: number, file: File, options?: FileStoreOptions) {
         const isLarge = file.size > MAX_PIECE_SIZE;
-        const node = await this.router.getNode(RouterOperation.STORE_PIECE);
+        const node = await this.router.getNode(RouterOperation.STORE_PIECE, BigInt(bucketId));
         const cid = isLarge
             ? await this.storeLarge(node, bucketId, file, options)
             : await this.storeSmall(node, bucketId, file, options);
@@ -63,7 +64,7 @@ export class FileStorage {
     }
 
     async read(bucketId: number, cidOrName: string, options?: FileReadOptions) {
-        const node = await this.router.getNode(RouterOperation.READ_PIECE);
+        const node = await this.router.getNode(RouterOperation.READ_PIECE, BigInt(bucketId));
         const piece = await node.readPiece(bucketId, cidOrName, options);
 
         return new FileResponse(piece.cid, piece.body, options);

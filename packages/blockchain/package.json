@@ -1,0 +1,48 @@
+{
+  "name": "@cere-ddc-sdk/blockchain",
+  "version": "2.0.0-rc.6",
+  "description": "Cere Blockchain client",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "types": "./dist/types",
+  "repository": {
+    "type": "git",
+    "directory": "packages/blockchain",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build:cjs": "TARGET=build:cjs NODE_ENV=production webpack",
+    "build:mjs": "TARGET=build:mjs NODE_ENV=production webpack",
+    "build:node": "BROWSERSLIST_ENV=node npm run build:cjs && BROWSERSLIST_ENV=node npm run build:mjs",
+    "build": "npm run clean && npm run types && npm run build:node",
+    "types": "tsc -p tsconfig.build.json --emitDeclarationOnly || exit 0",
+    "package": "clean-publish",
+    "clean": "rimraf dist package",
+    "generate:types": "npm run generate:types-from-defs && npm run generate:types-from-chain",
+    "generate:types-from-chain": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-chain --endpoint ws://localhost:9944 --output ./src/interfaces --strict",
+    "generate:types-from-defs": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-defs  --endpoint ws://localhost:9944 --input ./src/interfaces --package sample-polkadotjs-typegen/interfaces"
+  },
+  "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@polkadot/api": "9.4.1",
+    "@polkadot/api-contract": "9.4.1",
+    "crypto-browserify": "^3.12.0",
+    "stream-browserify": "^3.0.0"
+  },
+  "devDependencies": {
+    "@polkadot/typegen": "9.4.1"
+  },
+  "peerDependencies": {
+    "@polkadot/keyring": "^10.1.8",
+    "@polkadot/types": "^9.4.1",
+    "@polkadot/util-crypto": "^10.1.8"
+  }
+}
