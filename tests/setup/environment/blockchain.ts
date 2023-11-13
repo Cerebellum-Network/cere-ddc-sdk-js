@@ -156,6 +156,7 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
     await cryptoWaitReady();
 
     const rootAccount = getAccount('//Alice');
+    const adminAccount = getAccount();
     const clusterId = '0x0000000000000000000000000000000000000000';
     const bucketIds = [1n, 2n, 3n];
     const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
@@ -169,7 +170,8 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
     const bondAmount = 100n * oneToken;
 
     console.time('Top-up user');
-    await transferCere(apiPromise, rootAccount.address, 1000);
+    await transferCere(apiPromise, rootAccount.address, 500);
+    await transferCere(apiPromise, adminAccount.address, 500);
     console.timeEnd('Top-up user');
 
     console.time('Deploy cluster node auth contract');
