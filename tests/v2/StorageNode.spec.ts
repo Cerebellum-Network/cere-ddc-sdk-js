@@ -71,9 +71,9 @@ describe('Storage Node', () => {
         const pieceName = 'multipart-test-piece';
         const partSize = 4 * MB;
         const rawPieceContents = [
-            createDataStream(partSize, MB),
-            createDataStream(partSize, MB),
-            createDataStream(partSize, MB),
+            createDataStream(partSize, {chunkSize: MB}),
+            createDataStream(partSize, {chunkSize: MB}),
+            createDataStream(partSize, {chunkSize: MB}),
         ];
 
         const totalSize = partSize * rawPieceContents.length;

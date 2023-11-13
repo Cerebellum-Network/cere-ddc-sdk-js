@@ -112,7 +112,7 @@ describe('DDC APIs', () => {
             const smallPieceSize = MB;
             const largePieceSize = 4 * MB;
             const smallPieceData = new Uint8Array(randomBytes(smallPieceSize));
-            const largePieceData = createDataStream(largePieceSize, MB);
+            const largePieceData = createDataStream(largePieceSize);
 
             test('Store small piece', async () => {
                 smallPieceCid = await storeRawPiece([smallPieceData]);
@@ -178,9 +178,9 @@ describe('DDC APIs', () => {
             let rawPieceCids: Uint8Array[];
             const partSize = 4 * MB;
             const rawPieceContents = [
-                createDataStream(partSize, MB),
-                createDataStream(partSize, MB),
-                createDataStream(partSize, MB),
+                createDataStream(partSize, {chunkSize: MB}),
+                createDataStream(partSize, {chunkSize: MB}),
+                createDataStream(partSize, {chunkSize: MB}),
             ];
 
             const totalSize = partSize * rawPieceContents.length;

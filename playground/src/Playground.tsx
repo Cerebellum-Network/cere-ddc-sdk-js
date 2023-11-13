@@ -69,7 +69,7 @@ export const Playground = () => {
         setInProgress(true);
 
         const size = randomFileSize * MB;
-        const stream = createDataStream(size, 64 * KB);
+        const stream = createDataStream(size);
         const file = new File(stream, {size});
 
         try {

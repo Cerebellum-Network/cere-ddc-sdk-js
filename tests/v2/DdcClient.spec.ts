@@ -26,7 +26,7 @@ describe('DDC Client', () => {
         let uri: FileUri;
         let tinyUri: FileUri;
         const fileSize = 2 * MB;
-        const fileStream = createDataStream(fileSize, 64 * KB);
+        const fileStream = createDataStream(fileSize);
         const tinyFileName = 'test/tiny-file';
         const tinyFileText = 'Tiny file';
         const tinyFileData = new TextEncoder().encode('Tiny file');
