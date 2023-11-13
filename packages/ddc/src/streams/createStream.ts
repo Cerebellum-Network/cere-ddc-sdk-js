@@ -1,7 +1,14 @@
-import {ReadableStream, TransformStream} from 'stream/web';
+import {ReadableStream, TransformStream, ReadableStreamDefaultReader} from 'stream/web';
 import {CONTENT_CHUNK_SIZE} from '../constants';
 
-export type Content = Uint8Array | Iterable<Uint8Array> | AsyncIterable<Uint8Array>;
+type InputStream = {
+    /**
+     * Browser's ReadableStream provides overloads to `getReader` which breaks types, so have to use `any` here and later cast the type
+     */
+    getReader: () => any;
+};
+
+export type Content = Uint8Array | Iterable<Uint8Array> | AsyncIterable<Uint8Array> | InputStream;
 export type ContentStream = ReadableStream<Uint8Array>;
 
 const withChunkSize = (chunkSize: number) => {
@@ -25,13 +32,39 @@ const withChunkSize = (chunkSize: number) => {
     });
 };
 
-export const createContentStream = (input: Content | ContentStream, chunkSize = CONTENT_CHUNK_SIZE): ContentStream => {
-    const content = input instanceof Uint8Array ? [input] : input;
-    const asyncIterator = (async function* () {
-        return yield* content;
-    })();
+/**
+ * Not all browsers support async iterators on ReadableStream, so we need to convert it manualy in some cases
+ */
+const isInputStream = (input: Content | InputStream): input is InputStream => {
+    return 'getReader' in input;
+};
 
-    let stream: ContentStream = new ReadableStream<Uint8Array>({
+async function* toIterable(input: Content | ContentStream) {
+    if (!isInputStream(input)) {
+        return yield* input;
+    }
+
+    const reader: ReadableStreamDefaultReader<Uint8Array> = input.getReader();
+
+    try {
+        while (true) {
+            const {done, value} = await reader.read();
+
+            if (done) {
+                return;
+            }
+
+            yield value;
+        }
+    } finally {
+        reader.releaseLock();
+    }
+}
+
+export const createContentStream = (input: Content | ContentStream, chunkSize = CONTENT_CHUNK_SIZE): ContentStream => {
+    const asyncIterator = toIterable(input instanceof Uint8Array ? [input] : input);
+
+    let stream: ContentStream = new ReadableStream({
         async pull(controller) {
             const {done, value} = await asyncIterator.next();
 

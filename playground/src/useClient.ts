@@ -1,8 +1,11 @@
 import {useEffect, useState} from 'react';
-import {DEVNET, DdcClient} from '@cere-ddc-sdk/ddc-client';
-import {USER_SEED} from './constants';
+import {DEVNET, DdcClient, Signer} from '@cere-ddc-sdk/ddc-client';
 
-export const useClient = () => {
+type ClientOptions = {
+    signer?: string | Signer;
+};
+
+export const useClient = ({signer}: ClientOptions = {}) => {
     const [client, setClient] = useState<DdcClient>();
     const contractAddress = process.env.SC_ADDRESS;
     const rpcUrl = process.env.BC_ENDPOINT;
@@ -16,11 +19,15 @@ export const useClient = () => {
     }
 
     useEffect(() => {
-        DdcClient.create(USER_SEED, {
+        if (!signer) {
+            return;
+        }
+
+        DdcClient.create(signer, {
             ...DEVNET,
             smartContract: {...DEVNET.smartContract, contractAddress, rpcUrl},
         }).then(setClient);
-    }, []);
+    }, [signer]);
 
     return client;
 };

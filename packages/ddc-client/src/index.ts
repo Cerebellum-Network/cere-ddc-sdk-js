@@ -2,7 +2,19 @@ export * from './DdcClient';
 export * from './DdcUri';
 
 export type {SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
-export {KB, MB, DagNode, Tag, Link, DagNodeResponse, type DagNodeStoreOptions} from '@cere-ddc-sdk/ddc';
+
+export {
+    KB,
+    MB,
+    DagNode,
+    Tag,
+    Link,
+    DagNodeResponse,
+    UriSigner,
+    type DagNodeStoreOptions,
+    type Signer,
+} from '@cere-ddc-sdk/ddc';
+
 export {
     File,
     FileResponse,
