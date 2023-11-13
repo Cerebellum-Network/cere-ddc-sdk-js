@@ -1,5 +1,5 @@
 import {Blockchain} from '@cere-ddc-sdk/blockchain';
-import {createAccount, createBlockhainApi, getAccount, getGasLimit, signAndSend} from '../helpers';
+import {createAccount, createBlockhainApi, getAccount, getGasLimit, signAndSend, transferCere} from '../helpers';
 import {cryptoWaitReady} from '@polkadot/util-crypto';
 import {ApiPromise} from '@polkadot/api';
 import path from 'path';
@@ -12,13 +12,15 @@ describe('packages/blockchain', () => {
     let blockchain: Blockchain;
 
     let rootAccount: KeyringPair;
+    let storageNode1Account: KeyringPair;
+    let nodeProviderAccount: KeyringPair;
     let cdnNode1Key: string;
     let storageNode1Key: string;
     let storageNode2Key: string;
     let storageNode3Key: string;
     let nonExistentKey1: string;
     const clusterId = '0x0000000000000000000000000000000000000001';
-
+    const bondSize = 10_000_000_000n;
     let nodeProviderAuthContract: string;
 
     const deployClusterNodeAuthorizationContract = async () => {
@@ -47,14 +49,18 @@ describe('packages/blockchain', () => {
         await cryptoWaitReady();
 
         rootAccount = getAccount('//Alice');
-        cdnNode1Key = createAccount().address; //getAccount('//Alice').address;
-        storageNode1Key = createAccount().address; //getAccount('//Bob').address;
-        storageNode2Key = createAccount().address; //getAccount('//Charlie').address;
-        storageNode3Key = createAccount().address; //getAccount('//Dave').address;
-        nonExistentKey1 = createAccount().address; //getAccount('//Eve').address;
+        cdnNode1Key = createAccount().address;
+        storageNode1Account = createAccount().account;
+        nodeProviderAccount = createAccount().account;
+        storageNode1Key = storageNode1Account.address;
+        storageNode2Key = createAccount().address;
+        storageNode3Key = createAccount().address;
+        nonExistentKey1 = createAccount().address;
 
         apiPromise = await createBlockhainApi();
         nodeProviderAuthContract = await deployClusterNodeAuthorizationContract();
+        await transferCere(apiPromise, storageNode1Account.address, 10);
+        await transferCere(apiPromise, nodeProviderAccount.address, 10);
     });
 
     afterAll(async () => {
@@ -146,10 +152,10 @@ describe('packages/blockchain', () => {
             treasuryShare: 0,
             validatorsShare: 0,
             clusterReserveShare: 0,
-            cdnBondSize: 0n,
+            cdnBondSize: bondSize,
             cdnChillDelay: 0,
             cdnUnbondingDelay: 0,
-            storageBondSize: 0n,
+            storageBondSize: bondSize,
             storageChillDelay: 0,
             storageUnbondingDelay: 0,
             unitPerMbStored: 0n,
@@ -240,11 +246,18 @@ describe('packages/blockchain', () => {
     });
 
     test('Should bond storage node', async () => {
-        await blockchain.batchSend([
-            blockchain.ddcStaking.bondStorageNode(rootAccount.address, storageNode1Key, 100n * 10_000_000_000n),
-            blockchain.ddcStaking.store(clusterId),
-            blockchain.ddcStaking.setController(storageNode1Key),
-        ]);
+        // await blockchain.batchSend([
+        //     blockchain.ddcStaking.bondStorageNode(rootAccount.address, storageNode1Key, bondSize),
+        //     blockchain.ddcStaking.store(clusterId),
+        //     blockchain.ddcStaking.setController(storageNode1Key),
+        // ]);
+        const blockchain = await Blockchain.connect({account: nodeProviderAccount, apiPromise});
+
+        await blockchain.send(
+            blockchain.ddcStaking.bondStorageNode(nodeProviderAccount.address, storageNode1Key, bondSize),
+        );
+        await blockchain.send(blockchain.ddcStaking.store(clusterId));
+        // await blockchain.send(blockchain.ddcStaking.setController(storageNode1Key));
 
         // const stakeClusterId = await blockchain.ddcStaking.findStorageNodeStakeClusterId(storageNode1Key);
         // expect(stakeClusterId).toBe(clusterId);
