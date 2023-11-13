@@ -46,7 +46,7 @@ export const Playground = () => {
 
     const [signer, setSigner] = useState<Signer>();
     const [seed, setSeed] = useState(USER_SEED);
-    const [randomFileSize, setRandomFileSize] = useState(2);
+    const [randomFileSize, setRandomFileSize] = useState(150);
     const [randomFileCid, setRandomFileCid] = useState<string>();
     const [realFileCid, setRealFileCid] = useState<string>();
     const [inProgress, setInProgress] = useState(false);
@@ -90,7 +90,7 @@ export const Playground = () => {
         }
 
         setInProgress(false);
-    }, [client]);
+    }, [client, randomFileSize]);
 
     const handleRealFileUpload = useCallback(async () => {
         setInProgress(true);
