@@ -13,11 +13,12 @@ export const startDDC = async (bc: Blockchain) => {
         .withEnv('BLOCKCHAIN_DDC_BUCKET_CONTRACT', bc.contractAddress)
         .withEnv('CLUSTER_ID', bc.clusterId.toString())
         .withEnv('HOST_IP', getHostIP())
-        .withWaitStrategy('ddc-cdn-node-0', Wait.forHealthCheck())
-        .withWaitStrategy('ddc-cdn-node-1', Wait.forHealthCheck())
-        .withWaitStrategy('ddc-storage-node-0', Wait.forHealthCheck())
+        // .withWaitStrategy('ddc-cdn-node-0', Wait.forHealthCheck())
+        // .withWaitStrategy('ddc-cdn-node-1', Wait.forHealthCheck())
         .withWaitStrategy('ddc-storage-node-1', Wait.forHealthCheck())
         .withWaitStrategy('ddc-storage-node-2', Wait.forHealthCheck())
+        .withWaitStrategy('ddc-storage-node-3', Wait.forHealthCheck())
+        .withWaitStrategy('ddc-storage-node-4', Wait.forHealthCheck())
         .up();
 
     console.log('The environment has started!');

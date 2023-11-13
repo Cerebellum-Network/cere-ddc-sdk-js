@@ -1,53 +1,56 @@
 version: "3.4"
 
 services:
-  ddc-cdn-node-0:
-    platform: linux/amd64
-    container_name: ddc-cdn-node-1
-    image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/ddc-cdn-node:dev-latest"
-    environment:
-      - 'HTTP_PORT=8081'
-      - 'HTTP_ADDRESS=http://${HOST_IP}:8081'
-      - 'LOG_LEVEL=debug'
-      - 'LOG_JSON_FORMAT=false'
-      - 'NODE_SECRET_PHRASE=//Bob'
-      - "BLOCKCHAIN_API_URL=${BLOCKCHAIN_API_URL}"
-      - "BLOCKCHAIN_DDC_BUCKET_CONTRACT=${BLOCKCHAIN_DDC_BUCKET_CONTRACT}"
-      - "CLUSTER_ID=${CLUSTER_ID}"
-    ports:
-      - '8081:8081'
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8081/info || exit 1
-      interval: 3s
-      timeout: 1s
-      retries: 5
-    depends_on:
-      redis:
-        condition: service_healthy
+  # CDN Nodes are currently not used in the test environment, so we can disable them for now.
+  # TODO: Enable CDN Nodes when they are needed
 
-  ddc-cdn-node-2:
-    platform: linux/amd64
-    container_name: ddc-cdn-node-2
-    image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/ddc-cdn-node:dev-latest"
-    environment:
-      - 'HTTP_PORT=8082'
-      - 'HTTP_ADDRESS=http://${HOST_IP}:8082'
-      - 'LOG_LEVEL=debug'
-      - 'LOG_JSON_FORMAT=false'
-      - 'NODE_SECRET_PHRASE=//Dave'
-      - "BLOCKCHAIN_API_URL=${BLOCKCHAIN_API_URL}"
-      - "BLOCKCHAIN_DDC_BUCKET_CONTRACT=${BLOCKCHAIN_DDC_BUCKET_CONTRACT}"
-      - "CLUSTER_ID=${CLUSTER_ID}"
-    ports:
-      - '8082:8082'
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8082/info || exit 1
-      interval: 3s
-      timeout: 1s
-      retries: 5
-    depends_on:
-      redis:
-        condition: service_healthy
+  # ddc-cdn-node-1:
+  #   platform: linux/amd64
+  #   container_name: ddc-cdn-node-1
+  #   image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/ddc-cdn-node:dev-latest"
+  #   environment:
+  #     - 'HTTP_PORT=8081'
+  #     - 'HTTP_ADDRESS=http://${HOST_IP}:8081'
+  #     - 'LOG_LEVEL=debug'
+  #     - 'LOG_JSON_FORMAT=false'
+  #     - 'NODE_SECRET_PHRASE=//Bob'
+  #     - "BLOCKCHAIN_API_URL=${BLOCKCHAIN_API_URL}"
+  #     - "BLOCKCHAIN_DDC_BUCKET_CONTRACT=${BLOCKCHAIN_DDC_BUCKET_CONTRACT}"
+  #     - "CLUSTER_ID=${CLUSTER_ID}"
+  #   ports:
+  #     - '8081:8081'
+  #   healthcheck:
+  #     test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8081/info || exit 1
+  #     interval: 3s
+  #     timeout: 1s
+  #     retries: 5
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+
+  # ddc-cdn-node-2:
+  #   platform: linux/amd64
+  #   container_name: ddc-cdn-node-2
+  #   image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/ddc-cdn-node:dev-latest"
+  #   environment:
+  #     - 'HTTP_PORT=8082'
+  #     - 'HTTP_ADDRESS=http://${HOST_IP}:8082'
+  #     - 'LOG_LEVEL=debug'
+  #     - 'LOG_JSON_FORMAT=false'
+  #     - 'NODE_SECRET_PHRASE=//Dave'
+  #     - "BLOCKCHAIN_API_URL=${BLOCKCHAIN_API_URL}"
+  #     - "BLOCKCHAIN_DDC_BUCKET_CONTRACT=${BLOCKCHAIN_DDC_BUCKET_CONTRACT}"
+  #     - "CLUSTER_ID=${CLUSTER_ID}"
+  #   ports:
+  #     - '8082:8082'
+  #   healthcheck:
+  #     test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8082/info || exit 1
+  #     interval: 3s
+  #     timeout: 1s
+  #     retries: 5
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
 
   ddc-storage-node-1:
     platform: linux/amd64
@@ -72,6 +75,7 @@ services:
       - "REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2"
       - "REDUNDANCY_REPLICATION=3"
       - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - "TEST_ENABLED=true"
     ports:
       - '8091:8091'
       - '9071:9071'
@@ -81,9 +85,6 @@ services:
       interval: 3s
       timeout: 1s
       retries: 5
-    depends_on:
-      redis:
-        condition: service_healthy
 
   ddc-storage-node-2:
     platform: linux/amd64
@@ -108,6 +109,7 @@ services:
       - "REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2"
       - "REDUNDANCY_REPLICATION=3"
       - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - "TEST_ENABLED=true"
     ports:
       - '8092:8092'
       - '9072:9072'
@@ -117,9 +119,6 @@ services:
       interval: 3s
       timeout: 1s
       retries: 5
-    depends_on:
-      redis:
-        condition: service_healthy
 
   ddc-storage-node-3:
     platform: linux/amd64
@@ -144,6 +143,7 @@ services:
       - "REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2"
       - "REDUNDANCY_REPLICATION=3"
       - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - "TEST_ENABLED=true"
     ports:
       - '8093:8093'
       - '9073:9073'
@@ -153,9 +153,6 @@ services:
       interval: 3s
       timeout: 1s
       retries: 5
-    depends_on:
-      redis:
-        condition: service_healthy
 
   ddc-storage-node-4:
     platform: linux/amd64
@@ -180,6 +177,7 @@ services:
       - "REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2"
       - "REDUNDANCY_REPLICATION=3"
       - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - "TEST_ENABLED=true"
     ports:
       - '8094:8094'
       - '9074:9074'
@@ -189,29 +187,6 @@ services:
       interval: 3s
       timeout: 1s
       retries: 5
-    depends_on:
-      redis:
-        condition: service_healthy
-
-  redis:
-    image: 625402836641.dkr.ecr.us-west-2.amazonaws.com/dac-redis:dev-latest
-    container_name: redis
-    healthcheck:
-      test: ["CMD-SHELL", "/healthchecker-runner.sh || exit 1"]
-      interval: 10s
-      timeout: 10s
-      start_period: 10s
-      retries: 5
-    ports:
-      - "6379:6379"
-
-  webdis:
-    image: nicolas/webdis:0.1.21
-    container_name: webdis
-    environment:
-      REDIS_HOST: redis
-    ports:
-      - "7379:7379"
 
   grpc-web-proxy:
     build: ./grpcWeb
@@ -228,3 +203,25 @@ services:
         --allow_all_origins
         --websocket_read_limit=66560
   
+  # Redis is used by CDN Nodes only right now, so we can disable it along with CDN Nodes
+  # TODO: Maybe enable later if needed
+
+  # redis:
+  #   image: 625402836641.dkr.ecr.us-west-2.amazonaws.com/dac-redis:dev-latest
+  #   container_name: redis
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "/healthchecker-runner.sh || exit 1"]
+  #     interval: 10s
+  #     timeout: 10s
+  #     start_period: 10s
+  #     retries: 5
+  #   ports:
+  #     - "6379:6379"
+
+  # webdis:
+  #   image: nicolas/webdis:0.1.21
+  #   container_name: webdis
+  #   environment:
+  #     REDIS_HOST: redis
+  #   ports:
+  #     - "7379:7379"
