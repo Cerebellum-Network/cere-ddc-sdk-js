@@ -4,9 +4,9 @@
 export {CnsApi} from './CnsApi';
 export {DagApi} from './DagApi';
 export * from './FileApi';
-export * from './transports';
 export * from './Signer';
 export * from './Cid';
+export {GrpcTransport, WebsocketTransport} from './transports';
 
 /**
  * High level API

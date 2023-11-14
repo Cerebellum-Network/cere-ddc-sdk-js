@@ -1,4 +1,4 @@
-import {File, Signer, UriSigner, MB, KB} from '@cere-ddc-sdk/ddc-client';
+import {File, Signer, UriSigner, MB} from '@cere-ddc-sdk/ddc-client';
 import {useDropzone} from 'react-dropzone';
 
 import {
