@@ -188,21 +188,6 @@ services:
       timeout: 1s
       retries: 5
 
-  grpc-web-proxy:
-    build: ./grpcWeb
-    container_name: grpc-web-proxy
-    ports:
-      - 8071:8080
-    depends_on:
-      - ddc-storage-node-1
-    command: >
-      grpcwebproxy --backend_addr=ddc-storage-node-1:9091
-        --run_tls_server=false
-        --use_websockets
-        --enable_request_debug
-        --allow_all_origins
-        --websocket_read_limit=66560
-  
   # Redis is used by CDN Nodes only right now, so we can disable it along with CDN Nodes
   # TODO: Maybe enable later if needed
 

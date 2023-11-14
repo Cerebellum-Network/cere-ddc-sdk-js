@@ -10,16 +10,11 @@ import {
     UriSigner,
     Cid,
     MAX_PIECE_SIZE,
-    RpcTransportOptions,
 } from '@cere-ddc-sdk/ddc';
 
-import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED} from '../../tests/helpers';
+import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes} from '../../tests/helpers';
 
-const transportOptions: RpcTransportOptions = {
-    grpcUrl: 'grpc://localhost:9091',
-    httpUrl: 'http://localhost:8071',
-};
-
+const [transportOptions] = getStorageNodes();
 const transports = [
     {
         name: 'Grpc Transport',

@@ -1,13 +1,11 @@
 import {StorageNode, Piece, PieceResponse, DagNode, MultipartPiece, CnsRecord, UriSigner} from '@cere-ddc-sdk/ddc';
 
-import {createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED} from '../../tests/helpers';
+import {createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes} from '../../tests/helpers';
 
 describe('Storage Node', () => {
     const bucketId = 0;
-    const storageNode = new StorageNode(new UriSigner(ROOT_USER_SEED), {
-        grpcUrl: 'grpc://localhost:9091',
-        httpUrl: 'http://localhost:8071',
-    });
+    const [storageNodeParams] = getStorageNodes();
+    const storageNode = new StorageNode(new UriSigner(ROOT_USER_SEED), storageNodeParams);
 
     describe('Raw piece', () => {
         let smallPieceCid: string;
