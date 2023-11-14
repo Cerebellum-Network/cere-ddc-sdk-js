@@ -44,9 +44,7 @@ describe('File storage', () => {
     describe('Large file', () => {
         let fileCid: string;
         const fileSize = 150 * MB;
-        const fileStream = createDataStream(fileSize, {
-            chunkSize: 12345, // Use not aligned chunk size `12345`
-        });
+        const fileStream = createDataStream(fileSize);
 
         test('Store a file', async () => {
             const file = new File(fileStream, {

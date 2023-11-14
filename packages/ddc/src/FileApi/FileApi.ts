@@ -1,8 +1,7 @@
-import {RpcTransport} from '@protobuf-ts/runtime-rpc';
-
+import {RpcTransport} from '../transports';
+import {Content, createContentStream} from '../streams';
 import {PutMultiPartPieceRequest, GetFileRequest_Request, PutRawPieceRequest_Metadata} from '../grpc/file_api';
 import {FileApiClient} from '../grpc/file_api.client';
-import {Content, createContentStream} from '../streams';
 
 export type GetFileRequest = GetFileRequest_Request;
 export type ReadFileRange = GetFileRequest_Request['range'];

@@ -2,22 +2,33 @@ import {randomBytes} from 'crypto';
 import {
     Content,
     WebsocketTransport,
-    RpcTransport,
+    NativeTransport,
     DagApi,
     FileApi,
     CnsApi,
     Signer,
     UriSigner,
     Cid,
+    MAX_PIECE_SIZE,
 } from '@cere-ddc-sdk/ddc';
 
 import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED} from '../../tests/helpers';
 
-describe('DDC APIs', () => {
+const transports = [
+    {
+        name: 'Native Transport',
+        transport: new NativeTransport('localhost:9091'),
+    },
+    {
+        name: 'WebSocket Transport',
+        transport: new WebsocketTransport('localhost:9091'),
+    },
+];
+
+describe.each(transports)('DDC APIs ($name)', ({transport}) => {
     let signer: Signer;
 
     const bucketId = 0;
-    const transport = new WebsocketTransport('localhost:9091');
     const dagApi = new DagApi(transport);
     const fileApi = new FileApi(transport);
     const cnsApi = new CnsApi(transport);
@@ -110,9 +121,11 @@ describe('DDC APIs', () => {
             let smallPieceCid: Uint8Array;
             let largePieceCid: Uint8Array;
             const smallPieceSize = MB;
-            const largePieceSize = 4 * MB;
+            const largePieceSize = MAX_PIECE_SIZE;
             const smallPieceData = new Uint8Array(randomBytes(smallPieceSize));
-            const largePieceData = createDataStream(largePieceSize);
+            const largePieceData = createDataStream(largePieceSize, {
+                chunkSize: 12345, // Intentionaly use not aligned to power of 2 chunk size
+            });
 
             test('Store small piece', async () => {
                 smallPieceCid = await storeRawPiece([smallPieceData]);
@@ -134,14 +147,14 @@ describe('DDC APIs', () => {
                 expect(content).toEqual(smallPieceData);
             });
 
-            test('Store large (chunked) piece', async () => {
+            test('Store large piece', async () => {
                 largePieceCid = await storeRawPiece(largePieceData);
 
                 expect(largePieceCid).toEqual(expect.any(Uint8Array));
                 expect(largePieceCid.length).toBeGreaterThan(0);
             });
 
-            test('Read large (chunked) piece', async () => {
+            test('Read large piece', async () => {
                 expect(largePieceCid).toBeDefined();
 
                 const contentStream = await fileApi.getFile({
@@ -154,7 +167,7 @@ describe('DDC APIs', () => {
                 expect(content.byteLength).toEqual(largePieceSize);
             });
 
-            test('Read a range of large (chunked) piece', async () => {
+            test('Read a range of large piece', async () => {
                 expect(largePieceCid).toBeDefined();
 
                 const rangeSize = 10 * DDC_BLOCK_SIZE;

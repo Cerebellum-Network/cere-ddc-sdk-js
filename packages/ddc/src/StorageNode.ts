@@ -6,7 +6,7 @@ import {MultipartPiece, Piece, PieceResponse} from './Piece';
 import {DagNode, DagNodeResponse, mapDagNodeToAPI} from './DagNode';
 import {Signer} from './Signer';
 import {CnsRecord, CnsRecordResponse, mapCnsRecordToAPI} from './CnsRecord';
-import {WebsocketTransport} from './transports';
+import {DefaultTranport} from './transports';
 
 type NamingOptions = {
     name?: string;
@@ -31,7 +31,7 @@ export class StorageNode {
     private cnsApi: CnsApi;
 
     constructor({rpcHost, signer}: StorageNodeConfig) {
-        const transport = new WebsocketTransport(rpcHost);
+        const transport = new DefaultTranport(rpcHost);
 
         this.signer = signer;
         this.dagApi = new DagApi(transport);
