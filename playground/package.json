@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "start": "npm-run-all --parallel bootstrap start:app",
-        "start:app": "wait-port localhost:8071 -o silent && craco start",
+        "start:app": "wait-port localhost:8091 -o silent && craco start",
         "build": "craco build",
         "bootstrap": "ts-node --esm ./scripts/bootstrap.cjs"
     },
