@@ -1,12 +1,10 @@
 import {grpc} from '@improbable-eng/grpc-web';
 import {IMessageType} from '@protobuf-ts/runtime';
-
 import {
     ClientStreamingCall,
     DuplexStreamingCall,
     MethodInfo,
     RpcOptions,
-    RpcTransport,
     ServerStreamingCall,
     UnaryCall,
     mergeRpcOptions,
@@ -18,10 +16,17 @@ import {
     RpcOutputStreamController,
 } from '@protobuf-ts/runtime-rpc';
 
+import {RpcTransport, RpcTransportOptions} from './RpcTransport';
+
+export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl'>;
+
 export class WebsocketTransport implements RpcTransport {
     private defaultOptions: RpcOptions = {};
+    private host: string;
 
-    constructor(host: string) {}
+    constructor({httpUrl}: WebsocketTransportOptions) {
+        this.host = httpUrl;
+    }
 
     clientStreaming<I extends object, O extends object>(
         method: MethodInfo<I, O>,
@@ -45,7 +50,7 @@ export class WebsocketTransport implements RpcTransport {
                 },
             },
             {
-                host: 'http://localhost:8071',
+                host: this.host,
                 transport: grpc.WebsocketTransport(),
             },
         );
@@ -116,7 +121,7 @@ export class WebsocketTransport implements RpcTransport {
                 },
             },
             {
-                host: 'http://localhost:8071',
+                host: this.host,
                 transport: grpc.WebsocketTransport(),
             },
         );
@@ -208,7 +213,7 @@ export class WebsocketTransport implements RpcTransport {
                     },
                 },
                 {
-                    host: 'http://localhost:8071',
+                    host: this.host,
                     transport: grpc.WebsocketTransport(),
                     metadata: new grpc.Metadata(options.meta),
                     request: new InputType(input),

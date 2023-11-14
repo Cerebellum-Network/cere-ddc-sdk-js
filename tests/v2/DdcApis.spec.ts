@@ -2,7 +2,7 @@ import {randomBytes} from 'crypto';
 import {
     Content,
     WebsocketTransport,
-    NativeTransport,
+    GrpcTransport,
     DagApi,
     FileApi,
     CnsApi,
@@ -10,18 +10,24 @@ import {
     UriSigner,
     Cid,
     MAX_PIECE_SIZE,
+    RpcTransportOptions,
 } from '@cere-ddc-sdk/ddc';
 
 import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED} from '../../tests/helpers';
 
+const transportOptions: RpcTransportOptions = {
+    grpcUrl: 'grpc://localhost:9091',
+    httpUrl: 'http://localhost:8071',
+};
+
 const transports = [
     {
-        name: 'Native Transport',
-        transport: new NativeTransport('localhost:9091'),
+        name: 'Grpc Transport',
+        transport: new GrpcTransport(transportOptions),
     },
     {
         name: 'WebSocket Transport',
-        transport: new WebsocketTransport('localhost:9091'),
+        transport: new WebsocketTransport(transportOptions),
     },
 ];
 

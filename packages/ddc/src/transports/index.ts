@@ -1,6 +1,6 @@
-export type {RpcTransport} from '@protobuf-ts/runtime-rpc';
+export * from './RpcTransport';
 
-export {NativeTransport} from './NativeTransport';
+export {GrpcTransport} from './GrpcTransport';
 export {WebsocketTransport} from './WebsocketTransport';
 
-export {NativeTransport as DefaultTranport} from './NativeTransport';
+export {GrpcTransport as DefaultTranport} from './GrpcTransport';

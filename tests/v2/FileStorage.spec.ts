@@ -4,18 +4,13 @@ import {Readable} from 'stream';
 import {pipeline} from 'stream/promises';
 import {createHash} from 'crypto';
 import {FileStorage, File, UriSigner} from '@cere-ddc-sdk/file-storage';
-import {createDataStream, MB, ROOT_USER_SEED} from '../helpers';
+import {createDataStream, getStorageNodes, MB, ROOT_USER_SEED} from '../helpers';
 
 describe('File storage', () => {
     const bucketId = 0;
     const fileStorage = new FileStorage({
         signer: new UriSigner(ROOT_USER_SEED),
-        nodes: [
-            {rpcHost: 'localhost:9091'},
-            {rpcHost: 'localhost:9092'},
-            {rpcHost: 'localhost:9093'},
-            {rpcHost: 'localhost:9094'},
-        ],
+        nodes: getStorageNodes(),
     });
 
     describe('Small file', () => {

@@ -4,9 +4,9 @@ import {createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED} from '../../tests/
 
 describe('Storage Node', () => {
     const bucketId = 0;
-    const storageNode = new StorageNode({
-        rpcHost: 'localhost:9091',
-        signer: new UriSigner(ROOT_USER_SEED),
+    const storageNode = new StorageNode(new UriSigner(ROOT_USER_SEED), {
+        grpcUrl: 'grpc://localhost:9091',
+        httpUrl: 'http://localhost:8071',
     });
 
     describe('Raw piece', () => {

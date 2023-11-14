@@ -1,6 +1,6 @@
 import {DagNode, DagNodeUri, DdcClient, File, FileUri, KB, MB, Tag} from '@cere-ddc-sdk/ddc-client';
 
-import {ROOT_USER_SEED, createDataStream, getContractOptions} from '../helpers';
+import {ROOT_USER_SEED, createDataStream, getContractOptions, getStorageNodes} from '../helpers';
 
 describe('DDC Client', () => {
     const bucketId = 0n;
@@ -9,12 +9,7 @@ describe('DDC Client', () => {
     beforeAll(async () => {
         client = await DdcClient.create(ROOT_USER_SEED, {
             smartContract: getContractOptions(),
-            nodes: [
-                {rpcHost: 'localhost:9091'},
-                {rpcHost: 'localhost:9092'},
-                {rpcHost: 'localhost:9093'},
-                {rpcHost: 'localhost:9094'},
-            ],
+            nodes: getStorageNodes(),
         });
     });
 

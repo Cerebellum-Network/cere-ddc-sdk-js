@@ -4,6 +4,7 @@
  * TODO: Repalce with real implementation
  */
 
+import {Signer} from '../Signer';
 import {StorageNode, StorageNodeConfig} from '../StorageNode';
 
 export enum RouterOperation {
@@ -13,10 +14,10 @@ export enum RouterOperation {
     STORE_PIECE = 'read-piece',
 }
 
-export type RouterNode = Pick<StorageNodeConfig, 'rpcHost'>;
+export type RouterNode = StorageNodeConfig;
 export type RouterConfig = {
+    signer: Signer;
     nodes: RouterNode[];
-    signer: StorageNodeConfig['signer'];
 };
 
 export class Router {
@@ -36,6 +37,6 @@ export class Router {
             throw new Error('No nodes available to handle the operation');
         }
 
-        return new StorageNode({...node, signer: this.config.signer});
+        return new StorageNode(this.config.signer, node);
     }
 }
