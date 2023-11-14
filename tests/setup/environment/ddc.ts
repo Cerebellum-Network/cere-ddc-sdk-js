@@ -1,11 +1,11 @@
 import {DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait} from 'testcontainers';
-import type {Blockchain} from './blockchain';
+import type {BlockchainConfig} from './blockchain';
 import {getHostIP} from '../../helpers';
 
 let environment: StartedDockerComposeEnvironment | undefined;
 
 const uuid = {nextUuid: () => 'ddc'};
-export const startDDC = async (bc: Blockchain) => {
+export const startDDC = async (bc: BlockchainConfig) => {
     console.group('DDC');
 
     const environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.ddc.yml', uuid)

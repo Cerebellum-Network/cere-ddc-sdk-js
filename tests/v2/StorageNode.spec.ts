@@ -3,7 +3,7 @@ import {StorageNode, Piece, PieceResponse, DagNode, MultipartPiece, CnsRecord, U
 import {createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes} from '../../tests/helpers';
 
 describe('Storage Node', () => {
-    const bucketId = 0;
+    const bucketId = 1;
     const [storageNodeParams] = getStorageNodes();
     const storageNode = new StorageNode(new UriSigner(ROOT_USER_SEED), storageNodeParams);
 

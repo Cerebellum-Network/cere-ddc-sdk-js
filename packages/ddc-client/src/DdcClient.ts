@@ -1,107 +1,65 @@
 import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
-import {FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions} from '@cere-ddc-sdk/file-storage';
-
-import {
-    BucketParams,
-    BucketStatus,
-    ClusterId,
-    Balance,
-    Resource,
-    BucketId,
-    AccountId,
-    Offset,
-} from '@cere-ddc-sdk/smart-contract/types';
-
 import {
     DagNode,
     DagNodeResponse,
     Router,
-    RouterConfig,
     RouterOperation,
     Signer,
     UriSigner,
     DagNodeStoreOptions,
+    RouterNode,
 } from '@cere-ddc-sdk/ddc';
+import {FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions} from '@cere-ddc-sdk/file-storage';
+import {Blockchain, BucketId, ClusterId} from '@cere-ddc-sdk/blockchain';
 
 import {DagNodeUri, DdcEntity, DdcUri, FileUri} from './DdcUri';
 import {TESTNET} from './presets';
 
-const MAX_BUCKET_SIZE = 5n;
-
-export type DdcClientConfig = Omit<RouterConfig, 'signer'> & {
+export type DdcClientConfig = {
     smartContract: SmartContractOptions;
+    nodes?: RouterNode[];
 };
 
 export type {FileStoreOptions, DagNodeStoreOptions};
 
 export class DdcClient {
-    private fileStorage: FileStorage;
-    private router: Router;
-
-    protected constructor(private signer: Signer, readonly smartContract: SmartContract, config: DdcClientConfig) {
-        this.router = new Router({signer, nodes: config.nodes});
-        this.fileStorage = new FileStorage(this.router);
-    }
+    protected constructor(
+        private readonly signer: Signer,
+        private readonly blockchain: Blockchain,
+        private readonly router: Router,
+        private readonly fileStorage: FileStorage,
+    ) {}
 
     static async create(uriOrSigner: Signer | string, config: DdcClientConfig = TESTNET) {
         const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
-        const contract = await SmartContract.buildAndConnect(signer, config.smartContract);
+        const blockchain = await Blockchain.connect({
+            account: signer,
+            wsEndpoint: config.smartContract.rpcUrl!,
+        });
+        const nodes = 'nodes' in config ? config.nodes : undefined;
+        const router = nodes ? new Router({signer, nodes}) : new Router({signer, blockchain});
+        const fileStorage = new FileStorage(router);
 
-        return new DdcClient(signer, contract, config);
+        return new DdcClient(signer, blockchain, router, fileStorage);
     }
 
     async disconnect() {
-        await this.smartContract.disconnect();
+        await this.blockchain.disconnect();
     }
 
-    async createBucket(
-        balance: Balance,
-        resource: Resource,
-        clusterId: ClusterId,
-        bucketParams?: BucketParams,
-    ): Promise<Pick<BucketStatus, 'bucketId'>> {
-        if (resource > MAX_BUCKET_SIZE) {
-            throw new Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
-        } else if (resource <= 0) {
-            resource = 1n;
-        }
-
-        const bucketId = await this.smartContract.bucketCreate(this.signer.address, clusterId, bucketParams);
-
-        if (balance > 0) {
-            await this.smartContract.accountDeposit(balance);
-        }
-
-        const {cluster} = await this.smartContract.clusterGet(Number(clusterId));
-        const bucketSize = BigInt(Math.round(Number(resource * 1000n) / cluster.nodesKeys.length));
-        await this.smartContract.bucketAllocIntoCluster(bucketId, bucketSize);
+    async createBucket(clusterId: ClusterId) {
+        const result = await this.blockchain.send(this.blockchain.ddcCustomers.createBucket(clusterId));
+        const [bucketId] = this.blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
 
         return {bucketId};
     }
 
-    async accountDeposit(balance: Balance) {
-        await this.smartContract.accountDeposit(balance);
+    bucketGet(bucketId: BucketId) {
+        return this.blockchain.ddcCustomers.getBucket(bucketId);
     }
 
-    async bucketAllocIntoCluster(bucketId: BucketId, resource: Resource) {
-        const {bucket} = await this.bucketGet(bucketId);
-        const {cluster} = await this.smartContract.clusterGet(bucket.clusterId);
-        const total = (bucket.resourceReserved * BigInt(cluster.nodesKeys.length)) / 1000n + resource;
-
-        if (total > MAX_BUCKET_SIZE) {
-            throw new Error(`Exceed bucket size. Should be less than ${MAX_BUCKET_SIZE}`);
-        }
-
-        const resourceToAlloc = BigInt((Number(resource * 1000n) / cluster.nodesKeys.length) | 0);
-        await this.smartContract.bucketAllocIntoCluster(bucketId, resourceToAlloc);
-    }
-
-    async bucketGet(bucketId: BucketId): Promise<BucketStatus> {
-        return this.smartContract.bucketGet(bucketId);
-    }
-
-    async bucketList(offset: Offset, limit: Offset, filterOwnerId?: AccountId): Promise<[BucketStatus[], Offset]> {
-        return this.smartContract.bucketList(offset, limit, filterOwnerId);
+    bucketList() {
+        return this.blockchain.ddcCustomers.listBuckets();
     }
 
     async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<FileUri>;
@@ -119,7 +77,7 @@ export class DdcClient {
     }
 
     private async storeDagNode(bucketId: number, node: DagNode, options?: DagNodeStoreOptions) {
-        const ddcNode = await this.router.getNode(RouterOperation.STORE_DAG_NODE);
+        const ddcNode = await this.router.getNode(RouterOperation.STORE_DAG_NODE, BigInt(bucketId));
 
         return ddcNode.storeDagNode(bucketId, node, options);
     }
@@ -133,7 +91,7 @@ export class DdcClient {
             return this.fileStorage.read(numBucketId, uri.cidOrName, options);
         }
 
-        const ddcNode = await this.router.getNode(RouterOperation.READ_DAG_NODE);
+        const ddcNode = await this.router.getNode(RouterOperation.READ_DAG_NODE, BigInt(numBucketId));
 
         return ddcNode.getDagNode(numBucketId, uri.cidOrName);
     }

@@ -3,13 +3,12 @@ import {DagNode, DagNodeUri, DdcClient, File, FileUri, KB, MB, Tag} from '@cere-
 import {ROOT_USER_SEED, createDataStream, getContractOptions, getStorageNodes} from '../helpers';
 
 describe('DDC Client', () => {
-    const bucketId = 0n;
+    const bucketId = 1n;
     let client: DdcClient;
 
     beforeAll(async () => {
         client = await DdcClient.create(ROOT_USER_SEED, {
             smartContract: getContractOptions(),
-            nodes: getStorageNodes(),
         });
     });
 
@@ -155,42 +154,29 @@ describe('DDC Client', () => {
         });
     });
 
-    /**
-     * Moke tests of blockchain operation methods exposed on the client instance
-     *
-     * TODO: Revise these methods during migration to palettes
-     * TODO: Unskip before merging GRPC web PoC
-     */
-    describe.skip('Blockhain operations', () => {
+    describe('Blockhain operations', () => {
         let createdBucketId: bigint;
 
-        test('Account deposit', async () => {
-            await client.accountDeposit(10n);
-        });
+        const clusterId = '0x0000000000000000000000000000000000000000';
 
         test('Create bucket', async () => {
-            const bucket = await client.createBucket(10n, 1n, 0);
+            const bucket = await client.createBucket(clusterId);
 
             createdBucketId = bucket.bucketId;
 
             expect(createdBucketId).toEqual(expect.any(BigInt));
         });
 
-        test('Bucket allocate into cluster', async () => {
-            await client.bucketAllocIntoCluster(createdBucketId, 1n);
-        });
-
         test('Get bucket', async () => {
             const bucket = await client.bucketGet(createdBucketId);
 
-            expect(bucket.bucketId).toEqual(createdBucketId);
+            expect(bucket?.bucketId).toEqual(createdBucketId);
         });
 
         test('Get bucket list', async () => {
-            const [buckets, totalCount] = await client.bucketList(0n, 10n);
+            const buckets = await client.bucketList();
 
-            expect(totalCount).toBeGreaterThan(0);
-            expect(buckets.length).toEqual(Number(totalCount));
+            expect(buckets.length).toBeGreaterThan(0);
         });
     });
 });
