@@ -5,6 +5,9 @@
     "type": "module",
     "main": "./dist/index.cjs",
     "types": "./dist/types",
+    "publishConfig": {
+        "access": "public"
+    },
     "repository": {
         "type": "git",
         "directory": "packages/blockchain",
