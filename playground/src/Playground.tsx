@@ -39,7 +39,7 @@ const Dropzone = styled(Box)(({theme}) => ({
 }));
 
 export const Playground = () => {
-    const bucketId = 0n;
+    const bucketId = 1n;
     const dropzone = useDropzone({
         multiple: false,
     });

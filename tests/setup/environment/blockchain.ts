@@ -212,7 +212,7 @@ export const setupPallets = async (apiPromise: ApiPromise) => {
         ...storageNodeAccounts.flatMap((storageNodeAccount, index) => [
             blockchain.ddcNodes.createStorageNode(storageNodeAccount.address, {
                 host: hostIp,
-                httpPort: 8081 + index,
+                httpPort: 8091 + index,
                 grpcPort: 9091 + index,
                 p2pPort: 9071 + index,
             }),

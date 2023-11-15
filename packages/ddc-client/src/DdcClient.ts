@@ -24,7 +24,6 @@ export type {FileStoreOptions, DagNodeStoreOptions};
 
 export class DdcClient {
     protected constructor(
-        private readonly signer: Signer,
         private readonly blockchain: Blockchain,
         private readonly router: Router,
         private readonly fileStorage: FileStorage,
@@ -40,7 +39,7 @@ export class DdcClient {
         const router = nodes ? new Router({signer, nodes}) : new Router({signer, blockchain});
         const fileStorage = new FileStorage(router);
 
-        return new DdcClient(signer, blockchain, router, fileStorage);
+        return new DdcClient(blockchain, router, fileStorage);
     }
 
     async disconnect() {

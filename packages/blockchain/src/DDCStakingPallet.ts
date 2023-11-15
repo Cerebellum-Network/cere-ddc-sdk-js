@@ -38,22 +38,22 @@ export class DDCStakingPallet {
 
     async findStashAccountIdByCdnNodePublicKey(cdnNodePublicKey: CdnNodePublicKey) {
         const result = await this.apiPromise.query.ddcStaking.nodes({CDNPubKey: cdnNodePublicKey});
-        return result.unwrapOr(undefined)?.toJSON() as unknown as AccountId | undefined;
+        return result.toJSON() as unknown as AccountId | undefined;
     }
 
     async findStashAccountIdByStorageNodePublicKey(storageNodePublicKey: StorageNodePublicKey) {
         const result = await this.apiPromise.query.ddcStaking.nodes({StoragePubKey: storageNodePublicKey});
-        return result.unwrapOr(undefined)?.toJSON() as unknown as AccountId | undefined;
+        return result.toJSON() as unknown as AccountId | undefined;
     }
 
     async findStakedClusterIdByCdnNodeStashAccountId(stashAccountId: AccountId) {
         const result = await this.apiPromise.query.ddcStaking.cdNs(stashAccountId);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterId | undefined;
+        return result.toJSON() as unknown as ClusterId | undefined;
     }
 
     async findStakedClusterIdByStorageNodeStashAccountId(stashAccountId: AccountId) {
         const result = await this.apiPromise.query.ddcStaking.storages(stashAccountId);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as ClusterId | undefined;
+        return result.toJSON() as unknown as ClusterId | undefined;
     }
 
     setController(accountId: AccountId) {

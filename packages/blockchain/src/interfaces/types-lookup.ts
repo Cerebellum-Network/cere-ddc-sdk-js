@@ -1370,7 +1370,9 @@ declare module '@polkadot/types/lookup' {
     readonly asChilled: AccountId32;
     readonly isChillSoon: boolean;
     readonly asChillSoon: ITuple<[AccountId32, H160, u32]>;
-    readonly type: 'Bonded' | 'Unbonded' | 'Withdrawn' | 'Chilled' | 'ChillSoon';
+    readonly isActivated: boolean;
+    readonly asActivated: AccountId32;
+    readonly type: 'Bonded' | 'Unbonded' | 'Withdrawn' | 'Chilled' | 'ChillSoon' | 'Activated';
   }
 
   /** @name PalletDdcCustomersEvent (106) */
@@ -3211,9 +3213,6 @@ declare module '@polkadot/types/lookup' {
       readonly newNode: DdcPrimitivesNodePubKey;
     } & Struct;
     readonly isFastChill: boolean;
-    readonly asFastChill: {
-      readonly nodePubKey: DdcPrimitivesNodePubKey;
-    } & Struct;
     readonly type: 'Bond' | 'Unbond' | 'WithdrawUnbonded' | 'Serve' | 'Store' | 'Chill' | 'SetController' | 'SetNode' | 'FastChill';
   }
 
@@ -4683,7 +4682,9 @@ declare module '@polkadot/types/lookup' {
     readonly isNodeHasNoStake: boolean;
     readonly isNoClusterGovParams: boolean;
     readonly isFastChillProhibited: boolean;
-    readonly type: 'NotController' | 'NotStash' | 'AlreadyBonded' | 'AlreadyPaired' | 'InsufficientBond' | 'NoMoreChunks' | 'BadState' | 'AlreadyInRole' | 'TooEarly' | 'NotNodeController' | 'NodeHasNoStake' | 'NoClusterGovParams' | 'FastChillProhibited';
+    readonly isServingProhibited: boolean;
+    readonly isStoringProhibited: boolean;
+    readonly type: 'NotController' | 'NotStash' | 'AlreadyBonded' | 'AlreadyPaired' | 'InsufficientBond' | 'NoMoreChunks' | 'BadState' | 'AlreadyInRole' | 'TooEarly' | 'NotNodeController' | 'NodeHasNoStake' | 'NoClusterGovParams' | 'FastChillProhibited' | 'ServingProhibited' | 'StoringProhibited';
   }
 
   /** @name PalletDdcCustomersAccountsLedger (566) */

@@ -1222,7 +1222,8 @@ export default {
       Unbonded: '(AccountId32,u128)',
       Withdrawn: '(AccountId32,u128)',
       Chilled: 'AccountId32',
-      ChillSoon: '(AccountId32,H160,u32)'
+      ChillSoon: '(AccountId32,H160,u32)',
+      Activated: 'AccountId32'
     }
   },
   /**
@@ -2967,9 +2968,7 @@ export default {
       set_node: {
         newNode: 'DdcPrimitivesNodePubKey',
       },
-      fast_chill: {
-        nodePubKey: 'DdcPrimitivesNodePubKey'
-      }
+      fast_chill: 'Null'
     }
   },
   /**
@@ -4209,7 +4208,7 @@ export default {
    * Lookup565: pallet_ddc_staking::pallet::Error<T>
    **/
   PalletDdcStakingError: {
-    _enum: ['NotController', 'NotStash', 'AlreadyBonded', 'AlreadyPaired', 'InsufficientBond', 'NoMoreChunks', 'BadState', 'AlreadyInRole', 'TooEarly', 'NotNodeController', 'NodeHasNoStake', 'NoClusterGovParams', 'FastChillProhibited']
+    _enum: ['NotController', 'NotStash', 'AlreadyBonded', 'AlreadyPaired', 'InsufficientBond', 'NoMoreChunks', 'BadState', 'AlreadyInRole', 'TooEarly', 'NotNodeController', 'NodeHasNoStake', 'NoClusterGovParams', 'FastChillProhibited', 'ServingProhibited', 'StoringProhibited']
   },
   /**
    * Lookup566: pallet_ddc_customers::AccountsLedger<sp_core::crypto::AccountId32, Balance, T>

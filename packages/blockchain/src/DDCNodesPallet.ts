@@ -22,7 +22,7 @@ export class DDCNodesPallet {
 
     async findCdnNodeByPublicKey(cdnNodePublicKey: CdnNodePublicKey) {
         const result = await this.apiPromise.query.ddcNodes.cdnNodes(cdnNodePublicKey);
-        const cdnNode = result.unwrapOr(undefined)?.toJSON() as unknown as CdnNode | undefined;
+        const cdnNode = result.toJSON() as unknown as CdnNode | undefined;
         return cdnNode == null ? undefined : ({...cdnNode, props: decodeNodeProps(cdnNode.props)} as CdnNode);
     }
 
@@ -46,7 +46,7 @@ export class DDCNodesPallet {
 
     async findStorageNodeByPublicKey(storageNodePublicKey: StorageNodePublicKey) {
         const result = await this.apiPromise.query.ddcNodes.storageNodes(storageNodePublicKey);
-        const storageNode = result.unwrapOr(undefined)?.toJSON() as unknown as StorageNode | undefined;
+        const storageNode = result.toJSON() as unknown as StorageNode | undefined;
         return storageNode == null
             ? undefined
             : ({...storageNode, props: decodeNodeProps(storageNode.props)} as StorageNode);

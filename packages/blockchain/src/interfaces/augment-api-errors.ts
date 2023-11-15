@@ -522,6 +522,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotStash: AugmentedError<ApiType>;
       /**
+       * Serving operation is called for non-CDN node
+       **/
+      ServingProhibited: AugmentedError<ApiType>;
+      /**
+       * Storing operation is called for non-Storage node
+       **/
+      StoringProhibited: AugmentedError<ApiType>;
+      /**
        * Action is allowed at some point of time in future not reached yet.
        **/
       TooEarly: AugmentedError<ApiType>;

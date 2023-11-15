@@ -5,11 +5,6 @@ type ClientOptions = {
     signer?: string | Signer;
 };
 
-const defaultNode = {
-    grpcUrl: 'grpc://localhost:9091',
-    httpUrl: 'http://localhost:8091',
-};
-
 export const useClient = ({signer}: ClientOptions = {}) => {
     const [client, setClient] = useState<DdcClient>();
     const contractAddress = process.env.SC_ADDRESS;
@@ -30,7 +25,7 @@ export const useClient = ({signer}: ClientOptions = {}) => {
 
         DdcClient.create(signer, {
             ...DEVNET,
-            nodes: [defaultNode],
+            nodes: undefined,
             smartContract: {...DEVNET.smartContract, contractAddress, rpcUrl},
         }).then(setClient);
     }, [signer]);

@@ -1,6 +1,6 @@
 import {DagNode, DagNodeUri, DdcClient, File, FileUri, KB, MB, Tag} from '@cere-ddc-sdk/ddc-client';
 
-import {ROOT_USER_SEED, createDataStream, getContractOptions, getStorageNodes} from '../helpers';
+import {ROOT_USER_SEED, createDataStream, getContractOptions} from '../helpers';
 
 describe('DDC Client', () => {
     const bucketId = 1n;
