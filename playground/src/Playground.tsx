@@ -1,6 +1,7 @@
-import {File, Signer, UriSigner, MB} from '@cere-ddc-sdk/ddc-client';
+import {useCallback, useState} from 'react';
 import {useDropzone} from 'react-dropzone';
-
+import {LoadingButton} from '@mui/lab';
+import {File, Signer, UriSigner, MB, DEVNET, TESTNET, MAINNET, DdcClient} from '@cere-ddc-sdk/ddc-client';
 import {
     Container,
     Stepper,
@@ -8,9 +9,10 @@ import {
     StepLabel,
     StepContent,
     Button,
+    ToggleButtonGroup,
+    ToggleButton,
     Typography,
     Box,
-    CircularProgress,
     Stack,
     TextField,
     InputAdornment,
@@ -20,10 +22,6 @@ import {
     styled,
 } from '@mui/material';
 
-import {LoadingButton} from '@mui/lab';
-
-import {useClient} from './useClient';
-import {useCallback, useEffect, useState} from 'react';
 import {USER_SEED} from './constants';
 import {createDataStream} from './helpers';
 
@@ -37,6 +35,15 @@ const Dropzone = styled(Box)(({theme}) => ({
     width: 500,
     cursor: 'pointer',
 }));
+
+const bcPresets = {
+    devnet: DEVNET,
+    testnet: TESTNET,
+    mainnet: MAINNET,
+    custom: {
+        blockchain: process.env.BC_ENDPOINT || '',
+    },
+};
 
 export const Playground = () => {
     const bucketId = 1n;
@@ -52,9 +59,11 @@ export const Playground = () => {
     const [inProgress, setInProgress] = useState(false);
     const [step, setStep] = useState(0);
     const [errorStep, setErrorStep] = useState<number>();
-    const isCompleted = !!realFileCid && !!randomFileCid;
+    const [selectedBc, setSelectedBc] = useState<'devnet' | 'testnet' | 'mainnet' | 'custom'>('devnet');
+    const [bcCustomUrl, setBcCustomUrl] = useState(bcPresets.custom.blockchain);
+    const [client, setClient] = useState<DdcClient>();
 
-    const client = useClient({signer});
+    const isCompleted = !!realFileCid && !!randomFileCid;
 
     const handleConnectWallet = useCallback(async () => {
         setStep(1);
@@ -123,11 +132,25 @@ export const Playground = () => {
         setInProgress(false);
     }, [client, dropzone.acceptedFiles]);
 
-    useEffect(() => {
-        if (client) {
-            setStep(2);
+    const handleInitClient = useCallback(async () => {
+        const preset = bcPresets[selectedBc];
+
+        if (selectedBc === 'custom') {
+            preset.blockchain = bcCustomUrl;
         }
-    }, [client]);
+
+        try {
+            setInProgress(true);
+            setClient(await DdcClient.create(signer!, preset));
+        } catch (error) {
+            setErrorStep(1);
+
+            console.error(error);
+        }
+
+        setInProgress(false);
+        setStep(2);
+    }, [signer, selectedBc, bcCustomUrl]);
 
     return (
         <Container maxWidth="md" sx={{paddingY: 2}}>
@@ -138,7 +161,7 @@ export const Playground = () => {
                     <Step completed={!!signer}>
                         <StepLabel>Connect wallet</StepLabel>
                         <StepContent>
-                            <Stack paddingTop={1} spacing={1} alignItems="start">
+                            <Stack paddingTop={1} spacing={2} alignItems="start">
                                 <TextField
                                     fullWidth
                                     label="Seed phrase"
@@ -154,9 +177,43 @@ export const Playground = () => {
                     </Step>
 
                     <Step completed={!!client}>
-                        <StepLabel icon={step === 1 && !client ? <CircularProgress size={24} /> : undefined}>
-                            Initialize client
-                        </StepLabel>
+                        <StepLabel>Initialize client</StepLabel>
+
+                        <StepContent>
+                            <Stack spacing={2} alignItems="start">
+                                <Stack spacing={1} width={400}>
+                                    <ToggleButtonGroup
+                                        exclusive
+                                        fullWidth
+                                        size="small"
+                                        value={selectedBc}
+                                        onChange={(event, value) => setSelectedBc(value)}
+                                    >
+                                        <ToggleButton value="devnet">Devnet</ToggleButton>
+                                        <ToggleButton value="testnet">Testnet</ToggleButton>
+                                        <ToggleButton disabled value="mainnet">
+                                            Mainnet
+                                        </ToggleButton>
+                                        <ToggleButton value="custom">Custom</ToggleButton>
+                                    </ToggleButtonGroup>
+                                    <TextField
+                                        fullWidth
+                                        size="small"
+                                        type="url"
+                                        placeholder="wss://..."
+                                        value={selectedBc === 'custom' ? bcCustomUrl : bcPresets[selectedBc].blockchain}
+                                        onChange={(event) => setBcCustomUrl(event.target.value)}
+                                        InputProps={{
+                                            readOnly: selectedBc !== 'custom',
+                                        }}
+                                    />
+                                </Stack>
+
+                                <LoadingButton loading={inProgress} variant="contained" onClick={handleInitClient}>
+                                    Continue
+                                </LoadingButton>
+                            </Stack>
+                        </StepContent>
                     </Step>
 
                     <Step completed={!!randomFileCid}>
@@ -169,7 +226,7 @@ export const Playground = () => {
                             )}
                         </StepLabel>
                         <StepContent>
-                            <Stack paddingTop={1} spacing={1} alignItems="start">
+                            <Stack paddingTop={1} spacing={2} alignItems="start">
                                 <Typography variant="body1">Upload and download randomly generate file</Typography>
                                 <TextField
                                     value={randomFileSize || ''}
@@ -180,6 +237,7 @@ export const Playground = () => {
                                         endAdornment: <InputAdornment position="end">MB</InputAdornment>,
                                     }}
                                 ></TextField>
+
                                 <LoadingButton
                                     disabled={randomFileSize === 0}
                                     loading={inProgress}
@@ -239,7 +297,7 @@ export const Playground = () => {
                     <Step completed={isCompleted} expanded={isCompleted}>
                         <StepLabel>Done!</StepLabel>
                         <StepContent>
-                            <Stack spacing={1}>
+                            <Stack spacing={2}>
                                 <Typography>We have successfully uploaded the following files:</Typography>
                                 <List disablePadding>
                                     {randomFileCid && (

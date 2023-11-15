@@ -3,12 +3,11 @@ import * as sc from '@cere-ddc-sdk/smart-contract';
 import type {DdcClientConfig} from './DdcClient';
 
 export const MAINNET: DdcClientConfig = {
-    smartContract: sc.MAINNET,
-    nodes: [],
+    blockchain: 'wss://rpc.qanet.cere.network/ws',
 };
 
 export const DEVNET: DdcClientConfig = {
-    smartContract: sc.DEVNET,
+    blockchain: 'wss://archive.devnet.cere.network/ws',
     nodes: [
         {grpcUrl: 'grpc://38.242.236.247:9090', httpUrl: 'http://38.242.236.247:8080'},
         {grpcUrl: 'grpc://38.242.236.247:9091', httpUrl: 'http://38.242.236.247:8081'},
@@ -22,7 +21,7 @@ export const DEVNET: DdcClientConfig = {
 };
 
 export const TESTNET: DdcClientConfig = {
-    smartContract: sc.TESTNET,
+    blockchain: 'wss://rpc.testnet.cere.network/ws',
     nodes: [
         {grpcUrl: 'grpc://154.12.245.141:9090', httpUrl: 'http://154.12.245.141:8080'},
         {grpcUrl: 'grpc://154.12.245.141:9091', httpUrl: 'http://154.12.245.141:8081'},

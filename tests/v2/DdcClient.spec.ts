@@ -7,8 +7,10 @@ describe('DDC Client', () => {
     let client: DdcClient;
 
     beforeAll(async () => {
+        const {rpcUrl} = getContractOptions();
+
         client = await DdcClient.create(ROOT_USER_SEED, {
-            smartContract: getContractOptions(),
+            blockchain: rpcUrl,
         });
     });
 

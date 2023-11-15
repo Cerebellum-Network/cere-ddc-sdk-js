@@ -1,4 +1,3 @@
-import {SmartContract, SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
 import {
     DagNode,
     DagNodeResponse,
@@ -16,7 +15,7 @@ import {DagNodeUri, DdcEntity, DdcUri, FileUri} from './DdcUri';
 import {TESTNET} from './presets';
 
 export type DdcClientConfig = {
-    smartContract: SmartContractOptions;
+    blockchain: string;
     nodes?: RouterNode[];
 };
 
@@ -33,8 +32,9 @@ export class DdcClient {
         const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
         const blockchain = await Blockchain.connect({
             account: signer,
-            wsEndpoint: config.smartContract.rpcUrl!,
+            wsEndpoint: config.blockchain,
         });
+
         const nodes = 'nodes' in config ? config.nodes : undefined;
         const router = nodes ? new Router({signer, nodes}) : new Router({signer, blockchain});
         const fileStorage = new FileStorage(router);
