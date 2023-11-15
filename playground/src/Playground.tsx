@@ -1,6 +1,7 @@
-import {File, Signer, UriSigner, MB, DEVNET, TESTNET, MAINNET, DdcClient} from '@cere-ddc-sdk/ddc-client';
+import {useCallback, useState} from 'react';
 import {useDropzone} from 'react-dropzone';
-
+import {LoadingButton} from '@mui/lab';
+import {File, Signer, UriSigner, MB, DEVNET, TESTNET, MAINNET, DdcClient} from '@cere-ddc-sdk/ddc-client';
 import {
     Container,
     Stepper,
@@ -21,9 +22,6 @@ import {
     styled,
 } from '@mui/material';
 
-import {LoadingButton} from '@mui/lab';
-
-import {useCallback, useState} from 'react';
 import {USER_SEED} from './constants';
 import {createDataStream} from './helpers';
 

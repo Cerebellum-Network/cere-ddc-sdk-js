@@ -5,7 +5,7 @@
     "scripts": {
         "start": "npm-run-all --parallel bootstrap start:app",
         "start:app": "wait-port localhost:8091 -o silent && craco start",
-        "build": "craco build",
+        "build": "PUBLIC_URL=. craco build",
         "bootstrap": "ts-node --esm ./scripts/bootstrap.cjs"
     },
     "dependencies": {
