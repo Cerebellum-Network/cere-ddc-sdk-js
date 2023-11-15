@@ -200,6 +200,7 @@ export const Playground = () => {
                                         fullWidth
                                         size="small"
                                         type="url"
+                                        placeholder="wss://..."
                                         value={selectedBc === 'custom' ? bcCustomUrl : bcPresets[selectedBc].blockchain}
                                         onChange={(event) => setBcCustomUrl(event.target.value)}
                                         InputProps={{
