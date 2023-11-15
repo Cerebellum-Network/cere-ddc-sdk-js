@@ -7,14 +7,9 @@ type ClientOptions = {
 
 export const useClient = ({signer}: ClientOptions = {}) => {
     const [client, setClient] = useState<DdcClient>();
-    const contractAddress = process.env.SC_ADDRESS;
-    const rpcUrl = process.env.BC_ENDPOINT;
+    const blockchain = process.env.BC_ENDPOINT;
 
-    if (!contractAddress) {
-        throw new Error('No SC_ADDRESS environment variable');
-    }
-
-    if (!rpcUrl) {
+    if (!blockchain) {
         throw new Error('No BC_ENDPOINT environment variable');
     }
 
@@ -23,11 +18,7 @@ export const useClient = ({signer}: ClientOptions = {}) => {
             return;
         }
 
-        DdcClient.create(signer, {
-            ...DEVNET,
-            nodes: undefined,
-            smartContract: {...DEVNET.smartContract, contractAddress, rpcUrl},
-        }).then(setClient);
+        DdcClient.create(signer, {blockchain}).then(setClient);
     }, [signer]);
 
     return client;
