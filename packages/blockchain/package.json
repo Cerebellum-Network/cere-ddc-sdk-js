@@ -26,10 +26,7 @@
         "build": "npm run clean && npm run types && npm run build:node",
         "types": "tsc -p tsconfig.build.json --emitDeclarationOnly || exit 0",
         "package": "clean-publish",
-        "clean": "rimraf dist package",
-        "generate:types": "npm run generate:types-from-chain && npm run generate:types-from-defs",
-        "generate:types-from-chain": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-chain --endpoint ws://localhost:9944 --output ./src/interfaces --strict",
-        "generate:types-from-defs": "ts-node --skip-project ../../node_modules/.bin/polkadot-types-from-defs  --endpoint ws://localhost:9944 --input ./src/interfaces --package sample-polkadotjs-typegen/interfaces"
+        "clean": "rimraf dist package"
     },
     "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
     "license": "Apache-2.0",
