@@ -7,7 +7,7 @@ export class DDCCustomersPallet {
 
     async getBucket(bucketId: BucketId) {
         const result = await this.apiPromise.query.ddcCustomers.buckets(bucketId);
-        const bucket = result.unwrapOr(undefined)?.toJSON() as unknown as Bucket | undefined;
+        const bucket = result.toJSON() as unknown as Bucket | undefined;
         return bucket == null ? undefined : ({...bucket, bucketId: BigInt(bucket.bucketId)} as Bucket);
     }
 
@@ -18,7 +18,7 @@ export class DDCCustomersPallet {
 
     async getStackingInfo(accountId: AccountId) {
         const result = await this.apiPromise.query.ddcCustomers.ledger(accountId);
-        return result.unwrapOr(undefined)?.toJSON() as unknown as StakingInfo | undefined;
+        return result.toJSON() as unknown as StakingInfo | undefined;
     }
 
     createBucket(clusterId: ClusterId) {
@@ -45,7 +45,7 @@ export class DDCCustomersPallet {
         const entries = await this.apiPromise.query.ddcCustomers.buckets.entries();
         return entries
             .map(([bucketId, bucketOption]) => {
-                const bucket = bucketOption.unwrapOr(undefined)?.toJSON() as unknown as Bucket | undefined;
+                const bucket = bucketOption.toJSON() as unknown as Bucket | undefined;
                 return bucket == null ? undefined : ({...bucket, bucketId: BigInt(bucket.bucketId)} as Bucket);
             })
             .filter((bucket) => bucket !== undefined) as Bucket[];

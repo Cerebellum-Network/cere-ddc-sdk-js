@@ -1,4 +1,4 @@
-import {createConfig} from '../../shared.config.js';
+import {createConfig} from '../../shared.config.mjs';
 import {merge} from 'webpack-merge';
 import {createRequire} from 'module';
 

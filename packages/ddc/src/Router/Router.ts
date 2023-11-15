@@ -4,6 +4,7 @@
  * TODO: Repalce with real implementation
  */
 
+import {Signer} from '../Signer';
 import {StorageNode, StorageNodeConfig} from '../StorageNode';
 import {Blockchain, Bucket, BucketId, Cluster, ClusterId} from '@cere-ddc-sdk/blockchain';
 
@@ -14,15 +15,17 @@ export enum RouterOperation {
     STORE_PIECE = 'read-piece',
 }
 
-export type RouterNode = Pick<StorageNodeConfig, 'rpcHost'>;
+export type RouterNode = StorageNodeConfig;
 export type RouterStaticConfig = {
-    signer: StorageNodeConfig['signer'];
+    signer: Signer;
     nodes: RouterNode[];
 };
+
 export type RouterDynamicConfig = {
-    signer: StorageNodeConfig['signer'];
+    signer: Signer;
     blockchain: Blockchain;
 };
+
 export type RouterConfig = RouterStaticConfig | RouterDynamicConfig;
 
 export class Router {
@@ -58,7 +61,11 @@ export class Router {
             if (node == null) {
                 throw new Error(`Failed to get info for node ${nodeKey} on blockchain`);
             }
-            return new StorageNode({rpcHost: `${node.props.host}:${node.props.grpcPort}`, signer: this.config.signer});
+
+            return new StorageNode(this.config.signer, {
+                grpcUrl: `grpc://${node.props.host}:${node.props.grpcPort}`,
+                httpUrl: `http://${node.props.host}:${node.props.httpPort}`,
+            });
         } else {
             const nodes = this.config.nodes;
             const node = nodes[Math.floor(Math.random() * nodes.length)];
@@ -67,7 +74,7 @@ export class Router {
                 throw new Error('No nodes available to handle the operation');
             }
 
-            return new StorageNode({...node, signer: this.config.signer});
+            return new StorageNode(this.config.signer, node);
         }
     }
 

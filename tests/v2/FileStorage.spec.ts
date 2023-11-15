@@ -4,24 +4,19 @@ import {Readable} from 'stream';
 import {pipeline} from 'stream/promises';
 import {createHash} from 'crypto';
 import {FileStorage, File, UriSigner} from '@cere-ddc-sdk/file-storage';
-import {createDataStream, MB, KB, ROOT_USER_SEED} from '../helpers';
+import {createDataStream, getStorageNodes, MB, ROOT_USER_SEED} from '../helpers';
 
 describe('File storage', () => {
     const bucketId = 1;
     const fileStorage = new FileStorage({
         signer: new UriSigner(ROOT_USER_SEED),
-        nodes: [
-            {rpcHost: 'localhost:9091'},
-            {rpcHost: 'localhost:9092'},
-            {rpcHost: 'localhost:9093'},
-            {rpcHost: 'localhost:9094'},
-        ],
+        nodes: getStorageNodes(),
     });
 
     describe('Small file', () => {
         let fileCid: string;
         const fileSize = 2 * MB;
-        const fileStream = createDataStream(fileSize, 64 * KB);
+        const fileStream = createDataStream(fileSize);
 
         test('Store a file', async () => {
             const file = new File(fileStream, {
@@ -44,7 +39,7 @@ describe('File storage', () => {
     describe('Large file', () => {
         let fileCid: string;
         const fileSize = 150 * MB;
-        const fileStream = createDataStream(fileSize, 12345); // Use not aligned chunk size `12345`
+        const fileStream = createDataStream(fileSize);
 
         test('Store a file', async () => {
             const file = new File(fileStream, {

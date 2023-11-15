@@ -1,6 +1,5 @@
-import {RpcTransport} from '@protobuf-ts/runtime-rpc';
-
-import {PutRequest, GetRequest} from '../grpc/dag_api';
+import {RpcTransport} from '../transports';
+import {PutRequest, GetRequest, Node} from '../grpc/dag_api';
 import {DagApiClient} from '../grpc/dag_api.client';
 
 export class DagApi {
@@ -19,6 +18,11 @@ export class DagApi {
     async getNode(request: GetRequest) {
         const {response} = await this.api.get(request);
 
-        return response.node;
+        const node: Node | undefined = response.node && {
+            ...response.node,
+            data: new Uint8Array(response.node.data),
+        };
+
+        return node;
     }
 }

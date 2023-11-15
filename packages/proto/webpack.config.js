@@ -1,3 +1,3 @@
-import {createConfig} from "../../shared.config.js";
+import {createConfig} from '../../shared.config.mjs';
 
 export default createConfig(import.meta.url, './src/index.ts', './src/index.ts', 'browser');

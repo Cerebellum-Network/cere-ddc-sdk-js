@@ -29,7 +29,9 @@
             "@cere-ddc-sdk/smart-contract": ["packages/smart-contract/src"],
             "@cere-ddc-sdk/smart-contract/*": ["packages/smart-contract/src/*"],
             "@cere-ddc-sdk/ddc": ["packages/ddc/src"],
-            "@cere-ddc-sdk/ddc/*": ["packages/ddc/src/*"]
+            "@cere-ddc-sdk/ddc/*": ["packages/ddc/src/*"],
+            "@cere-ddc-sdk/blockchain": ["packages/blockchain/src"],
+            "@cere-ddc-sdk/blockchain/*": ["packages/blockchain/src/*"]
         }
     },
     "include": ["packages/", "tests/"],

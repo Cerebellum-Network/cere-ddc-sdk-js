@@ -2,21 +2,17 @@ import {Cid} from './Cid';
 import {CnsApi} from './CnsApi';
 import {DagApi} from './DagApi';
 import {FileApi, ReadFileRange} from './FileApi';
-import {RpcTransport} from './RpcTransport';
 import {MultipartPiece, Piece, PieceResponse} from './Piece';
 import {DagNode, DagNodeResponse, mapDagNodeToAPI} from './DagNode';
 import {Signer} from './Signer';
 import {CnsRecord, CnsRecordResponse, mapCnsRecordToAPI} from './CnsRecord';
+import {DefaultTransport, RpcTransportOptions} from './transports';
 
 type NamingOptions = {
     name?: string;
 };
 
-export type StorageNodeConfig = {
-    rpcHost: string;
-    signer: Signer;
-};
-
+export type StorageNodeConfig = RpcTransportOptions;
 export type PieceReadOptions = {
     range?: ReadFileRange;
 };
@@ -25,13 +21,12 @@ export type PieceStoreOptions = NamingOptions;
 export type DagNodeStoreOptions = NamingOptions;
 
 export class StorageNode {
-    private signer: Signer;
     private dagApi: DagApi;
     private fileApi: FileApi;
     private cnsApi: CnsApi;
 
-    constructor({rpcHost, signer}: StorageNodeConfig) {
-        const transport = new RpcTransport(rpcHost);
+    constructor(private signer: Signer, config: StorageNodeConfig) {
+        const transport = new DefaultTransport(config);
 
         this.signer = signer;
         this.dagApi = new DagApi(transport);

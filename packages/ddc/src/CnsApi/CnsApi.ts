@@ -1,5 +1,4 @@
-import {RpcTransport} from '@protobuf-ts/runtime-rpc';
-
+import {RpcTransport} from '../transports';
 import {CnsApiClient} from '../grpc/cns_api.client';
 import {
     GetRequest,

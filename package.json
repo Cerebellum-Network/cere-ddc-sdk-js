@@ -1,7 +1,6 @@
 {
     "name": "cere-ddc-sdk",
     "description": "Cere DDC SDK for JavaScript",
-    "type": "module",
     "private": true,
     "repository": {
         "type": "git",
@@ -20,7 +19,8 @@
         "package": "lerna run package",
         "release": "lerna version --exact --force-publish --preid rc",
         "release:no-push": "npm run release --no-push --no-git-tag-version",
-        "release:publish": "lerna publish from-package"
+        "release:publish": "lerna publish from-package",
+        "playground": "npm start --workspace=@cere-ddc-sdk/playground"
     },
     "devDependencies": {
         "@babel/core": "^7.18.6",
@@ -56,13 +56,15 @@
         "buffer": "^6.0.3",
         "detect-port": "^1.5.1",
         "lerna": "^7.2.0",
-        "tweetnacl": "^1.0.3"
+        "tweetnacl": "^1.0.3",
+        "ws": "^8.14.2"
     },
     "overrides": {
         "@polkadot/api": "9.4.1"
     },
     "workspaces": [
-        "packages/*"
+        "packages/*",
+        "playground"
     ],
     "prettier": {
         "printWidth": 120,

@@ -1,13 +1,11 @@
 import {StorageNode, Piece, PieceResponse, DagNode, MultipartPiece, CnsRecord, UriSigner} from '@cere-ddc-sdk/ddc';
 
-import {createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED} from '../../tests/helpers';
+import {createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes} from '../../tests/helpers';
 
 describe('Storage Node', () => {
     const bucketId = 1;
-    const storageNode = new StorageNode({
-        rpcHost: 'localhost:9091',
-        signer: new UriSigner(ROOT_USER_SEED),
-    });
+    const [storageNodeParams] = getStorageNodes();
+    const storageNode = new StorageNode(new UriSigner(ROOT_USER_SEED), storageNodeParams);
 
     describe('Raw piece', () => {
         let smallPieceCid: string;
@@ -71,9 +69,9 @@ describe('Storage Node', () => {
         const pieceName = 'multipart-test-piece';
         const partSize = 4 * MB;
         const rawPieceContents = [
-            createDataStream(partSize, MB),
-            createDataStream(partSize, MB),
-            createDataStream(partSize, MB),
+            createDataStream(partSize, {chunkSize: MB}),
+            createDataStream(partSize, {chunkSize: MB}),
+            createDataStream(partSize, {chunkSize: MB}),
         ];
 
         const totalSize = partSize * rawPieceContents.length;
@@ -171,14 +169,10 @@ describe('Storage Node', () => {
     });
 
     describe('CNS record', () => {
-        let testCid: string;
         let signature: any;
 
+        const testCid = 'AEBB4IEIDC5HNY76TBBV5CK5WQT7FXCGNJATYVLW5WRMJ7IMNOQECYYCDQ';
         const testName = 'piece/name';
-
-        beforeAll(async () => {
-            testCid = await storageNode.storePiece(bucketId, new Piece(new TextEncoder().encode('Small piece')));
-        });
 
         test('Store a record', async () => {
             const record = new CnsRecord(testCid, testName);

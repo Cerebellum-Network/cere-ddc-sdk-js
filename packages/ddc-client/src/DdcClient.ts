@@ -20,11 +20,10 @@ export type DdcClientConfig = {
     nodes?: RouterNode[];
 };
 
-export {FileStoreOptions, DagNodeStoreOptions};
+export type {FileStoreOptions, DagNodeStoreOptions};
 
 export class DdcClient {
     protected constructor(
-        private readonly signer: Signer,
         private readonly blockchain: Blockchain,
         private readonly router: Router,
         private readonly fileStorage: FileStorage,
@@ -40,25 +39,26 @@ export class DdcClient {
         const router = nodes ? new Router({signer, nodes}) : new Router({signer, blockchain});
         const fileStorage = new FileStorage(router);
 
-        return new DdcClient(signer, blockchain, router, fileStorage);
+        return new DdcClient(blockchain, router, fileStorage);
     }
 
     async disconnect() {
-        await this.blockchain?.disconnect();
+        await this.blockchain.disconnect();
     }
 
     async createBucket(clusterId: ClusterId) {
-        const result = await this.blockchain.send(this.blockchain?.ddcCustomers.createBucket(clusterId));
-        const [bucketId] = this.blockchain?.ddcCustomers.extractCreatedBucketIds(result.events);
+        const result = await this.blockchain.send(this.blockchain.ddcCustomers.createBucket(clusterId));
+        const [bucketId] = this.blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
+
         return {bucketId};
     }
 
     bucketGet(bucketId: BucketId) {
-        return this.blockchain?.ddcCustomers.getBucket(bucketId);
+        return this.blockchain.ddcCustomers.getBucket(bucketId);
     }
 
     bucketList() {
-        return this.blockchain?.ddcCustomers.listBuckets();
+        return this.blockchain.ddcCustomers.listBuckets();
     }
 
     async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<FileUri>;
