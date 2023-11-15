@@ -21,10 +21,16 @@ export class DDCClustersPallet {
 
   async listNodeKeys(clusterId: ClusterId) {
     const entries = await this.apiPromise.query.ddcClusters.clustersNodes.entries(clusterId);
-    return entries.map(([key]: any) =>
+    return entries.map(([key, _]: any) =>
       key.args[1].isCdnPubKey
-        ? (key.args[1].asCdnPubKey.toJSON() as unknown as CdnNodePublicKey)
-        : (key.args[1].asStoragePubKey.toJSON() as unknown as StorageNodePublicKey),
+        ? ({
+            type: 'cdn',
+            nodePublicKey: key.args[1].asCdnPubKey.toJSON() as unknown as CdnNodePublicKey,
+          } as const)
+        : ({
+            type: 'storage',
+            nodePublicKey: key.args[1].asStoragePubKey.toJSON() as unknown as StorageNodePublicKey,
+          } as const),
     );
   }
 

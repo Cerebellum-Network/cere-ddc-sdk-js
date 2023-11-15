@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { Sendable } from './Blockchain';
-import type { AccountId, Amount, CdnNodePublicKey, ClusterId, StorageNodePublicKey } from './types';
+import type { AccountId, Amount, CdnNodePublicKey, ClusterId, StakingLedger, StorageNodePublicKey } from './types';
+
 export class DDCStakingPallet {
   constructor(private apiPromise: ApiPromise) {}
 
@@ -74,5 +75,15 @@ export class DDCStakingPallet {
 
   serve(clusterId: ClusterId) {
     return this.apiPromise.tx.ddcStaking.serve(clusterId) as Sendable;
+  }
+
+  async findStakingLedgerByControllerAccount(controllerAccount: AccountId) {
+    const result = await this.apiPromise.query.ddcStaking.ledger(controllerAccount);
+    return result.toJSON() as unknown as StakingLedger | undefined;
+  }
+
+  async findControllerAccountByStashAccount(stashAccount: AccountId) {
+    const result = await this.apiPromise.query.ddcStaking.bonded(stashAccount);
+    return result.toJSON() as unknown as AccountId | undefined;
   }
 }
