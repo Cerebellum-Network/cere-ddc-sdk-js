@@ -5,7 +5,6 @@ const config: Config = {
     preset: 'ts-jest/presets/default-esm',
     testEnvironment: 'node',
     testTimeout: 100000,
-    detectLeaks: true,
     testMatch: ['<rootDir>/tests/specs/**/*.spec.ts'],
     moduleNameMapper: {
         '^@cere-ddc-sdk/(.*)/types$': '<rootDir>/packages/$1/src/types',
