@@ -1,3 +1,4 @@
+import {Buffer} from 'buffer';
 import {TransformStream, ReadableStream, WritableStreamDefaultWriter as Writer} from 'stream/web';
 
 export type SplitStreamMapper<T = any> = (stream: ReadableStream, offset: number) => T;

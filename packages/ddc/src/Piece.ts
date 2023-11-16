@@ -1,6 +1,6 @@
 import {arrayBuffer, text, json} from 'stream/consumers';
-
 import {Content, ContentStream, createContentStream} from './streams';
+
 import {ReadFileRange} from './FileApi';
 import {Cid} from './Cid';
 
