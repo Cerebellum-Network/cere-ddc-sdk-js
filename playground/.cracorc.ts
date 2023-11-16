@@ -1,6 +1,5 @@
 import {Configuration, DefinePlugin} from 'webpack';
 import {addPlugins} from '@craco/craco';
-import NodePolyfillPlugin from 'node-polyfill-webpack-plugin';
 
 import {getEnvironment} from '../tests';
 
@@ -8,9 +7,9 @@ export default {
     webpack: {
         configure: (config: Configuration) => {
             config.resolve ||= {};
-            config.resolve.plugins = [];
-
-            addPlugins(config, [new NodePolyfillPlugin()]);
+            config.resolve.fallback = {
+                crypto: 'crypto-browserify',
+            };
 
             try {
                 const env = getEnvironment();
