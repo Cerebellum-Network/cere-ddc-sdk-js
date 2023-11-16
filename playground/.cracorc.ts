@@ -13,7 +13,6 @@ export default {
 
                 addPlugins(config, [
                     new DefinePlugin({
-                        'process.env.SC_ADDRESS': JSON.stringify(env.contractAddress),
                         'process.env.BC_ENDPOINT': JSON.stringify(env.rpcUrl),
                     }),
                 ]);

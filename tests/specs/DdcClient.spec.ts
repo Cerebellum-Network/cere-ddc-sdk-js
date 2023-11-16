@@ -1,13 +1,13 @@
 import {DagNode, DagNodeUri, DdcClient, File, FileUri, KB, MB, Tag} from '@cere-ddc-sdk/ddc-client';
 
-import {ROOT_USER_SEED, createDataStream, getContractOptions} from '../helpers';
+import {ROOT_USER_SEED, createDataStream, getBlockchainState} from '../helpers';
 
 describe('DDC Client', () => {
     const bucketId = 1n;
     let client: DdcClient;
 
     beforeAll(async () => {
-        const {rpcUrl} = getContractOptions();
+        const {rpcUrl} = getBlockchainState();
 
         client = await DdcClient.create(ROOT_USER_SEED, {
             blockchain: rpcUrl,

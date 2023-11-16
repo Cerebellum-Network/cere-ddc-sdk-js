@@ -12,7 +12,7 @@ import {
     MAX_PIECE_SIZE,
 } from '@cere-ddc-sdk/ddc';
 
-import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes} from '../../tests/helpers';
+import {createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes} from '../helpers';
 
 const [transportOptions] = getStorageNodes();
 const transports = [

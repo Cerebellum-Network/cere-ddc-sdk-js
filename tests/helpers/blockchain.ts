@@ -6,30 +6,16 @@ import {AddressOrPair, SubmittableExtrinsic, SubmittableResultValue} from '@polk
 import {mnemonicGenerate} from '@polkadot/util-crypto';
 import {Keyring} from '@polkadot/keyring';
 
-import types from '../fixtures/blockchain/types.json';
-import contractAbi from '../fixtures/contract/metadata.json';
 import {ROOT_USER_SEED} from './constants';
 
 type TxResult = SubmittableResultValue & {
     contractEvents?: DecodedEvent[];
 };
 
-export type ContractData = {
-    account: string;
-    clusterId: number;
-    bucketIds: bigint[];
-    contractAddress: string;
-};
-
-export type PalletsState = {
+export type BlockchainState = {
     clusterId: string;
     bucketIds: bigint[];
     account: string;
-};
-
-export type BlockchainState = {
-    contract: ContractData;
-    pallets: PalletsState;
 };
 
 export type SignAndSendResult = Required<Pick<TxResult, 'events' | 'contractEvents'>> & {
@@ -40,7 +26,7 @@ export const BLOCKCHAIN_RPC_URL = 'ws://localhost:9944';
 
 export const createBlockhainApi = async () => {
     const provider = new WsProvider(BLOCKCHAIN_RPC_URL);
-    const api = await ApiPromise.create({provider, types});
+    const api = await ApiPromise.create({provider});
 
     return api.isReady;
 };
@@ -78,25 +64,35 @@ export const transferCere = async (api: ApiPromise, to: string, tokens: number) 
 };
 
 export const readBlockchainStateFromDisk = (): BlockchainState => {
-    const ddcConfigFile = path.resolve(__dirname, '../data/ddc.json');
+    const stateFile = path.resolve(__dirname, '../data/ddc.json');
 
-    if (!fs.existsSync(ddcConfigFile)) {
+    if (!fs.existsSync(stateFile)) {
         throw new Error('Blockhain environment is not stated or missing data');
     }
 
-    const contractData = JSON.parse(fs.readFileSync(ddcConfigFile).toString('utf8'), (key, value) =>
+    const contractData = JSON.parse(fs.readFileSync(stateFile).toString('utf8'), (key, value) =>
         key === 'bucketIds' ? value.map(BigInt) : value,
     );
 
     return contractData;
 };
 
-export const getContractOptions = () => {
-    const {contractAddress} = readBlockchainStateFromDisk().contract;
+export const writeBlockchainStateToDisk = (state: BlockchainState) => {
+    const stateFile = path.resolve(__dirname, '../data/ddc.json');
+    const contractDataJson = JSON.stringify(
+        state,
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
+        2,
+    );
+
+    fs.writeFileSync(stateFile, contractDataJson);
+};
+
+export const getBlockchainState = () => {
+    const state = readBlockchainStateFromDisk();
 
     return {
-        contractAddress,
-        abi: contractAbi,
+        ...state,
         rpcUrl: BLOCKCHAIN_RPC_URL,
     };
 };

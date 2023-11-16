@@ -12,7 +12,7 @@ module.exports = {
         '^@cere-ddc-sdk/(.*)/types$': '<rootDir>/packages/$1/src/types',
         '^@cere-ddc-sdk/(.*)$': '<rootDir>/packages/$1/src',
     },
-    testMatch: ['<rootDir>/tests/v2/**/*.spec.ts'],
+    testMatch: ['<rootDir>/tests/specs/**/*.spec.ts'],
     transform: {
         '\\.(js|ts)$': require.resolve('babel-jest'),
     },

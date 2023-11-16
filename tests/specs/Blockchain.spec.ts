@@ -1,13 +1,11 @@
 import {Blockchain} from '@cere-ddc-sdk/blockchain';
-import {createAccount, createBlockhainApi, getAccount, getGasLimit, signAndSend, transferCere} from '../helpers';
 import {cryptoWaitReady} from '@polkadot/util-crypto';
 import {ApiPromise} from '@polkadot/api';
-import path from 'path';
-import fs from 'fs/promises';
-import {Abi, CodePromise} from '@polkadot/api-contract';
 import {KeyringPair} from '@polkadot/keyring/types';
 
-describe('packages/blockchain', () => {
+import {createAccount, createBlockhainApi, deployAuthContract, getAccount, transferCere} from '../helpers';
+
+describe('Blockchain', () => {
     let apiPromise: ApiPromise;
     let blockchain: Blockchain;
 
@@ -23,28 +21,6 @@ describe('packages/blockchain', () => {
     const bondSize = 10_000_000_000n;
     let nodeProviderAuthContract: string;
 
-    const deployClusterNodeAuthorizationContract = async () => {
-        const contractDir = path.resolve(__dirname, '../fixtures/contract');
-
-        const contractContent = await fs.readFile(
-            path.resolve(contractDir, 'cluster_node_candidate_authorization.contract'),
-        );
-        const contract = JSON.parse(contractContent.toString());
-        const wasm = contract.source.wasm.toString();
-        const abi = new Abi(contract);
-        const codePromise = new CodePromise(apiPromise, abi, wasm);
-        const tx = codePromise.tx.new({
-            value: 0,
-            gasLimit: await getGasLimit(apiPromise),
-            storageDepositLimit: 750_000_000_000,
-        });
-        const {events} = await signAndSend(tx, rootAccount, apiPromise);
-        const foundEvent = events.find(({event}) => apiPromise.events.contracts.Instantiated.is(event));
-        const [, address] = foundEvent?.event.toJSON().data as string[];
-
-        return address;
-    };
-
     beforeAll(async () => {
         await cryptoWaitReady();
 
@@ -58,7 +34,7 @@ describe('packages/blockchain', () => {
         nonExistentKey1 = createAccount().address;
 
         apiPromise = await createBlockhainApi();
-        nodeProviderAuthContract = await deployClusterNodeAuthorizationContract();
+        nodeProviderAuthContract = await deployAuthContract(apiPromise, rootAccount);
         await transferCere(apiPromise, storageNode1Account.address, 10);
         await transferCere(apiPromise, nodeProviderAccount.address, 10);
     });

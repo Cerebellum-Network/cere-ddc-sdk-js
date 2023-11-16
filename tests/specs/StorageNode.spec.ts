@@ -1,6 +1,6 @@
 import {StorageNode, Piece, PieceResponse, DagNode, MultipartPiece, CnsRecord, UriSigner} from '@cere-ddc-sdk/ddc';
 
-import {createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes} from '../../tests/helpers';
+import {createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes} from '../helpers';
 
 describe('Storage Node', () => {
     const bucketId = 1;

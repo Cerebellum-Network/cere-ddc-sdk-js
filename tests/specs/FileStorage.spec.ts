@@ -4,6 +4,7 @@ import {Readable} from 'stream';
 import {pipeline} from 'stream/promises';
 import {createHash} from 'crypto';
 import {FileStorage, File, UriSigner} from '@cere-ddc-sdk/file-storage';
+
 import {createDataStream, getStorageNodes, MB, ROOT_USER_SEED} from '../helpers';
 
 describe('File storage', () => {
