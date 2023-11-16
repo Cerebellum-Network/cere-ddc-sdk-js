@@ -8,9 +8,8 @@ const uuid = {nextUuid: () => 'ddc'};
 export const startDDC = async (bc: BlockchainConfig) => {
     console.group('DDC');
 
-    const environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.ddc.yml', uuid)
+    environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.ddc.yml', uuid)
         .withEnv('BLOCKCHAIN_API_URL', bc.apiUrl)
-        .withEnv('BLOCKCHAIN_DDC_BUCKET_CONTRACT', bc.contractAddress)
         .withEnv('CLUSTER_ID', bc.clusterId.toString())
         .withEnv('HOST_IP', getHostIP())
         // .withWaitStrategy('ddc-cdn-node-0', Wait.forHealthCheck())

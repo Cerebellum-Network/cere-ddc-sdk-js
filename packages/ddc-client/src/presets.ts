@@ -1,5 +1,3 @@
-import * as sc from '@cere-ddc-sdk/smart-contract';
-
 import type {DdcClientConfig} from './DdcClient';
 
 export const MAINNET: DdcClientConfig = {

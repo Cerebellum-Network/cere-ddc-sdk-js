@@ -1,4 +1,6 @@
+import {Buffer} from 'buffer';
 import {ReadableStream, TransformStream, ReadableStreamDefaultReader} from 'stream/web';
+
 import {CONTENT_CHUNK_SIZE} from '../constants';
 
 type InputStream = {

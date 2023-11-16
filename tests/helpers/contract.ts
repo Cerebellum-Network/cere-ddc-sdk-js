@@ -1,20 +1,17 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import {ApiPromise} from '@polkadot/api';
-import {CodePromise, ContractPromise, Abi} from '@polkadot/api-contract';
+import {CodePromise, Abi} from '@polkadot/api-contract';
 import {KeyringPair} from '@polkadot/keyring/types';
 
 import {getGasLimit, signAndSend} from './blockchain';
 
-const readContract = async () => {
-    const contractDir = path.resolve(__dirname, '../fixtures/contract');
-
-    const contractContent = await fs.readFile(path.resolve(contractDir, 'ddc_bucket.contract'));
-    const metadata = await fs.readFile(path.resolve(contractDir, 'metadata.json'));
+const readContract = async (path: string) => {
+    const contractContent = await fs.readFile(path);
     const contract = JSON.parse(contractContent.toString());
 
     return {
-        abi: new Abi(metadata.toString()),
+        abi: new Abi(contract),
         wasm: contract.source.wasm.toString(),
     };
 };
@@ -34,10 +31,11 @@ const deployContract = async (api: ApiPromise, account: KeyringPair, abi: Abi, w
     return address;
 };
 
-export const bootstrapContract = async (api: ApiPromise, signer: KeyringPair) => {
-    const {abi, wasm} = await readContract();
-    const address = await deployContract(api, signer, abi, wasm);
-    const contract = new ContractPromise(api, abi, address);
+export const deployAuthContract = async (api: ApiPromise, signer: KeyringPair) => {
+    const contractDir = path.resolve(__dirname, '../fixtures/contract');
+    const contractPath = path.resolve(contractDir, 'cluster_node_candidate_authorization.contract');
 
-    return contract;
+    const {abi, wasm} = await readContract(contractPath);
+
+    return deployContract(api, signer, abi, wasm);
 };

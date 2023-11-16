@@ -2,8 +2,8 @@
     "extends": "../tsconfig.json",
     "include": ["./src"],
     "compilerOptions": {
-        "module": "CommonJS",
         "noEmit": true,
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
+        "paths": {}
     }
 }

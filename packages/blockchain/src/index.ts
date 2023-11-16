@@ -1,2 +1,3 @@
-export {Blockchain} from './Blockchain';
 export * from './types';
+
+export {Blockchain} from './Blockchain';

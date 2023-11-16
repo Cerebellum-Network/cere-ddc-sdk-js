@@ -1,8 +1,6 @@
 export * from './DdcClient';
 export * from './DdcUri';
 
-export type {SmartContractOptions} from '@cere-ddc-sdk/smart-contract';
-
 export {
     KB,
     MB,

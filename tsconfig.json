@@ -14,26 +14,9 @@
         "allowJs": true,
         "resolveJsonModule": true,
         "paths": {
-            "@cere-ddc-sdk/content-addressable-storage": ["packages/content-addressable-storage/src"],
-            "@cere-ddc-sdk/content-addressable-storage/*": ["packages/content-addressable-storage/src/*"],
-            "@cere-ddc-sdk/core": ["packages/core/src"],
-            "@cere-ddc-sdk/core/*": ["packages/core/src/*"],
-            "@cere-ddc-sdk/ddc-client": ["packages/ddc-client/src"],
-            "@cere-ddc-sdk/ddc-client/*": ["packages/ddc-client/src/*"],
-            "@cere-ddc-sdk/file-storage": ["packages/file-storage/src"],
-            "@cere-ddc-sdk/file-storage/*": ["packages/file-storage/src/*"],
-            "@cere-ddc-sdk/key-value-storage": ["packages/key-value-storage/src"],
-            "@cere-ddc-sdk/key-value-storage/*": ["packages/key-value-storage/src/*"],
-            "@cere-ddc-sdk/proto": ["packages/proto/src"],
-            "@cere-ddc-sdk/proto/*": ["packages/proto/src/*"],
-            "@cere-ddc-sdk/smart-contract": ["packages/smart-contract/src"],
-            "@cere-ddc-sdk/smart-contract/*": ["packages/smart-contract/src/*"],
-            "@cere-ddc-sdk/ddc": ["packages/ddc/src"],
-            "@cere-ddc-sdk/ddc/*": ["packages/ddc/src/*"],
-            "@cere-ddc-sdk/blockchain": ["packages/blockchain/src"],
-            "@cere-ddc-sdk/blockchain/*": ["packages/blockchain/src/*"]
+            "@cere-ddc-sdk/*": ["packages/*/src"]
         }
     },
     "include": ["packages/", "tests/"],
-    "exclude": ["**/*.test.ts", "**/*.stub.ts", "node_modules", "dist", "package"]
+    "exclude": ["node_modules", "dist", "package"]
 }

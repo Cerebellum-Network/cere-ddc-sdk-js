@@ -1,3 +1,5 @@
+import {Buffer} from 'buffer';
+
 import * as dag from './DagApi';
 import {Cid} from './Cid';
 
