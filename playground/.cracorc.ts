@@ -1,27 +1,17 @@
-import {Configuration, DefinePlugin} from 'webpack';
-import {addPlugins} from '@craco/craco';
+import {DefinePlugin} from 'webpack';
+import NodePolyfill from 'node-polyfill-webpack-plugin';
 
-import {getEnvironment} from '../tests';
+import {BLOCKCHAIN_RPC_URL} from '../tests';
 
 export default {
     webpack: {
-        configure: (config: Configuration) => {
-            config.resolve ||= {};
-            config.resolve.fallback = {
-                crypto: 'crypto-browserify',
-            };
-
-            try {
-                const env = getEnvironment();
-
-                addPlugins(config, [
-                    new DefinePlugin({
-                        'process.env.BC_ENDPOINT': JSON.stringify(env.rpcUrl),
-                    }),
-                ]);
-            } catch {}
-
-            return config;
+        plugins: {
+            add: [
+                new NodePolyfill(),
+                new DefinePlugin({
+                    'process.env.BC_ENDPOINT': BLOCKCHAIN_RPC_URL,
+                }),
+            ],
         },
     },
 };
