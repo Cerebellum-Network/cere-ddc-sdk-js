@@ -1,12 +1,5 @@
-/**
- * Temporary concept which will later be revised and probably re-implemented differently
- *
- * TODO: Repalce with real implementation
- */
-
-import {Signer} from '../Signer';
 import {StorageNode, StorageNodeConfig} from '../StorageNode';
-import {Blockchain, Bucket, BucketId, Cluster, ClusterId} from '@cere-ddc-sdk/blockchain';
+import {Blockchain, Bucket, BucketId, Cluster, ClusterId, Signer} from '@cere-ddc-sdk/blockchain';
 
 export enum RouterOperation {
     READ_DAG_NODE = 'read-dag-node',
@@ -62,6 +55,9 @@ export class Router {
                 throw new Error(`Failed to get info for node ${nodeKey} on blockchain`);
             }
 
+            /**
+             * TODO: Revise this implementation to support future `https` endpoints
+             */
             return new StorageNode(this.config.signer, {
                 grpcUrl: `grpc://${node.props.host}:${node.props.grpcPort}`,
                 httpUrl: `http://${node.props.host}:${node.props.httpPort}`,

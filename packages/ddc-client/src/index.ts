@@ -9,6 +9,9 @@ export {
     Link,
     DagNodeResponse,
     UriSigner,
+    TESTNET,
+    DEVNET,
+    MAINNET,
     type DagNodeStoreOptions,
     type Signer,
 } from '@cere-ddc-sdk/ddc';
@@ -20,5 +23,3 @@ export {
     type FileStoreOptions,
     type FileReadOptions,
 } from '@cere-ddc-sdk/file-storage';
-
-export * from './presets';

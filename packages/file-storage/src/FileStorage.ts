@@ -1,3 +1,4 @@
+import {Blockchain} from '@cere-ddc-sdk/blockchain';
 import {
     PieceReadOptions,
     MAX_PIECE_SIZE,
@@ -8,15 +9,16 @@ import {
     RouterOperation,
     StorageNode,
     PieceStoreOptions,
-    RouterConfig,
     Signer,
     UriSigner,
-    RouterStaticConfig,
+    RouterConfig,
+    ConfigPreset,
+    DEFAULT_PRESET,
 } from '@cere-ddc-sdk/ddc';
 
 import {File, FileResponse} from './File';
 
-export type FileStorageConfig = RouterStaticConfig;
+export type FileStorageConfig = ConfigPreset;
 export type FileReadOptions = PieceReadOptions;
 export type FileStoreOptions = PieceStoreOptions;
 
@@ -24,15 +26,19 @@ export class FileStorage {
     private router: Router;
 
     constructor(router: Router);
-    constructor(config: FileStorageConfig);
-    constructor(configOrRouter: FileStorageConfig | Router) {
+    constructor(config: RouterConfig);
+    constructor(configOrRouter: RouterConfig | Router) {
         this.router = configOrRouter instanceof Router ? configOrRouter : new Router(configOrRouter);
     }
 
-    static async create(uriOrSigner: Signer | string, config: Omit<FileStorageConfig, 'signer'>) {
+    static async create(uriOrSigner: Signer | string, config: FileStorageConfig = DEFAULT_PRESET) {
         const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
+        const blockchain =
+            config.blockchain instanceof Blockchain
+                ? config.blockchain
+                : await Blockchain.connect({account: signer, wsEndpoint: config.blockchain});
 
-        return new FileStorage(new Router({...config, signer}));
+        return new FileStorage(new Router({...config, blockchain, signer}));
     }
 
     private async storeLarge(node: StorageNode, bucketId: number, file: File, options?: FileStoreOptions) {

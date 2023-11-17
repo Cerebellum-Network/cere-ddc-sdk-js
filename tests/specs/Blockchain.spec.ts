@@ -232,6 +232,7 @@ describe('Blockchain', () => {
         await blockchain.send(
             blockchain.ddcStaking.bondStorageNode(nodeProviderAccount.address, storageNode1Key, bondSize),
         );
+
         await blockchain.send(blockchain.ddcStaking.store(clusterId));
         // await blockchain.send(blockchain.ddcStaking.setController(storageNode1Key));
 

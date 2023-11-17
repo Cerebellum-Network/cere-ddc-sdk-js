@@ -8,7 +8,7 @@ export type DdcUriOptions = {
 };
 
 export class DdcUri<T extends DdcEntity = DdcEntity> {
-    readonly cid?: string;
+    readonly cid: string = '';
     readonly name?: string;
 
     constructor(readonly bucketId: BucketId, cidOrName: string, readonly entity: T, options?: DdcUriOptions) {

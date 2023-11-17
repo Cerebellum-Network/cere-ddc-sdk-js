@@ -1,22 +1,9 @@
 {
+    "extends": "./tsconfig.build.json",
     "compilerOptions": {
         "baseUrl": ".",
-        "outDir": "dist",
-        "target": "esnext",
-        "module": "esnext",
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "strict": true,
-        "moduleResolution": "node",
-        "declaration": true,
-        "declarationMap": true,
-        "skipLibCheck": true,
-        "allowJs": true,
-        "resolveJsonModule": true,
         "paths": {
             "@cere-ddc-sdk/*": ["packages/*/src"]
         }
-    },
-    "include": ["packages/", "tests/"],
-    "exclude": ["node_modules", "dist", "package"]
+    }
 }

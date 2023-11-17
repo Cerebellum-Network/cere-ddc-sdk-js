@@ -1,10 +1,11 @@
+import type {Signer} from '@cere-ddc-sdk/blockchain';
+
 import {Cid} from './Cid';
 import {CnsApi} from './CnsApi';
 import {DagApi} from './DagApi';
 import {FileApi, ReadFileRange} from './FileApi';
 import {MultipartPiece, Piece, PieceResponse} from './Piece';
 import {DagNode, DagNodeResponse, mapDagNodeToAPI} from './DagNode';
-import {Signer} from './Signer';
 import {CnsRecord, CnsRecordResponse, mapCnsRecordToAPI} from './CnsRecord';
 import {DefaultTransport, RpcTransportOptions} from './transports';
 

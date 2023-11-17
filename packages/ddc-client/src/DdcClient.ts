@@ -6,18 +6,15 @@ import {
     Signer,
     UriSigner,
     DagNodeStoreOptions,
-    RouterNode,
+    ConfigPreset,
+    DEFAULT_PRESET,
 } from '@cere-ddc-sdk/ddc';
 import {FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions} from '@cere-ddc-sdk/file-storage';
 import {Blockchain, BucketId, ClusterId} from '@cere-ddc-sdk/blockchain';
 
 import {DagNodeUri, DdcEntity, DdcUri, FileUri} from './DdcUri';
-import {TESTNET} from './presets';
 
-export type DdcClientConfig = {
-    blockchain: string;
-    nodes?: RouterNode[];
-};
+export type DdcClientConfig = ConfigPreset;
 
 export type {FileStoreOptions, DagNodeStoreOptions};
 
@@ -28,15 +25,14 @@ export class DdcClient {
         private readonly fileStorage: FileStorage,
     ) {}
 
-    static async create(uriOrSigner: Signer | string, config: DdcClientConfig = TESTNET) {
+    static async create(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
         const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
-        const blockchain = await Blockchain.connect({
-            account: signer,
-            wsEndpoint: config.blockchain,
-        });
+        const blockchain =
+            config.blockchain instanceof Blockchain
+                ? config.blockchain
+                : await Blockchain.connect({account: signer, wsEndpoint: config.blockchain});
 
-        const nodes = 'nodes' in config ? config.nodes : undefined;
-        const router = nodes ? new Router({signer, nodes}) : new Router({signer, blockchain});
+        const router = config.nodes ? new Router({signer, nodes: config.nodes}) : new Router({signer, blockchain});
         const fileStorage = new FileStorage(router);
 
         return new DdcClient(blockchain, router, fileStorage);

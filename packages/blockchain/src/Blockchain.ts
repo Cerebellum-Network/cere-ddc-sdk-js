@@ -1,17 +1,29 @@
 import {ApiPromise, WsProvider} from '@polkadot/api';
+import {IKeyringPair} from '@polkadot/types/types';
+import {SubmittableExtrinsic} from '@polkadot/api-base/types';
+
 import {DDCNodesPallet} from './DDCNodesPallet';
 import {DDCClustersPallet} from './DDCClustersPallet';
-import {AddressOrPair, Signer} from '@polkadot/api/types';
-import {SubmittableExtrinsic} from '@polkadot/api-base/types';
 import {DDCStakingPallet} from './DDCStakingPallet';
 import {DDCCustomersPallet} from './DDCCustomersPallet';
+
+export type BlockchainConnectOptions = {
+    account: IKeyringPair;
+} & (
+    | {
+          apiPromise: ApiPromise;
+      }
+    | {
+          wsEndpoint: string;
+      }
+);
 
 export class Blockchain {
     public readonly ddcNodes: DDCNodesPallet;
     public readonly ddcClusters: DDCClustersPallet;
     public readonly ddcStaking: DDCStakingPallet;
     public readonly ddcCustomers: DDCCustomersPallet;
-    private constructor(private apiPromise: ApiPromise, private account: AddressOrPair, private signer?: Signer) {
+    private constructor(private apiPromise: ApiPromise, readonly account: IKeyringPair) {
         this.ddcNodes = new DDCNodesPallet(apiPromise);
         this.ddcClusters = new DDCClustersPallet(apiPromise);
         this.ddcStaking = new DDCStakingPallet(apiPromise);
@@ -62,15 +74,13 @@ export class Blockchain {
         return this.apiPromise.disconnect();
     }
 
-    static async connect(
-        options: {account: AddressOrPair; signer?: Signer} & ({apiPromise: ApiPromise} | {wsEndpoint: string}),
-    ) {
-        const apiPromise =
+    static async connect(options: BlockchainConnectOptions) {
+        const api =
             'apiPromise' in options
                 ? options.apiPromise
                 : await ApiPromise.create({provider: new WsProvider(options.wsEndpoint)});
-        await apiPromise.isReady;
-        return new Blockchain(apiPromise, options.account, options.signer);
+
+        return new Blockchain(api, options.account);
     }
 }
 
