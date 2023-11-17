@@ -54,7 +54,7 @@ jobs:
 
             - name: Run integration tests
               if: ${{ !inputs.skipTests }}
-              run: npm test
+              run: npm run test:ci
 
             - name: Prepare pacakges for publish
               run: npm run package
