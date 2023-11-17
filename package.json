@@ -11,7 +11,8 @@
     "scripts": {
         "format": "prettier --write \"packages/**/*.ts\"",
         "lint": "tslint -p tsconfig.json",
-        "test": "jest --passWithNoTests --silent --detectOpenHandles",
+        "test": "jest --silent --selectProjects Dev",
+        "test:ci": "jest --silent --selectProjects CI",
         "test:clean": "rimraf ./tests/data/*",
         "clean": "lerna run clean",
         "build": "lerna run build",

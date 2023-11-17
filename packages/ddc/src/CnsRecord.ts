@@ -1,6 +1,7 @@
+import {Signer} from '@cere-ddc-sdk/blockchain';
+
 import * as cns from './CnsApi';
 import {Cid} from './Cid';
-import {Signer} from './Signer';
 
 export class CnsRecord implements Omit<cns.Record, 'cid' | 'signature'> {
     signature?: cns.RecordSignature;
