@@ -1,6 +1,6 @@
 {
     "name": "@cere-ddc-sdk/playground",
-    "version": "2.0.0-rc.8",
+    "version": "2.0.0-rc.9",
     "private": true,
     "scripts": {
         "start": "npm-run-all --parallel bootstrap start:app",
@@ -10,7 +10,7 @@
         "bootstrap": "ts-node --esm ./scripts/bootstrap.cjs"
     },
     "dependencies": {
-        "@cere-ddc-sdk/ddc-client": "2.0.0-rc.8",
+        "@cere-ddc-sdk/ddc-client": "2.0.0-rc.9",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
         "@mui/lab": "^5.0.0-alpha.152",
