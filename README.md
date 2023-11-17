@@ -1,84 +1,76 @@
-# Cere DDC SDK for JavaScript
+# Cere DDC SDK for JavaScript/TypeScript
+
+The DDC SDK is a development kit used by developers to create applications that interact with the CERE infrastructure. It provides a set of modules and methods that allow seamless integration with the Cerebellum Network's decentralized data cloud (DDC).
 
 ## Packages
 
--   [content-addressable-storage](packages/content-addressable-storage/README.md)
--   [key-value-storage](packages/key-value-storage/README.md)
--   [file-storage](packages/file-storage/README.md)
--   [proto](packages/proto/README.md)
--   [core](packages/core/README.md)
--   [smart-contract](packages/smart-contract/README.md)
--   [ddc-client](packages/ddc-client/README.md)
+-   [@cere-ddc-sdk/ddc-client](packages/ddc-client/README.md) - The main DDC SDK interface with all methods for working with DDC
+-   [@cere-ddc-sdk/blockchain](packages/blockchain/README.md) - Work directly with the Cere blockchain
+-   [@cere-ddc-sdk/file-storage](packages/file-storage/README.md) - Upload large files, using chunk streaming
+-   [@cere-ddc-sdk/ddc](packages/ddc/README.md) - Low level package to directly communicate with DDC nodes
 
-## Use case
+## Demo
 
--   `content-addressable-storage` use when need simple upload data to DDC as 1 unit
--   `key-value-storage` use when need store data by key
--   `file-storage` use when need to upload large data by chunks
--   `smart-contract` client for working DDC Smart-Contract
--   `ddc-client` simple client with all methods for working with DDC and DDC Smart-Contract
+The playground app is small demo application you can try how DDC SDK works in browser.
 
-## Definitions
+-   [Source code](playground)
+-   [Online demo](https://cerebellum-network.github.io/cere-ddc-sdk-js/)
 
--   `DDC` - decentralized data cloud, product of cerebellum network for storing data
--   `piece` - abstraction which represents a unit of data stored in the DDC.
-    Doesn't have fixed size and can represent fully logically completed data or part of it.
+## Quick start
 
-## Links
+1. Prepare Node.JS version
 
--   [Cere DDC](https://docs.cere.network/) description and documentation
--   [Polkadot{.js} extension](https://polkadot.js.org/extension/) necessary for Cere DDC SDK using in the web browsers.
+    ```
+    nvm use
+    ```
 
-## Dependencies
+2. Install dependencies:
 
--   node.js `16+`. Setup with: `nvm use`
--   typescript `4.5.5+`
+    ```bash
+    npm i
+    ```
 
-## Build
+3. Build all packages and Playground app:
 
-To build the project:
+    ```bash
+    npm run build
+    ```
 
--   clone repository
--   install required modules `npm install`
--   build all packages `npm run build`
+4. Run playground application:
 
-## Testing
+    ```bash
+    npm run playground
+    ```
 
-To run the tests for the entire project:
+## Tests
 
-> Blockchain state is cached by default between local test runs
+1. Run tests from source code
 
-```shell
-npm run test
-```
+    ```bash
+    npm test
+    ```
 
-Clean tests cache:
+    On the first run it will take some time to prepare the local testing environment
 
-```shell
-npm run test:clean
-```
+2. Run tests on pre-built packages or `CI`
 
-## Changing the schema
+    ```bash
+    npm run test:ci
+    ```
 
-Keep the protobuf schema and the test vectors in sync with the `ddc-schemas` repo.
-First checkout the schemas repo:
+3. Clean local test environment cache
+    ```
+    npm run test:clean
+    ```
 
-```shell
-git submodule update --init
-```
+## Publish
 
-Then work in the `ddc-schemas` folder with git. For example, checkout a new branch, or add a new test vector ([example](packages/content-addressable-storage/src/__tests__/ContentAddressableStorage.spec.ts)). Then record the specific version of the schemas:
+1. Create a release
 
-```shell
-git add ddc-schemas
-```
+    ```
+    npm run release
+    ```
 
-## Publish new version
+2. Publish the packages using [Publish GitHub Action](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/actions/workflows/publish.yaml)
 
-1. Set new version to all packages, push changes and release tag
-
-```shell
-npm run release
-```
-
-2. Publish the packages using `Publish` GitHub action
+3. Deploy Playground using [Deploy playground GitHub Action](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/actions/workflows/playground.yaml)
