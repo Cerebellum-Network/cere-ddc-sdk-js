@@ -24,15 +24,8 @@
         "clean": "rimraf dist package"
     },
     "dependencies": {
-        "@cere-ddc-sdk/ddc": "2.0.0-rc.7"
-    },
-    "peerDependencies": {
+        "@cere-ddc-sdk/ddc": "2.0.0-rc.7",
         "@cere-ddc-sdk/blockchain": "2.0.0-rc.7"
-    },
-    "peerDependenciesMeta": {
-        "@cere-ddc-sdk/blockchain": {
-            "optional": true
-        }
     },
     "publishConfig": {
         "access": "public"
