@@ -227,7 +227,7 @@ describe('Blockchain', () => {
         //     blockchain.ddcStaking.store(clusterId),
         //     blockchain.ddcStaking.setController(storageNode1Key),
         // ]);
-        // const blockchain = await Blockchain.connect({account: nodeProviderAccount, wsEndpoint: ''});
+        const blockchain = await Blockchain.connect({account: nodeProviderAccount, apiPromise});
 
         await blockchain.send(
             blockchain.ddcStaking.bondStorageNode(nodeProviderAccount.address, storageNode1Key, bondSize),
