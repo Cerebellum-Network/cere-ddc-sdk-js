@@ -49,12 +49,26 @@ export class DdcClient {
         return {bucketId};
     }
 
-    bucketGet(bucketId: BucketId) {
+    getBucket(bucketId: BucketId) {
         return this.blockchain.ddcCustomers.getBucket(bucketId);
     }
 
-    bucketList() {
+    getBucketList() {
         return this.blockchain.ddcCustomers.listBuckets();
+    }
+
+    /**
+     * @deprecated Use `getBucket` instead
+     */
+    bucketGet(bucketId: BucketId) {
+        return this.getBucket(bucketId);
+    }
+
+    /**
+     * @deprecated Use `getBucketList` instead
+     */
+    bucketList() {
+        return this.getBucketList();
     }
 
     async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<FileUri>;

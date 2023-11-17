@@ -170,13 +170,13 @@ describe('DDC Client', () => {
         });
 
         test('Get bucket', async () => {
-            const bucket = await client.bucketGet(createdBucketId);
+            const bucket = await client.getBucket(createdBucketId);
 
             expect(bucket?.bucketId).toEqual(createdBucketId);
         });
 
         test('Get bucket list', async () => {
-            const buckets = await client.bucketList();
+            const buckets = await client.getBucketList();
 
             expect(buckets.length).toBeGreaterThan(0);
         });

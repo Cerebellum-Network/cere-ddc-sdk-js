@@ -8,20 +8,20 @@
         "directory": "packages/ddc",
         "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
     },
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/types/index.d.ts",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/types/index.d.ts",
     "exports": {
-        "browser": "./dist/browser.js",
+        "types": "./dist/types/index.d.ts",
         "require": "./dist/index.cjs",
-        "import": "./dist/index.js",
+        "browser": "./dist/browser.js",
         "default": "./dist/index.js"
     },
     "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
     "license": "Apache-2.0",
     "scripts": {
         "build": "npm-run-all --parallel build:node build:web",
-        "build:node": "microbundle --tsconfig tsconfig.node.json --format modern,cjs --target node",
+        "build:node": "microbundle --tsconfig tsconfig.node.json --format esm,cjs --target node",
         "build:web": "microbundle --tsconfig tsconfig.web.json --format modern --output dist/browser.js --alias stream/consumers=stream-consumers,stream/web=web-streams-polyfill/ponyfill/es2018",
         "package": "clean-publish",
         "clean": "rimraf dist package"
