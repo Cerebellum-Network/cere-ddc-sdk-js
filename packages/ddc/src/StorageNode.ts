@@ -18,6 +18,10 @@ export type PieceReadOptions = {
     range?: ReadFileRange;
 };
 
+export type DagNodeGetOptions = {
+    path?: string;
+};
+
 export type PieceStoreOptions = NamingOptions;
 export type DagNodeStoreOptions = NamingOptions;
 
@@ -93,11 +97,12 @@ export class StorageNode {
         });
     }
 
-    async getDagNode(bucketId: number, cidOrName: string) {
+    async getDagNode(bucketId: number, cidOrName: string, options?: DagNodeGetOptions) {
         const cid = await this.resolveName(bucketId, cidOrName);
         const node = await this.dagApi.getNode({
             bucketId,
             cid: cid.toBytes(),
+            path: options?.path,
         });
 
         return node && new DagNodeResponse(cid, new Uint8Array(node.data), node.links, node.tags);

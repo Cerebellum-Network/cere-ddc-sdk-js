@@ -17,6 +17,10 @@ export class DagNode {
     constructor(data: Uint8Array | string | Buffer, public links: Link[] = [], public tags: Tag[] = []) {
         this.data = Buffer.from(data);
     }
+
+    get size() {
+        return dag.Node.toBinary(mapDagNodeToAPI(this)).byteLength;
+    }
 }
 
 export class DagNodeResponse extends DagNode {

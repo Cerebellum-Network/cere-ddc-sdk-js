@@ -1,4 +1,13 @@
-import {StorageNode, Piece, PieceResponse, DagNode, MultipartPiece, CnsRecord, UriSigner} from '@cere-ddc-sdk/ddc';
+import {
+    StorageNode,
+    Piece,
+    PieceResponse,
+    DagNode,
+    MultipartPiece,
+    CnsRecord,
+    UriSigner,
+    Link,
+} from '@cere-ddc-sdk/ddc';
 
 import {createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes} from '../helpers';
 
@@ -165,6 +174,33 @@ describe('Storage Node', () => {
             const node = await storageNode.getDagNode(bucketId, nodeName);
 
             expect(node?.data).toEqual(Buffer.from(nodeData));
+        });
+
+        describe('Nested nodes', () => {
+            const rootCnsName = 'root';
+            const leafNode = new DagNode('Leaf');
+
+            test('Store root node', async () => {
+                const leafNodeCid = await storageNode.storeDagNode(bucketId, leafNode);
+                const branchNode = new DagNode('Branch', [new Link(leafNodeCid, leafNode.size, 'leaf')]);
+                const branchNodeCid = await storageNode.storeDagNode(bucketId, branchNode);
+
+                const rootCid = await storageNode.storeDagNode(
+                    bucketId,
+                    new DagNode('Root', [new Link(branchNodeCid, branchNode.size, 'branch')]),
+                    {name: rootCnsName},
+                );
+
+                expect(rootCid).toEqual(expect.any(String));
+            });
+
+            test('Read leaf node', async () => {
+                const foundNode = await storageNode.getDagNode(bucketId, rootCnsName, {
+                    path: 'branch/leaf',
+                });
+
+                expect(foundNode?.data).toEqual(leafNode.data);
+            });
         });
     });
 
