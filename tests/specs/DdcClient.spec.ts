@@ -1,4 +1,4 @@
-import {DagNode, DagNodeUri, DdcClient, File, FileUri, KB, MB, Tag} from '@cere-ddc-sdk/ddc-client';
+import {DagNode, DagNodeUri, DdcClient, File, FileUri, KB, Link, MB, Tag} from '@cere-ddc-sdk/ddc-client';
 
 import {ROOT_USER_SEED, createDataStream, getBlockchainState} from '../helpers';
 
@@ -111,6 +111,7 @@ describe('DDC Client', () => {
         let uri: DagNodeUri;
         const nodeName = 'ddc-client/test-dag-node';
         const nodeData = 'Hello Dag node test';
+        const nestedNodeName = 'ddc-client/nested-dag-node';
 
         test('Store DAG node', async () => {
             const dagNode = new DagNode(nodeData, [], [new Tag('key', 'value')]);
@@ -153,6 +154,32 @@ describe('DDC Client', () => {
 
             expect(namedUri.name).toEqual(nodeName);
             expect(dagNode.data.toString()).toEqual(nodeData);
+        });
+
+        test('Store nested Dag node', async () => {
+            const leaf = new DagNode('Leaf');
+            const leafUri = await client.store(bucketId, leaf);
+            const leafLink = new Link(leafUri.cid, leaf.size, 'leaf');
+
+            const branch = new DagNode('Branch', [leafLink]);
+            const branchUri = await client.store(bucketId, branch);
+            const branchLink = new Link(branchUri.cid, branch.size, 'branch');
+
+            const root = new DagNode('Root', [branchLink]);
+            const rootUri = await client.store(bucketId, root, {
+                name: nestedNodeName,
+            });
+
+            expect(rootUri.cid).toEqual(expect.any(String));
+        });
+
+        test('Read nested Dag node', async () => {
+            const rootUri = new DagNodeUri(bucketId, nestedNodeName);
+            const leaf = await client.read(rootUri, {
+                path: 'branch/leaf',
+            });
+
+            expect(leaf.data.toString()).toEqual('Leaf');
         });
     });
 
