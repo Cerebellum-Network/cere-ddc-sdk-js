@@ -7,6 +7,7 @@ import {
     UriSigner,
     DagNodeStoreOptions,
     ConfigPreset,
+    DagNodeGetOptions,
     DEFAULT_PRESET,
 } from '@cere-ddc-sdk/ddc';
 import {FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions} from '@cere-ddc-sdk/file-storage';
@@ -14,7 +15,7 @@ import {Blockchain, BucketId, ClusterId} from '@cere-ddc-sdk/blockchain';
 
 import {DagNodeUri, DdcEntity, DdcUri, FileUri} from './DdcUri';
 
-export type DdcClientConfig = ConfigPreset;
+export type DdcClientConfig = ConfigPreset & {};
 
 export type {FileStoreOptions, DagNodeStoreOptions};
 
@@ -92,16 +93,16 @@ export class DdcClient {
     }
 
     async read(uri: FileUri, options?: FileReadOptions): Promise<FileResponse>;
-    async read(uri: DagNodeUri): Promise<DagNodeResponse>;
-    async read(uri: DdcUri, options?: FileReadOptions) {
+    async read(uri: DagNodeUri, options?: DagNodeGetOptions): Promise<DagNodeResponse>;
+    async read(uri: DdcUri, options?: FileReadOptions | DagNodeGetOptions) {
         const numBucketId = Number(uri.bucketId); // TODO: Convert bucketId to number everywhere
 
         if (uri.entity === 'file') {
-            return this.fileStorage.read(numBucketId, uri.cidOrName, options);
+            return this.fileStorage.read(numBucketId, uri.cidOrName, options as FileReadOptions);
         }
 
-        const ddcNode = await this.router.getNode(RouterOperation.READ_DAG_NODE, BigInt(numBucketId));
+        const ddcNode = await this.router.getNode(RouterOperation.READ_DAG_NODE, uri.bucketId);
 
-        return ddcNode.getDagNode(numBucketId, uri.cidOrName);
+        return ddcNode.getDagNode(numBucketId, uri.cidOrName, options as DagNodeGetOptions);
     }
 }
