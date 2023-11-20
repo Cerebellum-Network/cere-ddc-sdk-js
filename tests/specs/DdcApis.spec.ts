@@ -76,6 +76,46 @@ describe.each(transports)('DDC APIs ($name)', ({transport}) => {
 
             expect(node?.data).toEqual(nodeData);
         });
+
+        describe('Nested nodes', () => {
+            let rootNodeCid: Uint8Array;
+            const lastNode = {
+                data: nodeData,
+                links: [],
+                tags: [],
+            };
+
+            test('Create node tree', async () => {
+                const lastCid = await dagApi.putNode({bucketId, node: lastNode});
+                const middleCid = await dagApi.putNode({
+                    bucketId,
+                    node: {
+                        data: new Uint8Array([]),
+                        links: [{cid: lastCid, size: nodeData.byteLength, name: 'last'}],
+                        tags: [],
+                    },
+                });
+
+                rootNodeCid = await dagApi.putNode({
+                    bucketId,
+                    node: {
+                        data: nodeData,
+                        links: [{cid: middleCid, size: 10, name: 'middle'}],
+                        tags: [],
+                    },
+                });
+            });
+
+            test('Get last child', async () => {
+                const foundNode = await dagApi.getNode({
+                    bucketId,
+                    cid: rootNodeCid,
+                    path: 'middle/last',
+                });
+
+                expect(foundNode).toEqual(lastNode);
+            });
+        });
     });
 
     describe('Cns Api', () => {
