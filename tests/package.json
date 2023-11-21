@@ -6,7 +6,7 @@
   "module": "./index.ts",
   "scripts": {
     "test": "jest --selectProjects Dev",
-    "test:ci": "jest --selectProjects CI",
+    "test:ci": "jest --silent --selectProjects CI",
     "test:clean": "rimraf ./data/*"
   },
   "dependencies": {
