@@ -57,7 +57,7 @@ export class CnsApi {
 
       record = response.record;
     } catch {
-      // Skip
+      record = undefined;
     }
 
     if (!record || !record.signature) {

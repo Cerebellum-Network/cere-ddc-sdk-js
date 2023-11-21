@@ -2,6 +2,8 @@ import { RpcTransport } from '../transports';
 import { Content, createContentStream } from '../streams';
 import { PutMultiPartPieceRequest, GetFileRequest_Request, PutRawPieceRequest_Metadata } from '../grpc/file_api';
 import { FileApiClient } from '../grpc/file_api.client';
+// import { Signature } from '../grpc/pb/signature';
+// import { ActivityRequest } from '../grpc/pb/activity_report';
 
 export type GetFileRequest = GetFileRequest_Request;
 export type ReadFileRange = GetFileRequest_Request['range'];
@@ -51,6 +53,8 @@ export class FileApi {
   }
 
   async getFile(request: GetFileRequest) {
+    // const activityRequestBin = activityRequest && ActivityRequest.create(activityRequest);
+
     const { responses, requests } = this.api.getFile();
 
     await requests.send({
