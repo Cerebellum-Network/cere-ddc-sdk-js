@@ -23,6 +23,7 @@
         "build": "npm-run-all --parallel build:node build:web",
         "build:node": "microbundle --tsconfig tsconfig.node.json --format esm,cjs --target node",
         "build:web": "microbundle --tsconfig tsconfig.web.json --format modern --output dist/browser.js --alias stream/consumers=stream-consumers,stream/web=web-streams-polyfill/ponyfill/es2018",
+        "compile": "protoc --ts_opt long_type_number --ts_out ./src/grpc --proto_path protos ./protos/*.proto",
         "package": "clean-publish",
         "clean": "rimraf dist package"
     },

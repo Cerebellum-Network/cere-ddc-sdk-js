@@ -52,6 +52,9 @@ jobs:
             - name: Build packages
               run: npm run build
 
+            - name: Check types
+              run: npm run check-types:ci
+
             - name: Run integration tests
               if: ${{ !inputs.skipTests }}
               run: npm run test:ci

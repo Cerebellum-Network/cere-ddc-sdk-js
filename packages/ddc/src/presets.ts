@@ -3,7 +3,7 @@ import {Blockchain} from '@cere-ddc-sdk/blockchain';
 import {RouterNode} from './Router';
 
 export type ConfigPreset = {
-    blockchain: Blockchain | string;
+    blockchain: string;
     nodes?: RouterNode[];
 };
 

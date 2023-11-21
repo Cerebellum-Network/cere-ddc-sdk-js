@@ -20,6 +20,8 @@
         "release": "lerna version --exact --force-publish --preid rc",
         "release:no-push": "npm run release --no-push --no-git-tag-version",
         "release:publish": "lerna publish from-package",
+        "check-types": "tsc --noEmit",
+        "check-types:ci": "npm run check-types -- -p ./tsconfig.build.json",
         "playground": "npm start --workspace=@cere-ddc-sdk/playground"
     },
     "dependencies": {
