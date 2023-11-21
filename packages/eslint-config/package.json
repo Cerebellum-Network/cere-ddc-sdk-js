@@ -1,0 +1,20 @@
+{
+    "name": "@cere-ddc-sdk/eslint-config",
+    "version": "2.0.0-rc.10",
+    "main": "index.js",
+    "private": true,
+    "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+    "license": "ISC",
+    "dependencies": {
+        "@typescript-eslint/eslint-plugin": "^6.12.0",
+        "@typescript-eslint/parser": "^6.12.0",
+        "eslint-config-prettier": "^9.0.0",
+        "eslint-import-resolver-typescript": "^3.6.1",
+        "eslint-plugin-import": "^2.29.0",
+        "eslint-plugin-prettier": "^5.0.1"
+    },
+    "peerDependencies": {
+        "eslint": "^8.54.0",
+        "prettier": "^3.1.0"
+    }
+}
