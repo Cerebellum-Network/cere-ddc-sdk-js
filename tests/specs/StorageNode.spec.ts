@@ -12,7 +12,7 @@ import {
 import { createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes } from '../helpers';
 
 describe('Storage Node', () => {
-  const bucketId = 1;
+  const bucketId = 1n;
   const [storageNodeParams] = getStorageNodes();
   const storageNode = new StorageNode(new UriSigner(ROOT_USER_SEED), storageNodeParams);
 

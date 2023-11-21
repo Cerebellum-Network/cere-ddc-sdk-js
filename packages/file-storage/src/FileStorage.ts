@@ -1,4 +1,4 @@
-import { Blockchain } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, BucketId } from '@cere-ddc-sdk/blockchain';
 import {
   PieceReadOptions,
   MAX_PIECE_SIZE,
@@ -18,7 +18,10 @@ import {
 
 import { File, FileResponse } from './File';
 
-export type FileStorageConfig = ConfigPreset;
+export type FileStorageConfig = Omit<ConfigPreset, 'blockchain'> & {
+  blockchain: Blockchain | ConfigPreset['blockchain'];
+};
+
 export type FileReadOptions = PieceReadOptions;
 export type FileStoreOptions = PieceStoreOptions;
 
@@ -41,7 +44,7 @@ export class FileStorage {
     return new FileStorage(new Router({ ...config, blockchain, signer }));
   }
 
-  private async storeLarge(node: StorageNode, bucketId: number, file: File, options?: FileStoreOptions) {
+  private async storeLarge(node: StorageNode, bucketId: BucketId, file: File, options?: FileStoreOptions) {
     const parts = await splitStream(file.body, MAX_PIECE_SIZE, (content, multipartOffset) => {
       const piece = new Piece(content, { multipartOffset });
 
@@ -55,11 +58,11 @@ export class FileStorage {
     );
   }
 
-  private async storeSmall(node: StorageNode, bucketId: number, file: File, options?: FileStoreOptions) {
+  private async storeSmall(node: StorageNode, bucketId: BucketId, file: File, options?: FileStoreOptions) {
     return node.storePiece(bucketId, new Piece(file.body), options);
   }
 
-  async store(bucketId: number, file: File, options?: FileStoreOptions) {
+  async store(bucketId: BucketId, file: File, options?: FileStoreOptions) {
     const isLarge = file.size > MAX_PIECE_SIZE;
     const node = await this.router.getNode(RouterOperation.STORE_PIECE, BigInt(bucketId));
     const cid = isLarge
@@ -69,7 +72,7 @@ export class FileStorage {
     return cid;
   }
 
-  async read(bucketId: number, cidOrName: string, options?: FileReadOptions) {
+  async read(bucketId: BucketId, cidOrName: string, options?: FileReadOptions) {
     const node = await this.router.getNode(RouterOperation.READ_PIECE, BigInt(bucketId));
     const piece = await node.readPiece(bucketId, cidOrName, options);
 

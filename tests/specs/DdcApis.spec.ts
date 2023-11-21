@@ -29,7 +29,7 @@ const transports = [
 describe.each(transports)('DDC APIs ($name)', ({ transport }) => {
   let signer: Signer;
 
-  const bucketId = 1;
+  const bucketId = 1n;
   const dagApi = new DagApi(transport);
   const fileApi = new FileApi(transport);
   const cnsApi = new CnsApi(transport);

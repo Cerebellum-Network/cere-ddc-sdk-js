@@ -1,4 +1,4 @@
-import type { Signer } from '@cere-ddc-sdk/blockchain';
+import type { Signer, BucketId } from '@cere-ddc-sdk/blockchain';
 
 import { Cid } from './Cid';
 import { CnsApi } from './CnsApi';
@@ -42,7 +42,7 @@ export class StorageNode {
     this.cnsApi = new CnsApi(transport);
   }
 
-  async storePiece(bucketId: number, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
+  async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
     let cidBytes: Uint8Array;
 
     if (piece instanceof MultipartPiece) {
@@ -72,7 +72,7 @@ export class StorageNode {
     return cid;
   }
 
-  async storeDagNode(bucketId: number, node: DagNode, options?: DagNodeStoreOptions) {
+  async storeDagNode(bucketId: BucketId, node: DagNode, options?: DagNodeStoreOptions) {
     const cidBytes = await this.dagApi.putNode({
       bucketId,
       node: mapDagNodeToAPI(node),
@@ -87,7 +87,7 @@ export class StorageNode {
     return cid;
   }
 
-  async readPiece(bucketId: number, cidOrName: string, options?: PieceReadOptions) {
+  async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
     const cid = await this.resolveName(bucketId, cidOrName);
     const contentStream = await this.fileApi.getFile({
       bucketId,
@@ -100,7 +100,7 @@ export class StorageNode {
     });
   }
 
-  async getDagNode(bucketId: number, cidOrName: string, options?: DagNodeGetOptions) {
+  async getDagNode(bucketId: BucketId, cidOrName: string, options?: DagNodeGetOptions) {
     const cid = await this.resolveName(bucketId, cidOrName);
     const node = await this.dagApi.getNode({
       bucketId,
@@ -111,7 +111,7 @@ export class StorageNode {
     return node && new DagNodeResponse(cid, new Uint8Array(node.data), node.links, node.tags);
   }
 
-  async storeCnsRecord(bucketId: number, record: CnsRecord) {
+  async storeCnsRecord(bucketId: BucketId, record: CnsRecord) {
     if (!record.signature && this.signer) {
       await this.signer.isReady();
 
@@ -124,13 +124,13 @@ export class StorageNode {
     });
   }
 
-  async getCnsRecord(bucketId: number, name: string) {
+  async getCnsRecord(bucketId: BucketId, name: string) {
     const record = await this.cnsApi.getRecord({ bucketId, name });
 
     return record && new CnsRecordResponse(record.cid, record.name, record.signature);
   }
 
-  async resolveName(bucketId: number, cidOrName: string) {
+  async resolveName(bucketId: BucketId, cidOrName: string) {
     if (Cid.isCid(cidOrName)) {
       return new Cid(cidOrName);
     }

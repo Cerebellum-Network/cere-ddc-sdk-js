@@ -189,9 +189,7 @@ describe('DDC Client', () => {
     const clusterId = '0x0000000000000000000000000000000000000000';
 
     test('Create bucket', async () => {
-      const bucket = await client.createBucket(clusterId);
-
-      createdBucketId = bucket.bucketId;
+      const createdBucketId = await client.createBucket(clusterId);
 
       expect(createdBucketId).toEqual(expect.any(BigInt));
     });

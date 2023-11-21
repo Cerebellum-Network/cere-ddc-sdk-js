@@ -8,7 +8,7 @@ import { FileStorage, File, UriSigner } from '@cere-ddc-sdk/file-storage';
 import { createDataStream, getStorageNodes, MB, ROOT_USER_SEED } from '../helpers';
 
 describe('File storage', () => {
-  const bucketId = 1;
+  const bucketId = 1n;
   const fileStorage = new FileStorage({
     signer: new UriSigner(ROOT_USER_SEED),
     nodes: getStorageNodes(),
