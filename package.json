@@ -9,8 +9,8 @@
   "author": "",
   "license": "Apache-2.0",
   "scripts": {
-    "format": "prettier --write \"packages/**/*.ts\"",
-    "lint": "eslint",
+    "lint": "eslint --quiet '**/*.{ts,js}'",
+    "lint:fix": "npm run lint -- --fix",
     "test": "jest --selectProjects Dev",
     "test:ci": "jest --selectProjects CI",
     "test:clean": "rimraf ./tests/data/*",
