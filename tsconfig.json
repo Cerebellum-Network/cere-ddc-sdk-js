@@ -1,9 +1,9 @@
 {
-    "extends": "./tsconfig.build.json",
-    "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-            "@cere-ddc-sdk/*": ["packages/*/src"]
-        }
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@cere-ddc-sdk/*": ["packages/*/src"]
     }
+  }
 }

@@ -1,7 +1,7 @@
-import {startEnvironment} from './environment';
+import { startEnvironment } from './environment';
 
 export default async () => {
-    console.log(''); // New line
+  console.log(''); // New line
 
-    await startEnvironment();
+  await startEnvironment();
 };

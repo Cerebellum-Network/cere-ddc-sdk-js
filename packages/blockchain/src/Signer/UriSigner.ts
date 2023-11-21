@@ -1,66 +1,69 @@
-import {SignOptions, KeyringPair, KeyringOptions} from '@polkadot/keyring/types';
-import {cryptoWaitReady} from '@polkadot/util-crypto';
-import {Keyring} from '@polkadot/keyring';
+import { SignOptions, KeyringPair, KeyringOptions } from '@polkadot/keyring/types';
+import { cryptoWaitReady } from '@polkadot/util-crypto';
+import { Keyring } from '@polkadot/keyring';
 
-import {Signer} from './Signer';
+import { Signer } from './Signer';
 
 export type UriSignerOptions = Pick<KeyringOptions, 'type'>;
 
 export class UriSigner implements Signer {
-    private pair?: KeyringPair;
+  private pair?: KeyringPair;
 
-    constructor(private uri: string, private options: UriSignerOptions = {}) {
-        this.isReady();
+  constructor(
+    private uri: string,
+    private options: UriSignerOptions = {},
+  ) {
+    this.isReady();
+  }
+
+  async isReady() {
+    if (this.pair) {
+      return true;
     }
 
-    async isReady() {
-        if (this.pair) {
-            return true;
-        }
+    const isCryptoReady = await cryptoWaitReady();
 
-        const isCryptoReady = await cryptoWaitReady();
-
-        if (!isCryptoReady) {
-            return false;
-        }
-
-        this.pair = new Keyring({ss58Format: 54, type: this.type}).addFromUri(this.uri);
-
-        return true;
+    if (!isCryptoReady) {
+      return false;
     }
 
-    private getPair() {
-        if (this.pair) {
-            return this.pair;
-        }
+    this.pair = new Keyring({ ss58Format: 54, type: this.type }).addFromUri(this.uri);
 
-        throw new Error('Signer is not ready');
+    return true;
+  }
+
+  private getPair() {
+    if (this.pair) {
+      return this.pair;
     }
 
-    get type() {
-        return this.options.type || 'sr25519';
-    }
+    throw new Error('Signer is not ready');
+  }
 
-    get address() {
-        return this.getPair().address;
-    }
+  get type() {
+    return this.options.type || 'sr25519';
+  }
 
-    get publicKey() {
-        return this.getPair().publicKey;
-    }
+  get address() {
+    return this.getPair().address;
+  }
 
-    get addressRaw() {
-        return this.getPair().addressRaw;
-    }
+  get publicKey() {
+    return this.getPair().publicKey;
+  }
 
-    sign(data: Uint8Array, options?: SignOptions) {
-        return this.getPair().sign(data, options);
-    }
+  get addressRaw() {
+    return this.getPair().addressRaw;
+  }
 
-    static async create(uri: string, options: UriSignerOptions = {}) {
-        const signer = new UriSigner(uri, options);
-        await signer.isReady();
+  sign(data: Uint8Array, options?: SignOptions) {
+    return this.getPair().sign(data, options);
+  }
 
-        return signer;
-    }
+  static async create(uri: string, options: UriSignerOptions = {}) {
+    const signer = new UriSigner(uri, options);
+    await signer.isReady();
+
+    return signer;
+  }
 }
