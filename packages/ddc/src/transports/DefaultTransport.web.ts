@@ -1,3 +1,3 @@
-import {WebsocketTransport} from './WebsocketTransport';
+import { WebsocketTransport } from './WebsocketTransport';
 
 export class DefaultTransport extends WebsocketTransport {}

@@ -1,34 +1,37 @@
 {
-    "name": "@cere-ddc-sdk/ddc-client",
-    "description": "DDC client",
-    "version": "2.0.0-rc.7",
-    "type": "module",
-    "repository": {
-        "type": "git",
-        "directory": "packages/ddc-client",
-        "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
-    },
-    "main": "dist/index.cjs",
-    "types": "dist/types/index.d.ts",
-    "module": "dist/index.js",
-    "exports": {
-        "types": "./dist/types/index.d.ts",
-        "require": "./dist/index.cjs",
-        "default": "./dist/index.js"
-    },
-    "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
-    "license": "Apache-2.0",
-    "scripts": {
-        "build": "microbundle --tsconfig tsconfig.build.json --format modern,cjs",
-        "package": "clean-publish",
-        "clean": "rimraf dist package"
-    },
-    "dependencies": {
-        "@cere-ddc-sdk/blockchain": "2.0.0-rc.7",
-        "@cere-ddc-sdk/ddc": "2.0.0-rc.7",
-        "@cere-ddc-sdk/file-storage": "2.0.0-rc.7"
-    },
-    "publishConfig": {
-        "access": "public"
-    }
+  "name": "@cere-ddc-sdk/ddc-client",
+  "description": "DDC client",
+  "version": "2.0.0-rc.10",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "directory": "packages/ddc-client",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "main": "dist/index.cjs",
+  "types": "dist/types/index.d.ts",
+  "module": "dist/index.js",
+  "exports": {
+    "types": "./dist/types/index.d.ts",
+    "require": "./dist/index.cjs",
+    "browser": "./dist/browser.js",
+    "default": "./dist/index.js"
+  },
+  "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "npm-run-all --parallel build:node build:web",
+    "build:node": "microbundle --tsconfig tsconfig.build.json --format esm,cjs --target node",
+    "build:web": "microbundle --tsconfig tsconfig.build.json --format modern --output dist/browser.js",
+    "package": "clean-publish",
+    "clean": "rimraf dist package"
+  },
+  "dependencies": {
+    "@cere-ddc-sdk/blockchain": "2.0.0-rc.10",
+    "@cere-ddc-sdk/ddc": "2.0.0-rc.10",
+    "@cere-ddc-sdk/file-storage": "2.0.0-rc.10"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }
