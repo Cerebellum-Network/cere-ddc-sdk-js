@@ -1,52 +1,55 @@
 name: 'Tests'
 
 on:
-    pull_request:
-    workflow_dispatch:
+  pull_request:
+  workflow_dispatch:
 
 permissions:
-    id-token: write
-    contents: read
+  id-token: write
+  contents: read
 
 env:
-    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 jobs:
-    tests:
-        name: Run tests
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                  submodules: 'true'
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
 
-            - name: Get Node.js version
-              id: nvm
-              run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+      - name: Get Node.js version
+        id: nvm
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_OUTPUT
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v2
-              with:
-                  node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
 
-            - name: Configure aws credentials
-              uses: aws-actions/configure-aws-credentials@v2
-              with:
-                  role-to-assume: arn:aws:iam::${{ vars.DEV_NETWORK_AWS_ACCOUNT_ID }}:role/github
-                  role-session-name: ${{ github.event.repository.name }}
-                  aws-region: us-west-2
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.DEV_NETWORK_AWS_ACCOUNT_ID }}:role/github
+          role-session-name: ${{ github.event.repository.name }}
+          aws-region: us-west-2
 
-            - name: Login to Amazon ECR
-              uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
 
-            - name: Install packages
-              run: npm ci
+      - name: Install packages
+        run: npm ci
 
-            - name: Build packages
-              run: npm run build
+      - name: Check code style
+        run: npm run lint
 
-            - name: Check types
-              run: npm run check-types:ci
+      - name: Build packages
+        run: npm run build
 
-            - name: Run integration tests
-              run: npm run test:ci
+      - name: Check types
+        run: npm run check-types:ci
+
+      - name: Run integration tests
+        run: npm run test:ci

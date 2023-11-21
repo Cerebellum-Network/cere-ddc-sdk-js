@@ -1,39 +1,41 @@
 {
-    "name": "@cere-ddc-sdk/blockchain",
-    "version": "2.0.0-rc.10",
-    "description": "Cere Blockchain client",
-    "type": "module",
-    "main": "dist/index.cjs",
-    "module": "dist/index.js",
-    "types": "dist/types/index.d.ts",
-    "exports": {
-        "types": "./dist/types/index.d.ts",
-        "require": "./dist/index.cjs",
-        "browser": "./dist/browser.js",
-        "default": "./dist/index.js"
-    },
-    "publishConfig": {
-        "access": "public"
-    },
-    "repository": {
-        "type": "git",
-        "directory": "packages/blockchain",
-        "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
-    },
-    "scripts": {
-        "build": "npm-run-all --parallel build:node build:web",
-        "build:node": "microbundle --tsconfig tsconfig.build.json --format esm,cjs --target node",
-        "build:web": "microbundle --tsconfig tsconfig.build.json --format modern --output dist/browser.js",
-        "package": "clean-publish",
-        "clean": "rimraf dist package"
-    },
-    "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
-    "license": "Apache-2.0",
-    "dependencies": {
-        "@polkadot/api": "9.4.1",
-        "@polkadot/api-contract": "9.4.1",
-        "@polkadot/keyring": "^10.1.8",
-        "@polkadot/types": "^9.4.1",
-        "@polkadot/util-crypto": "^10.1.8"
-    }
+  "name": "@cere-ddc-sdk/blockchain",
+  "version": "2.0.0-rc.10",
+  "description": "Cere Blockchain client",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    "types": "./dist/types/index.d.ts",
+    "require": "./dist/index.cjs",
+    "browser": "./dist/browser.js",
+    "default": "./dist/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "directory": "packages/blockchain",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "scripts": {
+    "build": "npm-run-all --parallel build:node build:web",
+    "build:node": "microbundle --tsconfig tsconfig.build.json --format esm,cjs --target node",
+    "build:web": "microbundle --tsconfig tsconfig.build.json --format modern --output dist/browser.js",
+    "package": "clean-publish",
+    "clean": "rimraf dist package"
+  },
+  "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@polkadot/api": "9.4.1",
+    "@polkadot/api-contract": "9.4.1",
+    "@polkadot/keyring": "^10.1.8",
+    "@polkadot/types": "^9.4.1",
+    "@polkadot/util-crypto": "^10.1.8",
+    "@polkadot/api-base": "9.4.1",
+    "@polkadot/util": "10.4.2"
+  }
 }

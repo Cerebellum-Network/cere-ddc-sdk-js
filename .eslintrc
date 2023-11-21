@@ -1,0 +1,4 @@
+{
+  "extends": "@cere-ddc-sdk/eslint-config",
+  "root": true
+}

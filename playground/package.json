@@ -1,29 +1,29 @@
 {
-    "name": "@cere-ddc-sdk/playground",
-    "version": "2.0.0-rc.10",
-    "private": true,
-    "scripts": {
-        "start": "npm-run-all --parallel bootstrap start:app",
-        "start:app": "wait-port localhost:8091 -o silent && craco start",
-        "build": "PUBLIC_URL=. craco build",
-        "clean": "rimraf build",
-        "bootstrap": "ts-node --esm ./scripts/bootstrap.cjs"
-    },
-    "dependencies": {
-        "@cere-ddc-sdk/ddc-client": "2.0.0-rc.10",
-        "@emotion/react": "^11.11.1",
-        "@emotion/styled": "^11.11.0",
-        "@mui/lab": "^5.0.0-alpha.152",
-        "@mui/material": "^5.14.17",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "react-dropzone": "^14.2.3"
-    },
-    "devDependencies": {
-        "@craco/craco": "^7.1.0",
-        "@types/react": "^18.2.37",
-        "@types/react-dom": "^18.2.15",
-        "node-polyfill-webpack-plugin": "^2.0.1",
-        "react-scripts": "^5.0.1"
-    }
+  "name": "@cere-ddc-sdk/playground",
+  "version": "2.0.0-rc.10",
+  "private": true,
+  "scripts": {
+    "start": "npm-run-all --parallel bootstrap start:app",
+    "start:app": "wait-port localhost:8091 -o silent && craco start",
+    "build": "PUBLIC_URL=. craco build",
+    "clean": "rimraf build",
+    "bootstrap": "ts-node --esm ./scripts/bootstrap.cjs"
+  },
+  "dependencies": {
+    "@cere-ddc-sdk/ddc-client": "2.0.0-rc.10",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/lab": "^5.0.0-alpha.152",
+    "@mui/material": "^5.14.17",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-dropzone": "^14.2.3"
+  },
+  "devDependencies": {
+    "@craco/craco": "^7.1.0",
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "node-polyfill-webpack-plugin": "^2.0.1",
+    "react-scripts": "^5.0.1"
+  }
 }

@@ -16,7 +16,10 @@ export class File {
 
   constructor(content: FileContent, meta: StreamMeta);
   constructor(content: Uint8Array, meta?: StaticContentMeta);
-  constructor(content: FileContent, readonly meta: StreamMeta | StaticContentMeta = {}) {
+  constructor(
+    content: FileContent,
+    readonly meta: StreamMeta | StaticContentMeta = {},
+  ) {
     this.body = createContentStream(content);
     this.size = content instanceof Uint8Array ? content.byteLength : meta.size!;
   }
