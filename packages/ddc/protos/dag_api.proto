@@ -25,7 +25,7 @@ service DagApi {
 }
 
 message PutRequest {
-  uint64 BucketId = 1;
+  uint64 BucketId = 1 [jstype = JS_NORMAL];
   Node Node = 2;
 }
 
@@ -34,7 +34,7 @@ message PutResponse {
 }
 
 message GetRequest {
-  uint64 BucketId = 1;
+  uint64 BucketId = 1 [jstype = JS_NORMAL];
   bytes Cid = 2;
   optional string Path = 3;
 }

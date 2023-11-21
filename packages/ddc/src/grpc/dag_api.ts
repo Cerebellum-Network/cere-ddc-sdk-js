@@ -17,9 +17,9 @@ import { MessageType } from "@protobuf-ts/runtime";
  */
 export interface PutRequest {
     /**
-     * @generated from protobuf field: uint64 BucketId = 1 [json_name = "BucketId"];
+     * @generated from protobuf field: uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL];
      */
-    bucketId: number;
+    bucketId: bigint;
     /**
      * @generated from protobuf field: dag.Node Node = 2 [json_name = "Node"];
      */
@@ -39,9 +39,9 @@ export interface PutResponse {
  */
 export interface GetRequest {
     /**
-     * @generated from protobuf field: uint64 BucketId = 1 [json_name = "BucketId"];
+     * @generated from protobuf field: uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL];
      */
-    bucketId: number;
+    bucketId: bigint;
     /**
      * @generated from protobuf field: bytes Cid = 2 [json_name = "Cid"];
      */
@@ -117,12 +117,12 @@ export interface Tag {
 class PutRequest$Type extends MessageType<PutRequest> {
     constructor() {
         super("dag.PutRequest", [
-            { no: 1, name: "BucketId", kind: "scalar", jsonName: "BucketId", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
+            { no: 1, name: "BucketId", kind: "scalar", jsonName: "BucketId", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 2, name: "Node", kind: "message", jsonName: "Node", T: () => Node }
         ]);
     }
     create(value?: PartialMessage<PutRequest>): PutRequest {
-        const message = { bucketId: 0 };
+        const message = { bucketId: 0n };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<PutRequest>(this, message, value);
@@ -133,8 +133,8 @@ class PutRequest$Type extends MessageType<PutRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* uint64 BucketId = 1 [json_name = "BucketId"];*/ 1:
-                    message.bucketId = reader.uint64().toNumber();
+                case /* uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL];*/ 1:
+                    message.bucketId = reader.uint64().toBigInt();
                     break;
                 case /* dag.Node Node = 2 [json_name = "Node"];*/ 2:
                     message.node = Node.internalBinaryRead(reader, reader.uint32(), options, message.node);
@@ -151,8 +151,8 @@ class PutRequest$Type extends MessageType<PutRequest> {
         return message;
     }
     internalBinaryWrite(message: PutRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* uint64 BucketId = 1 [json_name = "BucketId"]; */
-        if (message.bucketId !== 0)
+        /* uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL]; */
+        if (message.bucketId !== 0n)
             writer.tag(1, WireType.Varint).uint64(message.bucketId);
         /* dag.Node Node = 2 [json_name = "Node"]; */
         if (message.node)
@@ -218,13 +218,13 @@ export const PutResponse = new PutResponse$Type();
 class GetRequest$Type extends MessageType<GetRequest> {
     constructor() {
         super("dag.GetRequest", [
-            { no: 1, name: "BucketId", kind: "scalar", jsonName: "BucketId", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
+            { no: 1, name: "BucketId", kind: "scalar", jsonName: "BucketId", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 2, name: "Cid", kind: "scalar", jsonName: "Cid", T: 12 /*ScalarType.BYTES*/ },
             { no: 3, name: "Path", kind: "scalar", jsonName: "Path", opt: true, T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<GetRequest>): GetRequest {
-        const message = { bucketId: 0, cid: new Uint8Array(0) };
+        const message = { bucketId: 0n, cid: new Uint8Array(0) };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<GetRequest>(this, message, value);
@@ -235,8 +235,8 @@ class GetRequest$Type extends MessageType<GetRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* uint64 BucketId = 1 [json_name = "BucketId"];*/ 1:
-                    message.bucketId = reader.uint64().toNumber();
+                case /* uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL];*/ 1:
+                    message.bucketId = reader.uint64().toBigInt();
                     break;
                 case /* bytes Cid = 2 [json_name = "Cid"];*/ 2:
                     message.cid = reader.bytes();
@@ -256,8 +256,8 @@ class GetRequest$Type extends MessageType<GetRequest> {
         return message;
     }
     internalBinaryWrite(message: GetRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* uint64 BucketId = 1 [json_name = "BucketId"]; */
-        if (message.bucketId !== 0)
+        /* uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL]; */
+        if (message.bucketId !== 0n)
             writer.tag(1, WireType.Varint).uint64(message.bucketId);
         /* bytes Cid = 2 [json_name = "Cid"]; */
         if (message.cid.length)

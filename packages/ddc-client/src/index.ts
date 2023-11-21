@@ -23,3 +23,5 @@ export {
     type FileStoreOptions,
     type FileReadOptions,
 } from '@cere-ddc-sdk/file-storage';
+
+export type {BucketId, ClusterId, Bucket, AccountId} from '@cere-ddc-sdk/blockchain';

@@ -12,7 +12,7 @@ service FileApi {
 
 message PutRawPieceRequest {
   message Metadata {
-    uint64 bucketId = 1;
+    uint64 bucketId = 1 [jstype = JS_NORMAL];
     optional bytes cid = 2;
     optional uint64 offset = 3; // starting offset of the piece inside a file. Should be set only if isMultipart = true
     bool isMultipart = 4; // whether the piece is part of a file or not
@@ -34,7 +34,7 @@ message PutRawPieceResponse {
 }
 
 message PutMultiPartPieceRequest {
-  uint64 bucketId = 1; // bucket where file is stored
+  uint64 bucketId = 1 [jstype = JS_NORMAL]; // bucket where file is stored
   optional bytes cid = 2; // root hash of the file hash tree
   uint64 totalSize = 3; // size of the multi-part piece (large file total size)
   uint64 partSize = 4; // size of the raw piece (large file part size)
@@ -49,7 +49,7 @@ message PutMultiPartPieceResponse {
 message GetFileRequest {
   message Request {
     bytes cid = 1; // CID of either raw or multi-part piece
-    uint64 bucketId = 2;
+    uint64 bucketId = 2 [jstype = JS_NORMAL];
     optional Range range = 3; // indicates part of the file to be returned (return whole file if range is missing)
 
     message Range {

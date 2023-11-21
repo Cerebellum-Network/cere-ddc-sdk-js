@@ -22,14 +22,14 @@ service CnsApi {
 }
 
 message PutRequest {
-  uint64 bucketId = 1;
+  uint64 bucketId = 1 [jstype = JS_NORMAL];
   Record record = 2;
 }
 
 message PutResponse {}
 
 message GetRequest {
-  uint64 bucketId = 1;
+  uint64 bucketId = 1 [jstype = JS_NORMAL];
   string name = 2;
 }
 
