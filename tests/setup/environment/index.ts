@@ -1,20 +1,20 @@
-import {startDDC, stopDDC} from './ddc';
-import {startBlockchain, stopBlockchain} from './blockchain';
+import { startDDC, stopDDC } from './ddc';
+import { startBlockchain, stopBlockchain } from './blockchain';
 
 export const startEnvironment = async () => {
-    console.group('Start local environment');
+  console.group('Start local environment');
 
-    const bcEnv = await startBlockchain();
-    await startDDC(bcEnv);
+  const bcEnv = await startBlockchain();
+  await startDDC(bcEnv);
 
-    console.groupEnd();
+  console.groupEnd();
 };
 
 export const stopEnvironment = async () => {
-    console.group('Stop local environment');
+  console.group('Stop local environment');
 
-    await stopDDC();
-    await stopBlockchain();
+  await stopDDC();
+  await stopBlockchain();
 
-    console.groupEnd();
+  console.groupEnd();
 };

@@ -9,7 +9,7 @@
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
   "scripts": {
-    "lint": "eslint --quiet '**/*.{ts,js}'",
+    "lint": "eslint --quiet '**/*.{ts,tsx,js,jsx,json}'",
     "lint:fix": "npm run lint -- --fix",
     "test": "lerna run test",
     "test:ci": "lerna run test:ci",

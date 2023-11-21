@@ -1,3 +1,3 @@
-import {GrpcTransport} from './GrpcTransport';
+import { GrpcTransport } from './GrpcTransport';
 
 export class DefaultTransport extends GrpcTransport {}

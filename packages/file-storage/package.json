@@ -1,36 +1,36 @@
 {
-    "name": "@cere-ddc-sdk/file-storage",
-    "description": "File storage client",
-    "version": "2.0.0-rc.10",
-    "type": "module",
-    "repository": {
-        "type": "git",
-        "directory": "packages/file-storage",
-        "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
-    },
-    "main": "dist/index.cjs",
-    "module": "dist/index.js",
-    "types": "dist/types/index.d.ts",
-    "exports": {
-        "types": "./dist/types/index.d.ts",
-        "require": "./dist/index.cjs",
-        "browser": "./dist/browser.js",
-        "default": "./dist/index.js"
-    },
-    "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
-    "license": "Apache-2.0",
-    "scripts": {
-        "build": "npm-run-all --parallel build:node build:web",
-        "build:node": "microbundle --tsconfig tsconfig.build.json --format esm,cjs --target node",
-        "build:web": "microbundle --tsconfig tsconfig.build.json --format modern --output dist/browser.js",
-        "package": "clean-publish",
-        "clean": "rimraf dist package"
-    },
-    "dependencies": {
-        "@cere-ddc-sdk/blockchain": "2.0.0-rc.10",
-        "@cere-ddc-sdk/ddc": "2.0.0-rc.10"
-    },
-    "publishConfig": {
-        "access": "public"
-    }
+  "name": "@cere-ddc-sdk/file-storage",
+  "description": "File storage client",
+  "version": "2.0.0-rc.10",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "directory": "packages/file-storage",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    "types": "./dist/types/index.d.ts",
+    "require": "./dist/index.cjs",
+    "browser": "./dist/browser.js",
+    "default": "./dist/index.js"
+  },
+  "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "npm-run-all --parallel build:node build:web",
+    "build:node": "microbundle --tsconfig tsconfig.build.json --format esm,cjs --target node",
+    "build:web": "microbundle --tsconfig tsconfig.build.json --format modern --output dist/browser.js",
+    "package": "clean-publish",
+    "clean": "rimraf dist package"
+  },
+  "dependencies": {
+    "@cere-ddc-sdk/blockchain": "2.0.0-rc.10",
+    "@cere-ddc-sdk/ddc": "2.0.0-rc.10"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

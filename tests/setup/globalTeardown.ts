@@ -1,5 +1,5 @@
-import {stopEnvironment} from './environment';
+import { stopEnvironment } from './environment';
 
 export default async () => {
-    await stopEnvironment();
+  await stopEnvironment();
 };

@@ -18,6 +18,7 @@ module.exports = {
     '@typescript-eslint/no-var-requires': 'off',
     'import/no-anonymous-default-export': 'off',
     'import/no-extraneous-dependencies': 'error',
+    '@typescript-eslint/ban-ts-comment': 'off',
     'import/no-unresolved': 'off', // Disable due to ts paths configuration
   },
 };
