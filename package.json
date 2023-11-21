@@ -6,7 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
   },
-  "author": "",
+  "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
   "scripts": {
     "lint": "eslint --quiet '**/*.{ts,js}'",
