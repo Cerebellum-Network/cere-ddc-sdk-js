@@ -32,8 +32,11 @@ export const createBlockhainApi = async () => {
   return api.isReady;
 };
 
-export const getAccount = (uri = ROOT_USER_SEED, type: KeypairType = ROOT_ACCOUNT_TYPE) => {
-  const keyring = new Keyring({ type, ss58Format: 54 });
+export const getAccount = (uri = ROOT_USER_SEED, type?: KeypairType) => {
+  const keyring = new Keyring({
+    type: type || (uri === ROOT_USER_SEED ? ROOT_ACCOUNT_TYPE : 'sr25519'),
+    ss58Format: 54,
+  });
 
   return keyring.addFromUri(uri);
 };
