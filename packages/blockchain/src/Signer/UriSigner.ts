@@ -41,7 +41,7 @@ export class UriSigner implements Signer {
   }
 
   get type() {
-    return this.options.type || 'sr25519';
+    return this.options.type || 'ed25519';
   }
 
   get address() {

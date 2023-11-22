@@ -4,7 +4,9 @@ import { Signature, Signature_Algorithm as SigAlg } from '../grpc/pb/signature';
 
 export type ApiSignature = Signature;
 
-export const createSignature = (signer: Signer, message: Uint8Array): ApiSignature => {
+export const createSignature = async (signer: Signer, message: Uint8Array) => {
+  await signer.isReady();
+
   const algorithm = signer.type;
 
   if (algorithm !== 'ed25519' && algorithm !== 'sr25519') {

@@ -14,7 +14,7 @@ import {
 import { createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes } from '../helpers';
 
 const [transportOptions] = getStorageNodes();
-const transports = [
+const wholeSpecVariants = [
   {
     name: 'Grpc Transport',
     transport: new GrpcTransport(transportOptions),
@@ -25,26 +25,20 @@ const transports = [
   },
 ];
 
-describe.each(transports)('DDC APIs ($name)', ({ transport }) => {
+const fileSpecVariants = [
+  { name: 'with ACKs', enableAcks: true },
+  { name: 'without ACKs', enableAcks: true },
+];
+
+describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
   const bucketId = 1n;
   const signer = new UriSigner(ROOT_USER_SEED);
-  const dagApi = new DagApi(transport);
-  const fileApi = new FileApi(transport);
-  const cnsApi = new CnsApi(transport, { signer });
-
-  const storeRawPiece = async (chunks: Content, mutipartOffset?: number) =>
-    fileApi.putRawPiece(
-      {
-        bucketId,
-        isMultipart: mutipartOffset !== undefined,
-        offset: mutipartOffset,
-      },
-      chunks,
-    );
 
   describe('Dag Api', () => {
-    let nodeCid: Uint8Array;
+    const dagApi = new DagApi(transport);
     const nodeData = new Uint8Array(randomBytes(10));
+
+    let nodeCid: Uint8Array;
 
     test('Create node', async () => {
       nodeCid = await dagApi.putNode({
@@ -112,10 +106,11 @@ describe.each(transports)('DDC APIs ($name)', ({ transport }) => {
   });
 
   describe('Cns Api', () => {
-    let signature: any;
-
+    const cnsApi = new CnsApi(transport, { signer });
     const testCid = new Cid('AEBB4IEIDC5HNY76TBBV5CK5WQT7FXCGNJATYVLW5WRMJ7IMNOQECYYCDQ').toBytes();
     const alias = 'dir/file-name';
+
+    let signature: any;
 
     test('Create alias', async () => {
       const savedRecord = await cnsApi.putRecord({
@@ -140,7 +135,19 @@ describe.each(transports)('DDC APIs ($name)', ({ transport }) => {
     });
   });
 
-  describe('File Api', () => {
+  describe.each(fileSpecVariants)('File Api ($name)', ({ enableAcks }) => {
+    const fileApi = new FileApi(transport, { signer, enableAcks });
+
+    const storeRawPiece = async (chunks: Content, mutipartOffset?: number) =>
+      fileApi.putRawPiece(
+        {
+          bucketId,
+          isMultipart: mutipartOffset !== undefined,
+          offset: mutipartOffset,
+        },
+        chunks,
+      );
+
     describe('Raw piece', () => {
       let smallPieceCid: Uint8Array;
       let largePieceCid: Uint8Array;

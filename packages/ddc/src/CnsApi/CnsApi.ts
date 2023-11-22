@@ -40,7 +40,7 @@ export class CnsApi {
       throw new Error('Unnable to store CNS record. Signer required!');
     }
 
-    const signature = createSignature(signer, createSignatureMessage(record));
+    const signature = await createSignature(signer, createSignatureMessage(record));
 
     await this.api.put({
       bucketId,

@@ -30,7 +30,7 @@ message ActivityRequest {
 
 	RequestType requestType = 3;
 	ContentType contentType = 4;
-	uint64 bucketId = 5; // set only when content type is PIECE
+	uint64 bucketId = 5 [jstype = JS_NORMAL]; // set only when content type is PIECE
 	bytes id = 6; // either cid or segment id or merkle tree root hash
 	
 	uint64 offset = 7; // offset of data requested (set only when RecordType = GET)

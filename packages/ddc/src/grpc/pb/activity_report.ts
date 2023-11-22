@@ -55,9 +55,9 @@ export interface ActivityRequest {
      */
     contentType: ActivityRequest_ContentType;
     /**
-     * @generated from protobuf field: uint64 bucketId = 5;
+     * @generated from protobuf field: uint64 bucketId = 5 [jstype = JS_NORMAL];
      */
-    bucketId: number; // set only when content type is PIECE
+    bucketId: bigint; // set only when content type is PIECE
     /**
      * @generated from protobuf field: bytes id = 6;
      */
@@ -221,7 +221,7 @@ class ActivityRequest$Type extends MessageType<ActivityRequest> {
             { no: 2, name: "requestId", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 3, name: "requestType", kind: "enum", T: () => ["pb.ActivityRequest.RequestType", ActivityRequest_RequestType, "REQUEST_TYPE_"] },
             { no: 4, name: "contentType", kind: "enum", T: () => ["pb.ActivityRequest.ContentType", ActivityRequest_ContentType, "CONTENT_TYPE_"] },
-            { no: 5, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
+            { no: 5, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 6, name: "id", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
             { no: 7, name: "offset", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
             { no: 8, name: "size", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
@@ -230,7 +230,7 @@ class ActivityRequest$Type extends MessageType<ActivityRequest> {
         ]);
     }
     create(value?: PartialMessage<ActivityRequest>): ActivityRequest {
-        const message = { requestId: "", requestType: 0, contentType: 0, bucketId: 0, id: new Uint8Array(0), offset: 0, size: 0, timestamp: 0 };
+        const message = { requestId: "", requestType: 0, contentType: 0, bucketId: 0n, id: new Uint8Array(0), offset: 0, size: 0, timestamp: 0 };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<ActivityRequest>(this, message, value);
@@ -253,8 +253,8 @@ class ActivityRequest$Type extends MessageType<ActivityRequest> {
                 case /* pb.ActivityRequest.ContentType contentType */ 4:
                     message.contentType = reader.int32();
                     break;
-                case /* uint64 bucketId */ 5:
-                    message.bucketId = reader.uint64().toNumber();
+                case /* uint64 bucketId = 5 [jstype = JS_NORMAL];*/ 5:
+                    message.bucketId = reader.uint64().toBigInt();
                     break;
                 case /* bytes id */ 6:
                     message.id = reader.bytes();
@@ -295,8 +295,8 @@ class ActivityRequest$Type extends MessageType<ActivityRequest> {
         /* pb.ActivityRequest.ContentType contentType = 4; */
         if (message.contentType !== 0)
             writer.tag(4, WireType.Varint).int32(message.contentType);
-        /* uint64 bucketId = 5; */
-        if (message.bucketId !== 0)
+        /* uint64 bucketId = 5 [jstype = JS_NORMAL]; */
+        if (message.bucketId !== 0n)
             writer.tag(5, WireType.Varint).uint64(message.bucketId);
         /* bytes id = 6; */
         if (message.id.length)
