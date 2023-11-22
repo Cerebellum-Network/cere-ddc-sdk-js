@@ -6,7 +6,6 @@ import {
   DagApi,
   FileApi,
   CnsApi,
-  Signer,
   UriSigner,
   Cid,
   MAX_PIECE_SIZE,
@@ -27,15 +26,14 @@ const transports = [
 ];
 
 describe.each(transports)('DDC APIs ($name)', ({ transport }) => {
-  let signer: Signer;
-
   const bucketId = 1n;
+  const signer = new UriSigner(ROOT_USER_SEED);
   const dagApi = new DagApi(transport);
   const fileApi = new FileApi(transport);
-  const cnsApi = new CnsApi(transport);
+  const cnsApi = new CnsApi(transport, { signer });
 
-  const storeRawPiece = async (chunks: Content, mutipartOffset?: number) => {
-    return fileApi.putRawPiece(
+  const storeRawPiece = async (chunks: Content, mutipartOffset?: number) =>
+    fileApi.putRawPiece(
       {
         bucketId,
         isMultipart: mutipartOffset !== undefined,
@@ -43,11 +41,6 @@ describe.each(transports)('DDC APIs ($name)', ({ transport }) => {
       },
       chunks,
     );
-  };
-
-  beforeAll(async () => {
-    signer = await UriSigner.create(ROOT_USER_SEED);
-  });
 
   describe('Dag Api', () => {
     let nodeCid: Uint8Array;
@@ -125,25 +118,15 @@ describe.each(transports)('DDC APIs ($name)', ({ transport }) => {
     const alias = 'dir/file-name';
 
     test('Create alias', async () => {
-      const sigMessage = CnsApi.createSignatureMessage({
-        cid: testCid,
-        name: alias,
-      });
-
-      signature = {
-        signer: signer.publicKey,
-        algorithm: signer.type as any,
-        value: signer.sign(sigMessage),
-      };
-
-      await cnsApi.putRecord({
+      const savedRecord = await cnsApi.putRecord({
         bucketId,
         record: {
           cid: testCid,
           name: alias,
-          signature,
         },
       });
+
+      signature = savedRecord.signature;
     });
 
     test('Get CID by alias', async () => {

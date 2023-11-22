@@ -2,7 +2,9 @@ import type { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { Signature, Signature_Algorithm as SigAlg } from '../grpc/pb/signature';
 
-export const createSignature = (signer: Signer, message: Uint8Array): Signature => {
+export type ApiSignature = Signature;
+
+export const createSignature = (signer: Signer, message: Uint8Array): ApiSignature => {
   const algorithm = signer.type;
 
   if (algorithm !== 'ed25519' && algorithm !== 'sr25519') {

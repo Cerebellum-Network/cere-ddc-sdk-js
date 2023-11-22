@@ -39,7 +39,7 @@ export class StorageNode {
     this.signer = signer;
     this.dagApi = new DagApi(transport);
     this.fileApi = new FileApi(transport);
-    this.cnsApi = new CnsApi(transport);
+    this.cnsApi = new CnsApi(transport, { signer });
   }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
@@ -112,12 +112,6 @@ export class StorageNode {
   }
 
   async storeCnsRecord(bucketId: BucketId, record: CnsRecord) {
-    if (!record.signature && this.signer) {
-      await this.signer.isReady();
-
-      record.sign(this.signer);
-    }
-
     return this.cnsApi.putRecord({
       bucketId,
       record: mapCnsRecordToAPI(record),

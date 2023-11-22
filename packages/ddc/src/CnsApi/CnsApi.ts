@@ -1,52 +1,59 @@
-import { RpcTransport } from '../transports';
-import { CnsApiClient } from '../grpc/cns_api.client';
-import {
-  GetRequest,
-  PutRequest as ProtoPutRequest,
-  Record as ProtRecord,
-  Record_Signature,
-  Record_Signature_Algorithm as SigAlg,
-} from '../grpc/cns_api';
+import type { Signer } from '@cere-ddc-sdk/blockchain';
 
-export type RecordSignature = Omit<Record_Signature, 'algorithm'> & {
-  algorithm: 'ed25519' | 'sr25519';
-};
+import { RpcTransport } from '../transports';
+import { createSignature, mapSignature, Signature } from '../signature';
+import { CnsApiClient } from '../grpc/cns_api.client';
+import { GetRequest, PutRequest as ProtoPutRequest, Record as ProtRecord } from '../grpc/cns_api';
 
 export type Record = Omit<ProtRecord, 'signature'> & {
-  signature: RecordSignature;
+  signature: Signature;
 };
 
 type PutRequest = Omit<ProtoPutRequest, 'record'> & {
-  record: Record;
+  record: Omit<Record, 'signature'>;
 };
 
-export const createSignatureMessage = (record: Omit<Record, 'signature'>) => {
+const createSignatureMessage = (record: Omit<Record, 'signature'>) => {
   const message = ProtRecord.create(record);
 
   return ProtRecord.toBinary(message);
 };
 
+export type CnsApiOptions = {
+  signer?: Signer;
+};
+
 export class CnsApi {
   private api: CnsApiClient;
 
-  constructor(transport: RpcTransport) {
+  constructor(
+    transport: RpcTransport,
+    private options: CnsApiOptions = {},
+  ) {
     this.api = new CnsApiClient(transport);
   }
 
-  async putRecord({ bucketId, record }: PutRequest) {
-    if (!record.signature) {
-      throw new Error('Unnable to store unsigned CNS record');
+  async putRecord({ bucketId, record }: PutRequest): Promise<Record> {
+    const { signer } = this.options;
+
+    if (!signer) {
+      throw new Error('Unnable to store CNS record. Signer required!');
     }
 
-    const signature = {
-      ...record.signature,
-      algorithm: record.signature.algorithm === 'ed25519' ? SigAlg.ED_25519 : SigAlg.SR_25519,
-    };
+    const signature = createSignature(signer, createSignatureMessage(record));
 
     await this.api.put({
       bucketId,
-      record: { ...record, signature },
+      record: {
+        ...record,
+        signature,
+      },
     });
+
+    return {
+      ...record,
+      signature: mapSignature(signature),
+    };
   }
 
   async getRecord(request: GetRequest): Promise<Record | undefined> {
@@ -60,24 +67,14 @@ export class CnsApi {
       record = undefined;
     }
 
-    if (!record || !record.signature) {
+    if (!record?.signature) {
       return undefined;
     }
 
-    const signature: RecordSignature = {
-      algorithm: record.signature.algorithm === SigAlg.ED_25519 ? 'ed25519' : 'sr25519',
-      value: new Uint8Array(record.signature.value),
-      signer: new Uint8Array(record.signature.signer),
-    };
-
     return {
       ...record,
-      signature,
+      signature: mapSignature(record.signature),
       cid: new Uint8Array(record.cid),
     };
-  }
-
-  static createSignatureMessage(record: Omit<Record, 'signature'>) {
-    return createSignatureMessage(record);
   }
 }

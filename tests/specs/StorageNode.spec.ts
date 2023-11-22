@@ -212,10 +212,9 @@ describe('Storage Node', () => {
 
     test('Store a record', async () => {
       const record = new CnsRecord(testCid, testName);
+      const storedRecord = await storageNode.storeCnsRecord(bucketId, record);
 
-      await storageNode.storeCnsRecord(bucketId, record);
-
-      signature = record.signature;
+      signature = storedRecord.signature;
 
       expect(signature).toEqual({
         algorithm: 'sr25519',
