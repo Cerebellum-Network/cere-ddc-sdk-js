@@ -30,7 +30,6 @@
   "dependencies": {
     "@cere-ddc-sdk/blockchain": "2.0.0-rc.10",
     "@grpc/grpc-js": "^1.6.0",
-    "@improbable-eng/grpc-web": "^0.15.0",
     "@protobuf-ts/grpc-transport": "^2.9.1",
     "@protobuf-ts/runtime": "^2.9.1",
     "@protobuf-ts/runtime-rpc": "^2.9.1",
@@ -42,7 +41,8 @@
     "@protobuf-ts/plugin": "^2.9.1",
     "@types/uuid": "^9.0.7",
     "stream-consumers": "^1.0.2",
-    "web-streams-polyfill": "^3.2.1"
+    "web-streams-polyfill": "^3.2.1",
+    "@improbable-eng/grpc-web": "^0.15.0"
   },
   "publishConfig": {
     "access": "public"
