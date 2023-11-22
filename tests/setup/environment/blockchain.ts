@@ -79,7 +79,6 @@ export const setupBlockchain = async () => {
   const bondAmount = 100n * CERE;
 
   console.time('Top-up user');
-  await transferCere(apiPromise, rootAccount.address, 500);
   await transferCere(apiPromise, adminAccount.address, 500);
   console.timeEnd('Top-up user');
 

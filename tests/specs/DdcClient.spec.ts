@@ -195,6 +195,8 @@ describe('DDC Client', () => {
     });
 
     test('Get bucket', async () => {
+      expect(createdBucketId).toBeDefined();
+
       const bucket = await client.getBucket(createdBucketId);
 
       expect(bucket?.bucketId).toEqual(createdBucketId);

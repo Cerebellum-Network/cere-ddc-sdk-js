@@ -5,8 +5,9 @@ import { DecodedEvent } from '@polkadot/api-contract/types';
 import { AddressOrPair, SubmittableExtrinsic, SubmittableResultValue } from '@polkadot/api/types';
 import { mnemonicGenerate } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/keyring';
+import { KeypairType } from '@polkadot/util-crypto/types';
 
-import { ROOT_USER_SEED } from './constants';
+import { ROOT_ACCOUNT_TYPE, ROOT_USER_SEED } from './constants';
 
 type TxResult = SubmittableResultValue & {
   contractEvents?: DecodedEvent[];
@@ -31,8 +32,8 @@ export const createBlockhainApi = async () => {
   return api.isReady;
 };
 
-export const getAccount = (uri = ROOT_USER_SEED) => {
-  const keyring = new Keyring({ type: 'sr25519', ss58Format: 54 });
+export const getAccount = (uri = ROOT_USER_SEED, type: KeypairType = ROOT_ACCOUNT_TYPE) => {
+  const keyring = new Keyring({ type, ss58Format: 54 });
 
   return keyring.addFromUri(uri);
 };
