@@ -7,7 +7,8 @@
   "scripts": {
     "test": "jest --selectProjects Dev",
     "test:ci": "jest --silent --selectProjects CI",
-    "test:clean": "rimraf ./data/*"
+    "test:clean": "rimraf ./data/*",
+    "test:env": "ts-node ./scripts/env.ts"
   },
   "dependencies": {
     "@cere-ddc-sdk/ddc-client": "2.0.0-rc.10",

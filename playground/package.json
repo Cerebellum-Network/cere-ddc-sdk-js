@@ -3,11 +3,9 @@
   "version": "2.0.0-rc.10",
   "private": true,
   "scripts": {
-    "start": "npm-run-all --parallel bootstrap start:app",
-    "start:app": "wait-port localhost:8091 -o silent && craco start",
+    "start": "craco start",
     "build": "PUBLIC_URL=. craco build",
-    "clean": "rimraf build",
-    "bootstrap": "ts-node --esm ./scripts/bootstrap.cjs"
+    "clean": "rimraf build"
   },
   "dependencies": {
     "@cere-ddc-sdk/ddc-client": "2.0.0-rc.10",

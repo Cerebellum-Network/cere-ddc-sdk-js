@@ -9,11 +9,12 @@
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
   "scripts": {
-    "lint": "eslint --quiet '**/*.{ts,tsx,js,jsx,json}'",
+    "lint": "eslint --quiet '**/*.{ts,tsx,js,cjs,mjs,jsx,json}'",
     "lint:fix": "npm run lint -- --fix",
     "test": "lerna run test",
     "test:ci": "lerna run test:ci",
     "test:clean": "lerna run test:clean",
+    "test:env": "lerna run test:env",
     "clean": "lerna run clean",
     "build": "lerna run build",
     "package": "lerna run package",
