@@ -43,7 +43,7 @@ jobs:
       - name: Upload playground
         uses: actions/upload-pages-artifact@v1
         with:
-          path: './playground/build'
+          path: './playground/dist'
 
       - name: Deploy
         id: deployment
