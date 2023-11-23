@@ -121,7 +121,7 @@ describe.each(transports)('DDC APIs ($name)', ({ transport }) => {
   describe('Cns Api', () => {
     let signature: any;
 
-    const testCid = new Cid('AEBB4IEIDC5HNY76TBBV5CK5WQT7FXCGNJATYVLW5WRMJ7IMNOQECYYCDQ').toBytes();
+    const testCid = new Cid('baebb4ifbvlaklsqk4ex2n2xfaghhrkd3bbqg53d2du4sdgsz7uixt25ycu').toBytes();
     const alias = 'dir/file-name';
 
     test('Create alias', async () => {
