@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/blockchain",
-  "version": "2.0.0-rc.10",
+  "version": "2.0.0-rc.11",
   "description": "Cere Blockchain client",
   "type": "module",
   "main": "dist/index.cjs",
@@ -31,11 +31,11 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@polkadot/api": "9.4.1",
+    "@polkadot/api-base": "9.4.1",
     "@polkadot/api-contract": "9.4.1",
     "@polkadot/keyring": "^10.1.8",
     "@polkadot/types": "^9.4.1",
-    "@polkadot/util-crypto": "^10.1.8",
-    "@polkadot/api-base": "9.4.1",
-    "@polkadot/util": "10.4.2"
+    "@polkadot/util": "10.4.2",
+    "@polkadot/util-crypto": "^10.1.8"
   }
 }
