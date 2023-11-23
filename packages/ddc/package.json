@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@protobuf-ts/plugin": "^2.9.1",
+    "multiformats": "^12.1.3",
     "stream-consumers": "^1.0.2",
     "web-streams-polyfill": "^3.2.1"
   },
