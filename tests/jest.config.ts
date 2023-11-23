@@ -23,7 +23,7 @@ const common: Config = {
   setupFilesAfterEnv: ['./setup/setup.ts'],
 
   transform: {
-    '\\.(js|ts)$': 'ts-jest',
+    '\\.(js|ts)$': ['ts-jest', { useESM: true, tsconfig: path.resolve(projectRoot, 'tsconfig.json') }],
   },
 };
 
@@ -35,7 +35,7 @@ const config: Config = {
       ...common,
       displayName: 'CI',
       transform: {
-        '\\.(js|ts)$': ['ts-jest', { tsconfig: '../tsconfig.build.json' }],
+        '\\.(js|ts)$': ['ts-jest', { tsconfig: path.resolve(projectRoot, 'tsconfig.build.json') }],
       },
     },
     {

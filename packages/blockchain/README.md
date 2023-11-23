@@ -1,5 +1,7 @@
 # @cere-ddc-sdk/blockchain
 
+> The package is used internally in [@cere-ddc-sdk/ddc-client](/packages/ddc-client)
+
 The package provides API for interacting the Cere blockchain.
 
 # Installation
@@ -16,10 +18,6 @@ Using `yarn`:
 yarn add @cere-ddc-sdk/blockchain
 ```
 
-# Generating types
+# Links
 
-Types can be generated from chain metadata by connecting to a running node (`ws://localhost:9944`) and doing a RPC call
-
-```bash
-npm run generate:types
-```
+- [Tests](/tests/specs/Blockchain.spec.ts)

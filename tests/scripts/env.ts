@@ -1,13 +1,13 @@
-const {startEnvironment} = require('../../tests');
+import { startEnvironment } from '../setup/environment';
 
 const main = async () => {
-    await startEnvironment();
+  await startEnvironment();
 
-    process.stdin.resume();
+  process.stdin.resume();
 };
 
 const stop = async () => {
-    process.exit();
+  process.exit();
 };
 
 process.on('SIGINT', stop);
