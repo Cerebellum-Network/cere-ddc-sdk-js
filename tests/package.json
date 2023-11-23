@@ -3,7 +3,6 @@
   "version": "2.0.0-rc.10",
   "description": "Cere DDC SDK tests",
   "private": true,
-  "module": "./index.ts",
   "scripts": {
     "test": "jest --selectProjects Dev",
     "test:ci": "jest --silent --selectProjects CI",
