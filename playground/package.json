@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/playground",
-  "version": "2.0.0-rc.11",
+  "version": "2.0.0-rc.12",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@cere-ddc-sdk/ddc-client": "2.0.0-rc.11",
+    "@cere-ddc-sdk/ddc-client": "2.0.0-rc.12",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/lab": "^5.0.0-alpha.153",
