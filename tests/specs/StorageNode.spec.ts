@@ -208,7 +208,7 @@ describe('Storage Node', () => {
   describe('CNS record', () => {
     let signature: any;
 
-    const testCid = 'AEBB4IEIDC5HNY76TBBV5CK5WQT7FXCGNJATYVLW5WRMJ7IMNOQECYYCDQ';
+    const testCid = 'baebb4ifbvlaklsqk4ex2n2xfaghhrkd3bbqg53d2du4sdgsz7uixt25ycu';
     const testName = 'piece/name';
 
     test('Store a record', async () => {

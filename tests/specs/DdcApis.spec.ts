@@ -107,7 +107,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
 
   describe('Cns Api', () => {
     const cnsApi = new CnsApi(transport, { signer });
-    const testCid = new Cid('AEBB4IEIDC5HNY76TBBV5CK5WQT7FXCGNJATYVLW5WRMJ7IMNOQECYYCDQ').toBytes();
+    const testCid = new Cid('baebb4ifbvlaklsqk4ex2n2xfaghhrkd3bbqg53d2du4sdgsz7uixt25ycu').toBytes();
     const alias = 'dir/file-name';
 
     let signature: any;

@@ -4,7 +4,9 @@ services:
   cere-chain:
     platform: linux/amd64
     container_name: cere-chain
-    image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/pos-network-node:dev-latest"
+    # TODO: Switch back to dev-latest tag when the polkadot-js compatibility issue is resolved:
+    # https://cere-network.slack.com/archives/C01ALH83YVB/p1700715684686459?thread_ts=1700651433.622179&cid=C01ALH83YVB
+    image: "625402836641.dkr.ecr.us-west-2.amazonaws.com/pos-network-node@sha256:afb8ace97dc381fdf593668f4b3598bedace2eaa7a4cf0653da7768bc3b49117"
     command: bash -c "/usr/local/bin/cere --dev --alice --ws-external --rpc-external"
     ports:
       - "9944:9944"

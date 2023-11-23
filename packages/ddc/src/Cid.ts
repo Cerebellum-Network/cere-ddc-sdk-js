@@ -1,4 +1,4 @@
-import { base32 } from 'rfc4648';
+import { base32 } from 'multiformats/bases/base32';
 
 export class Cid {
   private cid: Uint8Array | string;
@@ -12,11 +12,11 @@ export class Cid {
   }
 
   toString() {
-    return typeof this.cid === 'string' ? this.cid : base32.stringify(this.cid, { pad: false });
+    return typeof this.cid === 'string' ? this.cid : base32.encode(this.cid);
   }
 
   toBytes() {
-    return typeof this.cid === 'string' ? base32.parse(this.cid, { loose: true }) : this.cid;
+    return typeof this.cid === 'string' ? base32.decode(this.cid) : this.cid;
   }
 
   static isCid(cid: string | Uint8Array) {
