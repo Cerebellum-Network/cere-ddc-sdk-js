@@ -51,7 +51,7 @@ export class FileApi {
       bucketId,
       requestId,
       offset: range?.start,
-      size: range && range.end - range.start,
+      size: range && range.end - range.start + 1,
       contentType: ActivityRequest_ContentType.PIECE,
       requestType: ActivityRequest_RequestType.GET,
       timestamp: Date.now(),
