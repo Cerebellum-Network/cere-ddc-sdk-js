@@ -14,7 +14,8 @@ import { createDataStream, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes }
 describe('Storage Node', () => {
   const bucketId = 1n;
   const [storageNodeParams] = getStorageNodes();
-  const storageNode = new StorageNode(new UriSigner(ROOT_USER_SEED), storageNodeParams);
+  const signer = new UriSigner(ROOT_USER_SEED);
+  const storageNode = new StorageNode(signer, storageNodeParams);
 
   describe('Raw piece', () => {
     let smallPieceCid: string;
@@ -212,13 +213,12 @@ describe('Storage Node', () => {
 
     test('Store a record', async () => {
       const record = new CnsRecord(testCid, testName);
+      const storedRecord = await storageNode.storeCnsRecord(bucketId, record);
 
-      await storageNode.storeCnsRecord(bucketId, record);
-
-      signature = record.signature;
+      signature = storedRecord.signature;
 
       expect(signature).toEqual({
-        algorithm: 'sr25519',
+        algorithm: signer.type,
         signer: expect.any(Uint8Array),
         value: expect.any(Uint8Array),
       });

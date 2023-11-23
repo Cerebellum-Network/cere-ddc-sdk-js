@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package cns;
 
+import "pb/signature.proto";
+
 option go_package = "api/external/cns";
 
 import "google/api/annotations.proto";
@@ -41,15 +43,4 @@ message Record {
   Signature signature = 1; // signature of a CnsRecord serialised to protobuf (excluding Signature itself) by a client that have an access to a bucket so requester can verify the validity of the CNS record
   bytes cid = 2;
   string name = 3;
-
-  message Signature {
-    Algorithm algorithm = 1;
-    bytes signer = 2;
-    bytes value = 3;
-
-    enum Algorithm {
-      ED_25519 = 0;
-      SR_25519 = 1;
-    }
-  }
 }

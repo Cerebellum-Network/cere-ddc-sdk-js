@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package file;
 
+import "pb/activity_report.proto";
+
 option go_package = "api/external/file";
 
 service FileApi {
@@ -60,6 +62,7 @@ message GetFileRequest {
 
   oneof Body {
     Request request = 1;
+    pb.ActivityAcknowledgment ack = 2;
   }
 }
 

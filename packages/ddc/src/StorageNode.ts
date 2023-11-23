@@ -13,7 +13,10 @@ type NamingOptions = {
   name?: string;
 };
 
-export type StorageNodeConfig = RpcTransportOptions;
+export type StorageNodeConfig = RpcTransportOptions & {
+  enableAcks?: boolean;
+};
+
 export type PieceReadOptions = {
   range?: ReadFileRange;
 };
@@ -30,16 +33,12 @@ export class StorageNode {
   private fileApi: FileApi;
   private cnsApi: CnsApi;
 
-  constructor(
-    private signer: Signer,
-    config: StorageNodeConfig,
-  ) {
+  constructor(signer: Signer, config: StorageNodeConfig) {
     const transport = new DefaultTransport(config);
 
-    this.signer = signer;
     this.dagApi = new DagApi(transport);
-    this.fileApi = new FileApi(transport);
-    this.cnsApi = new CnsApi(transport);
+    this.fileApi = new FileApi(transport, { signer, enableAcks: config.enableAcks });
+    this.cnsApi = new CnsApi(transport, { signer });
   }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
@@ -112,12 +111,6 @@ export class StorageNode {
   }
 
   async storeCnsRecord(bucketId: BucketId, record: CnsRecord) {
-    if (!record.signature && this.signer) {
-      await this.signer.isReady();
-
-      record.sign(this.signer);
-    }
-
     return this.cnsApi.putRecord({
       bucketId,
       record: mapCnsRecordToAPI(record),

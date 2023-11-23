@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package pb;
+
+import "pb/signature.proto";
+
+option go_package = "cere.network/ddc-storage-node/pb";
+
+message ActivityRecord {
+	ActivityFulfillment upstream = 1;
+	repeated ActivityFulfillment downstream = 2;
+	uint64 timestamp = 3;
+	Signature signature = 4;
+}
+
+message ActivityRequest {
+	optional ActivityRequest parentRequest = 1;
+	string requestId = 2;
+	
+	enum RequestType {
+		REQUEST_TYPE_STORE = 0;
+		REQUEST_TYPE_GET = 1;
+	}
+
+	enum ContentType {
+		CONTENT_TYPE_PIECE = 0;
+		CONTENT_TYPE_SEGMENT = 1;
+		CONTENT_TYPE_MERKLE_TREE = 2;
+	}
+
+	RequestType requestType = 3;
+	ContentType contentType = 4;
+	uint64 bucketId = 5 [jstype = JS_NORMAL]; // set only when content type is PIECE
+	bytes id = 6; // either cid or segment id or merkle tree root hash
+	
+	uint64 offset = 7; // offset of data requested (set only when RecordType = GET)
+	uint64 size = 8; // size of content stored or delivered
+
+	uint64 timestamp = 9;
+	Signature signature = 10;
+}
+
+// we will get this on the server side streaming
+
+message ActivityAcknowledgment {
+	string requestId = 1;
+	uint64 bytesStoredOrDelivered = 2;
+	uint64 timestamp = 3;
+	Signature signature = 4;
+}
+
+message ActivityFulfillment {
+	ActivityRequest request = 1;
+	optional ActivityAcknowledgment ack = 2;
+}
