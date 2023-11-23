@@ -11,11 +11,11 @@ export class Cid {
     return this.toBytes().slice(-32);
   }
 
-  toString() {
+  toString(): string {
     return typeof this.cid === 'string' ? this.cid : base32.encode(this.cid);
   }
 
-  toBytes() {
+  toBytes(): Uint8Array {
     return typeof this.cid === 'string' ? base32.decode(this.cid) : this.cid;
   }
 
