@@ -41,11 +41,7 @@ export class UriSigner implements Signer {
   }
 
   get type() {
-    /**
-     * TODO: Discuss with the team since switching from `sr25519` to `ed25519` by defualt can lead to problems with pre-funded dev accounts.
-     * It might be better to add `sr25519` support to storage node ACKs signatures
-     */
-    return this.options.type || 'ed25519';
+    return this.options.type || 'sr25519';
   }
 
   get address() {
