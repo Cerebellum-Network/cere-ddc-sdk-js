@@ -90,6 +90,7 @@ describe('Storage Node', () => {
       rawPieceCids = await Promise.all(
         rawPieceContents.map((content, index) => {
           const piece = new Piece(content, {
+            size: partSize,
             multipartOffset: index * partSize,
           });
 

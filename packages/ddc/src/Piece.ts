@@ -4,10 +4,17 @@ import { Content, ContentStream, createContentStream } from './streams';
 import { ReadFileRange } from './FileApi';
 import { Cid } from './Cid';
 
-export type PieceMeta = {
+type StaticPieceMeta = {
   multipartOffset?: number;
+  size?: number;
 };
 
+type StreamPieceMeta = {
+  multipartOffset?: number;
+  size: number;
+};
+
+export type PieceMeta = StaticPieceMeta;
 export type MultipartPieceMeta = {
   partSize: number;
   totalSize: number;
@@ -20,17 +27,29 @@ export type PieceResponseMeta = {
 export class Piece {
   public offset?: number;
   readonly body: ContentStream;
+  private contentLength?: number;
 
+  constructor(content: Content, meta: StreamPieceMeta);
+  constructor(content: Uint8Array, meta?: StaticPieceMeta);
   constructor(
-    content: Content | Uint8Array,
-    readonly meta?: PieceMeta,
+    content: Content,
+    readonly meta: PieceMeta = {},
   ) {
-    this.offset = meta?.multipartOffset;
+    this.offset = meta.multipartOffset;
     this.body = createContentStream(content);
+    this.contentLength = content instanceof Uint8Array ? content.byteLength : meta.size;
   }
 
   get isPart() {
     return this.offset !== undefined;
+  }
+
+  get size() {
+    if (this.contentLength) {
+      throw new Error('The piece size can not be determined');
+    }
+
+    return this.contentLength;
   }
 }
 
