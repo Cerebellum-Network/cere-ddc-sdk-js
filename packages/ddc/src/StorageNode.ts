@@ -42,7 +42,7 @@ export class StorageNode {
   }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
-    let cidBytes: Uint8Array;
+    let cidBytes: Uint8Array | undefined = undefined;
 
     if (piece instanceof MultipartPiece) {
       cidBytes = await this.fileApi.putMultipartPiece({
@@ -51,7 +51,9 @@ export class StorageNode {
         partSize: piece.meta.partSize,
         totalSize: piece.meta.totalSize,
       });
-    } else {
+    }
+
+    if (piece instanceof Piece) {
       cidBytes = await this.fileApi.putRawPiece(
         {
           bucketId,
@@ -60,6 +62,10 @@ export class StorageNode {
         },
         piece.body,
       );
+    }
+
+    if (!cidBytes) {
+      throw new Error('`piece` argument is neither Piece nor MultipartPiece');
     }
 
     const cid = new Cid(cidBytes).toString();
