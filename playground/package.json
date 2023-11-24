@@ -6,7 +6,8 @@
   "scripts": {
     "start": "vite --open",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "playground": "npm run start",
+    "clean": "rimraf dist"
   },
   "dependencies": {
     "@cere-ddc-sdk/ddc-client": "2.0.0-rc.12",
