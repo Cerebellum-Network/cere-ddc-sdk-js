@@ -13,7 +13,7 @@ import {
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
 import { Blockchain, BucketId, ClusterId } from '@cere-ddc-sdk/blockchain';
 
-import { DagNodeUri, DdcEntity, DdcUri, FileUri } from './DdcUri';
+import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
 
 export type DdcClientConfig = Omit<ConfigPreset, 'blockchain'> & {
   blockchain: Blockchain | ConfigPreset['blockchain'];
@@ -75,14 +75,19 @@ export class DdcClient {
   async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<FileUri>;
   async store(bucketId: BucketId, entity: DagNode, options?: DagNodeStoreOptions): Promise<DagNodeUri>;
   async store(bucketId: BucketId, entity: File | DagNode, options?: FileStoreOptions | DagNodeStoreOptions) {
-    const entityType: DdcEntity = entity instanceof File ? 'file' : 'dag-node';
+    if (entity instanceof File) {
+      const cid = await this.fileStorage.store(bucketId, entity, options);
 
-    const cid =
-      entity instanceof File
-        ? await this.fileStorage.store(bucketId, entity, options)
-        : await this.storeDagNode(bucketId, entity, options);
+      return new FileUri(bucketId, cid, options);
+    }
 
-    return new DdcUri(bucketId, cid, entityType, options);
+    if (entity instanceof DagNode) {
+      const cid = await this.storeDagNode(bucketId, entity, options);
+
+      return new DagNodeUri(bucketId, cid, options);
+    }
+
+    throw new Error('`entity` argument is neither File nor DagNode');
   }
 
   private async storeDagNode(bucketId: BucketId, node: DagNode, options?: DagNodeStoreOptions) {

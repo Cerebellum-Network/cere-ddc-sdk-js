@@ -4,72 +4,73 @@ The DDC SDK is a development kit used by developers to create applications that 
 
 ## Packages
 
--   [@cere-ddc-sdk/ddc-client](packages/ddc-client/README.md) - The main DDC SDK interface with all methods for working with DDC
--   [@cere-ddc-sdk/blockchain](packages/blockchain/README.md) - Work directly with the Cere blockchain
--   [@cere-ddc-sdk/file-storage](packages/file-storage/README.md) - Upload large files, using chunk streaming
--   [@cere-ddc-sdk/ddc](packages/ddc/README.md) - Low level package to directly communicate with DDC nodes
+- [@cere-ddc-sdk/ddc-client](packages/ddc-client/README.md) - The main DDC SDK interface with all methods for working with DDC
+- [@cere-ddc-sdk/blockchain](packages/blockchain/README.md) - Work directly with the Cere blockchain
+- [@cere-ddc-sdk/file-storage](packages/file-storage/README.md) - Upload large files, using chunk streaming
+- [@cere-ddc-sdk/ddc](packages/ddc/README.md) - Low level package to directly communicate with DDC nodes
 
 ## Demo
 
 The playground app is small demo application you can try how DDC SDK works in browser.
 
--   [Source code](playground)
--   [Online demo](https://cerebellum-network.github.io/cere-ddc-sdk-js/)
+- [Source code](playground)
+- [Online demo](https://cerebellum-network.github.io/cere-ddc-sdk-js/)
 
 ## Quick start
 
 1. Prepare Node.JS version
 
-    ```
-    nvm use
-    ```
+   ```
+   nvm use
+   ```
 
 2. Install dependencies:
 
-    ```bash
-    npm i
-    ```
+   ```bash
+   npm i
+   ```
 
 3. Build all packages and Playground app:
 
-    ```bash
-    npm run build
-    ```
+   ```bash
+   npm run build
+   ```
 
 4. Run playground application:
 
-    ```bash
-    npm run playground
-    ```
+   ```bash
+   npm run playground
+   ```
+   Out of the box the playground app can connect to DDC `Devnet` and `Testnet`. To connect it to local environment, the environment [should be started](#local-environment) in a separate terminal.
 
 ## Tests
 
-1. Run tests from source code
+Run tests
 
-    ```bash
-    npm test
-    ```
+```bash
+npm test
+```
 
-    On the first run it will take some time to prepare the local testing environment
+On the first run it will take some time to prepare the local testing environment
 
-2. Run tests on pre-built packages or `CI`
+### Local environment
 
-    ```bash
-    npm run test:ci
-    ```
+It is possibly to run DDC infrastructure on local machine:
+```bash
+npm run test:env
+```
 
-3. Clean local test environment cache
-    ```
-    npm run test:clean
-    ```
+This command will use [Docker](https://www.docker.com/) to start Cere Blockchain node and several DDC nodes (CDN and storage). The environment is started each time before tests execution and stopped after it.
+
+> There is can only be one instance of local environment running at the same time.
 
 ## Publish
 
 1. Create a release
 
-    ```
-    npm run release
-    ```
+   ```
+   npm run release
+   ```
 
 2. Publish the packages using [Publish GitHub Action](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/actions/workflows/publish.yaml)
 
