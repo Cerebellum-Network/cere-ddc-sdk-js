@@ -9,6 +9,7 @@ import {
   UriSigner,
   Cid,
   MAX_PIECE_SIZE,
+  PieceMeta,
 } from '@cere-ddc-sdk/ddc';
 
 import { createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes } from '../helpers';
@@ -138,14 +139,15 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
   describe.each(fileSpecVariants)('File Api ($name)', ({ enableAcks }) => {
     const fileApi = new FileApi(transport, { signer, enableAcks });
 
-    const storeRawPiece = async (chunks: Content, mutipartOffset?: number) =>
+    const storeRawPiece = async (content: Content, meta?: PieceMeta) =>
       fileApi.putRawPiece(
         {
           bucketId,
-          isMultipart: mutipartOffset !== undefined,
-          offset: mutipartOffset,
+          isMultipart: meta?.multipartOffset !== undefined,
+          offset: meta?.multipartOffset,
+          size: meta?.size,
         },
-        chunks,
+        content,
       );
 
     describe('Raw piece', () => {
@@ -159,7 +161,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
       });
 
       test('Store small piece', async () => {
-        smallPieceCid = await storeRawPiece([smallPieceData]);
+        smallPieceCid = await storeRawPiece(smallPieceData);
 
         expect(smallPieceCid).toEqual(expect.any(Uint8Array));
         expect(smallPieceCid.length).toBeGreaterThan(0);
@@ -179,7 +181,9 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
       });
 
       test('Store large piece', async () => {
-        largePieceCid = await storeRawPiece(largePieceData);
+        largePieceCid = await storeRawPiece(largePieceData, {
+          size: largePieceSize,
+        });
 
         expect(largePieceCid).toEqual(expect.any(Uint8Array));
         expect(largePieceCid.length).toBeGreaterThan(0);
@@ -231,7 +235,12 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
 
       beforeAll(async () => {
         rawPieceCids = await Promise.all(
-          rawPieceContents.map((content, index) => storeRawPiece(content, index * partSize)),
+          rawPieceContents.map((content, index) =>
+            storeRawPiece(content, {
+              size: partSize,
+              multipartOffset: index * partSize,
+            }),
+          ),
         );
       });
 
