@@ -4,8 +4,7 @@
   "description": "Cere DDC SDK tests",
   "private": true,
   "scripts": {
-    "test": "jest --selectProjects Dev",
-    "test:ci": "jest --silent --selectProjects CI",
+    "test": "jest",
     "test:clean": "rimraf ./data/*",
     "test:env": "ts-node ./scripts/env.ts"
   },
