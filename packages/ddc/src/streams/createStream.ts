@@ -63,6 +63,10 @@ async function* toIterable(input: Content | ContentStream) {
   }
 }
 
+export const getContentSize = (content: Content, defaultSize?: number) => {
+  return 'byteLength' in content ? content.byteLength : defaultSize;
+};
+
 export const createContentStream = (input: Content | ContentStream, chunkSize = CONTENT_CHUNK_SIZE): ContentStream => {
   const asyncIterator = toIterable(input instanceof Uint8Array ? [input] : input);
 

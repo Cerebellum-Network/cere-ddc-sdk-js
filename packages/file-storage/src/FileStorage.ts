@@ -46,7 +46,10 @@ export class FileStorage {
 
   private async storeLarge(node: StorageNode, bucketId: BucketId, file: File, options?: FileStoreOptions) {
     const parts = await splitStream(file.body, MAX_PIECE_SIZE, (content, multipartOffset) => {
-      const piece = new Piece(content, { multipartOffset });
+      const piece = new Piece(content, {
+        multipartOffset,
+        size: Math.min(file.size - multipartOffset, MAX_PIECE_SIZE),
+      });
 
       return node.storePiece(bucketId, piece);
     });
@@ -59,7 +62,7 @@ export class FileStorage {
   }
 
   private async storeSmall(node: StorageNode, bucketId: BucketId, file: File, options?: FileStoreOptions) {
-    return node.storePiece(bucketId, new Piece(file.body), options);
+    return node.storePiece(bucketId, new Piece(file.body, { size: file.size }), options);
   }
 
   async store(bucketId: BucketId, file: File, options?: FileStoreOptions) {

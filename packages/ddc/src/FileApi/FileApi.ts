@@ -5,19 +5,21 @@ import { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { RpcTransport } from '../transports';
 import { createSignature } from '../signature';
-import { Content, createContentStream } from '../streams';
+import { Content, createContentStream, getContentSize } from '../streams';
 import { PutMultiPartPieceRequest, GetFileRequest_Request, PutRawPieceRequest_Metadata } from '../grpc/file_api';
 import { FileApiClient } from '../grpc/file_api.client';
 import {
   ActivityRequest,
   ActivityRequest_ContentType,
-  ActivityRequest_RequestType,
+  ActivityRequest_RequestType as RequestType,
   ActivityAcknowledgment,
 } from '../grpc/pb/activity_report';
 
 export type GetFileRequest = GetFileRequest_Request;
 export type ReadFileRange = GetFileRequest_Request['range'];
-export type PutFileMetadata = PutRawPieceRequest_Metadata;
+export type PutRawPieceMetadata = PutRawPieceRequest_Metadata & {
+  size?: number;
+};
 
 export type FileApiOptions = {
   signer?: Signer;
@@ -39,27 +41,22 @@ export class FileApi {
     };
   }
 
-  private async createActivityRequest(requestId: string, { bucketId, cid, range }: GetFileRequest) {
+  private async createActivityRequest(request: Partial<Omit<ActivityRequest, 'contentType' | 'signature'>>) {
     const { signer } = this.options;
 
     if (!signer) {
       throw new Error('Activity capturing cannot be enabled. Signer requred!');
     }
 
-    const request = ActivityRequest.create({
-      id: cid,
-      bucketId,
-      requestId,
-      offset: range?.start,
-      size: range && range.end - range.start + 1,
-      contentType: ActivityRequest_ContentType.PIECE,
-      requestType: ActivityRequest_RequestType.GET,
+    const activityRequest = ActivityRequest.create({
       timestamp: Date.now(),
+      ...request,
+      contentType: ActivityRequest_ContentType.PIECE,
     });
 
-    request.signature = await createSignature(signer, ActivityRequest.toBinary(request));
+    activityRequest.signature = await createSignature(signer, ActivityRequest.toBinary(activityRequest));
 
-    return Buffer.from(ActivityRequest.toBinary(request)).toString('hex');
+    return Buffer.from(ActivityRequest.toBinary(activityRequest)).toString('hex');
   }
 
   private async createAck(ack: Omit<ActivityAcknowledgment, 'signature'>) {
@@ -84,8 +81,25 @@ export class FileApi {
     return new Uint8Array(response.cid);
   }
 
-  async putRawPiece(metadata: PutRawPieceRequest_Metadata, content: Content) {
-    const { requests, response } = this.api.putRawPiece();
+  async putRawPiece(metadata: PutRawPieceMetadata, content: Content) {
+    const meta: RpcMetadata = {};
+
+    if (this.options.enableAcks) {
+      const size = metadata.size || getContentSize(content);
+
+      if (!size) {
+        throw new Error('Cannot determine the raw piece size to send ActivityRequest');
+      }
+
+      meta.request = await this.createActivityRequest({
+        requestId: uuid(),
+        bucketId: metadata.bucketId,
+        requestType: RequestType.STORE,
+        size: metadata.size || getContentSize(content),
+      });
+    }
+
+    const { requests, response } = this.api.putRawPiece({ meta });
 
     await requests.send({
       body: {
@@ -115,7 +129,13 @@ export class FileApi {
     const { enableAcks } = this.options;
 
     if (enableAcks) {
-      meta.request = await this.createActivityRequest(requestId, request);
+      meta.request = await this.createActivityRequest({
+        requestId,
+        id: request.cid,
+        bucketId: request.bucketId,
+        offset: request.range?.start,
+        size: request.range && request.range.end - request.range.start + 1,
+      });
     }
 
     const { responses, requests } = this.api.getFile({ meta });
