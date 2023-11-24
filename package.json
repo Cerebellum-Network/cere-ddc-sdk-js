@@ -12,7 +12,7 @@
     "lint": "eslint --quiet '**/*.{ts,tsx,js,cjs,mjs,jsx,json}'",
     "lint:fix": "npm run lint -- --fix",
     "test": "lerna run test",
-    "test:ci": "lerna run test --silent",
+    "test:ci": "lerna run test -- --silent",
     "test:clean": "lerna run test:clean",
     "test:env": "lerna run test:env",
     "clean": "lerna run clean",
