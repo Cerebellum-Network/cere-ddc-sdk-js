@@ -29,9 +29,9 @@ export class DdcClient {
   static async create(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
     const blockchain =
-      config.blockchain instanceof Blockchain
-        ? config.blockchain
-        : await Blockchain.connect({ account: signer, wsEndpoint: config.blockchain });
+      typeof config.blockchain === 'string'
+        ? await Blockchain.connect({ account: signer, wsEndpoint: config.blockchain })
+        : config.blockchain;
 
     const router = config.nodes ? new Router({ signer, nodes: config.nodes }) : new Router({ signer, blockchain });
     const fileStorage = new FileStorage(router);
@@ -75,13 +75,13 @@ export class DdcClient {
   async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<FileUri>;
   async store(bucketId: BucketId, entity: DagNode, options?: DagNodeStoreOptions): Promise<DagNodeUri>;
   async store(bucketId: BucketId, entity: File | DagNode, options?: FileStoreOptions | DagNodeStoreOptions) {
-    if (entity instanceof File) {
+    if (File.isFile(entity)) {
       const cid = await this.fileStorage.store(bucketId, entity, options);
 
       return new FileUri(bucketId, cid, options);
     }
 
-    if (entity instanceof DagNode) {
+    if (DagNode.isDagNode(entity)) {
       const cid = await this.storeDagNode(bucketId, entity, options);
 
       return new DagNodeUri(bucketId, cid, options);

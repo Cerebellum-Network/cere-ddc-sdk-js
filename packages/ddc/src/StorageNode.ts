@@ -44,7 +44,7 @@ export class StorageNode {
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
     let cidBytes: Uint8Array | undefined = undefined;
 
-    if (piece instanceof MultipartPiece) {
+    if (MultipartPiece.isMultipartPiece(piece)) {
       cidBytes = await this.fileApi.putMultipartPiece({
         bucketId,
         partHashes: piece.partHashes,
@@ -53,7 +53,7 @@ export class StorageNode {
       });
     }
 
-    if (piece instanceof Piece) {
+    if (Piece.isPiece(piece)) {
       cidBytes = await this.fileApi.putRawPiece(
         {
           bucketId,
