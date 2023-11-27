@@ -2,8 +2,9 @@ import { BaseRouter, RouterOperation, RouterNode } from './BaseRouter';
 
 export class Router extends BaseRouter {
   selectNode(operation: RouterOperation, nodes: RouterNode[]): RouterNode {
-    const randomIndex = Math.floor(Math.random() * nodes.length);
+    const sslNodes = nodes.filter((node) => node.ssl);
+    const randomIndex = Math.floor(Math.random() * sslNodes.length);
 
-    return nodes[randomIndex];
+    return sslNodes[randomIndex];
   }
 }

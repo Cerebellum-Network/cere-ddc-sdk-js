@@ -12,6 +12,7 @@ export const MAINNET: ConfigPreset = {
 export const DEVNET: ConfigPreset = {
   blockchain: 'wss://archive.devnet.cere.network/ws',
   nodes: [
+    { grpcUrl: 'grpc://38.242.236.247:9090', httpUrl: 'https://storage-1.ddc-devnet.cloud', ssl: true },
     { grpcUrl: 'grpc://38.242.236.247:9090', httpUrl: 'http://38.242.236.247:8080' },
     { grpcUrl: 'grpc://38.242.236.247:9091', httpUrl: 'http://38.242.236.247:8081' },
     { grpcUrl: 'grpc://158.220.87.61:9090', httpUrl: 'http://158.220.87.61:8080' },

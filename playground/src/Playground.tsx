@@ -72,7 +72,7 @@ export const Playground = () => {
     await signer.isReady();
 
     setSigner(signer);
-  }, []);
+  }, [seed]);
 
   const handleRandomFileUpload = useCallback(async () => {
     setInProgress(true);
@@ -99,7 +99,7 @@ export const Playground = () => {
     }
 
     setInProgress(false);
-  }, [client, randomFileSize]);
+  }, [bucketId, client, randomFileSize]);
 
   const handleRealFileUpload = useCallback(async () => {
     setInProgress(true);
@@ -130,7 +130,7 @@ export const Playground = () => {
     }
 
     setInProgress(false);
-  }, [client, dropzone.acceptedFiles]);
+  }, [bucketId, client, dropzone.acceptedFiles]);
 
   const handleInitClient = useCallback(async () => {
     const preset = bcPresets[selectedBc];

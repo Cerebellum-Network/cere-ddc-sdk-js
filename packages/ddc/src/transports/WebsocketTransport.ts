@@ -18,14 +18,27 @@ import {
 
 import { RpcTransport, RpcTransportOptions } from './RpcTransport';
 
-export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl'>;
+export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl' | 'ssl'>;
+
+const createHost = ({ httpUrl, ssl }: WebsocketTransportOptions) => {
+  const sanitizedUrl = /^https?:\/\//i.test(httpUrl) ? httpUrl : `http://${httpUrl}`;
+  const url = new URL(sanitizedUrl);
+
+  if (ssl) {
+    url.protocol = 'https:';
+  }
+
+  return url.href.replace(/\/+$/, '');
+};
 
 export class WebsocketTransport implements RpcTransport {
   private defaultOptions: RpcOptions = {};
   private host: string;
 
-  constructor({ httpUrl }: WebsocketTransportOptions) {
-    this.host = httpUrl;
+  constructor(options: WebsocketTransportOptions) {
+    this.host = createHost(options);
+
+    console.log('WebsocketTransport host', this.host);
   }
 
   clientStreaming<I extends object, O extends object>(
