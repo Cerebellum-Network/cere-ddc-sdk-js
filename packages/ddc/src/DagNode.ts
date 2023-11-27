@@ -32,6 +32,21 @@ export class DagNode {
   get size() {
     return dag.Node.toBinary(mapDagNodeToAPI(this)).byteLength;
   }
+
+  static isDagNode(object: unknown): object is DagNode {
+    const maybeNode = object as DagNode | null;
+
+    if (object instanceof DagNode) {
+      return true;
+    }
+
+    return (
+      typeof maybeNode === 'object' &&
+      maybeNode?.data instanceof Uint8Array &&
+      Array.isArray(maybeNode.links) &&
+      Array.isArray(maybeNode.tags)
+    );
+  }
 }
 
 export class DagNodeResponse extends DagNode {

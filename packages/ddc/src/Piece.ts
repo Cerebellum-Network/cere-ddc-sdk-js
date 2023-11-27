@@ -51,6 +51,21 @@ export class Piece {
 
     return this.contentLength;
   }
+
+  static isPiece(object: unknown): object is Piece {
+    const maybePiece = object as Piece | null;
+
+    if (object instanceof Piece) {
+      return true;
+    }
+
+    return (
+      typeof maybePiece === 'object' &&
+      typeof maybePiece?.meta === 'object' &&
+      typeof maybePiece.isPart === 'boolean' &&
+      !!maybePiece.body
+    );
+  }
 }
 
 export class MultipartPiece {
@@ -61,6 +76,23 @@ export class MultipartPiece {
     readonly meta: MultipartPieceMeta,
   ) {
     this.partHashes = parts.map((part) => new Cid(part).contentHash);
+  }
+
+  static isMultipartPiece(object: unknown): object is MultipartPiece {
+    const maybeMultipartPiece = object as MultipartPiece | null;
+
+    if (object instanceof MultipartPiece) {
+      return true;
+    }
+
+    return (
+      typeof maybeMultipartPiece === 'object' &&
+      typeof maybeMultipartPiece?.meta === 'object' &&
+      typeof maybeMultipartPiece.meta.partSize === 'number' &&
+      typeof maybeMultipartPiece.meta.totalSize === 'number' &&
+      Array.isArray(maybeMultipartPiece.parts) &&
+      Array.isArray(maybeMultipartPiece.partHashes)
+    );
   }
 }
 

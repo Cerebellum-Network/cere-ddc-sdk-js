@@ -23,6 +23,16 @@ export class File {
     this.body = createContentStream(content);
     this.size = content instanceof Uint8Array ? content.byteLength : meta.size!;
   }
+
+  static isFile(object: unknown): object is File {
+    const maybeFile = object as File | null;
+
+    if (object instanceof File) {
+      return true;
+    }
+
+    return typeof maybeFile === 'object' && typeof maybeFile?.size === 'number' && !!maybeFile.body;
+  }
 }
 
 export class FileResponse extends PieceResponse {}
