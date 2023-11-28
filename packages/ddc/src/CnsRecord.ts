@@ -7,6 +7,18 @@ export class CnsRecord implements Omit<cns.Record, 'cid' | 'signature'> {
     readonly cid: string,
     readonly name: string,
   ) {}
+
+  static isCnsRecord(object: unknown): object is CnsRecord {
+    const maybeRecord = object as CnsRecord | null;
+
+    if (object instanceof CnsRecord) {
+      return true;
+    }
+
+    return (
+      typeof maybeRecord === 'object' && typeof maybeRecord?.cid === 'string' && typeof maybeRecord.name === 'string'
+    );
+  }
 }
 
 export class CnsRecordResponse extends CnsRecord {

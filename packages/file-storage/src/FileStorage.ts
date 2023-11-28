@@ -37,9 +37,9 @@ export class FileStorage {
   static async create(uriOrSigner: Signer | string, config: FileStorageConfig = DEFAULT_PRESET) {
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
     const blockchain =
-      config.blockchain instanceof Blockchain
-        ? config.blockchain
-        : await Blockchain.connect({ account: signer, wsEndpoint: config.blockchain });
+      typeof config.blockchain === 'string'
+        ? await Blockchain.connect({ account: signer, wsEndpoint: config.blockchain })
+        : config.blockchain;
 
     return new FileStorage(new Router({ ...config, blockchain, signer }));
   }
