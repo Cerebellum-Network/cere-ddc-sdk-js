@@ -108,11 +108,19 @@ export class FileApi {
       },
     });
 
-    for await (const data of createContentStream(content)) {
+    const reader = createContentStream(content).getReader();
+
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
       await requests.send({
         body: {
           oneofKind: 'content',
-          content: { data },
+          content: { data: value },
         },
       });
     }

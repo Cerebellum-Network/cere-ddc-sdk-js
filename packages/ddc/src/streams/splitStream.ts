@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { TransformStream, ReadableStream, WritableStreamDefaultWriter as Writer } from 'stream/web';
+import { TransformStream, ReadableStream, WritableStreamDefaultWriter as Writer } from './streams';
 
 export type SplitStreamMapper<T = any> = (stream: ReadableStream, offset: number) => T;
 
@@ -14,9 +14,16 @@ export const splitStream = async <T = any>(
   let currentSize = 0;
   let currentWriter: Writer<Uint8Array> | undefined;
   let reaminingBytes = new Uint8Array([]);
+  const reader = stream.getReader();
 
-  for await (const chunk of stream) {
-    const data = Buffer.concat([reaminingBytes, chunk]);
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    const data = Buffer.concat([reaminingBytes, value]);
 
     if (!currentWriter) {
       const { readable, writable } = new TransformStream();

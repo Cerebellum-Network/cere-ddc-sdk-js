@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { ReadableStream, TransformStream, ReadableStreamDefaultReader } from 'stream/web';
+import { ReadableStream, TransformStream, ReadableStreamDefaultReader } from './streams';
 
 import { CONTENT_CHUNK_SIZE } from '../constants';
 
