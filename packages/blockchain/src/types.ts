@@ -69,9 +69,9 @@ export type Amount = bigint;
 export type BlockNumber = number;
 
 export type StakingLedger = {
-    stash: AccountId;
-    total: Amount;
-    active: Amount;
-    chilling: BlockNumber | undefined | null;
-    unlocking: any[];
+  stash: AccountId;
+  total: Amount;
+  active: Amount;
+  chilling: BlockNumber | undefined | null;
+  unlocking: any[];
 };

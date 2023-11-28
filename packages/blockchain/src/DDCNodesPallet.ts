@@ -36,7 +36,7 @@ export class DDCNodesPallet {
     const result = await this.apiPromise.query.ddcNodes.cdnNodes.entries();
 
     return result
-      .map(([_, cdnNodeOption]) => {
+      .map(([, cdnNodeOption]) => {
         const cdnNode = cdnNodeOption.toJSON() as unknown as CdnNode | undefined;
         return cdnNode == null ? undefined : ({ ...cdnNode, props: decodeNodeProps(cdnNode.props) } as CdnNode);
       })
@@ -65,7 +65,7 @@ export class DDCNodesPallet {
     const result = await this.apiPromise.query.ddcNodes.storageNodes.entries();
 
     return result
-      .map(([_, storageNodeOption]) => {
+      .map(([, storageNodeOption]) => {
         const storageNode = storageNodeOption.toJSON() as unknown as StorageNode | undefined;
         return storageNode == null
           ? undefined

@@ -21,7 +21,7 @@ export class DDCClustersPallet {
 
   async listNodeKeys(clusterId: ClusterId) {
     const entries = await this.apiPromise.query.ddcClusters.clustersNodes.entries(clusterId);
-    return entries.map(([key, _]: any) =>
+    return entries.map(([key]: any) =>
       key.args[1].isCdnPubKey
         ? ({
             type: 'cdn',
