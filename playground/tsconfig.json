@@ -1,5 +1,5 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.build.json",
   "include": ["src"],
   "references": [
     {
@@ -17,6 +17,13 @@
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+
+    /**
+     * Browser types are different from node types in DDC SDK, so we have to use moduleSuffixes to fix it.
+     *
+     * TODO: Find a better way to fix browser types
+     */
+    "moduleSuffixes": [".web", ""]
   }
 }
