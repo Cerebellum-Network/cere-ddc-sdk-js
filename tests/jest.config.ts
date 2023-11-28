@@ -1,4 +1,5 @@
 import 'ts-jest';
+import * as path from 'path';
 import type { Config } from 'jest';
 
 const config: Config = {
@@ -17,7 +18,7 @@ const config: Config = {
     '\\.(js|ts)$': [
       'ts-jest',
       {
-        tsconfig: '../tsconfig.build.json',
+        tsconfig: path.resolve(__dirname, '../tsconfig.build.json'),
       },
     ],
   },

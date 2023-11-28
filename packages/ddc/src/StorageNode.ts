@@ -59,6 +59,7 @@ export class StorageNode {
           bucketId,
           isMultipart: piece.isPart,
           offset: piece.offset,
+          size: piece.size,
         },
         piece.body,
       );

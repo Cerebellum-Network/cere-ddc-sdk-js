@@ -45,7 +45,7 @@ export class Piece {
   }
 
   get size() {
-    if (this.contentLength) {
+    if (!this.contentLength) {
       throw new Error('The piece size can not be determined');
     }
 

@@ -14,18 +14,30 @@ import {
   RpcError,
   RpcInputStream,
   RpcOutputStreamController,
+  DeferredState,
 } from '@protobuf-ts/runtime-rpc';
 
 import { RpcTransport, RpcTransportOptions } from './RpcTransport';
 
-export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl'>;
+export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl' | 'ssl'>;
+
+const createHost = ({ httpUrl, ssl }: WebsocketTransportOptions) => {
+  const sanitizedUrl = /^https?:\/\//i.test(httpUrl) ? httpUrl : `http://${httpUrl}`;
+  const url = new URL(sanitizedUrl);
+
+  if (ssl) {
+    url.protocol = 'https:';
+  }
+
+  return url.href.replace(/\/+$/, '');
+};
 
 export class WebsocketTransport implements RpcTransport {
   private defaultOptions: RpcOptions = {};
   private host: string;
 
-  constructor({ httpUrl }: WebsocketTransportOptions) {
-    this.host = httpUrl;
+  constructor(options: WebsocketTransportOptions) {
+    this.host = createHost(options);
   }
 
   clientStreaming<I extends object, O extends object>(
@@ -159,8 +171,15 @@ export class WebsocketTransport implements RpcTransport {
     client.start(new grpc.Metadata(options.meta));
 
     const inputStream: RpcInputStream<any> = {
-      send: async (message) => client.send(new InputType(message)),
-      complete: async () => client.finishSend(),
+      send: async (message) => {
+        client.send(new InputType(message));
+      },
+
+      complete: async () => {
+        if (defStatus.state === DeferredState.PENDING) {
+          client.finishSend();
+        }
+      },
     };
 
     return new DuplexStreamingCall(
