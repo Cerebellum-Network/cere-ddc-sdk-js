@@ -24,11 +24,11 @@ export class DDCClustersPallet {
     return entries.map(([key]: any) =>
       key.args[1].isCdnPubKey
         ? ({
-            type: 'cdn',
+            keyType: 'cdn',
             nodePublicKey: key.args[1].asCdnPubKey.toJSON() as unknown as CdnNodePublicKey,
           } as const)
         : ({
-            type: 'storage',
+            keyType: 'storage',
             nodePublicKey: key.args[1].asStoragePubKey.toJSON() as unknown as StorageNodePublicKey,
           } as const),
     );
