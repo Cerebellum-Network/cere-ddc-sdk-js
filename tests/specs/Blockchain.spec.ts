@@ -245,7 +245,7 @@ describe('Blockchain', () => {
     const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode1Key);
     expect(storageNode?.clusterId).toBe(clusterId);
     const nodeKeys = await blockchain.ddcClusters.listNodeKeys(clusterId);
-    expect(nodeKeys).toContain(storageNode1Key);
+    expect(nodeKeys).toContain({ keyType: 'storage', nodePublicKey: storageNode1Key });
   });
 
   test('Should create bucket', async () => {
