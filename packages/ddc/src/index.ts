@@ -20,7 +20,7 @@ export { UriSigner, type Signer, type SignerType, type UriSignerOptions } from '
 /**
  * Utilities
  */
-export { type Content, type ContentStream, splitStream, SplitStreamMapper, createContentStream } from './streams';
+export { splitStream, createContentStream, type SplitStreamMapper, type Content, type ContentStream } from './streams';
 
 /**
  * Constants

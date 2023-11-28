@@ -14,9 +14,6 @@
     },
     "test:env": {
       "dependsOn": ["^build"]
-    },
-    "playground": {
-      "dependsOn": ["^build"]
     }
   }
 }
