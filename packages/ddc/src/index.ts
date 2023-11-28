@@ -18,14 +18,14 @@ export { CnsRecord, CnsRecordResponse } from './CnsRecord';
 export { UriSigner, type Signer, type SignerType, type UriSignerOptions } from '@cere-ddc-sdk/blockchain';
 
 /**
+ * Utilities
+ */
+export { type Content, type ContentStream, splitStream, SplitStreamMapper, createContentStream } from './streams';
+
+/**
  * Constants
  */
 export * from './constants';
-
-/**
- * Utilities
- */
-export * from './streams';
 
 /**
  * Configuration

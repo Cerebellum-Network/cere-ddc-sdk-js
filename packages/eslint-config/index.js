@@ -19,6 +19,7 @@ module.exports = {
     'import/no-anonymous-default-export': 'off',
     'import/no-extraneous-dependencies': 'error',
     '@typescript-eslint/ban-ts-comment': 'off',
+    'no-constant-condition': ['error', { checkLoops: false }],
     'import/no-unresolved': 'off', // Disable due to ts paths configuration
   },
 };

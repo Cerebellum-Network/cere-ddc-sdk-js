@@ -1,5 +1,4 @@
-import { arrayBuffer, text, json } from 'stream/consumers';
-import { Content, ContentStream, createContentStream } from './streams';
+import { consumers, Content, ContentStream, createContentStream } from './streams';
 
 import { ReadFileRange } from './FileApi';
 import { Cid } from './Cid';
@@ -120,14 +119,14 @@ export class PieceResponse {
   }
 
   async arrayBuffer() {
-    return arrayBuffer(this.body);
+    return consumers.arrayBuffer(this.body);
   }
 
   async text() {
-    return text(this.body);
+    return consumers.text(this.body);
   }
 
   async json() {
-    return json(this.body);
+    return consumers.json(this.body);
   }
 }
