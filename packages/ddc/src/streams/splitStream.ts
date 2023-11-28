@@ -14,16 +14,9 @@ export const splitStream = async <T = any>(
   let currentSize = 0;
   let currentWriter: Writer<Uint8Array> | undefined;
   let reaminingBytes = new Uint8Array([]);
-  const reader = stream.getReader();
 
-  while (true) {
-    const { done, value } = await reader.read();
-
-    if (done) {
-      break;
-    }
-
-    const data = Buffer.concat([reaminingBytes, value]);
+  for await (const chunk of stream) {
+    const data = Buffer.concat([reaminingBytes, chunk]);
 
     if (!currentWriter) {
       const { readable, writable } = new TransformStream();
