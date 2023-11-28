@@ -17,6 +17,7 @@
     "test:env": "lerna run test:env",
     "clean": "lerna run clean",
     "build": "lerna run build",
+    "build:watch": "lerna watch -- lerna run build",
     "package": "lerna run package",
     "release": "lerna version --exact --force-publish --preid rc",
     "release:no-push": "npm run release --no-push --no-git-tag-version",

@@ -14,6 +14,7 @@ import {
   RpcError,
   RpcInputStream,
   RpcOutputStreamController,
+  DeferredState,
 } from '@protobuf-ts/runtime-rpc';
 
 import { RpcTransport, RpcTransportOptions } from './RpcTransport';
@@ -37,8 +38,6 @@ export class WebsocketTransport implements RpcTransport {
 
   constructor(options: WebsocketTransportOptions) {
     this.host = createHost(options);
-
-    console.log('WebsocketTransport host', this.host);
   }
 
   clientStreaming<I extends object, O extends object>(
@@ -172,8 +171,15 @@ export class WebsocketTransport implements RpcTransport {
     client.start(new grpc.Metadata(options.meta));
 
     const inputStream: RpcInputStream<any> = {
-      send: async (message) => client.send(new InputType(message)),
-      complete: async () => client.finishSend(),
+      send: async (message) => {
+        client.send(new InputType(message));
+      },
+
+      complete: async () => {
+        if (defStatus.state === DeferredState.PENDING) {
+          client.finishSend();
+        }
+      },
     };
 
     return new DuplexStreamingCall(

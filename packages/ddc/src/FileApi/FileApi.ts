@@ -36,8 +36,8 @@ export class FileApi {
     this.api = new FileApiClient(transport);
 
     this.options = {
-      enableAcks: !!options.signer, // ACKs are enabled by default if signer is provided
       ...options,
+      enableAcks: options.enableAcks ?? !!options.signer, // ACKs are enabled by default if signer is provided
     };
   }
 
