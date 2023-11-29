@@ -13,6 +13,7 @@
     "@cere-ddc-sdk/ddc-client": "2.0.0-rc.12",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.18",
     "@mui/lab": "^5.0.0-alpha.153",
     "@mui/material": "^5.14.18",
     "react": "^18.2.0",

@@ -1,7 +1,19 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { LoadingButton } from '@mui/lab';
-import { File, Signer, UriSigner, MB, DEVNET, TESTNET, MAINNET, DdcClient } from '@cere-ddc-sdk/ddc-client';
+import TaskIcon from '@mui/icons-material/Task';
+import {
+  File,
+  Signer,
+  UriSigner,
+  MB,
+  DEVNET,
+  TESTNET,
+  MAINNET,
+  DdcClient,
+  DagNode,
+  Link,
+} from '@cere-ddc-sdk/ddc-client';
 import {
   Container,
   Stepper,
@@ -20,6 +32,8 @@ import {
   ListItem,
   ListItemText,
   styled,
+  Link as MuiLink,
+  ListItemIcon,
 } from '@mui/material';
 
 import { USER_SEED } from './constants';
@@ -37,16 +51,18 @@ const Dropzone = styled(Box)(({ theme }) => ({
 }));
 
 const bcPresets = {
-  devnet: DEVNET,
-  testnet: TESTNET,
-  mainnet: MAINNET,
+  devnet: { ...DEVNET, cdn: 'https://ddc-devnet.cloud' },
+  testnet: { ...TESTNET, cdn: 'https://ddc-testnet.cloud' },
+  mainnet: { ...MAINNET, cdn: 'https://ddc.cloud' },
   custom: {
     blockchain: process.env.BC_ENDPOINT || '',
+    cdn: 'http://localhost:8091',
   },
 };
 
 export const Playground = () => {
   const bucketId = 1n;
+  const cnsName = 'ddc-playground';
   const dropzone = useDropzone({
     multiple: false,
   });
@@ -63,6 +79,8 @@ export const Playground = () => {
   const [bcCustomUrl, setBcCustomUrl] = useState(bcPresets.custom.blockchain);
   const [client, setClient] = useState<DdcClient>();
 
+  const getFileUrlByName = (name: string) => [bcPresets[selectedBc].cdn, bucketId, cnsName, name].join('/');
+  const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].cdn, bucketId, cid].join('/');
   const isCompleted = !!realFileCid && !!randomFileCid;
 
   const handleConnectWallet = useCallback(async () => {
@@ -105,14 +123,13 @@ export const Playground = () => {
     setInProgress(true);
     const [acceptedFile] = dropzone.acceptedFiles;
 
-    const file = new File(acceptedFile.stream(), {
-      size: acceptedFile.size,
-    });
-
     try {
-      const uri = await client!.store(bucketId, file, {
-        name: acceptedFile.name,
-      });
+      const file = new File(acceptedFile.stream(), { size: acceptedFile.size });
+      const uri = await client!.store(bucketId, file);
+      const fileLink = new Link(uri.cid, acceptedFile.size, acceptedFile.name);
+
+      const dagNode = new DagNode(JSON.stringify({ updateTime: Date.now() }), [fileLink]);
+      await client!.store(bucketId, dagNode, { name: cnsName });
 
       const fileResponse = await client!.read(uri);
       const contentBuffer = await fileResponse.arrayBuffer();
@@ -187,7 +204,7 @@ export const Playground = () => {
                     fullWidth
                     size="small"
                     value={selectedBc}
-                    onChange={(event, value) => setSelectedBc(value)}
+                    onChange={(event, value) => value && setSelectedBc(value)}
                   >
                     <ToggleButton value="devnet">Devnet</ToggleButton>
                     <ToggleButton value="testnet">Testnet</ToggleButton>
@@ -227,7 +244,7 @@ export const Playground = () => {
             </StepLabel>
             <StepContent>
               <Stack paddingTop={1} spacing={2} alignItems="start">
-                <Typography variant="body1">Upload and download randomly generate file</Typography>
+                <Typography variant="body1">Upload and download randomly generated file</Typography>
                 <TextField
                   value={randomFileSize || ''}
                   label="File size"
@@ -268,7 +285,15 @@ export const Playground = () => {
                     {dropzone.acceptedFiles.length ? (
                       dropzone.acceptedFiles.map((file, index) => (
                         <ListItem key={index}>
-                          <ListItemText primary={file.name} secondary={`${(file.size / MB).toFixed(3)} MB`} />
+                          <ListItemText
+                            primaryTypographyProps={{
+                              maxWidth: 420,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                            primary={file.name}
+                            secondary={`${(file.size / MB).toFixed(3)} MB`}
+                          />
                         </ListItem>
                       ))
                     ) : (
@@ -299,18 +324,46 @@ export const Playground = () => {
                 <List disablePadding>
                   {randomFileCid && (
                     <ListItem disablePadding>
+                      <ListItemIcon>
+                        <TaskIcon sx={{ fontSize: 40 }} />
+                      </ListItemIcon>
+
                       <ListItemText
                         primary={`Random file (${randomFileSize.toFixed(2)} MB)`}
-                        secondary={randomFileCid}
+                        secondary={
+                          <MuiLink color="inherit" target="_blank" href={getFileUrlByCid(randomFileCid!)}>
+                            {randomFileCid}
+                          </MuiLink>
+                        }
                       />
                     </ListItem>
                   )}
 
                   {dropzone.acceptedFiles.map((file, index) => (
                     <ListItem disablePadding key={index}>
+                      <ListItemIcon>
+                        <TaskIcon sx={{ fontSize: 40 }} />
+                      </ListItemIcon>
                       <ListItemText
-                        primary={`${file.name} (${(file.size / MB).toFixed(2)} MB)`}
-                        secondary={realFileCid}
+                        primary={
+                          <Stack direction="row" spacing={1}>
+                            <MuiLink
+                              maxWidth={500}
+                              textOverflow="ellipsis"
+                              overflow="hidden"
+                              target="_blank"
+                              href={getFileUrlByName(file.name)}
+                            >
+                              {file.name}
+                            </MuiLink>
+                            <Typography>({(file.size / MB).toFixed(2)} MB)</Typography>
+                          </Stack>
+                        }
+                        secondary={
+                          <MuiLink color="inherit" target="_blank" href={getFileUrlByCid(realFileCid!)}>
+                            {realFileCid}
+                          </MuiLink>
+                        }
                       />
                     </ListItem>
                   ))}
