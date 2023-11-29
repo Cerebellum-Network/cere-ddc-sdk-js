@@ -58,8 +58,9 @@ export abstract class BaseRouter {
       throw new Error(`Failed to get info for cluster ${bucket.clusterId} on blockchain`);
     }
 
-    const nodeKeys = await this.config.blockchain.ddcClusters.listNodeKeys(cluster.clusterId);
-    const nodeKey = nodeKeys[Math.floor(Math.random() * nodeKeys.length)];
+    const nodes = await this.config.blockchain.ddcClusters.listNodeKeys(cluster.clusterId);
+    const storageNodeKeys = nodes.filter((node) => node.keyType === 'storage').map((node) => node.nodePublicKey);
+    const nodeKey = storageNodeKeys[Math.floor(Math.random() * storageNodeKeys.length)];
     const node = await this.config.blockchain.ddcNodes.findStorageNodeByPublicKey(nodeKey);
 
     if (node == null) {
