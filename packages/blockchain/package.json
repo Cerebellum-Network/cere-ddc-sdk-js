@@ -30,12 +30,12 @@
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
   "dependencies": {
-    "@polkadot/api": "9.4.1",
-    "@polkadot/api-base": "9.4.1",
-    "@polkadot/api-contract": "9.4.1",
-    "@polkadot/keyring": "^10.1.8",
-    "@polkadot/types": "^9.4.1",
-    "@polkadot/util": "10.4.2",
-    "@polkadot/util-crypto": "^10.1.8"
+    "@polkadot/api": "9.14.2",
+    "@polkadot/api-base": "9.14.2",
+    "@polkadot/api-contract": "9.14.2",
+    "@polkadot/keyring": "^10.4.2",
+    "@polkadot/types": "9.14.2",
+    "@polkadot/util": "^10.4.2",
+    "@polkadot/util-crypto": "^10.4.2"
   }
 }

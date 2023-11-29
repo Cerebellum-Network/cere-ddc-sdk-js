@@ -54,9 +54,9 @@ export const createAccount = () => {
 };
 
 export const getGasLimit = async (api: ApiPromise) => {
-  const blockWeights = api.consts.system.blockWeights.toString();
+  const { maxBlock } = api.consts.system.blockWeights.toJSON() as any;
 
-  return JSON.parse(blockWeights).maxBlock / 10;
+  return maxBlock.refTime / 10;
 };
 
 export const transferCere = async (api: ApiPromise, to: string, tokens: number) => {
