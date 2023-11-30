@@ -35,6 +35,7 @@
     "@protobuf-ts/runtime-rpc": "^2.9.1",
     "buffer": "^6.0.3",
     "pino": "^8.16.2",
+    "pino-pretty": "^10.2.3",
     "rfc4648": "^1.5.3",
     "uuid": "^9.0.1"
   },

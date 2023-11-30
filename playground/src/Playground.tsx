@@ -141,7 +141,7 @@ export const Playground = () => {
 
     try {
       setInProgress(true);
-      setClient(await DdcClient.create(signer!, preset));
+      setClient(await DdcClient.create(signer!, { ...preset, logLevel: 'debug' }));
     } catch (error) {
       setErrorStep(1);
 

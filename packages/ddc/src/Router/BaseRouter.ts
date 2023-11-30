@@ -1,3 +1,4 @@
+import { LogLevel, Logger, LoggerOptions, createLogger } from '../Logger';
 import { StorageNode, StorageNodeConfig } from '../StorageNode';
 import { Blockchain, Bucket, BucketId, Cluster, ClusterId, Signer } from '@cere-ddc-sdk/blockchain';
 
@@ -9,12 +10,12 @@ export enum RouterOperation {
 }
 
 export type RouterNode = StorageNodeConfig;
-type RouterStaticConfig = {
+type RouterStaticConfig = LoggerOptions & {
   signer: Signer;
   nodes: RouterNode[];
 };
 
-type RouterDynamicConfig = {
+type RouterDynamicConfig = LoggerOptions & {
   signer: Signer;
   blockchain: Blockchain;
 };
@@ -22,12 +23,18 @@ type RouterDynamicConfig = {
 export type RouterConfig = RouterStaticConfig | RouterDynamicConfig;
 
 export abstract class BaseRouter {
+  private logger: Logger;
+
   readonly blockchainCache = {
     buckets: {} as Record<string, Bucket>,
     clusters: {} as Record<ClusterId, Cluster>,
   };
 
-  constructor(private config: RouterConfig) {}
+  constructor(private config: RouterConfig) {
+    this.logger = createLogger({ ...config, prefix: 'Router' });
+
+    this.logger.debug('Router created', config);
+  }
 
   abstract selectNode(operation: RouterOperation, nodes: RouterNode[]): RouterNode;
 
@@ -39,6 +46,8 @@ export abstract class BaseRouter {
     await this.isRead();
 
     if ('nodes' in this.config) {
+      this.logger.debug('Using static nodes', this.config.nodes);
+
       return this.config.nodes;
     }
 
@@ -70,16 +79,22 @@ export abstract class BaseRouter {
     /**
      * TODO: Revise this implementation to support future `ssl` endpoints
      */
-    return [
+    const resultNodes = [
       {
         grpcUrl: `grpc://${node.props.host}:${node.props.grpcPort}`,
         httpUrl: `http://${node.props.host}:${node.props.httpPort}`,
         ssl: false,
       },
     ];
+
+    this.logger.debug('Using nodes from blockchain', resultNodes);
+
+    return resultNodes;
   }
 
   async getNode(operation: RouterOperation, bucketId: BucketId) {
+    this.logger.info(`Getting node for operation "${operation}" in bucket ${bucketId}`);
+
     const nodes = await this.getNodes(bucketId);
     const node = nodes.length > 1 ? this.selectNode(operation, nodes) : nodes[0];
 
@@ -87,7 +102,12 @@ export abstract class BaseRouter {
       throw new Error('No nodes available to handle the operation');
     }
 
-    return new StorageNode(this.config.signer, node);
+    this.logger.info(`Selected node for operation "${operation}" in bucket ${bucketId}`, node);
+
+    return new StorageNode(this.config.signer, {
+      ...node,
+      logLevel: this.logger.level as LogLevel,
+    });
   }
 
   private async getCluster(clusterId: ClusterId) {

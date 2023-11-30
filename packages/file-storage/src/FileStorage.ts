@@ -14,24 +14,41 @@ import {
   RouterConfig,
   ConfigPreset,
   DEFAULT_PRESET,
+  Logger,
+  createLogger,
+  LoggerOptions,
 } from '@cere-ddc-sdk/ddc';
 
 import { File, FileResponse } from './File';
 
-export type FileStorageConfig = Omit<ConfigPreset, 'blockchain'> & {
-  blockchain: Blockchain | ConfigPreset['blockchain'];
-};
+type Config = LoggerOptions;
+
+export type FileStorageConfig = Config &
+  Omit<ConfigPreset, 'blockchain'> & {
+    blockchain: Blockchain | ConfigPreset['blockchain'];
+  };
 
 export type FileReadOptions = PieceReadOptions;
 export type FileStoreOptions = PieceStoreOptions;
 
 export class FileStorage {
   private router: Router;
+  private logger: Logger;
 
-  constructor(router: Router);
   constructor(config: RouterConfig);
-  constructor(configOrRouter: RouterConfig | Router) {
-    this.router = configOrRouter instanceof Router ? configOrRouter : new Router(configOrRouter);
+  constructor(router: Router, config: Config);
+  constructor(configOrRouter: RouterConfig | Router, config?: Config) {
+    if (configOrRouter instanceof Router) {
+      this.router = configOrRouter;
+      this.logger = createLogger({ ...config, prefix: 'FileStorage' });
+
+      this.logger.debug('FileStorage created', config);
+    } else {
+      this.router = new Router(configOrRouter);
+      this.logger = createLogger({ ...configOrRouter, prefix: 'FileStorage' });
+
+      this.logger.debug('FileStorage created', configOrRouter);
+    }
   }
 
   static async create(uriOrSigner: Signer | string, config: FileStorageConfig = DEFAULT_PRESET) {
@@ -41,7 +58,7 @@ export class FileStorage {
         ? await Blockchain.connect({ account: signer, wsEndpoint: config.blockchain })
         : config.blockchain;
 
-    return new FileStorage(new Router({ ...config, blockchain, signer }));
+    return new FileStorage(new Router({ ...config, blockchain, signer }), config);
   }
 
   private async storeLarge(node: StorageNode, bucketId: BucketId, file: File, options?: FileStoreOptions) {
@@ -66,18 +83,27 @@ export class FileStorage {
   }
 
   async store(bucketId: BucketId, file: File, options?: FileStoreOptions) {
+    this.logger.info(`Storing file into bucket ${bucketId}`);
+    this.logger.debug('File', file);
+
     const isLarge = file.size > MAX_PIECE_SIZE;
     const node = await this.router.getNode(RouterOperation.STORE_PIECE, BigInt(bucketId));
     const cid = isLarge
       ? await this.storeLarge(node, bucketId, file, options)
       : await this.storeSmall(node, bucketId, file, options);
 
+    this.logger.info(`File stored`, { cid });
+
     return cid;
   }
 
   async read(bucketId: BucketId, cidOrName: string, options?: FileReadOptions) {
+    this.logger.info(`Reading file from bucket ${bucketId} by "${cidOrName}"`);
+
     const node = await this.router.getNode(RouterOperation.READ_PIECE, BigInt(bucketId));
     const piece = await node.readPiece(bucketId, cidOrName, options);
+
+    this.logger.info('File read', { cid: piece.cid });
 
     return new FileResponse(piece.cid, piece.body, options);
   }
