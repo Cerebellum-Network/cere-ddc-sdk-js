@@ -51,12 +51,12 @@ const Dropzone = styled(Box)(({ theme }) => ({
 }));
 
 const bcPresets = {
-  devnet: { ...DEVNET, cdn: 'https://ddc-devnet.cloud' },
-  testnet: { ...TESTNET, cdn: 'https://ddc-testnet.cloud' },
-  mainnet: { ...MAINNET, cdn: 'https://ddc.cloud' },
+  devnet: { ...DEVNET, baseUrl: 'https://ddc-devnet.cloud' },
+  testnet: { ...TESTNET, baseUrl: 'https://ddc-testnet.cloud' },
+  mainnet: { ...MAINNET, baseUrl: 'https://ddc.cloud' },
   custom: {
     blockchain: process.env.BC_ENDPOINT || '',
-    cdn: 'http://localhost:8091',
+    baseUrl: 'http://localhost:8091',
   },
 };
 
@@ -79,8 +79,8 @@ export const Playground = () => {
   const [bcCustomUrl, setBcCustomUrl] = useState(bcPresets.custom.blockchain);
   const [client, setClient] = useState<DdcClient>();
 
-  const getFileUrlByName = (name: string) => [bcPresets[selectedBc].cdn, bucketId, cnsName, name].join('/');
-  const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].cdn, bucketId, cid].join('/');
+  const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, bucketId, cnsName, name].join('/');
+  const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].baseUrl, bucketId, cid].join('/');
   const isCompleted = !!realFileCid && !!randomFileCid;
 
   const handleSkip = useCallback(() => {
