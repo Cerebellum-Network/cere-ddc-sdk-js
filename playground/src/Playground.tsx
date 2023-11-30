@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { LoadingButton } from '@mui/lab';
-import TaskIcon from '@mui/icons-material/Task';
+import FileIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import {
   File,
   Signer,
@@ -82,6 +82,10 @@ export const Playground = () => {
   const getFileUrlByName = (name: string) => [bcPresets[selectedBc].cdn, bucketId, cnsName, name].join('/');
   const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].cdn, bucketId, cid].join('/');
   const isCompleted = !!realFileCid && !!randomFileCid;
+
+  const handleSkip = useCallback(() => {
+    setStep(step + 1);
+  }, [step]);
 
   const handleConnectWallet = useCallback(async () => {
     setStep(1);
@@ -176,7 +180,15 @@ export const Playground = () => {
       <Box paddingY={1}>
         <Stepper orientation="vertical" activeStep={step}>
           <Step completed={!!signer}>
-            <StepLabel>Connect wallet</StepLabel>
+            <StepLabel>
+              Connect wallet
+              {signer && (
+                <Typography color="GrayText" variant="caption">
+                  {' - '}
+                  {signer.address}
+                </Typography>
+              )}
+            </StepLabel>
             <StepContent>
               <Stack paddingTop={1} spacing={2} alignItems="start">
                 <TextField
@@ -194,7 +206,15 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!client}>
-            <StepLabel>Initialize client</StepLabel>
+            <StepLabel>
+              Initialize client
+              {selectedBc && (
+                <Typography color="GrayText" variant="caption" textTransform="capitalize">
+                  {' - '}
+                  {selectedBc}
+                </Typography>
+              )}
+            </StepLabel>
 
             <StepContent>
               <Stack spacing={2} alignItems="start">
@@ -235,10 +255,11 @@ export const Playground = () => {
 
           <Step completed={!!randomFileCid}>
             <StepLabel error={errorStep === 2}>
-              Random file{' '}
+              Random file
               {randomFileCid && (
                 <Typography color="GrayText" variant="caption">
-                  ({randomFileCid})
+                  {' - '}
+                  {randomFileCid}
                 </Typography>
               )}
             </StepLabel>
@@ -255,24 +276,30 @@ export const Playground = () => {
                   }}
                 ></TextField>
 
-                <LoadingButton
-                  disabled={randomFileSize === 0}
-                  loading={inProgress}
-                  variant="contained"
-                  onClick={handleRandomFileUpload}
-                >
-                  Continue
-                </LoadingButton>
+                <Stack direction="row" spacing={1}>
+                  <LoadingButton
+                    disabled={randomFileSize === 0}
+                    loading={inProgress}
+                    variant="contained"
+                    onClick={handleRandomFileUpload}
+                  >
+                    Continue
+                  </LoadingButton>
+                  <Button variant="outlined" disabled={inProgress} onClick={handleSkip}>
+                    Skip
+                  </Button>
+                </Stack>
               </Stack>
             </StepContent>
           </Step>
 
-          <Step>
+          <Step completed={!!realFileCid}>
             <StepLabel error={errorStep === 3}>
-              Real file{' '}
+              Real file
               {realFileCid && (
                 <Typography color="GrayText" variant="caption">
-                  ({realFileCid})
+                  {' - '}
+                  {realFileCid}
                 </Typography>
               )}
             </StepLabel>
@@ -304,14 +331,19 @@ export const Playground = () => {
                   </List>
                 </Dropzone>
 
-                <LoadingButton
-                  disabled={!dropzone.acceptedFiles.length}
-                  loading={inProgress}
-                  variant="contained"
-                  onClick={handleRealFileUpload}
-                >
-                  Continue
-                </LoadingButton>
+                <Stack direction="row" spacing={1}>
+                  <LoadingButton
+                    disabled={!dropzone.acceptedFiles.length}
+                    loading={inProgress}
+                    variant="contained"
+                    onClick={handleRealFileUpload}
+                  >
+                    Continue
+                  </LoadingButton>
+                  <Button variant="outlined" disabled={inProgress} onClick={handleSkip}>
+                    Skip
+                  </Button>
+                </Stack>
               </Stack>
             </StepContent>
           </Step>
@@ -320,12 +352,23 @@ export const Playground = () => {
             <StepLabel>Done!</StepLabel>
             <StepContent>
               <Stack spacing={2}>
-                <Typography>We have successfully uploaded the following files:</Typography>
+                {randomFileCid || realFileCid ? (
+                  <Typography>We have successfully uploaded the following files:</Typography>
+                ) : (
+                  <Typography>
+                    You did not upload anything to DDC...{' '}
+                    <MuiLink href="#" onClick={(event) => (event.preventDefault(), setStep(2))}>
+                      Go back
+                    </MuiLink>{' '}
+                    and try again.
+                  </Typography>
+                )}
+
                 <List disablePadding>
                   {randomFileCid && (
                     <ListItem disablePadding>
                       <ListItemIcon>
-                        <TaskIcon sx={{ fontSize: 40 }} />
+                        <FileIcon sx={{ fontSize: 40 }} />
                       </ListItemIcon>
 
                       <ListItemText
@@ -342,7 +385,7 @@ export const Playground = () => {
                   {dropzone.acceptedFiles.map((file, index) => (
                     <ListItem disablePadding key={index}>
                       <ListItemIcon>
-                        <TaskIcon sx={{ fontSize: 40 }} />
+                        <FileIcon sx={{ fontSize: 40 }} />
                       </ListItemIcon>
                       <ListItemText
                         primary={
