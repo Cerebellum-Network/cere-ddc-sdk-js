@@ -21,6 +21,7 @@ export { UriSigner, type Signer, type SignerType, type UriSignerOptions } from '
  * Utilities
  */
 export { splitStream, createContentStream, type SplitStreamMapper, type Content, type ContentStream } from './streams';
+export * from './Logger';
 
 /**
  * Constants
