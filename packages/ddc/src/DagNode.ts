@@ -19,18 +19,26 @@ export class Tag implements dag.Tag {
 }
 
 export class DagNode {
-  public data: Buffer;
+  private dataBuffer: Buffer;
 
   constructor(
     data: Uint8Array | string | Buffer,
     public links: Link[] = [],
     public tags: Tag[] = [],
   ) {
-    this.data = Buffer.from(data);
+    this.dataBuffer = Buffer.from(data);
   }
 
   get size() {
     return dag.Node.toBinary(mapDagNodeToAPI(this)).byteLength;
+  }
+
+  get data(): Buffer {
+    return this.dataBuffer;
+  }
+
+  set data(data: Uint8Array | string | Buffer) {
+    this.dataBuffer = Buffer.from(data);
   }
 
   static isDagNode(object: unknown): object is DagNode {
@@ -67,6 +75,7 @@ export class DagNodeResponse extends DagNode {
 
 export const mapDagNodeToAPI = (node: DagNode): dag.Node => ({
   ...node,
+  data: node.data,
   links: node.links.map((link) => ({
     ...link,
     cid: new Cid(link.cid).toBytes(),

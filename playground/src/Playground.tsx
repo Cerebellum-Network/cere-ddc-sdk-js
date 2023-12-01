@@ -13,6 +13,7 @@ import {
   DdcClient,
   DagNode,
   Link,
+  DagNodeUri,
 } from '@cere-ddc-sdk/ddc-client';
 import {
   Container,
@@ -128,13 +129,23 @@ export const Playground = () => {
     const [acceptedFile] = dropzone.acceptedFiles;
 
     try {
+      const existingDagNode = await client!
+        .read(new DagNodeUri(bucketId, cnsName))
+        .catch(() => new DagNode(JSON.stringify({ createTime: Date.now() })));
+
       const file = new File(acceptedFile.stream(), { size: acceptedFile.size });
       const uri = await client!.store(bucketId, file);
       const fileLink = new Link(uri.cid, acceptedFile.size, acceptedFile.name);
 
-      const dagNode = new DagNode(JSON.stringify({ updateTime: Date.now() }), [fileLink]);
-      await client!.store(bucketId, dagNode, { name: cnsName });
+      /**
+       * Create new DagNode from existing one with new file link and store it by new CID under the same CNS name.
+       */
+      const dagNode = new DagNode(JSON.stringify({ ...existingDagNode.data.toJSON(), updateTime: Date.now() }), [
+        ...existingDagNode.links.filter((link) => link.name !== acceptedFile.name),
+        fileLink,
+      ]);
 
+      await client!.store(bucketId, dagNode, { name: cnsName });
       const fileResponse = await client!.read(uri);
       const contentBuffer = await fileResponse.arrayBuffer();
 
