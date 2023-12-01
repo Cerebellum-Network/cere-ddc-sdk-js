@@ -152,7 +152,7 @@ export class StorageNode {
 
   async storeCnsRecord(bucketId: BucketId, record: CnsRecord) {
     this.logger.info('Storing CNS record into bucket %s', bucketId);
-    this.logger.debug('CNS record:', record);
+    this.logger.debug({ record }, 'CNS record');
 
     const storredRecord = await this.cnsApi.putRecord({
       bucketId,
