@@ -58,7 +58,7 @@ export class FileApi {
     });
 
     activityRequest.signature = await createSignature(signer, ActivityRequest.toBinary(activityRequest));
-    this.logger.debug('Activity request', activityRequest);
+    this.logger.debug({ activityRequest }, 'Activity request');
 
     return Buffer.from(ActivityRequest.toBinary(activityRequest)).toString('hex');
   }
@@ -75,18 +75,18 @@ export class FileApi {
       signature: await createSignature(signer, ActivityAcknowledgment.toBinary(ack)),
     });
 
-    this.logger.debug('Activity acknowledgment', signedAck);
+    this.logger.debug({ signedAck }, 'Activity acknowledgment');
 
     return signedAck;
   }
 
   async putMultipartPiece(request: PutMultiPartPieceRequest) {
     const partSize = ceilToPowerOf2(request.partSize);
-    this.logger.debug('Storing multipart piece', { ...request, partSize });
+    this.logger.debug({ ...request, partSize }, 'Storing multipart piece');
 
     const { response } = await this.api.putMultipartPiece({ ...request, partSize });
 
-    this.logger.debug('Multipart piece stored', response);
+    this.logger.debug({ response }, 'Multipart piece stored');
 
     return new Uint8Array(response.cid);
   }
@@ -94,7 +94,7 @@ export class FileApi {
   async putRawPiece(metadata: PutRawPieceMetadata, content: Content) {
     const meta: RpcMetadata = {};
 
-    this.logger.debug('Storing raw piece', metadata);
+    this.logger.debug({ metadata }, 'Storing raw piece');
 
     if (this.options.enableAcks) {
       const size = metadata.size || getContentSize(content);
@@ -132,13 +132,13 @@ export class FileApi {
     await requests.complete();
     const { cid } = await response;
 
-    this.logger.debug('Raw piece stored', { cid });
+    this.logger.debug({ cid }, 'Raw piece stored');
 
     return new Uint8Array(cid);
   }
 
   async getFile(request: GetFileRequest) {
-    this.logger.debug('Started reading data', request);
+    this.logger.debug({ request }, 'Started reading data');
 
     const requestId = uuid();
     const meta: RpcMetadata = {};
@@ -157,7 +157,7 @@ export class FileApi {
     const { responses, requests, status } = this.api.getFile({ meta });
 
     status.then((status) => {
-      this.logger.debug('Data stream ended', { status });
+      this.logger.debug({ status }, 'Data stream ended');
     });
 
     await requests.send({

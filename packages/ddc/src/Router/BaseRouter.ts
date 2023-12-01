@@ -32,8 +32,6 @@ export abstract class BaseRouter {
 
   constructor(private config: RouterConfig) {
     this.logger = createLogger({ ...config, prefix: 'Router' });
-
-    this.logger.debug('Router created', config);
   }
 
   abstract selectNode(operation: RouterOperation, nodes: RouterNode[]): RouterNode;
@@ -46,7 +44,7 @@ export abstract class BaseRouter {
     await this.isRead();
 
     if ('nodes' in this.config) {
-      this.logger.debug('Using static nodes', this.config.nodes);
+      this.logger.debug({ nodes: this.config.nodes }, 'Using static nodes');
 
       return this.config.nodes;
     }
@@ -87,13 +85,13 @@ export abstract class BaseRouter {
       },
     ];
 
-    this.logger.debug('Using nodes from blockchain', resultNodes);
+    this.logger.debug({ nodes: resultNodes }, 'Using nodes from blockchain');
 
     return resultNodes;
   }
 
   async getNode(operation: RouterOperation, bucketId: BucketId) {
-    this.logger.info(`Getting node for operation "${operation}" in bucket ${bucketId}`);
+    this.logger.info('Getting node for operation "%s" in bucket %s', operation, bucketId);
 
     const nodes = await this.getNodes(bucketId);
     const node = nodes.length > 1 ? this.selectNode(operation, nodes) : nodes[0];
@@ -102,7 +100,7 @@ export abstract class BaseRouter {
       throw new Error('No nodes available to handle the operation');
     }
 
-    this.logger.info(`Selected node for operation "${operation}" in bucket ${bucketId}`, node);
+    this.logger.info(node, `Selected node for operation "%s" in bucket %s`, operation, bucketId);
 
     return new StorageNode(this.config.signer, {
       ...node,

@@ -42,12 +42,12 @@ export class FileStorage {
       this.router = configOrRouter;
       this.logger = createLogger({ ...config, prefix: 'FileStorage' });
 
-      this.logger.debug('FileStorage created', config);
+      this.logger.debug(config, 'FileStorage created');
     } else {
       this.router = new Router(configOrRouter);
       this.logger = createLogger({ ...configOrRouter, prefix: 'FileStorage' });
 
-      this.logger.debug('FileStorage created', configOrRouter);
+      this.logger.debug(configOrRouter, 'FileStorage created');
     }
   }
 
@@ -83,8 +83,8 @@ export class FileStorage {
   }
 
   async store(bucketId: BucketId, file: File, options?: FileStoreOptions) {
-    this.logger.info(`Storing file into bucket ${bucketId}`);
-    this.logger.debug('File', file);
+    this.logger.info(options, 'Storing file into bucket %s', bucketId);
+    this.logger.debug({ file }, 'File');
 
     const isLarge = file.size > MAX_PIECE_SIZE;
     const node = await this.router.getNode(RouterOperation.STORE_PIECE, BigInt(bucketId));
@@ -92,18 +92,18 @@ export class FileStorage {
       ? await this.storeLarge(node, bucketId, file, options)
       : await this.storeSmall(node, bucketId, file, options);
 
-    this.logger.info(`File stored`, { cid });
+    this.logger.info({ cid }, 'File stored');
 
     return cid;
   }
 
   async read(bucketId: BucketId, cidOrName: string, options?: FileReadOptions) {
-    this.logger.info(`Reading file from bucket ${bucketId} by "${cidOrName}"`);
+    this.logger.info(options, 'Reading file from bucket %s by "%s"', bucketId, cidOrName);
 
     const node = await this.router.getNode(RouterOperation.READ_PIECE, BigInt(bucketId));
     const piece = await node.readPiece(bucketId, cidOrName, options);
 
-    this.logger.info('File read', { cid: piece.cid });
+    this.logger.info({ cid: piece.cid }, 'File read');
 
     return new FileResponse(piece.cid, piece.body, options);
   }

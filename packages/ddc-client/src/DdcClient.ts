@@ -45,7 +45,7 @@ export class DdcClient {
 
     const fileStorage = new FileStorage(router, config);
 
-    logger.debug('DdcClient created', config);
+    logger.debug(config, 'DdcClient created');
 
     return new DdcClient(blockchain, router, fileStorage, logger);
   }
@@ -55,33 +55,33 @@ export class DdcClient {
   }
 
   async createBucket(clusterId: ClusterId) {
-    this.logger.info(`Creating bucket on cluster ${clusterId}`);
+    this.logger.info('Creating bucket on cluster %s', clusterId);
 
-    const result = await this.blockchain.send(this.blockchain.ddcCustomers.createBucket(clusterId));
-    const [bucketId] = this.blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
+    const response = await this.blockchain.send(this.blockchain.ddcCustomers.createBucket(clusterId));
+    const [bucketId] = this.blockchain.ddcCustomers.extractCreatedBucketIds(response.events);
 
-    this.logger.debug('Blockchain response', result);
+    this.logger.debug({ response }, 'Blockchain response');
     this.logger.info(`Bucket ${bucketId} created on cluster ${clusterId}`);
 
     return bucketId;
   }
 
   async getBucket(bucketId: BucketId) {
-    this.logger.info(`Getting bucket ${bucketId}`);
+    this.logger.info('Getting bucket %s', bucketId);
     const bucket = await this.blockchain.ddcCustomers.getBucket(bucketId);
-    this.logger.info(`Got bucket ${bucketId}`, bucket);
+    this.logger.info('Got bucket %s', bucketId);
 
     return bucket;
   }
 
   async getBucketList() {
     this.logger.info('Getting bucket list');
-    const bucketList = await this.blockchain.ddcCustomers.listBuckets();
+    const list = await this.blockchain.ddcCustomers.listBuckets();
 
-    this.logger.info(`Got bucket list of lenght ${bucketList.length}`);
-    this.logger.debug('Bucket list', bucketList);
+    this.logger.info('Got bucket list of lenght %s', list.length);
+    this.logger.debug({ list }, 'Bucket list');
 
-    return bucketList;
+    return list;
   }
 
   /**
@@ -101,7 +101,7 @@ export class DdcClient {
   async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<FileUri>;
   async store(bucketId: BucketId, entity: DagNode, options?: DagNodeStoreOptions): Promise<DagNodeUri>;
   async store(bucketId: BucketId, entity: File | DagNode, options?: FileStoreOptions | DagNodeStoreOptions) {
-    this.logger.debug('Storing entity', entity, options);
+    this.logger.debug({ entity, options }, 'Storing entity');
 
     if (File.isFile(entity)) {
       const cid = await this.fileStorage.store(bucketId, entity, options);
@@ -127,7 +127,7 @@ export class DdcClient {
   async read(uri: FileUri, options?: FileReadOptions): Promise<FileResponse>;
   async read(uri: DagNodeUri, options?: DagNodeGetOptions): Promise<DagNodeResponse>;
   async read(uri: DdcUri, options?: FileReadOptions | DagNodeGetOptions) {
-    this.logger.debug('Reading entity', uri, options);
+    this.logger.debug({ uri, options }, 'Reading entity');
 
     if (uri.entity === 'file') {
       return this.fileStorage.read(uri.bucketId, uri.cidOrName, options as FileReadOptions);
