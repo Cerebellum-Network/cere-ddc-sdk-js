@@ -1,7 +1,15 @@
-import { Blockchain, Bucket, BucketId, Cluster, ClusterId } from '@cere-ddc-sdk/blockchain';
+import {
+  Blockchain,
+  Bucket,
+  BucketId,
+  Cluster,
+  ClusterId,
+  StorageNode as BCStorageNode,
+} from '@cere-ddc-sdk/blockchain';
 
 import { BaseStrategy } from './BaseStrategy';
 import { Logger } from '../Logger';
+import { RouterNode } from './RoutingStrategy';
 
 export type BlockchainStrategyConfig = {
   blockchain: Blockchain;
@@ -9,6 +17,8 @@ export type BlockchainStrategyConfig = {
 
 export class BlockchainStrategy extends BaseStrategy {
   private blockchain: Blockchain;
+  private bucketCache: Map<BucketId, Bucket> = new Map();
+  private clusterNodes: Map<ClusterId, RouterNode[]> = new Map();
 
   readonly blockchainCache = {
     buckets: {} as Record<string, Bucket>,
@@ -28,75 +38,51 @@ export class BlockchainStrategy extends BaseStrategy {
   async getNodes(bucketId: BucketId) {
     await this.isReady();
 
-    const bucket = await this.getBucket(bucketId);
+    const { clusterId } = await this.getBucket(bucketId);
+    const nodes = await this.getClusterNodes(clusterId);
 
-    if (!bucket) {
-      throw new Error(`Failed to get info for bucket ${bucketId} on blockchain`);
-    }
+    this.logger.debug({ nodes }, 'Using nodes from blockchain');
 
-    if (!bucket.clusterId) {
-      throw new Error(`Bucket ${bucketId} is not allocated to any cluster`);
-    }
-
-    const cluster = await this.getCluster(bucket.clusterId);
-
-    if (!cluster) {
-      throw new Error(`Failed to get info for cluster ${bucket.clusterId} on blockchain`);
-    }
-
-    const nodes = await this.blockchain.ddcClusters.listNodeKeys(cluster.clusterId);
-    const storageNodeKeys = nodes.filter((node) => node.keyType === 'storage').map((node) => node.nodePublicKey);
-    const nodeKey = storageNodeKeys[Math.floor(Math.random() * storageNodeKeys.length)];
-    const node = await this.blockchain.ddcNodes.findStorageNodeByPublicKey(nodeKey);
-
-    if (node == null) {
-      throw new Error(`Failed to get info for node ${nodeKey} on blockchain`);
-    }
-
-    /**
-     * TODO: Revise this implementation to support future `ssl` endpoints
-     */
-    const resultNodes = [
-      {
-        grpcUrl: `grpc://${node.props.host}:${node.props.grpcPort}`,
-        httpUrl: `http://${node.props.host}:${node.props.httpPort}`,
-        ssl: false,
-      },
-    ];
-
-    this.logger.debug({ nodes: resultNodes }, 'Using nodes from blockchain');
-
-    return resultNodes;
+    return nodes;
   }
 
-  private async getCluster(clusterId: ClusterId) {
-    const cached = this.blockchainCache.clusters[clusterId];
+  private mapNodeProps = (node: BCStorageNode): RouterNode => {
+    const { grpcPort, host, httpPort } = node.props;
+    const ssl = httpPort === 443;
+    const httpUrl = ssl ? `https://${host}` : `http://${host}:${httpPort}`;
 
-    if (cached) {
-      return cached;
+    return {
+      ssl,
+      httpUrl,
+      grpcUrl: `grpc://${host}:${grpcPort}`,
+    };
+  };
+
+  private async getClusterNodes(clusterId: ClusterId) {
+    if (this.clusterNodes.has(clusterId)) {
+      return this.clusterNodes.get(clusterId)!;
     }
 
-    const cluster = await this.blockchain.ddcClusters.findClusterById(clusterId);
+    const allNodes = await this.blockchain.ddcNodes.listStorageNodes();
+    const clusterNodes = allNodes.filter((node) => node.clusterId === clusterId).map(this.mapNodeProps);
+    this.clusterNodes.set(clusterId, clusterNodes);
 
-    if (cluster) {
-      this.blockchainCache.clusters[clusterId] = cluster;
-    }
-
-    return cluster;
+    return clusterNodes;
   }
 
   private async getBucket(bucketId: BucketId) {
-    const cached = this.blockchainCache.buckets[bucketId.toString()];
-
-    if (cached) {
-      return cached;
+    if (this.bucketCache.has(bucketId)) {
+      return this.bucketCache.get(bucketId)!;
     }
 
     const bucket = await this.blockchain.ddcCustomers.getBucket(bucketId);
 
-    if (bucket) {
-      this.blockchainCache.buckets[bucketId.toString()] = bucket;
+    if (!bucket) {
+      throw new Error(`Failed to get bucket ${bucketId} on blockchain`);
     }
+
+    this.logger.debug({ bucket }, 'Got bucket from blockchain');
+    this.bucketCache.set(bucketId, bucket);
 
     return bucket;
   }
