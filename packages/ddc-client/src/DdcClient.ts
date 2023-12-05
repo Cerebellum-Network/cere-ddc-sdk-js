@@ -12,6 +12,7 @@ import {
   LoggerOptions,
   Logger,
   createLogger,
+  bindErrorLogger,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
 import { Blockchain, BucketId, ClusterId } from '@cere-ddc-sdk/blockchain';
@@ -29,7 +30,9 @@ export class DdcClient {
     private readonly router: Router,
     private readonly fileStorage: FileStorage,
     private readonly logger: Logger,
-  ) {}
+  ) {
+    bindErrorLogger(this, this.logger, ['createBucket', 'getBucket', 'getBucketList', 'store', 'read']);
+  }
 
   static async create(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
     const logger = createLogger({ ...config, prefix: 'DdcClient' });
