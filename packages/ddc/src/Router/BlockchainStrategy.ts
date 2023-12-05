@@ -51,6 +51,9 @@ export class BlockchainStrategy extends BaseStrategy {
       return this.clusterNodes.get(clusterId)!;
     }
 
+    /**
+     * TODO: Discuss with the team if it is possible to get nodes with props from the blockchain by clusterId
+     */
     const allNodes = await this.blockchain.ddcNodes.listStorageNodes();
     const clusterNodes = allNodes.filter((node) => node.clusterId === clusterId).map(this.mapNodeProps);
     this.clusterNodes.set(clusterId, clusterNodes);
