@@ -1,11 +1,4 @@
-import {
-  Blockchain,
-  Bucket,
-  BucketId,
-  Cluster,
-  ClusterId,
-  StorageNode as BCStorageNode,
-} from '@cere-ddc-sdk/blockchain';
+import { Blockchain, Bucket, BucketId, ClusterId, StorageNode as BCStorageNode } from '@cere-ddc-sdk/blockchain';
 
 import { BaseStrategy } from './BaseStrategy';
 import { Logger } from '../Logger';
@@ -19,11 +12,6 @@ export class BlockchainStrategy extends BaseStrategy {
   private blockchain: Blockchain;
   private bucketCache: Map<BucketId, Bucket> = new Map();
   private clusterNodes: Map<ClusterId, RouterNode[]> = new Map();
-
-  readonly blockchainCache = {
-    buckets: {} as Record<string, Bucket>,
-    clusters: {} as Record<ClusterId, Cluster>,
-  };
 
   constructor(logger: Logger, { blockchain }: BlockchainStrategyConfig) {
     super(logger);
