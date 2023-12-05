@@ -1,6 +1,6 @@
-import { BaseLogger as Logger, Level } from 'pino';
+import { BaseLogger as Logger, LevelWithSilent } from 'pino';
 
-export type LogLevel = Level;
+export type LogLevel = LevelWithSilent;
 export type LoggerOptions = {
   logLevel?: LogLevel;
   prefix?: string;
