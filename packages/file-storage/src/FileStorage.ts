@@ -17,6 +17,7 @@ import {
   Logger,
   createLogger,
   LoggerOptions,
+  bindErrorLogger,
 } from '@cere-ddc-sdk/ddc';
 
 import { File, FileResponse } from './File';
@@ -49,6 +50,8 @@ export class FileStorage {
 
       this.logger.debug(configOrRouter, 'FileStorage created');
     }
+
+    bindErrorLogger(this, this.logger, ['store', 'read']);
   }
 
   static async create(uriOrSigner: Signer | string, config: FileStorageConfig = DEFAULT_PRESET) {

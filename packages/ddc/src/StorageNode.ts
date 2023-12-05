@@ -8,7 +8,7 @@ import { MultipartPiece, Piece, PieceResponse } from './Piece';
 import { DagNode, DagNodeResponse, mapDagNodeToAPI } from './DagNode';
 import { CnsRecord, CnsRecordResponse, mapCnsRecordToAPI } from './CnsRecord';
 import { DefaultTransport, RpcTransportOptions } from './transports';
-import { createLogger, Logger, LoggerOptions } from './Logger';
+import { bindErrorLogger, createLogger, Logger, LoggerOptions } from './Logger';
 
 type NamingOptions = {
   name?: string;
@@ -49,6 +49,16 @@ export class StorageNode {
     });
 
     this.logger.debug(config, 'Storage node initialized');
+
+    bindErrorLogger(this, this.logger, [
+      'storePiece',
+      'storeDagNode',
+      'readPiece',
+      'getDagNode',
+      'storeCnsRecord',
+      'getCnsRecord',
+      'resolveName',
+    ]);
   }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
