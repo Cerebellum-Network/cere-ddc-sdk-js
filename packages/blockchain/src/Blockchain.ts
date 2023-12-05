@@ -33,6 +33,10 @@ export class Blockchain {
     this.ddcCustomers = new DDCCustomersPallet(apiPromise);
   }
 
+  isReady() {
+    return !!this.apiPromise.isReady;
+  }
+
   send(sendable: Sendable) {
     return new Promise<SendResult>((resolve, reject) => {
       sendable

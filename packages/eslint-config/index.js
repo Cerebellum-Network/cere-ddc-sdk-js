@@ -20,6 +20,7 @@ module.exports = {
     'import/no-extraneous-dependencies': 'error',
     '@typescript-eslint/ban-ts-comment': 'off',
     'no-constant-condition': ['error', { checkLoops: false }],
+    '@typescript-eslint/no-unused-vars': ['error', { args: 'none' }],
     'import/no-unresolved': 'off', // Disable due to ts paths configuration
   },
 };

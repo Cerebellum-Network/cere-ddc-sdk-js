@@ -18,7 +18,7 @@ export const DEVNET: ConfigPreset = {
     { grpcUrl: 'grpc://158.220.87.61:9091', httpUrl: 'http://158.220.87.61:8081' },
     { grpcUrl: 'grpc://89.117.79.111:9090', httpUrl: 'https://storage-5.ddc-devnet.cloud', ssl: true },
     { grpcUrl: 'grpc://89.117.79.111:9091', httpUrl: 'http://89.117.79.111:8081' },
-    { grpcUrl: 'grpc://154.53.57.124:9090', httpUrl: 'https:///storage-7.ddc-devnet.cloud', ssl: true },
+    { grpcUrl: 'grpc://154.53.57.124:9090', httpUrl: 'https://storage-7.ddc-devnet.cloud', ssl: true },
     { grpcUrl: 'grpc://154.53.57.124:9091', httpUrl: 'http://154.53.57.124:8081' },
   ],
 };
