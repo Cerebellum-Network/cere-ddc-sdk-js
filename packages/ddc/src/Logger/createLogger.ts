@@ -14,24 +14,25 @@ export const createLogger = (defaultPrefix: string, options: LoggerOptions = {})
     return pinologger.child({});
   }
 
-  const output: LoggerConfig['output'] = logOptions.output || { type: 'console' };
+  const output: LoggerConfig['output'] = logOptions.output || { type: 'console', format: 'pretty' };
   const outputs = Array.isArray(output) ? output : [output];
   const targets: TransportTargetOptions[] = outputs.map((output) => ({
-    target: output.format === 'pretty' ? 'pino-pretty' : 'pino/file',
+    target: output.format === 'json' ? 'pino/file' : 'pino-pretty',
     level: output.level || logLevel,
     options:
-      output.type === 'console'
+      output.type === 'file'
         ? {
-            destination: 1, // stdout
-            colorize: true,
-            colorizeObjects: true,
-            ignore: 'hostname,pid',
-          }
-        : {
             destination: output.path,
             append: output.append ?? false,
             colorize: false,
             mkdir: true,
+          }
+        : {
+            destination: 1, // stdout
+            colorize: true,
+            colorizeObjects: true,
+            levelFirst: true,
+            ignore: 'hostname,pid',
           },
   }));
 

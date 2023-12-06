@@ -11,6 +11,7 @@ describe('DDC Client', () => {
 
     client = await DdcClient.create(ROOT_USER_SEED, {
       blockchain: rpcUrl,
+      logLevel: 'debug',
     });
   });
 
