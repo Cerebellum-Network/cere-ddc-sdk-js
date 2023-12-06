@@ -12,8 +12,13 @@ type LogOutputConsole = {
   type: 'console';
 };
 
-export type LogOutput = { level?: LogLevel } & (LogOutputFile | LogOutputConsole);
+export type LogOutput = (LogOutputFile | LogOutputConsole) & {
+  level?: LogLevel;
+  format?: 'json' | 'pretty';
+};
+
 export type LoggerConfig = {
+  prefix?: string;
   output?: LogOutput | LogOutput[];
 };
 

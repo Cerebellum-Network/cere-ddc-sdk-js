@@ -5,12 +5,17 @@ import { Logger, LoggerOptions } from './types';
 const globalConsole = globalThis.console;
 
 const getLogFn =
-  (level: Exclude<Level, 'fatal'>, prefix: string, { logLevel }: LoggerOptions): LogFn =>
+  (
+    level: Exclude<Level, 'fatal'>,
+    defaultPrefix: string,
+    { logLevel = 'warn', logOptions = {} }: LoggerOptions,
+  ): LogFn =>
   (...rawArgs: any[]) => {
     if (logLevel === 'silent' || levels.values[level] < levels.values[logLevel!]) {
       return;
     }
 
+    const msgPrefix = logOptions.prefix ?? `[${defaultPrefix}] `;
     const args = rawArgs.filter((arg) => arg !== undefined);
     const log = globalConsole[level];
     const [debug, message, ...rest] = args;
@@ -18,10 +23,10 @@ const getLogFn =
     if (typeof debug === 'string') {
       const [message, ...rest] = args;
 
-      return log(format(`[${prefix}] ${message}`, ...rest));
+      return log(format(`${msgPrefix}${message}`, ...rest));
     }
 
-    return log(format(`[${prefix}] ${message}`, ...rest), debug);
+    return log(format(`${msgPrefix}${message}`, ...rest), debug);
   };
 
 export const createLogger = (prefix: string, options: LoggerOptions = {}): Logger => ({
