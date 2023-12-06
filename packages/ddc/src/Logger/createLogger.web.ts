@@ -1,35 +1,36 @@
 import format from 'format-util';
-import type { LogFn } from 'pino';
+import { LogFn, Level, levels } from 'pino';
 import { Logger, LoggerOptions } from './types';
 
 const globalConsole = globalThis.console;
 
-const formatMessage = ({ prefix }: LoggerOptions, message: string, ...args: any[]) => {
-  return format(prefix ? `[${prefix}] ${message}` : message, ...args);
-};
-
-const wrapLog =
-  (log: LogFn, options: LoggerOptions): LogFn =>
+const getLogFn =
+  (level: Exclude<Level, 'fatal'>, prefix: string, { logLevel }: LoggerOptions): LogFn =>
   (...rawArgs: any[]) => {
+    if (logLevel === 'silent' || levels.values[level] < levels.values[logLevel!]) {
+      return;
+    }
+
     const args = rawArgs.filter((arg) => arg !== undefined);
+    const log = globalConsole[level];
     const [debug, message, ...rest] = args;
 
     if (typeof debug === 'string') {
       const [message, ...rest] = args;
 
-      return log(formatMessage(options, message, ...rest));
+      return log(format(`[${prefix}] ${message}`, ...rest));
     }
 
-    return log(formatMessage(options, message, ...rest), debug);
+    return log(format(`[${prefix}] ${message}`, ...rest), debug);
   };
 
-export const createLogger = (options: LoggerOptions): Logger => ({
+export const createLogger = (prefix: string, options: LoggerOptions = {}): Logger => ({
   level: options.logLevel || 'warn',
-  debug: wrapLog(globalConsole.debug, options),
-  info: wrapLog(globalConsole.info, options),
-  warn: wrapLog(globalConsole.warn, options),
-  error: wrapLog(globalConsole.error, options),
-  fatal: wrapLog(globalConsole.error, options),
-  trace: wrapLog(globalConsole.trace, options),
+  debug: getLogFn('debug', prefix, options),
+  info: getLogFn('info', prefix, options),
+  warn: getLogFn('warn', prefix, options),
+  error: getLogFn('error', prefix, options),
+  fatal: getLogFn('error', prefix, options),
+  trace: getLogFn('trace', prefix, options),
   silent: () => {},
 });

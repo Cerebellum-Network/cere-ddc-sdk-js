@@ -41,12 +41,12 @@ export class FileStorage {
   constructor(configOrRouter: RouterConfig | Router, config?: Config) {
     if (configOrRouter instanceof Router) {
       this.router = configOrRouter;
-      this.logger = createLogger({ ...config, prefix: 'FileStorage' });
+      this.logger = createLogger('FileStorage', config);
 
       this.logger.debug(config, 'FileStorage created');
     } else {
-      this.router = new Router(configOrRouter);
-      this.logger = createLogger({ ...configOrRouter, prefix: 'FileStorage' });
+      this.logger = createLogger('FileStorage', configOrRouter);
+      this.router = new Router({ ...configOrRouter, logger: this.logger });
 
       this.logger.debug(configOrRouter, 'FileStorage created');
     }
