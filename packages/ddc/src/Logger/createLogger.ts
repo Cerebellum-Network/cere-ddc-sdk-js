@@ -1,10 +1,20 @@
 import pino from 'pino';
-import { Logger, LoggerOptions } from './types';
+import { Logger, LoggerOptions, isLogger } from './types';
 
-export const createLogger = (prefix: string, options: LoggerOptions = {}): Logger =>
-  pino({
+export const createLogger = (prefix: string, options: LoggerOptions = {}): Logger => {
+  const { logger } = options;
+  const msgPrefix = `[${prefix}] `;
+
+  /**
+   * If the provided logger is already a pino logger, we just add a child logger to it.
+   */
+  if (isLogger(logger)) {
+    return logger.child({}, { msgPrefix });
+  }
+
+  return pino({
     level: options.logLevel || 'warn',
-    msgPrefix: `[${prefix}] `,
+    msgPrefix,
     transport: {
       target: 'pino-pretty',
       options: {
@@ -15,3 +25,4 @@ export const createLogger = (prefix: string, options: LoggerOptions = {}): Logge
       },
     },
   });
+};

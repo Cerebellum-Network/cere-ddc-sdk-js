@@ -45,8 +45,8 @@ export class FileStorage {
 
       this.logger.debug(config, 'FileStorage created');
     } else {
-      this.router = new Router(configOrRouter);
       this.logger = createLogger('FileStorage', configOrRouter);
+      this.router = new Router({ ...configOrRouter, logger: this.logger });
 
       this.logger.debug(configOrRouter, 'FileStorage created');
     }

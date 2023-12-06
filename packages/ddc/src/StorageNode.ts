@@ -44,7 +44,7 @@ export class StorageNode {
     this.cnsApi = new CnsApi(transport, { signer });
     this.fileApi = new FileApi(transport, {
       signer,
-      logLevel: config.logLevel,
+      logger: this.logger,
       enableAcks: config.enableAcks,
     });
 

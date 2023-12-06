@@ -43,10 +43,10 @@ export class DdcClient {
         : config.blockchain;
 
     const router = config.nodes
-      ? new Router({ signer, nodes: config.nodes, logLevel: config.logLevel })
-      : new Router({ signer, blockchain, logLevel: config.logLevel });
+      ? new Router({ signer, nodes: config.nodes, logger })
+      : new Router({ signer, blockchain, logger });
 
-    const fileStorage = new FileStorage(router, config);
+    const fileStorage = new FileStorage(router, { ...config, logger });
 
     logger.debug(config, 'DdcClient created');
 
