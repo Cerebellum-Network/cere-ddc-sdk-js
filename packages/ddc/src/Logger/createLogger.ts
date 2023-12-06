@@ -1,10 +1,10 @@
 import pino from 'pino';
 import { Logger, LoggerOptions } from './types';
 
-export const createLogger = (options: LoggerOptions = {}): Logger =>
+export const createLogger = (prefix: string, options: LoggerOptions = {}): Logger =>
   pino({
     level: options.logLevel || 'warn',
-    msgPrefix: options.prefix ? `[${options.prefix}] ` : undefined,
+    msgPrefix: `[${prefix}] `,
     transport: {
       target: 'pino-pretty',
       options: {

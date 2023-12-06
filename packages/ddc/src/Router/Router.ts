@@ -17,7 +17,7 @@ export class Router {
   private logger: Logger;
 
   constructor({ signer, ...config }: RouterConfig) {
-    this.logger = createLogger({ ...config, prefix: 'Router' });
+    this.logger = createLogger('Router', config);
     this.signer = signer;
 
     if ('nodes' in config) {

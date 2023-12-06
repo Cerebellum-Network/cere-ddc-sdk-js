@@ -39,7 +39,7 @@ export class StorageNode {
   constructor(signer: Signer, config: StorageNodeConfig) {
     const transport = new DefaultTransport(config);
 
-    this.logger = createLogger({ ...config, prefix: 'StorageNode' });
+    this.logger = createLogger('StorageNode', config);
     this.dagApi = new DagApi(transport);
     this.cnsApi = new CnsApi(transport, { signer });
     this.fileApi = new FileApi(transport, {

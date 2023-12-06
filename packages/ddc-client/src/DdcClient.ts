@@ -35,7 +35,7 @@ export class DdcClient {
   }
 
   static async create(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
-    const logger = createLogger({ ...config, prefix: 'DdcClient' });
+    const logger = createLogger('DdcClient', config);
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
     const blockchain =
       typeof config.blockchain === 'string'

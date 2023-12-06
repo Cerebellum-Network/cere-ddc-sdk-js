@@ -36,7 +36,7 @@ export class FileApi {
 
   constructor(transport: RpcTransport, options: FileApiOptions = {}) {
     this.api = new FileApiClient(transport);
-    this.logger = createLogger({ ...options, prefix: 'FileApi' });
+    this.logger = createLogger('FileApi', options);
 
     this.options = {
       ...options,
