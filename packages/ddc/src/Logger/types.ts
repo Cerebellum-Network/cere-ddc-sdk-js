@@ -18,7 +18,7 @@ export type LogOutput = (LogOutputFile | LogOutputConsole) & {
 };
 
 export type LoggerConfig = {
-  prefix?: string;
+  msgPrefix?: string;
   output?: LogOutput | LogOutput[];
 };
 

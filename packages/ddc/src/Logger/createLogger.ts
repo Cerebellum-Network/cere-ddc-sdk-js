@@ -3,7 +3,7 @@ import { LoggerConfig, Logger, LoggerOptions } from './types';
 
 export const createLogger = (defaultPrefix: string, options: LoggerOptions = {}): Logger => {
   const { logger, logOptions = {}, logLevel = 'warn' } = options;
-  const msgPrefix = logOptions.prefix ?? `[${defaultPrefix}] `;
+  const msgPrefix = logOptions.msgPrefix ?? `[${defaultPrefix}] `;
 
   /**
    * If the provided logger is already a pino logger, we just add a child logger to it.

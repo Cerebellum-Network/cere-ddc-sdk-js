@@ -15,7 +15,7 @@ const getLogFn =
       return;
     }
 
-    const msgPrefix = logOptions.prefix ?? `[${defaultPrefix}] `;
+    const msgPrefix = logOptions.msgPrefix ?? `[${defaultPrefix}] `;
     const args = rawArgs.filter((arg) => arg !== undefined);
     const log = globalConsole[level];
     const [debug, message, ...rest] = args;
