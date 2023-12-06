@@ -1,17 +1,26 @@
-import { BaseLogger as Logger, LevelWithSilent, Logger as FullLogger } from 'pino';
+import { BaseLogger as Logger, LevelWithSilent } from 'pino';
 
 export type LogLevel = LevelWithSilent;
+
+type LogOutputFile = {
+  type: 'file';
+  path: string;
+  append?: boolean;
+};
+
+type LogOutputConsole = {
+  type: 'console';
+};
+
+export type LogOutput = { level?: LogLevel } & (LogOutputFile | LogOutputConsole);
 export type LoggerConfig = {
-  format: 'pretty' | 'json';
+  output?: LogOutput | LogOutput[];
 };
 
 export type LoggerOptions = {
   logLevel?: LogLevel;
-  logger?: LoggerConfig | Logger;
-};
-
-export const isLogger = (logger: unknown): logger is FullLogger => {
-  return !!logger && typeof logger === 'object' && 'child' in logger && typeof logger.child === 'function';
+  logOptions?: LoggerConfig;
+  logger?: Logger;
 };
 
 export type { Logger };

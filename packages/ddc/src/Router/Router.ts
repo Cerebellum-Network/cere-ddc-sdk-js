@@ -3,7 +3,7 @@ import { BucketId, Signer } from '@cere-ddc-sdk/blockchain';
 import { RouterOperation, RoutingStrategy } from './RoutingStrategy';
 import { BlockchainStrategy, BlockchainStrategyConfig } from './BlockchainStrategy';
 import { StaticStrategy, StaticStrategyConfig } from './StaticStrategy';
-import { LogLevel, Logger, LoggerOptions, createLogger } from '../Logger';
+import { Logger, LoggerOptions, createLogger } from '../Logger';
 import { StorageNode } from '../StorageNode';
 
 export type RouterConfig = (StaticStrategyConfig | BlockchainStrategyConfig) &
@@ -41,7 +41,7 @@ export class Router {
 
     return new StorageNode(this.signer, {
       ...node,
-      logLevel: this.logger.level as LogLevel,
+      logger: this.logger,
     });
   }
 }
