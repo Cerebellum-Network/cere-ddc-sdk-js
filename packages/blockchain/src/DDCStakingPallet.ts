@@ -47,9 +47,25 @@ export class DDCStakingPallet {
     return result.toJSON() as unknown as AccountId | undefined;
   }
 
+  async listStakedStorageNodesStashAccountsAndClusters() {
+    const result = await this.apiPromise.query.ddcStaking.storages.entries();
+    return result.map(([stashAccountId, clusterId]) => ({
+      cdnNodeStashAccountId: stashAccountId.toJSON() as unknown as AccountId,
+      clusterId: clusterId.toJSON() as unknown as ClusterId,
+    }));
+  }
+
   async findStakedClusterIdByCdnNodeStashAccountId(stashAccountId: AccountId) {
     const result = await this.apiPromise.query.ddcStaking.cdNs(stashAccountId);
     return result.toJSON() as unknown as ClusterId | undefined;
+  }
+
+  async listStakedCdnNodesStashAccountsAndClusters() {
+    const result = await this.apiPromise.query.ddcStaking.cdNs.entries();
+    return result.map(([stashAccountId, clusterId]) => ({
+      storageNodeStashAccountId: stashAccountId.toJSON() as unknown as AccountId,
+      clusterId: clusterId.toJSON() as unknown as ClusterId,
+    }));
   }
 
   async findStakedClusterIdByStorageNodeStashAccountId(stashAccountId: AccountId) {
