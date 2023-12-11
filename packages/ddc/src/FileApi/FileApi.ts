@@ -93,13 +93,13 @@ export class FileApi {
 
   async putRawPiece(metadata: PutRawPieceMetadata, content: Content) {
     const meta: RpcMetadata = {};
-
-    this.logger.debug({ metadata }, 'Storing raw piece');
     const size = metadata.size || getContentSize(content);
 
     if (!size) {
       throw new Error('Cannot determine the raw piece size');
     }
+
+    this.logger.debug({ metadata }, 'Storing raw piece of size %d', size);
 
     if (this.options.enableAcks) {
       meta.request = await this.createActivityRequest({
