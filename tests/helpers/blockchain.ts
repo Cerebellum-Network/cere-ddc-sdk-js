@@ -67,6 +67,19 @@ export const transferCere = async (api: ApiPromise, to: string, tokens: number) 
   return signAndSend(transfer, getAccount('//Alice'));
 };
 
+export const sendMultipleTransfers = (api: ApiPromise, transfers: { to: string; tokens: number }[]) => {
+  const batch = api.tx.utility.batchAll(
+    transfers.map(({ to, tokens }) => {
+      const [decimals] = api.registry.chainDecimals;
+      const multiplier = 10n ** BigInt(decimals);
+
+      return api.tx.balances.transfer(to, BigInt(tokens) * multiplier);
+    }),
+  );
+
+  return signAndSend(batch, getAccount('//Alice'));
+};
+
 export const readBlockchainStateFromDisk = (): BlockchainState => {
   const stateFile = path.resolve(__dirname, '../data/ddc.json');
 

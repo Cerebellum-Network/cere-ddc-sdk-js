@@ -12,6 +12,7 @@ import {
   deployAuthContract,
   CERE,
   writeBlockchainStateToDisk,
+  sendMultipleTransfers,
 } from '../../helpers';
 import { Blockchain } from '@cere-ddc-sdk/blockchain';
 
@@ -66,7 +67,6 @@ export const setupBlockchain = async () => {
 
   const apiPromise = await createBlockhainApi();
   const clusterManagerAccount = getAccount('//Alice');
-  const adminAccount = getAccount();
   const clusterId = '0x0000000000000000000000000000000000000000';
   const bucketIds = [1n, 2n, 3n];
   const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
@@ -78,18 +78,13 @@ export const setupBlockchain = async () => {
   ];
   const bondAmount = 100n * CERE;
 
-  console.time('Top-up cluster manager account');
-  await transferCere(apiPromise, adminAccount.address, 500);
+  console.time('Top-up node provider accounts');
+  await sendMultipleTransfers(apiPromise, [
+    // { to: clusterManagerAccount.address, tokens: 500 },
+    ...cdnNodeAccounts.map((cdnNodeAccount) => ({ to: cdnNodeAccount.address, tokens: 500 })),
+    ...storageNodeAccounts.map((storageNodeAccount) => ({ to: storageNodeAccount.address, tokens: 500 })),
+  ]);
   console.timeEnd('Top-up cluster manager account');
-
-  console.time('Top-up node providers');
-  for (let cdnNodeAccount of cdnNodeAccounts) {
-    await transferCere(apiPromise, cdnNodeAccount.address, 500);
-  }
-  for (let storageNodeAccount of storageNodeAccounts) {
-    await transferCere(apiPromise, storageNodeAccount.address, 500);
-  }
-  console.timeEnd('Top-up node providers');
 
   console.time('Deploy cluster node auth contract');
   const clusterNodeAuthorizationContractAddress = await deployAuthContract(apiPromise, clusterManagerAccount);
