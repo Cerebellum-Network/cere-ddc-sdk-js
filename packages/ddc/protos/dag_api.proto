@@ -2,63 +2,64 @@ syntax = "proto3";
 
 package dag;
 
-option go_package = "api/external/dag";
+option go_package = "api/dag";
 
 import "google/api/annotations.proto";
 
 service DagApi {
   rpc Put(PutRequest) returns (PutResponse) {
     option (google.api.http) = {
-      post: "/v1/dag/{BucketId}"
+      post: "/v1/dag/{bucketId}"
       body: "*"
     };
   }
 
   rpc Get(GetRequest) returns (GetResponse) {
     option (google.api.http) = {
-      get: "/v1/dag/{BucketId}/{Cid}/{Path}"
+      get: "/v1/dag/{bucketId}/{cid}/{path}"
       additional_bindings {
-        get: "/v1/dag/{BucketId}/{Cid}"
+        get: "/v1/dag/{bucketId}/{cid}"
       }
     };
   }
 }
 
 message PutRequest {
-  uint64 BucketId = 1 [jstype = JS_NORMAL];
-  Node Node = 2;
+  uint64 bucketId = 1 [jstype = JS_NORMAL];
+  Node node = 2;
+  optional bytes cid = 3;
 }
 
 message PutResponse {
-  bytes Cid = 1;
+  bytes cid = 1;
 }
 
 message GetRequest {
-  uint64 BucketId = 1 [jstype = JS_NORMAL];
-  bytes Cid = 2;
-  optional string Path = 3;
+  uint64 bucketId = 1;
+  bytes cid = 2;
+  optional string path = 3;
 }
 
 message GetResponse {
-  Node Node = 1;
+  Node node = 1;
 }
 
 message Node {
-  bytes Data = 1;
-  repeated Link Links = 2;
-  repeated Tag Tags = 3;
+  bytes data = 1;
+  repeated Link links = 2;
+  repeated Tag tags = 3;
 }
 
 message Link {
   // CID of the target object
-  bytes Cid = 1;
+  bytes cid = 1;
   // UTF-8 string name
-  string Name = 2;
+  string name = 2;
   // cumulative size of target object
-  uint64 Size = 3;
+  uint64 size = 3;
 }
 
 message Tag {
-  string Key = 1;
-  string Value = 2;
+  string key = 1;
+  string value = 2;
 }

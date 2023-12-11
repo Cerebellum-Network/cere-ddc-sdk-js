@@ -57,6 +57,10 @@ export interface PutRawPieceRequest_Metadata {
      * @generated from protobuf field: bool isMultipart = 4;
      */
     isMultipart: boolean; // whether the piece is part of a file or not
+    /**
+     * @generated from protobuf field: uint64 size = 5;
+     */
+    size: number; // indicates the size of the content, in bytes
 }
 /**
  * @generated from protobuf message file.PutRawPieceRequest.Content
@@ -149,6 +153,10 @@ export interface GetFileRequest_Request {
      * @generated from protobuf field: optional file.GetFileRequest.Request.Range range = 3;
      */
     range?: GetFileRequest_Request_Range; // indicates part of the file to be returned (return whole file if range is missing)
+    /**
+     * @generated from protobuf field: bool authenticate = 4;
+     */
+    authenticate: boolean;
 }
 /**
  * @generated from protobuf message file.GetFileRequest.Request.Range
@@ -262,11 +270,12 @@ class PutRawPieceRequest_Metadata$Type extends MessageType<PutRawPieceRequest_Me
             { no: 1, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 2, name: "cid", kind: "scalar", opt: true, T: 12 /*ScalarType.BYTES*/ },
             { no: 3, name: "offset", kind: "scalar", opt: true, T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
-            { no: 4, name: "isMultipart", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
+            { no: 4, name: "isMultipart", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
+            { no: 5, name: "size", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ }
         ]);
     }
     create(value?: PartialMessage<PutRawPieceRequest_Metadata>): PutRawPieceRequest_Metadata {
-        const message = { bucketId: 0n, isMultipart: false };
+        const message = { bucketId: 0n, isMultipart: false, size: 0 };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<PutRawPieceRequest_Metadata>(this, message, value);
@@ -288,6 +297,9 @@ class PutRawPieceRequest_Metadata$Type extends MessageType<PutRawPieceRequest_Me
                     break;
                 case /* bool isMultipart */ 4:
                     message.isMultipart = reader.bool();
+                    break;
+                case /* uint64 size */ 5:
+                    message.size = reader.uint64().toNumber();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -313,6 +325,9 @@ class PutRawPieceRequest_Metadata$Type extends MessageType<PutRawPieceRequest_Me
         /* bool isMultipart = 4; */
         if (message.isMultipart !== false)
             writer.tag(4, WireType.Varint).bool(message.isMultipart);
+        /* uint64 size = 5; */
+        if (message.size !== 0)
+            writer.tag(5, WireType.Varint).uint64(message.size);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -605,11 +620,12 @@ class GetFileRequest_Request$Type extends MessageType<GetFileRequest_Request> {
         super("file.GetFileRequest.Request", [
             { no: 1, name: "cid", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
             { no: 2, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 3, name: "range", kind: "message", T: () => GetFileRequest_Request_Range }
+            { no: 3, name: "range", kind: "message", T: () => GetFileRequest_Request_Range },
+            { no: 4, name: "authenticate", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
         ]);
     }
     create(value?: PartialMessage<GetFileRequest_Request>): GetFileRequest_Request {
-        const message = { cid: new Uint8Array(0), bucketId: 0n };
+        const message = { cid: new Uint8Array(0), bucketId: 0n, authenticate: false };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<GetFileRequest_Request>(this, message, value);
@@ -628,6 +644,9 @@ class GetFileRequest_Request$Type extends MessageType<GetFileRequest_Request> {
                     break;
                 case /* optional file.GetFileRequest.Request.Range range */ 3:
                     message.range = GetFileRequest_Request_Range.internalBinaryRead(reader, reader.uint32(), options, message.range);
+                    break;
+                case /* bool authenticate */ 4:
+                    message.authenticate = reader.bool();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -650,6 +669,9 @@ class GetFileRequest_Request$Type extends MessageType<GetFileRequest_Request> {
         /* optional file.GetFileRequest.Request.Range range = 3; */
         if (message.range)
             GetFileRequest_Request_Range.internalBinaryWrite(message.range, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        /* bool authenticate = 4; */
+        if (message.authenticate !== false)
+            writer.tag(4, WireType.Varint).bool(message.authenticate);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
