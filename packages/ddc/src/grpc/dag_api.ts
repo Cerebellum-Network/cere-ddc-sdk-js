@@ -44,9 +44,9 @@ export interface PutResponse {
  */
 export interface GetRequest {
     /**
-     * @generated from protobuf field: uint64 bucketId = 1;
+     * @generated from protobuf field: uint64 bucketId = 1 [jstype = JS_NORMAL];
      */
-    bucketId: number;
+    bucketId: bigint;
     /**
      * @generated from protobuf field: bytes cid = 2;
      */
@@ -230,13 +230,13 @@ export const PutResponse = new PutResponse$Type();
 class GetRequest$Type extends MessageType<GetRequest> {
     constructor() {
         super("dag.GetRequest", [
-            { no: 1, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
+            { no: 1, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
             { no: 2, name: "cid", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
             { no: 3, name: "path", kind: "scalar", opt: true, T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<GetRequest>): GetRequest {
-        const message = { bucketId: 0, cid: new Uint8Array(0) };
+        const message = { bucketId: 0n, cid: new Uint8Array(0) };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<GetRequest>(this, message, value);
@@ -247,8 +247,8 @@ class GetRequest$Type extends MessageType<GetRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* uint64 bucketId */ 1:
-                    message.bucketId = reader.uint64().toNumber();
+                case /* uint64 bucketId = 1 [jstype = JS_NORMAL];*/ 1:
+                    message.bucketId = reader.uint64().toBigInt();
                     break;
                 case /* bytes cid */ 2:
                     message.cid = reader.bytes();
@@ -268,8 +268,8 @@ class GetRequest$Type extends MessageType<GetRequest> {
         return message;
     }
     internalBinaryWrite(message: GetRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* uint64 bucketId = 1; */
-        if (message.bucketId !== 0)
+        /* uint64 bucketId = 1 [jstype = JS_NORMAL]; */
+        if (message.bucketId !== 0n)
             writer.tag(1, WireType.Varint).uint64(message.bucketId);
         /* bytes cid = 2; */
         if (message.cid.length)

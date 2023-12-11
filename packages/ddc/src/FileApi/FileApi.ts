@@ -16,9 +16,9 @@ import {
   ActivityAcknowledgment,
 } from '../grpc/pb/activity_report';
 
-export type GetFileRequest = GetFileRequest_Request;
+export type GetFileRequest = Omit<GetFileRequest_Request, 'authenticate'>;
 export type ReadFileRange = GetFileRequest_Request['range'];
-export type PutRawPieceMetadata = PutRawPieceRequest_Metadata & {
+export type PutRawPieceMetadata = Omit<PutRawPieceRequest_Metadata, 'size'> & {
   size?: number;
 };
 
@@ -95,19 +95,18 @@ export class FileApi {
     const meta: RpcMetadata = {};
 
     this.logger.debug({ metadata }, 'Storing raw piece');
+    const size = metadata.size || getContentSize(content);
+
+    if (!size) {
+      throw new Error('Cannot determine the raw piece size');
+    }
 
     if (this.options.enableAcks) {
-      const size = metadata.size || getContentSize(content);
-
-      if (!size) {
-        throw new Error('Cannot determine the raw piece size to send ActivityRequest');
-      }
-
       meta.request = await this.createActivityRequest({
+        size,
         requestId: uuid(),
         bucketId: metadata.bucketId,
         requestType: RequestType.STORE,
-        size: metadata.size || getContentSize(content),
       });
     }
 
@@ -116,7 +115,7 @@ export class FileApi {
     await requests.send({
       body: {
         oneofKind: 'metadata',
-        metadata,
+        metadata: { ...metadata, size },
       },
     });
 
@@ -163,7 +162,15 @@ export class FileApi {
     await requests.send({
       body: {
         oneofKind: 'request',
-        request,
+        request: {
+          ...request,
+          /**
+           * Currently the proofs are not validated, so we don't need to authenticate the request.
+           *
+           * TODO: Implement proof validation and enable authentication.
+           */
+          authenticate: false,
+        },
       },
     });
 
@@ -194,7 +201,7 @@ export class FileApi {
         }
 
         if (body.oneofKind === 'proof') {
-          // TODO: validate proof
+          // TODO: Enable request authentication and validate the proof here.
         }
       }
 
