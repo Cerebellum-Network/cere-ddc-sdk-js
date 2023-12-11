@@ -37,10 +37,10 @@ export class Blockchain {
     return !!this.apiPromise.isReady;
   }
 
-  send(sendable: Sendable) {
+  send(sendable: Sendable, account?: IKeyringPair) {
     return new Promise<SendResult>((resolve, reject) => {
       sendable
-        .signAndSend(this.account, (result) => {
+        .signAndSend(account || this.account, (result) => {
           if (result.status.isFinalized) {
             const events = result.events.map(({ event }) => ({
               method: event.method,
@@ -69,8 +69,12 @@ export class Blockchain {
     });
   }
 
-  batchSend(sendables: Sendable[]) {
-    return this.send(this.apiPromise.tx.utility.batch(sendables));
+  batchSend(sendables: Sendable[], account?: IKeyringPair) {
+    return this.send(this.apiPromise.tx.utility.batch(sendables), account);
+  }
+
+  batchAllSend(sendables: Sendable[], account?: IKeyringPair) {
+    return this.send(this.apiPromise.tx.utility.batchAll(sendables), account);
   }
 
   sudo(sendable: Sendable) {
