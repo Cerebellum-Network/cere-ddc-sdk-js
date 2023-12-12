@@ -3,15 +3,20 @@ import * as fs from 'fs';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { createHash } from 'crypto';
-import { FileStorage, File, UriSigner } from '@cere-ddc-sdk/file-storage';
+import { FileStorage, File } from '@cere-ddc-sdk/file-storage';
 
-import { createDataStream, getStorageNodes, MB, ROOT_USER_SEED } from '../helpers';
+import { createDataStream, getBlockchainState, MB, ROOT_USER_SEED } from '../helpers';
 
 describe('File storage', () => {
-  const bucketId = 1n;
-  const fileStorage = new FileStorage({
-    signer: new UriSigner(ROOT_USER_SEED),
-    nodes: getStorageNodes(),
+  const {
+    rpcUrl,
+    bucketIds: [bucketId],
+  } = getBlockchainState();
+
+  let fileStorage: FileStorage;
+
+  beforeAll(async () => {
+    fileStorage = await FileStorage.create(ROOT_USER_SEED, { blockchain: rpcUrl });
   });
 
   describe('Small file', () => {
