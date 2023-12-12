@@ -22,8 +22,10 @@ export class Router {
 
     if ('nodes' in config) {
       this.strategy = new StaticStrategy(this.logger, config);
+      this.logger.debug({ strategy: 'static' }, 'Router created');
     } else {
       this.strategy = new BlockchainStrategy(this.logger, config);
+      this.logger.debug({ strategy: 'blockchain' }, 'Router created');
     }
   }
 

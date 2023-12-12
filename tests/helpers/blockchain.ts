@@ -6,6 +6,7 @@ import { AddressOrPair, SubmittableExtrinsic, SubmittableResultValue } from '@po
 import { mnemonicGenerate } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/keyring';
 import { KeypairType } from '@polkadot/util-crypto/types';
+import type { BucketId, ClusterId } from '@cere-ddc-sdk/blockchain';
 
 import { ROOT_ACCOUNT_TYPE, ROOT_USER_SEED } from './constants';
 
@@ -14,8 +15,8 @@ type TxResult = SubmittableResultValue & {
 };
 
 export type BlockchainState = {
-  clusterId: string;
-  bucketIds: bigint[];
+  clusterId: ClusterId;
+  bucketIds: BucketId[];
   account: string;
 };
 
@@ -65,6 +66,19 @@ export const transferCere = async (api: ApiPromise, to: string, tokens: number) 
   const transfer = api.tx.balances.transfer(to, BigInt(tokens) * multiplier);
 
   return signAndSend(transfer, getAccount('//Alice'));
+};
+
+export const sendMultipleTransfers = (api: ApiPromise, transfers: { to: string; tokens: number }[]) => {
+  const batch = api.tx.utility.batchAll(
+    transfers.map(({ to, tokens }) => {
+      const [decimals] = api.registry.chainDecimals;
+      const multiplier = 10n ** BigInt(decimals);
+
+      return api.tx.balances.transfer(to, BigInt(tokens) * multiplier);
+    }),
+  );
+
+  return signAndSend(batch, getAccount('//Alice'));
 };
 
 export const readBlockchainStateFromDisk = (): BlockchainState => {

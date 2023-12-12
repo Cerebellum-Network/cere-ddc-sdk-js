@@ -70,6 +70,13 @@ export interface Record {
      * @generated from protobuf field: string name = 3;
      */
     name: string;
+    /**
+     * TTL in seconds specifies how long it takes for record updates to reach your end users (time-to-live in cache layer).
+     * Default value is 300 (applied in case ttl isn't set). Min value is 30 and max value is 86400 (24 hours).
+     *
+     * @generated from protobuf field: optional uint32 ttl = 4;
+     */
+    ttl?: number;
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class PutRequest$Type extends MessageType<PutRequest> {
@@ -258,7 +265,8 @@ class Record$Type extends MessageType<Record> {
         super("cns.Record", [
             { no: 1, name: "signature", kind: "message", T: () => Signature },
             { no: 2, name: "cid", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
-            { no: 3, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 3, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "ttl", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ }
         ]);
     }
     create(value?: PartialMessage<Record>): Record {
@@ -282,6 +290,9 @@ class Record$Type extends MessageType<Record> {
                 case /* string name */ 3:
                     message.name = reader.string();
                     break;
+                case /* optional uint32 ttl */ 4:
+                    message.ttl = reader.uint32();
+                    break;
                 default:
                     let u = options.readUnknownField;
                     if (u === "throw")
@@ -303,6 +314,9 @@ class Record$Type extends MessageType<Record> {
         /* string name = 3; */
         if (message.name !== "")
             writer.tag(3, WireType.LengthDelimited).string(message.name);
+        /* optional uint32 ttl = 4; */
+        if (message.ttl !== undefined)
+            writer.tag(4, WireType.Varint).uint32(message.ttl);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

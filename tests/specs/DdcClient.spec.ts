@@ -3,12 +3,12 @@ import { DagNode, DagNodeUri, DdcClient, File, FileUri, KB, Link, MB, Tag } from
 import { ROOT_USER_SEED, createDataStream, getBlockchainState } from '../helpers';
 
 describe('DDC Client', () => {
+  const { rpcUrl, clusterId } = getBlockchainState();
   const bucketId = 1n;
+
   let client: DdcClient;
 
   beforeAll(async () => {
-    const { rpcUrl } = getBlockchainState();
-
     client = await DdcClient.create(ROOT_USER_SEED, {
       blockchain: rpcUrl,
     });
@@ -185,8 +185,6 @@ describe('DDC Client', () => {
 
   describe('Blockhain operations', () => {
     let createdBucketId: bigint;
-
-    const clusterId = '0x0000000000000000000000000000000000000000';
 
     test('Create bucket', async () => {
       createdBucketId = await client.createBucket(clusterId);
