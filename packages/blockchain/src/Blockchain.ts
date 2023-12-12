@@ -1,11 +1,17 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { SignerOptions } from '@polkadot/api/types';
 import { IKeyringPair } from '@polkadot/types/types';
+import { Index } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api-base/types';
 
 import { DDCNodesPallet } from './DDCNodesPallet';
 import { DDCClustersPallet } from './DDCClustersPallet';
 import { DDCStakingPallet } from './DDCStakingPallet';
 import { DDCCustomersPallet } from './DDCCustomersPallet';
+
+export type SendOptions = Pick<Partial<SignerOptions>, 'nonce'> & {
+  account?: IKeyringPair;
+};
 
 export type BlockchainConnectOptions = {
   account: IKeyringPair;
@@ -37,10 +43,16 @@ export class Blockchain {
     return !!this.apiPromise.isReady;
   }
 
-  send(sendable: Sendable, account?: IKeyringPair) {
+  async getNextNonce() {
+    const nonce = await this.apiPromise.rpc.system.accountNextIndex<Index>(this.account.address);
+
+    return nonce.toNumber();
+  }
+
+  async send(sendable: Sendable, { account, nonce }: SendOptions = {}) {
     return new Promise<SendResult>((resolve, reject) => {
       sendable
-        .signAndSend(account || this.account, (result) => {
+        .signAndSend(account || this.account, { nonce }, (result) => {
           if (result.status.isFinalized) {
             const events = result.events.map(({ event }) => ({
               method: event.method,
@@ -69,12 +81,12 @@ export class Blockchain {
     });
   }
 
-  batchSend(sendables: Sendable[], account?: IKeyringPair) {
-    return this.send(this.apiPromise.tx.utility.batch(sendables), account);
+  batchSend(sendables: Sendable[], options?: SendOptions) {
+    return this.send(this.apiPromise.tx.utility.batch(sendables), options);
   }
 
-  batchAllSend(sendables: Sendable[], account?: IKeyringPair) {
-    return this.send(this.apiPromise.tx.utility.batchAll(sendables), account);
+  batchAllSend(sendables: Sendable[], options?: SendOptions) {
+    return this.send(this.apiPromise.tx.utility.batchAll(sendables), options);
   }
 
   sudo(sendable: Sendable) {

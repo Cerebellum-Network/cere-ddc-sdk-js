@@ -65,10 +65,10 @@ export const setupBlockchain = async () => {
   await cryptoWaitReady();
 
   const apiPromise = await createBlockhainApi();
+  const rootAccount = getAccount();
   const clusterManagerAccount = getAccount('//Alice');
   const clusterId: ClusterId = '0x0000000000000000000000000000000000000000';
   const bucketIds = [1n, 2n, 3n];
-  const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
   const storageNodeAccounts = [
     getAccount('//Eve'),
     getAccount('//Ferdie'),
@@ -77,12 +77,16 @@ export const setupBlockchain = async () => {
   ];
   const bondAmount = 100n * CERE;
 
-  console.time('Top-up node provider accounts');
+  console.time('Top-up accounts');
   await sendMultipleTransfers(apiPromise, [
-    ...cdnNodeAccounts.map((cdnNodeAccount) => ({ to: cdnNodeAccount.address, tokens: 500 })),
+    { to: rootAccount.address, tokens: 1000 },
+
+    /**
+     * Top up node providers
+     */
     ...storageNodeAccounts.map((storageNodeAccount) => ({ to: storageNodeAccount.address, tokens: 500 })),
   ]);
-  console.timeEnd('Top-up node provider accounts');
+  console.timeEnd('Top-up accounts');
 
   console.time('Deploy cluster node auth contract');
   const clusterNodeAuthorizationContractAddress = await deployAuthContract(apiPromise, clusterManagerAccount);
@@ -121,51 +125,31 @@ export const setupBlockchain = async () => {
   console.timeEnd('Create cluster');
 
   console.time('Create and bond nodes');
-  for (const cdnNodeAccount of cdnNodeAccounts) {
-    const index = cdnNodeAccounts.indexOf(cdnNodeAccount);
-    console.debug('Creating node', cdnNodeAccount.address);
-    await blockchain.batchAllSend(
-      [
-        blockchain.ddcNodes.createCdnNode(cdnNodeAccount.address, {
-          host: 'localhost',
-          httpPort: 8081 + index,
-          grpcPort: 9001 + index,
-          p2pPort: 9081 + index,
-        }),
-        blockchain.ddcStaking.bondCdnNode(cdnNodeAccount.address, cdnNodeAccount.address, bondAmount),
-        blockchain.ddcStaking.serve(clusterId),
-      ],
-      cdnNodeAccount,
-    );
-  }
-  for (const storageNodeAccount of storageNodeAccounts) {
-    const index = storageNodeAccounts.indexOf(storageNodeAccount);
-    console.debug('Creating node', storageNodeAccount.address);
-    await blockchain.batchAllSend(
-      [
-        blockchain.ddcNodes.createStorageNode(storageNodeAccount.address, {
-          host: 'localhost',
-          httpPort: 8091 + index,
-          grpcPort: 9091 + index,
-          p2pPort: 9071 + index,
-        }),
-        blockchain.ddcStaking.bondStorageNode(storageNodeAccount.address, storageNodeAccount.address, bondAmount),
-        blockchain.ddcStaking.store(clusterId),
-      ],
-      storageNodeAccount,
-    );
-  }
+  await Promise.all(
+    storageNodeAccounts.map((account, index) =>
+      blockchain.batchAllSend(
+        [
+          blockchain.ddcNodes.createStorageNode(account.address, {
+            host: 'localhost',
+            httpPort: 8091 + index,
+            grpcPort: 9091 + index,
+            p2pPort: 9071 + index,
+          }),
+          blockchain.ddcStaking.bondStorageNode(account.address, account.address, bondAmount),
+          blockchain.ddcStaking.store(clusterId),
+        ],
+        { account },
+      ),
+    ),
+  );
   console.timeEnd('Create and bond nodes');
 
   console.time('Add nodes to cluster');
-  await blockchain.batchAllSend([
-    ...cdnNodeAccounts.map((cdnNodeAccount) =>
-      blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNodeAccount.address),
-    ),
-    ...storageNodeAccounts.map((storageNodeAccount) =>
+  await blockchain.batchAllSend(
+    storageNodeAccounts.map((storageNodeAccount) =>
       blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNodeAccount.address),
     ),
-  ]);
+  );
   console.timeEnd('Add nodes to cluster');
 
   console.time('Create buckets');
