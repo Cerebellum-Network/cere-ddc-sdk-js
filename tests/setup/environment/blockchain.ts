@@ -79,11 +79,10 @@ export const setupBlockchain = async () => {
 
   console.time('Top-up node provider accounts');
   await sendMultipleTransfers(apiPromise, [
-    // { to: clusterManagerAccount.address, tokens: 500 },
     ...cdnNodeAccounts.map((cdnNodeAccount) => ({ to: cdnNodeAccount.address, tokens: 500 })),
     ...storageNodeAccounts.map((storageNodeAccount) => ({ to: storageNodeAccount.address, tokens: 500 })),
   ]);
-  console.timeEnd('Top-up cluster manager account');
+  console.timeEnd('Top-up node provider accounts');
 
   console.time('Deploy cluster node auth contract');
   const clusterNodeAuthorizationContractAddress = await deployAuthContract(apiPromise, clusterManagerAccount);
