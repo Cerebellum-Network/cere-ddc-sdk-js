@@ -67,7 +67,7 @@ export const setupBlockchain = async () => {
   const apiPromise = await createBlockhainApi();
   const rootAccount = getAccount('//Alice');
   const adminAccount = getAccount();
-  const clusterId: ClusterId = '0x0000000000000000000000000000000000000001';
+  const clusterId: ClusterId = '0x0000000000000000000000000000000000000000';
   const bucketIds = [1n, 2n, 3n];
   const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
   const storageNodeAccounts = [

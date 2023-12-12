@@ -119,6 +119,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
         record: {
           cid: testCid,
           name: alias,
+          ttl: 0, // Do not cache
         },
       });
 
