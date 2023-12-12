@@ -8,14 +8,16 @@ import { MultipartPiece, Piece, PieceResponse } from './Piece';
 import { DagNode, DagNodeResponse, mapDagNodeToAPI } from './DagNode';
 import { CnsRecord, CnsRecordResponse, mapCnsRecordToAPI } from './CnsRecord';
 import { DefaultTransport, RpcTransportOptions } from './transports';
+import { bindErrorLogger, createLogger, Logger, LoggerOptions } from './Logger';
 
 type NamingOptions = {
   name?: string;
 };
 
-export type StorageNodeConfig = RpcTransportOptions & {
-  enableAcks?: boolean;
-};
+export type StorageNodeConfig = RpcTransportOptions &
+  LoggerOptions & {
+    enableAcks?: boolean;
+  };
 
 export type PieceReadOptions = {
   range?: ReadFileRange;
@@ -32,17 +34,37 @@ export class StorageNode {
   private dagApi: DagApi;
   private fileApi: FileApi;
   private cnsApi: CnsApi;
+  private logger: Logger;
 
   constructor(signer: Signer, config: StorageNodeConfig) {
     const transport = new DefaultTransport(config);
 
+    this.logger = createLogger('StorageNode', config);
     this.dagApi = new DagApi(transport);
-    this.fileApi = new FileApi(transport, { signer, enableAcks: config.enableAcks });
     this.cnsApi = new CnsApi(transport, { signer });
+    this.fileApi = new FileApi(transport, {
+      signer,
+      logger: this.logger,
+      enableAcks: config.enableAcks,
+    });
+
+    this.logger.debug(config, 'Storage node initialized');
+
+    bindErrorLogger(this, this.logger, [
+      'storePiece',
+      'storeDagNode',
+      'readPiece',
+      'getDagNode',
+      'storeCnsRecord',
+      'getCnsRecord',
+      'resolveName',
+    ]);
   }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
     let cidBytes: Uint8Array | undefined = undefined;
+    this.logger.info(options, 'Storing piece into bucket %s', bucketId);
+    this.logger.debug({ piece }, 'Piece');
 
     if (MultipartPiece.isMultipartPiece(piece)) {
       cidBytes = await this.fileApi.putMultipartPiece({
@@ -75,10 +97,15 @@ export class StorageNode {
       await this.storeCnsRecord(bucketId, new CnsRecord(cid, options.name));
     }
 
+    this.logger.info({ cid }, 'Stored piece into bucket %s', bucketId);
+
     return cid;
   }
 
   async storeDagNode(bucketId: BucketId, node: DagNode, options?: DagNodeStoreOptions) {
+    this.logger.info(options, 'Storing DAG node into bucket %s', bucketId);
+    this.logger.debug({ node }, 'DAG node');
+
     const cidBytes = await this.dagApi.putNode({
       bucketId,
       node: mapDagNodeToAPI(node),
@@ -90,10 +117,14 @@ export class StorageNode {
       await this.storeCnsRecord(bucketId, new CnsRecord(cid, options.name));
     }
 
+    this.logger.info({ cid }, 'Stored DAG Node into bucket %s', bucketId);
+
     return cid;
   }
 
   async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
+    this.logger.info(options, 'Reading piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
+
     const cid = await this.resolveName(bucketId, cidOrName);
     const contentStream = await this.fileApi.getFile({
       bucketId,
@@ -101,12 +132,19 @@ export class StorageNode {
       range: options?.range,
     });
 
-    return new PieceResponse(cid, contentStream, {
+    const response = new PieceResponse(cid, contentStream, {
       range: options?.range,
     });
+
+    this.logger.info({ cid: cid.toString() }, 'Read piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
+    this.logger.debug({ response }, 'Piece response');
+
+    return response;
   }
 
   async getDagNode(bucketId: BucketId, cidOrName: string, options?: DagNodeGetOptions) {
+    this.logger.info('Getting DAG Node by CID or name "%s" from bucket %s', cidOrName, bucketId);
+
     const cid = await this.resolveName(bucketId, cidOrName);
     const node = await this.dagApi.getNode({
       bucketId,
@@ -114,18 +152,35 @@ export class StorageNode {
       path: options?.path,
     });
 
-    return node && new DagNodeResponse(cid, new Uint8Array(node.data), node.links, node.tags);
+    const response = node && new DagNodeResponse(cid, new Uint8Array(node.data), node.links, node.tags);
+
+    this.logger.info({ cid: cid.toString() }, 'Got DAG Node by CID or name "%s" from bucket %s', cidOrName, bucketId);
+    this.logger.debug({ response }, 'DAG Node response');
+
+    return response;
   }
 
   async storeCnsRecord(bucketId: BucketId, record: CnsRecord) {
-    return this.cnsApi.putRecord({
+    this.logger.info('Storing CNS record into bucket %s', bucketId);
+    this.logger.debug({ record }, 'CNS record');
+
+    const storredRecord = await this.cnsApi.putRecord({
       bucketId,
       record: mapCnsRecordToAPI(record),
     });
+
+    this.logger.info('Stored CNS record into bucket %s', bucketId);
+
+    return storredRecord;
   }
 
   async getCnsRecord(bucketId: BucketId, name: string) {
+    this.logger.info(`Getting CNS record by name "${name}" from bucket ${bucketId}`);
+
     const record = await this.cnsApi.getRecord({ bucketId, name });
+
+    this.logger.info('Got CNS record by name "%s" from bucket %s', name, bucketId);
+    this.logger.debug({ record }, 'CNS record');
 
     return record && new CnsRecordResponse(record.cid, record.name, record.signature);
   }
@@ -135,12 +190,16 @@ export class StorageNode {
       return new Cid(cidOrName);
     }
 
-    const cnsRecord = await this.getCnsRecord(bucketId, cidOrName);
+    this.logger.info('Resolving CNS name "%s" from bucket %s', cidOrName, bucketId);
+    const record = await this.getCnsRecord(bucketId, cidOrName);
 
-    if (!cnsRecord) {
+    if (!record) {
       throw new Error(`Cannot resolve CNS name: "${cidOrName}"`);
     }
 
-    return new Cid(cnsRecord.cid);
+    this.logger.info('Resolved CNS name "%s" from bucket %s to "%s"', cidOrName, bucketId, record.cid);
+    this.logger.debug({ record }, 'CNS record');
+
+    return new Cid(record.cid);
   }
 }

@@ -32,6 +32,16 @@ export class DDCNodesPallet {
       { CDNParams: encodeNodeProps(cdnNodeProps) },
     ) as Sendable;
   }
+  async listCdnNodes() {
+    const result = await this.apiPromise.query.ddcNodes.cdnNodes.entries();
+
+    return result
+      .map(([, cdnNodeOption]) => {
+        const cdnNode = cdnNodeOption.toJSON() as unknown as CdnNode | undefined;
+        return cdnNode == null ? undefined : ({ ...cdnNode, props: decodeNodeProps(cdnNode.props) } as CdnNode);
+      })
+      .filter((cdnNode) => cdnNode != null) as CdnNode[];
+  }
 
   deleteCdnNode(cdnNodePublicKey: CdnNodePublicKey) {
     return this.apiPromise.tx.ddcNodes.deleteNode({ CDNPubKey: cdnNodePublicKey }) as Sendable;
@@ -50,6 +60,18 @@ export class DDCNodesPallet {
     return storageNode == null
       ? undefined
       : ({ ...storageNode, props: decodeNodeProps(storageNode.props) } as StorageNode);
+  }
+  async listStorageNodes() {
+    const result = await this.apiPromise.query.ddcNodes.storageNodes.entries();
+
+    return result
+      .map(([, storageNodeOption]) => {
+        const storageNode = storageNodeOption.toJSON() as unknown as StorageNode | undefined;
+        return storageNode == null
+          ? undefined
+          : ({ ...storageNode, props: decodeNodeProps(storageNode.props) } as StorageNode);
+      })
+      .filter((storageNode) => storageNode != null) as StorageNode[];
   }
 
   setStorageNodeProps(storageNodePublicKey: StorageNodePublicKey, storageNodeProps: StorageNodeProps) {

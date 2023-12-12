@@ -1,7 +1,20 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { LoadingButton } from '@mui/lab';
-import { File, Signer, UriSigner, MB, DEVNET, TESTNET, MAINNET, DdcClient } from '@cere-ddc-sdk/ddc-client';
+import FileIcon from '@mui/icons-material/InsertDriveFileOutlined';
+import {
+  File,
+  Signer,
+  UriSigner,
+  MB,
+  DEVNET,
+  TESTNET,
+  MAINNET,
+  DdcClient,
+  DagNode,
+  Link,
+  DagNodeUri,
+} from '@cere-ddc-sdk/ddc-client';
 import {
   Container,
   Stepper,
@@ -20,6 +33,8 @@ import {
   ListItem,
   ListItemText,
   styled,
+  Link as MuiLink,
+  ListItemIcon,
 } from '@mui/material';
 
 import { USER_SEED } from './constants';
@@ -37,16 +52,18 @@ const Dropzone = styled(Box)(({ theme }) => ({
 }));
 
 const bcPresets = {
-  devnet: DEVNET,
-  testnet: TESTNET,
-  mainnet: MAINNET,
+  devnet: { ...DEVNET, baseUrl: 'https://ddc-devnet.cloud' },
+  testnet: { ...TESTNET, baseUrl: 'https://ddc-testnet.cloud' },
+  mainnet: { ...MAINNET, baseUrl: 'https://ddc.cloud' },
   custom: {
     blockchain: process.env.BC_ENDPOINT || '',
+    baseUrl: 'http://localhost:8091',
   },
 };
 
 export const Playground = () => {
   const bucketId = 1n;
+  const cnsName = 'ddc-playground';
   const dropzone = useDropzone({
     multiple: false,
   });
@@ -63,7 +80,13 @@ export const Playground = () => {
   const [bcCustomUrl, setBcCustomUrl] = useState(bcPresets.custom.blockchain);
   const [client, setClient] = useState<DdcClient>();
 
+  const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, bucketId, cnsName, name].join('/');
+  const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].baseUrl, bucketId, cid].join('/');
   const isCompleted = !!realFileCid && !!randomFileCid;
+
+  const handleSkip = useCallback(() => {
+    setStep(step + 1);
+  }, [step]);
 
   const handleConnectWallet = useCallback(async () => {
     setStep(1);
@@ -105,15 +128,24 @@ export const Playground = () => {
     setInProgress(true);
     const [acceptedFile] = dropzone.acceptedFiles;
 
-    const file = new File(acceptedFile.stream(), {
-      size: acceptedFile.size,
-    });
-
     try {
-      const uri = await client!.store(bucketId, file, {
-        name: acceptedFile.name,
-      });
+      const existingDagNode = await client!
+        .read(new DagNodeUri(bucketId, cnsName))
+        .catch(() => new DagNode(JSON.stringify({ createTime: Date.now() })));
 
+      const file = new File(acceptedFile.stream(), { size: acceptedFile.size });
+      const uri = await client!.store(bucketId, file);
+      const fileLink = new Link(uri.cid, acceptedFile.size, acceptedFile.name);
+
+      /**
+       * Create new DagNode from existing one with new file link and store it by new CID under the same CNS name.
+       */
+      const dagNode = new DagNode(JSON.stringify({ ...existingDagNode.data.toJSON(), updateTime: Date.now() }), [
+        ...existingDagNode.links.filter((link) => link.name !== acceptedFile.name),
+        fileLink,
+      ]);
+
+      await client!.store(bucketId, dagNode, { name: cnsName });
       const fileResponse = await client!.read(uri);
       const contentBuffer = await fileResponse.arrayBuffer();
 
@@ -141,7 +173,7 @@ export const Playground = () => {
 
     try {
       setInProgress(true);
-      setClient(await DdcClient.create(signer!, preset));
+      setClient(await DdcClient.create(signer!, { ...preset, logLevel: 'debug' }));
     } catch (error) {
       setErrorStep(1);
 
@@ -159,7 +191,15 @@ export const Playground = () => {
       <Box paddingY={1}>
         <Stepper orientation="vertical" activeStep={step}>
           <Step completed={!!signer}>
-            <StepLabel>Connect wallet</StepLabel>
+            <StepLabel>
+              Connect wallet
+              {signer && (
+                <Typography color="GrayText" variant="caption">
+                  {' - '}
+                  {signer.address}
+                </Typography>
+              )}
+            </StepLabel>
             <StepContent>
               <Stack paddingTop={1} spacing={2} alignItems="start">
                 <TextField
@@ -177,7 +217,15 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!client}>
-            <StepLabel>Initialize client</StepLabel>
+            <StepLabel>
+              Initialize client
+              {selectedBc && (
+                <Typography color="GrayText" variant="caption" textTransform="capitalize">
+                  {' - '}
+                  {selectedBc}
+                </Typography>
+              )}
+            </StepLabel>
 
             <StepContent>
               <Stack spacing={2} alignItems="start">
@@ -187,7 +235,7 @@ export const Playground = () => {
                     fullWidth
                     size="small"
                     value={selectedBc}
-                    onChange={(event, value) => setSelectedBc(value)}
+                    onChange={(event, value) => value && setSelectedBc(value)}
                   >
                     <ToggleButton value="devnet">Devnet</ToggleButton>
                     <ToggleButton value="testnet">Testnet</ToggleButton>
@@ -218,16 +266,17 @@ export const Playground = () => {
 
           <Step completed={!!randomFileCid}>
             <StepLabel error={errorStep === 2}>
-              Random file{' '}
+              Random file
               {randomFileCid && (
                 <Typography color="GrayText" variant="caption">
-                  ({randomFileCid})
+                  {' - '}
+                  {randomFileCid}
                 </Typography>
               )}
             </StepLabel>
             <StepContent>
               <Stack paddingTop={1} spacing={2} alignItems="start">
-                <Typography variant="body1">Upload and download randomly generate file</Typography>
+                <Typography variant="body1">Upload and download randomly generated file</Typography>
                 <TextField
                   value={randomFileSize || ''}
                   label="File size"
@@ -238,24 +287,30 @@ export const Playground = () => {
                   }}
                 ></TextField>
 
-                <LoadingButton
-                  disabled={randomFileSize === 0}
-                  loading={inProgress}
-                  variant="contained"
-                  onClick={handleRandomFileUpload}
-                >
-                  Continue
-                </LoadingButton>
+                <Stack direction="row" spacing={1}>
+                  <LoadingButton
+                    disabled={randomFileSize === 0}
+                    loading={inProgress}
+                    variant="contained"
+                    onClick={handleRandomFileUpload}
+                  >
+                    Continue
+                  </LoadingButton>
+                  <Button variant="outlined" disabled={inProgress} onClick={handleSkip}>
+                    Skip
+                  </Button>
+                </Stack>
               </Stack>
             </StepContent>
           </Step>
 
-          <Step>
+          <Step completed={!!realFileCid}>
             <StepLabel error={errorStep === 3}>
-              Real file{' '}
+              Real file
               {realFileCid && (
                 <Typography color="GrayText" variant="caption">
-                  ({realFileCid})
+                  {' - '}
+                  {realFileCid}
                 </Typography>
               )}
             </StepLabel>
@@ -268,7 +323,15 @@ export const Playground = () => {
                     {dropzone.acceptedFiles.length ? (
                       dropzone.acceptedFiles.map((file, index) => (
                         <ListItem key={index}>
-                          <ListItemText primary={file.name} secondary={`${(file.size / MB).toFixed(3)} MB`} />
+                          <ListItemText
+                            primaryTypographyProps={{
+                              maxWidth: 420,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                            primary={file.name}
+                            secondary={`${(file.size / MB).toFixed(3)} MB`}
+                          />
                         </ListItem>
                       ))
                     ) : (
@@ -279,14 +342,19 @@ export const Playground = () => {
                   </List>
                 </Dropzone>
 
-                <LoadingButton
-                  disabled={!dropzone.acceptedFiles.length}
-                  loading={inProgress}
-                  variant="contained"
-                  onClick={handleRealFileUpload}
-                >
-                  Continue
-                </LoadingButton>
+                <Stack direction="row" spacing={1}>
+                  <LoadingButton
+                    disabled={!dropzone.acceptedFiles.length}
+                    loading={inProgress}
+                    variant="contained"
+                    onClick={handleRealFileUpload}
+                  >
+                    Continue
+                  </LoadingButton>
+                  <Button variant="outlined" disabled={inProgress} onClick={handleSkip}>
+                    Skip
+                  </Button>
+                </Stack>
               </Stack>
             </StepContent>
           </Step>
@@ -295,22 +363,61 @@ export const Playground = () => {
             <StepLabel>Done!</StepLabel>
             <StepContent>
               <Stack spacing={2}>
-                <Typography>We have successfully uploaded the following files:</Typography>
+                {randomFileCid || realFileCid ? (
+                  <Typography>We have successfully uploaded the following files:</Typography>
+                ) : (
+                  <Typography>
+                    You did not upload anything to DDC...{' '}
+                    <MuiLink href="#" onClick={(event) => (event.preventDefault(), setStep(2))}>
+                      Go back
+                    </MuiLink>{' '}
+                    and try again.
+                  </Typography>
+                )}
+
                 <List disablePadding>
                   {randomFileCid && (
                     <ListItem disablePadding>
+                      <ListItemIcon>
+                        <FileIcon sx={{ fontSize: 40 }} />
+                      </ListItemIcon>
+
                       <ListItemText
                         primary={`Random file (${randomFileSize.toFixed(2)} MB)`}
-                        secondary={randomFileCid}
+                        secondary={
+                          <MuiLink color="inherit" target="_blank" href={getFileUrlByCid(randomFileCid!)}>
+                            {randomFileCid}
+                          </MuiLink>
+                        }
                       />
                     </ListItem>
                   )}
 
                   {dropzone.acceptedFiles.map((file, index) => (
                     <ListItem disablePadding key={index}>
+                      <ListItemIcon>
+                        <FileIcon sx={{ fontSize: 40 }} />
+                      </ListItemIcon>
                       <ListItemText
-                        primary={`${file.name} (${(file.size / MB).toFixed(2)} MB)`}
-                        secondary={realFileCid}
+                        primary={
+                          <Stack direction="row" spacing={1}>
+                            <MuiLink
+                              maxWidth={500}
+                              textOverflow="ellipsis"
+                              overflow="hidden"
+                              target="_blank"
+                              href={getFileUrlByName(file.name)}
+                            >
+                              {file.name}
+                            </MuiLink>
+                            <Typography>({(file.size / MB).toFixed(2)} MB)</Typography>
+                          </Stack>
+                        }
+                        secondary={
+                          <MuiLink color="inherit" target="_blank" href={getFileUrlByCid(realFileCid!)}>
+                            {realFileCid}
+                          </MuiLink>
+                        }
                       />
                     </ListItem>
                   ))}

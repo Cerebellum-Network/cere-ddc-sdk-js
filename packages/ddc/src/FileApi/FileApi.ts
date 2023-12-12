@@ -6,6 +6,7 @@ import { Signer } from '@cere-ddc-sdk/blockchain';
 import { RpcTransport } from '../transports';
 import { createSignature } from '../signature';
 import { Content, createContentStream, getContentSize } from '../streams';
+import { createLogger, Logger, LoggerOptions } from '../Logger';
 import { PutMultiPartPieceRequest, GetFileRequest_Request, PutRawPieceRequest_Metadata } from '../grpc/file_api';
 import { FileApiClient } from '../grpc/file_api.client';
 import {
@@ -15,13 +16,13 @@ import {
   ActivityAcknowledgment,
 } from '../grpc/pb/activity_report';
 
-export type GetFileRequest = GetFileRequest_Request;
+export type GetFileRequest = Omit<GetFileRequest_Request, 'authenticate'>;
 export type ReadFileRange = GetFileRequest_Request['range'];
-export type PutRawPieceMetadata = PutRawPieceRequest_Metadata & {
+export type PutRawPieceMetadata = Omit<PutRawPieceRequest_Metadata, 'size'> & {
   size?: number;
 };
 
-export type FileApiOptions = {
+export type FileApiOptions = LoggerOptions & {
   signer?: Signer;
   enableAcks?: boolean;
 };
@@ -29,11 +30,13 @@ export type FileApiOptions = {
 const ceilToPowerOf2 = (n: number) => Math.pow(2, Math.ceil(Math.log2(n)));
 
 export class FileApi {
+  private logger: Logger;
   private api: FileApiClient;
   private options: FileApiOptions;
 
   constructor(transport: RpcTransport, options: FileApiOptions = {}) {
     this.api = new FileApiClient(transport);
+    this.logger = createLogger('FileApi', options);
 
     this.options = {
       ...options,
@@ -55,6 +58,7 @@ export class FileApi {
     });
 
     activityRequest.signature = await createSignature(signer, ActivityRequest.toBinary(activityRequest));
+    this.logger.debug({ activityRequest }, 'Activity request');
 
     return Buffer.from(ActivityRequest.toBinary(activityRequest)).toString('hex');
   }
@@ -66,36 +70,43 @@ export class FileApi {
       throw new Error('Cannot sign acknowledgment. Signer requred!');
     }
 
-    return ActivityAcknowledgment.create({
+    const signedAck = ActivityAcknowledgment.create({
       ...ack,
       signature: await createSignature(signer, ActivityAcknowledgment.toBinary(ack)),
     });
+
+    this.logger.debug({ signedAck }, 'Activity acknowledgment');
+
+    return signedAck;
   }
 
   async putMultipartPiece(request: PutMultiPartPieceRequest) {
-    const { response } = await this.api.putMultipartPiece({
-      ...request,
-      partSize: ceilToPowerOf2(request.partSize),
-    });
+    const partSize = ceilToPowerOf2(request.partSize);
+    this.logger.debug({ ...request, partSize }, 'Storing multipart piece');
+
+    const { response } = await this.api.putMultipartPiece({ ...request, partSize });
+
+    this.logger.debug({ response }, 'Multipart piece stored');
 
     return new Uint8Array(response.cid);
   }
 
   async putRawPiece(metadata: PutRawPieceMetadata, content: Content) {
     const meta: RpcMetadata = {};
+    const size = metadata.size || getContentSize(content);
+
+    if (!size) {
+      throw new Error('Cannot determine the raw piece size');
+    }
+
+    this.logger.debug({ metadata }, 'Storing raw piece of size %d', size);
 
     if (this.options.enableAcks) {
-      const size = metadata.size || getContentSize(content);
-
-      if (!size) {
-        throw new Error('Cannot determine the raw piece size to send ActivityRequest');
-      }
-
       meta.request = await this.createActivityRequest({
+        size,
         requestId: uuid(),
         bucketId: metadata.bucketId,
         requestType: RequestType.STORE,
-        size: metadata.size || getContentSize(content),
       });
     }
 
@@ -104,7 +115,7 @@ export class FileApi {
     await requests.send({
       body: {
         oneofKind: 'metadata',
-        metadata,
+        metadata: { ...metadata, size },
       },
     });
 
@@ -120,10 +131,14 @@ export class FileApi {
     await requests.complete();
     const { cid } = await response;
 
+    this.logger.debug({ cid }, 'Raw piece stored');
+
     return new Uint8Array(cid);
   }
 
   async getFile(request: GetFileRequest) {
+    this.logger.debug({ request }, 'Started reading data');
+
     const requestId = uuid();
     const meta: RpcMetadata = {};
     const { enableAcks } = this.options;
@@ -138,12 +153,24 @@ export class FileApi {
       });
     }
 
-    const { responses, requests } = this.api.getFile({ meta });
+    const { responses, requests, status } = this.api.getFile({ meta });
+
+    status.then((status) => {
+      this.logger.debug({ status }, 'Data stream ended');
+    });
 
     await requests.send({
       body: {
         oneofKind: 'request',
-        request,
+        request: {
+          ...request,
+          /**
+           * Currently the proofs are not validated, so we don't need to authenticate the request.
+           *
+           * TODO: Implement proof validation and enable authentication.
+           */
+          authenticate: false,
+        },
       },
     });
 
@@ -174,7 +201,7 @@ export class FileApi {
         }
 
         if (body.oneofKind === 'proof') {
-          // TODO: validate proof
+          // TODO: Enable request authentication and validate the proof here.
         }
       }
 

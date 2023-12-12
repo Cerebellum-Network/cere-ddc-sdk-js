@@ -18,20 +18,24 @@ import { MessageType } from "@protobuf-ts/runtime";
  */
 export interface PutRequest {
     /**
-     * @generated from protobuf field: uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL];
+     * @generated from protobuf field: uint64 bucketId = 1 [jstype = JS_NORMAL];
      */
     bucketId: bigint;
     /**
-     * @generated from protobuf field: dag.Node Node = 2 [json_name = "Node"];
+     * @generated from protobuf field: dag.Node node = 2;
      */
     node?: Node;
+    /**
+     * @generated from protobuf field: optional bytes cid = 3;
+     */
+    cid?: Uint8Array;
 }
 /**
  * @generated from protobuf message dag.PutResponse
  */
 export interface PutResponse {
     /**
-     * @generated from protobuf field: bytes Cid = 1 [json_name = "Cid"];
+     * @generated from protobuf field: bytes cid = 1;
      */
     cid: Uint8Array;
 }
@@ -40,15 +44,15 @@ export interface PutResponse {
  */
 export interface GetRequest {
     /**
-     * @generated from protobuf field: uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL];
+     * @generated from protobuf field: uint64 bucketId = 1 [jstype = JS_NORMAL];
      */
     bucketId: bigint;
     /**
-     * @generated from protobuf field: bytes Cid = 2 [json_name = "Cid"];
+     * @generated from protobuf field: bytes cid = 2;
      */
     cid: Uint8Array;
     /**
-     * @generated from protobuf field: optional string Path = 3 [json_name = "Path"];
+     * @generated from protobuf field: optional string path = 3;
      */
     path?: string;
 }
@@ -57,7 +61,7 @@ export interface GetRequest {
  */
 export interface GetResponse {
     /**
-     * @generated from protobuf field: dag.Node Node = 1 [json_name = "Node"];
+     * @generated from protobuf field: dag.Node node = 1;
      */
     node?: Node;
 }
@@ -66,15 +70,15 @@ export interface GetResponse {
  */
 export interface Node {
     /**
-     * @generated from protobuf field: bytes Data = 1 [json_name = "Data"];
+     * @generated from protobuf field: bytes data = 1;
      */
     data: Uint8Array;
     /**
-     * @generated from protobuf field: repeated dag.Link Links = 2 [json_name = "Links"];
+     * @generated from protobuf field: repeated dag.Link links = 2;
      */
     links: Link[];
     /**
-     * @generated from protobuf field: repeated dag.Tag Tags = 3 [json_name = "Tags"];
+     * @generated from protobuf field: repeated dag.Tag tags = 3;
      */
     tags: Tag[];
 }
@@ -85,19 +89,19 @@ export interface Link {
     /**
      * CID of the target object
      *
-     * @generated from protobuf field: bytes Cid = 1 [json_name = "Cid"];
+     * @generated from protobuf field: bytes cid = 1;
      */
     cid: Uint8Array;
     /**
      * UTF-8 string name
      *
-     * @generated from protobuf field: string Name = 2 [json_name = "Name"];
+     * @generated from protobuf field: string name = 2;
      */
     name: string;
     /**
      * cumulative size of target object
      *
-     * @generated from protobuf field: uint64 Size = 3 [json_name = "Size"];
+     * @generated from protobuf field: uint64 size = 3;
      */
     size: number;
 }
@@ -106,11 +110,11 @@ export interface Link {
  */
 export interface Tag {
     /**
-     * @generated from protobuf field: string Key = 1 [json_name = "Key"];
+     * @generated from protobuf field: string key = 1;
      */
     key: string;
     /**
-     * @generated from protobuf field: string Value = 2 [json_name = "Value"];
+     * @generated from protobuf field: string value = 2;
      */
     value: string;
 }
@@ -118,8 +122,9 @@ export interface Tag {
 class PutRequest$Type extends MessageType<PutRequest> {
     constructor() {
         super("dag.PutRequest", [
-            { no: 1, name: "BucketId", kind: "scalar", jsonName: "BucketId", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 2, name: "Node", kind: "message", jsonName: "Node", T: () => Node }
+            { no: 1, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 2, name: "node", kind: "message", T: () => Node },
+            { no: 3, name: "cid", kind: "scalar", opt: true, T: 12 /*ScalarType.BYTES*/ }
         ]);
     }
     create(value?: PartialMessage<PutRequest>): PutRequest {
@@ -134,11 +139,14 @@ class PutRequest$Type extends MessageType<PutRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL];*/ 1:
+                case /* uint64 bucketId = 1 [jstype = JS_NORMAL];*/ 1:
                     message.bucketId = reader.uint64().toBigInt();
                     break;
-                case /* dag.Node Node = 2 [json_name = "Node"];*/ 2:
+                case /* dag.Node node */ 2:
                     message.node = Node.internalBinaryRead(reader, reader.uint32(), options, message.node);
+                    break;
+                case /* optional bytes cid */ 3:
+                    message.cid = reader.bytes();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -152,12 +160,15 @@ class PutRequest$Type extends MessageType<PutRequest> {
         return message;
     }
     internalBinaryWrite(message: PutRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL]; */
+        /* uint64 bucketId = 1 [jstype = JS_NORMAL]; */
         if (message.bucketId !== 0n)
             writer.tag(1, WireType.Varint).uint64(message.bucketId);
-        /* dag.Node Node = 2 [json_name = "Node"]; */
+        /* dag.Node node = 2; */
         if (message.node)
             Node.internalBinaryWrite(message.node, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* optional bytes cid = 3; */
+        if (message.cid !== undefined)
+            writer.tag(3, WireType.LengthDelimited).bytes(message.cid);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -172,7 +183,7 @@ export const PutRequest = new PutRequest$Type();
 class PutResponse$Type extends MessageType<PutResponse> {
     constructor() {
         super("dag.PutResponse", [
-            { no: 1, name: "Cid", kind: "scalar", jsonName: "Cid", T: 12 /*ScalarType.BYTES*/ }
+            { no: 1, name: "cid", kind: "scalar", T: 12 /*ScalarType.BYTES*/ }
         ]);
     }
     create(value?: PartialMessage<PutResponse>): PutResponse {
@@ -187,7 +198,7 @@ class PutResponse$Type extends MessageType<PutResponse> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* bytes Cid = 1 [json_name = "Cid"];*/ 1:
+                case /* bytes cid */ 1:
                     message.cid = reader.bytes();
                     break;
                 default:
@@ -202,7 +213,7 @@ class PutResponse$Type extends MessageType<PutResponse> {
         return message;
     }
     internalBinaryWrite(message: PutResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* bytes Cid = 1 [json_name = "Cid"]; */
+        /* bytes cid = 1; */
         if (message.cid.length)
             writer.tag(1, WireType.LengthDelimited).bytes(message.cid);
         let u = options.writeUnknownFields;
@@ -219,9 +230,9 @@ export const PutResponse = new PutResponse$Type();
 class GetRequest$Type extends MessageType<GetRequest> {
     constructor() {
         super("dag.GetRequest", [
-            { no: 1, name: "BucketId", kind: "scalar", jsonName: "BucketId", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 2, name: "Cid", kind: "scalar", jsonName: "Cid", T: 12 /*ScalarType.BYTES*/ },
-            { no: 3, name: "Path", kind: "scalar", jsonName: "Path", opt: true, T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "bucketId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 2, name: "cid", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
+            { no: 3, name: "path", kind: "scalar", opt: true, T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<GetRequest>): GetRequest {
@@ -236,13 +247,13 @@ class GetRequest$Type extends MessageType<GetRequest> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL];*/ 1:
+                case /* uint64 bucketId = 1 [jstype = JS_NORMAL];*/ 1:
                     message.bucketId = reader.uint64().toBigInt();
                     break;
-                case /* bytes Cid = 2 [json_name = "Cid"];*/ 2:
+                case /* bytes cid */ 2:
                     message.cid = reader.bytes();
                     break;
-                case /* optional string Path = 3 [json_name = "Path"];*/ 3:
+                case /* optional string path */ 3:
                     message.path = reader.string();
                     break;
                 default:
@@ -257,13 +268,13 @@ class GetRequest$Type extends MessageType<GetRequest> {
         return message;
     }
     internalBinaryWrite(message: GetRequest, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* uint64 BucketId = 1 [json_name = "BucketId", jstype = JS_NORMAL]; */
+        /* uint64 bucketId = 1 [jstype = JS_NORMAL]; */
         if (message.bucketId !== 0n)
             writer.tag(1, WireType.Varint).uint64(message.bucketId);
-        /* bytes Cid = 2 [json_name = "Cid"]; */
+        /* bytes cid = 2; */
         if (message.cid.length)
             writer.tag(2, WireType.LengthDelimited).bytes(message.cid);
-        /* optional string Path = 3 [json_name = "Path"]; */
+        /* optional string path = 3; */
         if (message.path !== undefined)
             writer.tag(3, WireType.LengthDelimited).string(message.path);
         let u = options.writeUnknownFields;
@@ -280,7 +291,7 @@ export const GetRequest = new GetRequest$Type();
 class GetResponse$Type extends MessageType<GetResponse> {
     constructor() {
         super("dag.GetResponse", [
-            { no: 1, name: "Node", kind: "message", jsonName: "Node", T: () => Node }
+            { no: 1, name: "node", kind: "message", T: () => Node }
         ]);
     }
     create(value?: PartialMessage<GetResponse>): GetResponse {
@@ -295,7 +306,7 @@ class GetResponse$Type extends MessageType<GetResponse> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* dag.Node Node = 1 [json_name = "Node"];*/ 1:
+                case /* dag.Node node */ 1:
                     message.node = Node.internalBinaryRead(reader, reader.uint32(), options, message.node);
                     break;
                 default:
@@ -310,7 +321,7 @@ class GetResponse$Type extends MessageType<GetResponse> {
         return message;
     }
     internalBinaryWrite(message: GetResponse, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* dag.Node Node = 1 [json_name = "Node"]; */
+        /* dag.Node node = 1; */
         if (message.node)
             Node.internalBinaryWrite(message.node, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
@@ -327,9 +338,9 @@ export const GetResponse = new GetResponse$Type();
 class Node$Type extends MessageType<Node> {
     constructor() {
         super("dag.Node", [
-            { no: 1, name: "Data", kind: "scalar", jsonName: "Data", T: 12 /*ScalarType.BYTES*/ },
-            { no: 2, name: "Links", kind: "message", jsonName: "Links", repeat: 1 /*RepeatType.PACKED*/, T: () => Link },
-            { no: 3, name: "Tags", kind: "message", jsonName: "Tags", repeat: 1 /*RepeatType.PACKED*/, T: () => Tag }
+            { no: 1, name: "data", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
+            { no: 2, name: "links", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Link },
+            { no: 3, name: "tags", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => Tag }
         ]);
     }
     create(value?: PartialMessage<Node>): Node {
@@ -344,13 +355,13 @@ class Node$Type extends MessageType<Node> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* bytes Data = 1 [json_name = "Data"];*/ 1:
+                case /* bytes data */ 1:
                     message.data = reader.bytes();
                     break;
-                case /* repeated dag.Link Links = 2 [json_name = "Links"];*/ 2:
+                case /* repeated dag.Link links */ 2:
                     message.links.push(Link.internalBinaryRead(reader, reader.uint32(), options));
                     break;
-                case /* repeated dag.Tag Tags = 3 [json_name = "Tags"];*/ 3:
+                case /* repeated dag.Tag tags */ 3:
                     message.tags.push(Tag.internalBinaryRead(reader, reader.uint32(), options));
                     break;
                 default:
@@ -365,13 +376,13 @@ class Node$Type extends MessageType<Node> {
         return message;
     }
     internalBinaryWrite(message: Node, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* bytes Data = 1 [json_name = "Data"]; */
+        /* bytes data = 1; */
         if (message.data.length)
             writer.tag(1, WireType.LengthDelimited).bytes(message.data);
-        /* repeated dag.Link Links = 2 [json_name = "Links"]; */
+        /* repeated dag.Link links = 2; */
         for (let i = 0; i < message.links.length; i++)
             Link.internalBinaryWrite(message.links[i], writer.tag(2, WireType.LengthDelimited).fork(), options).join();
-        /* repeated dag.Tag Tags = 3 [json_name = "Tags"]; */
+        /* repeated dag.Tag tags = 3; */
         for (let i = 0; i < message.tags.length; i++)
             Tag.internalBinaryWrite(message.tags[i], writer.tag(3, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
@@ -388,9 +399,9 @@ export const Node = new Node$Type();
 class Link$Type extends MessageType<Link> {
     constructor() {
         super("dag.Link", [
-            { no: 1, name: "Cid", kind: "scalar", jsonName: "Cid", T: 12 /*ScalarType.BYTES*/ },
-            { no: 2, name: "Name", kind: "scalar", jsonName: "Name", T: 9 /*ScalarType.STRING*/ },
-            { no: 3, name: "Size", kind: "scalar", jsonName: "Size", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ }
+            { no: 1, name: "cid", kind: "scalar", T: 12 /*ScalarType.BYTES*/ },
+            { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "size", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ }
         ]);
     }
     create(value?: PartialMessage<Link>): Link {
@@ -405,13 +416,13 @@ class Link$Type extends MessageType<Link> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* bytes Cid = 1 [json_name = "Cid"];*/ 1:
+                case /* bytes cid */ 1:
                     message.cid = reader.bytes();
                     break;
-                case /* string Name = 2 [json_name = "Name"];*/ 2:
+                case /* string name */ 2:
                     message.name = reader.string();
                     break;
-                case /* uint64 Size = 3 [json_name = "Size"];*/ 3:
+                case /* uint64 size */ 3:
                     message.size = reader.uint64().toNumber();
                     break;
                 default:
@@ -426,13 +437,13 @@ class Link$Type extends MessageType<Link> {
         return message;
     }
     internalBinaryWrite(message: Link, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* bytes Cid = 1 [json_name = "Cid"]; */
+        /* bytes cid = 1; */
         if (message.cid.length)
             writer.tag(1, WireType.LengthDelimited).bytes(message.cid);
-        /* string Name = 2 [json_name = "Name"]; */
+        /* string name = 2; */
         if (message.name !== "")
             writer.tag(2, WireType.LengthDelimited).string(message.name);
-        /* uint64 Size = 3 [json_name = "Size"]; */
+        /* uint64 size = 3; */
         if (message.size !== 0)
             writer.tag(3, WireType.Varint).uint64(message.size);
         let u = options.writeUnknownFields;
@@ -449,8 +460,8 @@ export const Link = new Link$Type();
 class Tag$Type extends MessageType<Tag> {
     constructor() {
         super("dag.Tag", [
-            { no: 1, name: "Key", kind: "scalar", jsonName: "Key", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "Value", kind: "scalar", jsonName: "Value", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "key", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "value", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<Tag>): Tag {
@@ -465,10 +476,10 @@ class Tag$Type extends MessageType<Tag> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string Key = 1 [json_name = "Key"];*/ 1:
+                case /* string key */ 1:
                     message.key = reader.string();
                     break;
-                case /* string Value = 2 [json_name = "Value"];*/ 2:
+                case /* string value */ 2:
                     message.value = reader.string();
                     break;
                 default:
@@ -483,10 +494,10 @@ class Tag$Type extends MessageType<Tag> {
         return message;
     }
     internalBinaryWrite(message: Tag, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string Key = 1 [json_name = "Key"]; */
+        /* string key = 1; */
         if (message.key !== "")
             writer.tag(1, WireType.LengthDelimited).string(message.key);
-        /* string Value = 2 [json_name = "Value"]; */
+        /* string value = 2; */
         if (message.value !== "")
             writer.tag(2, WireType.LengthDelimited).string(message.value);
         let u = options.writeUnknownFields;
@@ -503,6 +514,6 @@ export const Tag = new Tag$Type();
  * @generated ServiceType for protobuf service dag.DagApi
  */
 export const DagApi = new ServiceType("dag.DagApi", [
-    { name: "Put", options: { "google.api.http": { post: "/v1/dag/{BucketId}", body: "*" } }, I: PutRequest, O: PutResponse },
-    { name: "Get", options: { "google.api.http": { get: "/v1/dag/{BucketId}/{Cid}/{Path}", additionalBindings: [{ get: "/v1/dag/{BucketId}/{Cid}" }] } }, I: GetRequest, O: GetResponse }
+    { name: "Put", options: { "google.api.http": { post: "/v1/dag/{bucketId}", body: "*" } }, I: PutRequest, O: PutResponse },
+    { name: "Get", options: { "google.api.http": { get: "/v1/dag/{bucketId}/{cid}/{path}", additionalBindings: [{ get: "/v1/dag/{bucketId}/{cid}" }] } }, I: GetRequest, O: GetResponse }
 ]);

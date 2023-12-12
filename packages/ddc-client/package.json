@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/ddc-client",
   "description": "DDC client",
-  "version": "2.0.0-rc.12",
+  "version": "2.0.0-rc.18",
   "type": "module",
   "repository": {
     "type": "git",
@@ -27,9 +27,9 @@
     "clean": "rimraf dist package"
   },
   "dependencies": {
-    "@cere-ddc-sdk/blockchain": "2.0.0-rc.12",
-    "@cere-ddc-sdk/ddc": "2.0.0-rc.12",
-    "@cere-ddc-sdk/file-storage": "2.0.0-rc.12"
+    "@cere-ddc-sdk/blockchain": "2.0.0-rc.18",
+    "@cere-ddc-sdk/ddc": "2.0.0-rc.18",
+    "@cere-ddc-sdk/file-storage": "2.0.0-rc.18"
   },
   "publishConfig": {
     "access": "public"
