@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
 import {
   Content,
   WebsocketTransport,
@@ -109,7 +109,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
   describe('Cns Api', () => {
     const cnsApi = new CnsApi(transport, { signer });
     const testCid = new Cid('baebb4ifbvlaklsqk4ex2n2xfaghhrkd3bbqg53d2du4sdgsz7uixt25ycu').toBytes();
-    const alias = 'dir/file-name';
+    const alias = randomUUID();
 
     let signature: any;
 
@@ -119,7 +119,6 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
         record: {
           cid: testCid,
           name: alias,
-          ttl: 0, // Do not cache
         },
       });
 
