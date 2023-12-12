@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID } from 'crypto';
+import { randomBytes } from 'crypto';
 import {
   Content,
   WebsocketTransport,
@@ -33,6 +33,7 @@ const fileSpecVariants = [
 
 describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
   const bucketId = 1n;
+  const testRunRandom = Math.round(Math.random() * 10 ** 5);
   const signer = new UriSigner(ROOT_USER_SEED);
 
   describe('Dag Api', () => {
@@ -109,7 +110,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
   describe('Cns Api', () => {
     const cnsApi = new CnsApi(transport, { signer });
     const testCid = new Cid('baebb4ifbvlaklsqk4ex2n2xfaghhrkd3bbqg53d2du4sdgsz7uixt25ycu').toBytes();
-    const alias = randomUUID();
+    const alias = `dir/file-name-${testRunRandom}`;
 
     let signature: any;
 
