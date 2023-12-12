@@ -8,12 +8,13 @@ const uuid = { nextUuid: () => 'ddc' };
 export const startDDC = async (bc: BlockchainConfig) => {
   console.group('DDC');
 
+  const blockchainUrl = new URL(bc.apiUrl);
+
+  blockchainUrl.hostname = getHostIP();
   environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.ddc.yml', uuid)
-    .withEnv('BLOCKCHAIN_API_URL', bc.apiUrl)
-    .withEnv('CLUSTER_ID', bc.clusterId.toString())
-    .withEnv('HOST_IP', getHostIP())
-    // .withWaitStrategy('ddc-cdn-node-0', Wait.forHealthCheck())
-    // .withWaitStrategy('ddc-cdn-node-1', Wait.forHealthCheck())
+    .withEnv('BLOCKCHAIN_URL', blockchainUrl.href)
+    .withEnv('CLUSTER_ID', bc.clusterId)
+    .withEnv('HOST_IP', blockchainUrl.hostname)
     .withWaitStrategy('ddc-storage-node-1', Wait.forHealthCheck())
     .withWaitStrategy('ddc-storage-node-2', Wait.forHealthCheck())
     .withWaitStrategy('ddc-storage-node-3', Wait.forHealthCheck())

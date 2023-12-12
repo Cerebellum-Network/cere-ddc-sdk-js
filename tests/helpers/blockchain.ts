@@ -6,6 +6,7 @@ import { AddressOrPair, SubmittableExtrinsic, SubmittableResultValue } from '@po
 import { mnemonicGenerate } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/keyring';
 import { KeypairType } from '@polkadot/util-crypto/types';
+import type { BucketId, ClusterId } from '@cere-ddc-sdk/blockchain';
 
 import { ROOT_ACCOUNT_TYPE, ROOT_USER_SEED } from './constants';
 
@@ -14,8 +15,8 @@ type TxResult = SubmittableResultValue & {
 };
 
 export type BlockchainState = {
-  clusterId: string;
-  bucketIds: bigint[];
+  clusterId: ClusterId;
+  bucketIds: BucketId[];
   account: string;
 };
 

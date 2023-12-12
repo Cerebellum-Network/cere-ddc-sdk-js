@@ -6,7 +6,6 @@ import { cryptoWaitReady } from '@polkadot/util-crypto';
 import {
   createBlockhainApi,
   getAccount,
-  transferCere,
   readBlockchainStateFromDisk,
   BlockchainState,
   deployAuthContract,
@@ -14,7 +13,7 @@ import {
   writeBlockchainStateToDisk,
   sendMultipleTransfers,
 } from '../../helpers';
-import { Blockchain } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, ClusterId } from '@cere-ddc-sdk/blockchain';
 
 export type BlockchainConfig = BlockchainState & {
   apiUrl: string;
@@ -67,7 +66,7 @@ export const setupBlockchain = async () => {
 
   const apiPromise = await createBlockhainApi();
   const clusterManagerAccount = getAccount('//Alice');
-  const clusterId = '0x0000000000000000000000000000000000000000';
+  const clusterId: ClusterId = '0x0000000000000000000000000000000000000000';
   const bucketIds = [1n, 2n, 3n];
   const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
   const storageNodeAccounts = [
@@ -123,7 +122,7 @@ export const setupBlockchain = async () => {
   console.timeEnd('Create cluster');
 
   console.time('Create and bond nodes');
-  for (let cdnNodeAccount of cdnNodeAccounts) {
+  for (const cdnNodeAccount of cdnNodeAccounts) {
     const index = cdnNodeAccounts.indexOf(cdnNodeAccount);
     console.debug('Creating node', cdnNodeAccount.address);
     await blockchain.batchAllSend(
@@ -140,7 +139,7 @@ export const setupBlockchain = async () => {
       cdnNodeAccount,
     );
   }
-  for (let storageNodeAccount of storageNodeAccounts) {
+  for (const storageNodeAccount of storageNodeAccounts) {
     const index = storageNodeAccounts.indexOf(storageNodeAccount);
     console.debug('Creating node', storageNodeAccount.address);
     await blockchain.batchAllSend(
