@@ -12,6 +12,8 @@ import {
   CERE,
   writeBlockchainStateToDisk,
   sendMultipleTransfers,
+  BLOCKCHAIN_RPC_URL,
+  getHostIP,
 } from '../../helpers';
 import { Blockchain, ClusterId } from '@cere-ddc-sdk/blockchain';
 
@@ -48,7 +50,7 @@ export const startBlockchain = async (): Promise<BlockchainConfig> => {
 
   return {
     ...blockchainState,
-    apiUrl: 'ws://localhost:9944',
+    apiUrl: BLOCKCHAIN_RPC_URL,
   };
 };
 
@@ -64,6 +66,7 @@ export const setupBlockchain = async () => {
 
   await cryptoWaitReady();
 
+  const hostIp = getHostIP();
   const apiPromise = await createBlockhainApi();
   const rootAccount = getAccount();
   const clusterManagerAccount = getAccount('//Alice');
@@ -130,7 +133,7 @@ export const setupBlockchain = async () => {
       blockchain.batchAllSend(
         [
           blockchain.ddcNodes.createStorageNode(account.address, {
-            host: 'localhost',
+            host: hostIp,
             httpPort: 8091 + index,
             grpcPort: 9091 + index,
             p2pPort: 9071 + index,

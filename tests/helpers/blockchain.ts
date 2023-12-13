@@ -9,6 +9,7 @@ import { KeypairType } from '@polkadot/util-crypto/types';
 import type { BucketId, ClusterId } from '@cere-ddc-sdk/blockchain';
 
 import { ROOT_ACCOUNT_TYPE, ROOT_USER_SEED } from './constants';
+import { getHostIP } from './net';
 
 type TxResult = SubmittableResultValue & {
   contractEvents?: DecodedEvent[];
@@ -24,8 +25,7 @@ export type SignAndSendResult = Required<Pick<TxResult, 'events' | 'contractEven
   blockHash: string;
 };
 
-export const BLOCKCHAIN_RPC_URL = 'ws://localhost:9944';
-
+export const BLOCKCHAIN_RPC_URL = `ws://${getHostIP()}:9944`;
 export const createBlockhainApi = async () => {
   const provider = new WsProvider(BLOCKCHAIN_RPC_URL);
   const api = await ApiPromise.create({ provider });
