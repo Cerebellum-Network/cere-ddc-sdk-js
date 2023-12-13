@@ -41,8 +41,8 @@ export const startBlockchain = async (): Promise<BlockchainConfig> => {
 
     chachedState = undefined;
 
+    fs.rmdirSync(bcCachePath, { recursive: true });
     fs.unlinkSync(cachedStatePath);
-    fs.unlinkSync(bcCachePath);
   }
 
   environment = await new DockerComposeEnvironment(__dirname, composeFile, uuid)
@@ -82,7 +82,7 @@ export const setupBlockchain = async () => {
   const apiPromise = await createBlockhainApi();
   const rootAccount = getAccount();
   const clusterManagerAccount = getAccount('//Alice');
-  const clusterId: ClusterId = '0x0000000000000000000000000000000000000000';
+  const clusterId: ClusterId = '0x0000000000000000000000000000000000000001';
   const bucketIds = [1n, 2n, 3n];
   const storageNodeAccounts = [
     getAccount('//Eve'),

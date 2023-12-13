@@ -6,8 +6,8 @@ services:
     container_name: ddc-storage-node-1
     image: "cerebellumnetwork/ddc-storage-node:devnet"
     environment:
+      - 'NODE_ID=1'
       - 'HTTP_PORT=8091'
-      - 'HTTP_ADDRESS=http://ddc-storage-node-1:8091'
       - 'LOG_LEVEL=debug'
       - 'LOG_JSON_FORMAT=false'
       - 'NODE_SECRET_PHRASE=//Eve'
@@ -40,8 +40,8 @@ services:
     container_name: ddc-storage-node-2
     image: "cerebellumnetwork/ddc-storage-node:devnet"
     environment:
+      - 'NODE_ID=2'
       - 'HTTP_PORT=8092'
-      - 'HTTP_ADDRESS=http://ddc-storage-node-2:8092'
       - 'LOG_LEVEL=debug'
       - 'LOG_JSON_FORMAT=false'
       - 'NODE_SECRET_PHRASE=//Ferdie'
@@ -74,8 +74,8 @@ services:
     container_name: ddc-storage-node-3
     image: "cerebellumnetwork/ddc-storage-node:devnet"
     environment:
+      - 'NODE_ID=3'
       - 'HTTP_PORT=8093'
-      - 'HTTP_ADDRESS=http://ddc-storage-node-3:8093'
       - 'LOG_LEVEL=debug'
       - 'LOG_JSON_FORMAT=false'
       - 'NODE_SECRET_PHRASE=//Charlie'
@@ -108,8 +108,8 @@ services:
     container_name: ddc-storage-node-4
     image: "cerebellumnetwork/ddc-storage-node:devnet"
     environment:
+      - 'NODE_ID=4'
       - 'HTTP_PORT=8094'
-      - 'HTTP_ADDRESS=http://ddc-storage-node-4:8094'
       - 'LOG_LEVEL=debug'
       - 'LOG_JSON_FORMAT=false'
       - 'NODE_SECRET_PHRASE=//Alice'
