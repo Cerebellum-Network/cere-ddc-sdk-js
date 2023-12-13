@@ -52,7 +52,7 @@ export const startBlockchain = async (): Promise<BlockchainConfig> => {
 
   const blockchainState: BlockchainState = !process.env.CI && chachedState ? chachedState : await setupBlockchain();
 
-  if (!chachedState && !process.env.CI) {
+  if (!chachedState) {
     writeBlockchainStateToDisk(blockchainState);
   }
 
