@@ -29,6 +29,7 @@ export class DdcClient {
     private readonly blockchain: Blockchain,
     private readonly router: Router,
     private readonly fileStorage: FileStorage,
+    private readonly signer: Signer,
     private readonly logger: Logger,
   ) {
     bindErrorLogger(this, this.logger, ['createBucket', 'getBucket', 'getBucketList', 'store', 'read']);
@@ -39,7 +40,7 @@ export class DdcClient {
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
     const blockchain =
       typeof config.blockchain === 'string'
-        ? await Blockchain.connect({ account: signer, wsEndpoint: config.blockchain })
+        ? await Blockchain.connect({ wsEndpoint: config.blockchain })
         : config.blockchain;
 
     const router = config.nodes
@@ -50,7 +51,7 @@ export class DdcClient {
 
     logger.debug(config, 'DdcClient created');
 
-    return new DdcClient(blockchain, router, fileStorage, logger);
+    return new DdcClient(blockchain, router, fileStorage, signer, logger);
   }
 
   async disconnect() {
@@ -60,7 +61,9 @@ export class DdcClient {
   async createBucket(clusterId: ClusterId) {
     this.logger.info('Creating bucket on cluster %s', clusterId);
 
-    const response = await this.blockchain.send(this.blockchain.ddcCustomers.createBucket(clusterId));
+    const response = await this.blockchain.send(this.blockchain.ddcCustomers.createBucket(clusterId), {
+      account: this.signer,
+    });
     const [bucketId] = this.blockchain.ddcCustomers.extractCreatedBucketIds(response.events);
 
     this.logger.debug({ response }, 'Blockchain response');

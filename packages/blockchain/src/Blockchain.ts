@@ -9,30 +9,24 @@ import { DDCClustersPallet } from './DDCClustersPallet';
 import { DDCStakingPallet } from './DDCStakingPallet';
 import { DDCCustomersPallet } from './DDCCustomersPallet';
 
-export type SendOptions = Pick<Partial<SignerOptions>, 'nonce'> & {
-  account?: IKeyringPair;
+export type SendOptions = Pick<Partial<SignerOptions>, 'nonce' | 'signer'> & {
+  account: IKeyringPair | string;
 };
 
-export type BlockchainConnectOptions = {
-  account: IKeyringPair;
-} & (
+export type BlockchainConnectOptions =
   | {
       apiPromise: ApiPromise;
     }
   | {
       wsEndpoint: string;
-    }
-);
+    };
 
 export class Blockchain {
   public readonly ddcNodes: DDCNodesPallet;
   public readonly ddcClusters: DDCClustersPallet;
   public readonly ddcStaking: DDCStakingPallet;
   public readonly ddcCustomers: DDCCustomersPallet;
-  private constructor(
-    private apiPromise: ApiPromise,
-    readonly account: IKeyringPair,
-  ) {
+  private constructor(private apiPromise: ApiPromise) {
     this.ddcNodes = new DDCNodesPallet(apiPromise);
     this.ddcClusters = new DDCClustersPallet(apiPromise);
     this.ddcStaking = new DDCStakingPallet(apiPromise);
@@ -43,16 +37,16 @@ export class Blockchain {
     return !!this.apiPromise.isReady;
   }
 
-  async getNextNonce() {
-    const nonce = await this.apiPromise.rpc.system.accountNextIndex<Index>(this.account.address);
+  async getNextNonce(address: string) {
+    const nonce = await this.apiPromise.rpc.system.accountNextIndex<Index>(address);
 
     return nonce.toNumber();
   }
 
-  async send(sendable: Sendable, { account, nonce }: SendOptions = {}) {
+  async send(sendable: Sendable, { account, nonce, signer }: SendOptions) {
     return new Promise<SendResult>((resolve, reject) => {
       sendable
-        .signAndSend(account || this.account, { nonce }, (result) => {
+        .signAndSend(account, { nonce, signer }, (result) => {
           if (result.status.isFinalized) {
             const events = result.events.map(({ event }) => ({
               method: event.method,
@@ -81,11 +75,11 @@ export class Blockchain {
     });
   }
 
-  batchSend(sendables: Sendable[], options?: SendOptions) {
+  batchSend(sendables: Sendable[], options: SendOptions) {
     return this.send(this.apiPromise.tx.utility.batch(sendables), options);
   }
 
-  batchAllSend(sendables: Sendable[], options?: SendOptions) {
+  batchAllSend(sendables: Sendable[], options: SendOptions) {
     return this.send(this.apiPromise.tx.utility.batchAll(sendables), options);
   }
 
@@ -103,7 +97,7 @@ export class Blockchain {
         ? options.apiPromise
         : await ApiPromise.create({ provider: new WsProvider(options.wsEndpoint) });
 
-    return new Blockchain(api, options.account);
+    return new Blockchain(api);
   }
 }
 
