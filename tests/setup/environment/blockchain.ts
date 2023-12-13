@@ -29,18 +29,30 @@ const uuid = { nextUuid: () => 'blockchain' };
 export const startBlockchain = async (): Promise<BlockchainConfig> => {
   console.group('Blockchain');
 
-  const isCached = fs.existsSync(path.resolve(dataDir, './ddc.json'));
+  const hostIp = getHostIP();
   const composeFile = process.env.CI ? 'docker-compose.blockchain.ci.yml' : 'docker-compose.blockchain.yml';
+  const cachedStatePath = path.resolve(dataDir, './ddc.json');
+  const bcCachePath = path.resolve(dataDir, './blockchain');
+
+  let chachedState = fs.existsSync(cachedStatePath) ? readBlockchainStateFromDisk() : undefined;
+
+  if (chachedState && hostIp !== chachedState?.hostIp) {
+    console.warn('Host IP has changed, removing the cached state');
+
+    chachedState = undefined;
+
+    fs.unlinkSync(cachedStatePath);
+    fs.unlinkSync(bcCachePath);
+  }
 
   environment = await new DockerComposeEnvironment(__dirname, composeFile, uuid)
-    .withEnv('BC_CAHCHE_DIR', path.resolve(dataDir, './blockchain'))
+    .withEnv('BC_CAHCHE_DIR', bcCachePath)
     .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
     .up();
 
-  const blockchainState: BlockchainState =
-    !process.env.CI && isCached ? readBlockchainStateFromDisk() : await setupBlockchain();
+  const blockchainState: BlockchainState = !process.env.CI && chachedState ? chachedState : await setupBlockchain();
 
-  if (!isCached) {
+  if (!chachedState && !process.env.CI) {
     writeBlockchainStateToDisk(blockchainState);
   }
 
@@ -168,6 +180,7 @@ export const setupBlockchain = async () => {
   await apiPromise.disconnect();
 
   return {
+    hostIp,
     clusterId,
     bucketIds: createdBucketIds,
     account: clusterManagerAccount.address,

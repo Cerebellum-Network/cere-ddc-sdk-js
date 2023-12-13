@@ -16,6 +16,7 @@ type TxResult = SubmittableResultValue & {
 };
 
 export type BlockchainState = {
+  hostIp: string;
   clusterId: ClusterId;
   bucketIds: BucketId[];
   account: string;
