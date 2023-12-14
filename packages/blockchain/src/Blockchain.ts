@@ -8,6 +8,9 @@ import { DDCNodesPallet } from './DDCNodesPallet';
 import { DDCClustersPallet } from './DDCClustersPallet';
 import { DDCStakingPallet } from './DDCStakingPallet';
 import { DDCCustomersPallet } from './DDCCustomersPallet';
+import { AccountId } from '@polkadot/types/interfaces/runtime';
+import { formatBalance } from '@polkadot/util';
+import { AccountInfo } from '@polkadot/types/interfaces';
 
 export type SendOptions = Pick<Partial<SignerOptions>, 'nonce'> & {
   account?: IKeyringPair;
@@ -104,6 +107,17 @@ export class Blockchain {
         : await ApiPromise.create({ provider: new WsProvider(options.wsEndpoint) });
 
     return new Blockchain(api, options.account);
+  }
+
+  formatBalance(balance: string | number | bigint) {
+    const [chainDecimals] = this.apiPromise.registry.chainDecimals;
+
+    return formatBalance(balance, { withSiFull: true, decimals: chainDecimals, withUnit: 'CERE' });
+  }
+
+  async getAccountFreeBalance(accountId: AccountId) {
+    const { data } = await this.apiPromise.query.system.account<AccountInfo>(accountId);
+    return data.free.toBigInt();
   }
 }
 
