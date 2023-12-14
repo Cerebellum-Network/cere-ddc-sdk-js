@@ -145,7 +145,7 @@ export const setupBlockchain = async () => {
       blockchain.batchAllSend(
         [
           blockchain.ddcNodes.createStorageNode(account.address, {
-            host: `ddc-storage-node-${1 + index}`,
+            host: hostIp,
             httpPort: 8091 + index,
             grpcPort: 9091 + index,
             p2pPort: 9071 + index,
