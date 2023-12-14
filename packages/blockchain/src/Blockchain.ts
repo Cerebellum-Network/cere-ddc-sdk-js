@@ -8,6 +8,7 @@ import { DDCStakingPallet } from './DDCStakingPallet';
 import { DDCCustomersPallet } from './DDCCustomersPallet';
 import { AccountId } from '@polkadot/types/interfaces/runtime';
 import { formatBalance } from '@polkadot/util';
+import { AccountInfo } from '@polkadot/types/interfaces';
 
 export type BlockchainConnectOptions = {
   account: IKeyringPair;
@@ -93,26 +94,14 @@ export class Blockchain {
   }
 
   formatBalance(balance: string | number | bigint) {
-    const chainDecimals = this.apiPromise.registry.chainDecimals[0];
-    formatBalance.setDefaults({ unit: 'CERE' });
-    return formatBalance(balance, { withSiFull: true, decimals: chainDecimals });
+    const [chainDecimals] = this.apiPromise.registry.chainDecimals;
+
+    return formatBalance(balance, { withSiFull: true, decimals: chainDecimals, withUnit: 'CERE' });
   }
 
   async getAccountFreeBalance(accountId: AccountId) {
-    const account = (await this.apiPromise.query.system.account(accountId)) as unknown;
-
-    if (
-      account == null ||
-      typeof account !== 'object' ||
-      !('data' in account) ||
-      account.data == null ||
-      typeof account.data !== 'object' ||
-      !('free' in account.data)
-    ) {
-      throw new Error('Failed to parse api account response');
-    }
-
-    return account.data.free as bigint | number | string;
+    const { data } = await this.apiPromise.query.system.account<AccountInfo>(accountId);
+    return data.free.toBigInt();
   }
 }
 
