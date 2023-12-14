@@ -9,8 +9,6 @@ services:
       - 'NODE_ID=1'
       - 'HTTP_PORT=8091'
       - 'LOG_LEVEL=debug'
-      - 'LOG_JSON_FORMAT=false'
-      - 'NODE_SECRET_PHRASE=//Eve'
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
       - "CLUSTER_ID=${CLUSTER_ID}"
       - "PEER_URL=libp2p://ddc-storage-node-1:9071"
@@ -43,8 +41,6 @@ services:
       - 'NODE_ID=2'
       - 'HTTP_PORT=8092'
       - 'LOG_LEVEL=debug'
-      - 'LOG_JSON_FORMAT=false'
-      - 'NODE_SECRET_PHRASE=//Ferdie'
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
       - "CLUSTER_ID=${CLUSTER_ID}"
       - "PEER_URL=libp2p://ddc-storage-node-2:9072"
@@ -77,8 +73,6 @@ services:
       - 'NODE_ID=3'
       - 'HTTP_PORT=8093'
       - 'LOG_LEVEL=debug'
-      - 'LOG_JSON_FORMAT=false'
-      - 'NODE_SECRET_PHRASE=//Charlie'
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
       - "CLUSTER_ID=${CLUSTER_ID}"
       - "PEER_URL=libp2p://ddc-storage-node-3:9073"
@@ -111,8 +105,6 @@ services:
       - 'NODE_ID=4'
       - 'HTTP_PORT=8094'
       - 'LOG_LEVEL=debug'
-      - 'LOG_JSON_FORMAT=false'
-      - 'NODE_SECRET_PHRASE=//Alice'
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
       - "CLUSTER_ID=${CLUSTER_ID}"
       - "PEER_URL=libp2p://ddc-storage-node-4:9074"
