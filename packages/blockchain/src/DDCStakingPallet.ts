@@ -102,4 +102,13 @@ export class DDCStakingPallet {
     const result = await this.apiPromise.query.ddcStaking.bonded(stashAccount);
     return result.toJSON() as unknown as AccountId | undefined;
   }
+
+  async findNodePublicKeyByStashAccountId(stashAccountId: AccountId) {
+    const result = (await this.apiPromise.query.ddcStaking.providers(stashAccountId)) as any;
+
+    return {
+      keyType: result.isCdnPubKey() ? 'cdn' : 'storage',
+      publicKey: result.isCdnPubKey() ? result.asCdnPubKey.toJSON() : result.asStoragePubKey.toJSON(),
+    };
+  }
 }
