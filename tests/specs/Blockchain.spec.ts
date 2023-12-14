@@ -44,7 +44,7 @@ describe('Blockchain', () => {
   });
 
   test('Should create a Blockchain instance asynchronously', async () => {
-    blockchain = await Blockchain.connect({ account: rootAccount, apiPromise });
+    blockchain = await Blockchain.connect({ apiPromise });
     expect(blockchain).toBeInstanceOf(Blockchain);
   });
 
@@ -66,7 +66,7 @@ describe('Blockchain', () => {
       p2pPort: 7070,
     };
 
-    await blockchain.send(blockchain.ddcNodes.createCdnNode(cdnNode1Key, cdnNodeProps));
+    await blockchain.send(blockchain.ddcNodes.createCdnNode(cdnNode1Key, cdnNodeProps), { account: rootAccount });
 
     const cdnNode = await blockchain.ddcNodes.findCdnNodeByPublicKey(cdnNode1Key);
 
@@ -82,7 +82,7 @@ describe('Blockchain', () => {
       grpcPort: 2020,
       p2pPort: 3030,
     };
-    await blockchain.send(blockchain.ddcNodes.setCdnNodeProps(cdnNode1Key, cdnNodeProps));
+    await blockchain.send(blockchain.ddcNodes.setCdnNodeProps(cdnNode1Key, cdnNodeProps), { account: rootAccount });
 
     const cdnNode = await blockchain.ddcNodes.findCdnNodeByPublicKey(cdnNode1Key);
 
@@ -97,7 +97,9 @@ describe('Blockchain', () => {
       grpcPort: 5020,
       p2pPort: 6030,
     };
-    await blockchain.send(blockchain.ddcNodes.createStorageNode(storageNode1Key, storageNodeProps));
+    await blockchain.send(blockchain.ddcNodes.createStorageNode(storageNode1Key, storageNodeProps), {
+      account: rootAccount,
+    });
 
     const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode1Key);
 
@@ -113,7 +115,9 @@ describe('Blockchain', () => {
       grpcPort: 3020,
       p2pPort: 3030,
     };
-    await blockchain.send(blockchain.ddcNodes.setStorageNodeProps(storageNode1Key, storageNodeProps));
+    await blockchain.send(blockchain.ddcNodes.setStorageNodeProps(storageNode1Key, storageNodeProps), {
+      account: rootAccount,
+    });
 
     const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode1Key);
 
@@ -153,6 +157,7 @@ describe('Blockchain', () => {
           clusterGovernmentParams,
         ),
       ),
+      { account: rootAccount },
     );
 
     const cluster = await blockchain.ddcClusters.findClusterById(clusterId);
@@ -174,7 +179,7 @@ describe('Blockchain', () => {
     const clusterProps = {
       nodeProviderAuthContract,
     };
-    await blockchain.send(blockchain.ddcClusters.setClusterParams(clusterId, clusterProps));
+    await blockchain.send(blockchain.ddcClusters.setClusterParams(clusterId, clusterProps), { account: rootAccount });
 
     const cluster = await blockchain.ddcClusters.findClusterById(clusterId);
 
@@ -184,13 +189,15 @@ describe('Blockchain', () => {
 
   test('Should fail to add a Storage Node to a cluster when not staked', async () => {
     await expect(() =>
-      blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key)),
+      blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key), {
+        account: rootAccount,
+      }),
     ).rejects.toThrow('ddcClusters.NodeHasNoStake:');
   });
 
   test('Should fail to add a CDN Node to a cluster when not staked', async () => {
     await expect(() =>
-      blockchain.send(blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNode1Key)),
+      blockchain.send(blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNode1Key), { account: rootAccount }),
     ).rejects.toThrow('ddcClusters.NodeHasNoStake:');
   });
 
@@ -209,10 +216,13 @@ describe('Blockchain', () => {
       p2pPort: 3030,
     };
 
-    await blockchain.batchSend([
-      blockchain.ddcNodes.createStorageNode(storageNode2Key, storageNode2Props),
-      blockchain.ddcNodes.createStorageNode(storageNode3Key, storageNode3Props),
-    ]);
+    await blockchain.batchSend(
+      [
+        blockchain.ddcNodes.createStorageNode(storageNode2Key, storageNode2Props),
+        blockchain.ddcNodes.createStorageNode(storageNode3Key, storageNode3Props),
+      ],
+      { account: rootAccount },
+    );
 
     const storageNode2 = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode2Key);
     const storageNode3 = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode3Key);
@@ -222,26 +232,24 @@ describe('Blockchain', () => {
   });
 
   test('Should bond storage node', async () => {
-    // await blockchain.batchSend([
-    //     blockchain.ddcStaking.bondStorageNode(rootAccount.address, storageNode1Key, bondSize),
-    //     blockchain.ddcStaking.store(clusterId),
-    //     blockchain.ddcStaking.setController(storageNode1Key),
-    // ]);
-    const blockchain = await Blockchain.connect({ account: nodeProviderAccount, apiPromise });
-
-    await blockchain.send(
-      blockchain.ddcStaking.bondStorageNode(nodeProviderAccount.address, storageNode1Key, bondSize),
+    await blockchain.batchAllSend(
+      [
+        blockchain.ddcStaking.bondStorageNode(storageNode1Account.address, storageNode1Key, bondSize),
+        blockchain.ddcStaking.store(clusterId),
+      ],
+      { account: storageNode1Account },
     );
 
-    await blockchain.send(blockchain.ddcStaking.store(clusterId));
-    // await blockchain.send(blockchain.ddcStaking.setController(storageNode1Key));
-
-    // const stakeClusterId = await blockchain.ddcStaking.findStorageNodeStakeClusterId(storageNode1Key);
-    // expect(stakeClusterId).toBe(clusterId);
+    const stakeClusterId = await blockchain.ddcStaking.findStakedClusterIdByStorageNodeStashAccountId(
+      storageNode1Account.address,
+    );
+    expect(stakeClusterId).toBe(clusterId);
   });
 
   test('Should add storage node to cluster', async () => {
-    await blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key));
+    await blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key), {
+      account: rootAccount,
+    });
     const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode1Key);
     expect(storageNode?.clusterId).toBe(clusterId);
     const nodeKeys = await blockchain.ddcClusters.listNodeKeys(clusterId);
@@ -249,7 +257,7 @@ describe('Blockchain', () => {
   });
 
   test('Should create bucket', async () => {
-    const result = await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId));
+    const result = await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId), { account: rootAccount });
     const bucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
     expect(bucketIds.length).toBe(1);
   });
