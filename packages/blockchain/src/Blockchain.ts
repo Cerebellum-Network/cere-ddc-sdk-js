@@ -1,6 +1,5 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { SignerOptions } from '@polkadot/api/types';
-import { IKeyringPair } from '@polkadot/types/types';
+import { AddressOrPair, SignerOptions } from '@polkadot/api/types';
 import { Index } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api-base/types';
 
@@ -8,9 +7,10 @@ import { DDCNodesPallet } from './DDCNodesPallet';
 import { DDCClustersPallet } from './DDCClustersPallet';
 import { DDCStakingPallet } from './DDCStakingPallet';
 import { DDCCustomersPallet } from './DDCCustomersPallet';
+import { AccountId } from './types';
 
 export type SendOptions = Pick<Partial<SignerOptions>, 'nonce' | 'signer'> & {
-  account: IKeyringPair | string;
+  account: AddressOrPair;
 };
 
 export type BlockchainConnectOptions =
@@ -37,7 +37,7 @@ export class Blockchain {
     return !!this.apiPromise.isReady;
   }
 
-  async getNextNonce(address: string) {
+  async getNextNonce(address: string | AccountId) {
     const nonce = await this.apiPromise.rpc.system.accountNextIndex<Index>(address);
 
     return nonce.toNumber();
