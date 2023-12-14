@@ -240,7 +240,7 @@ describe('Blockchain', () => {
       { account: storageNode1Account },
     );
 
-    const stakeClusterId = await blockchain.ddcStaking.findStakedClusterIdByCdnNodeStashAccountId(
+    const stakeClusterId = await blockchain.ddcStaking.findStakedClusterIdByStorageNodeStashAccountId(
       storageNode1Account.address,
     );
     expect(stakeClusterId).toBe(clusterId);
