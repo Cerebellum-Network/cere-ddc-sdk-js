@@ -232,23 +232,18 @@ describe('Blockchain', () => {
   });
 
   test('Should bond storage node', async () => {
-    // await blockchain.batchSend([
-    //     blockchain.ddcStaking.bondStorageNode(rootAccount.address, storageNode1Key, bondSize),
-    //     blockchain.ddcStaking.store(clusterId),
-    //     blockchain.ddcStaking.setController(storageNode1Key),
-    // ]);
-    const blockchain = await Blockchain.connect({ apiPromise });
-
-    await blockchain.send(
-      blockchain.ddcStaking.bondStorageNode(nodeProviderAccount.address, storageNode1Key, bondSize),
-      { account: rootAccount },
+    await blockchain.batchAllSend(
+      [
+        blockchain.ddcStaking.bondStorageNode(storageNode1Account.address, storageNode1Key, bondSize),
+        blockchain.ddcStaking.store(clusterId),
+      ],
+      { account: storageNode1Account },
     );
 
-    await blockchain.send(blockchain.ddcStaking.store(clusterId), { account: nodeProviderAccount });
-    // await blockchain.send(blockchain.ddcStaking.setController(storageNode1Key));
-
-    // const stakeClusterId = await blockchain.ddcStaking.findStorageNodeStakeClusterId(storageNode1Key);
-    // expect(stakeClusterId).toBe(clusterId);
+    const stakeClusterId = await blockchain.ddcStaking.findStakedClusterIdByCdnNodeStashAccountId(
+      storageNode1Account.address,
+    );
+    expect(stakeClusterId).toBe(clusterId);
   });
 
   test('Should add storage node to cluster', async () => {
