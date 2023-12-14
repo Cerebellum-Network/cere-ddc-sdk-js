@@ -10,7 +10,6 @@ services:
       - 'HTTP_PORT=8091'
       - 'LOG_LEVEL=debug'
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "CLUSTER_ID=${CLUSTER_ID}"
       - "PEER_URL=libp2p://ddc-storage-node-1:9071"
       - "PEER_SECRET_PHRASE=whip clump surface eternal summer acoustic broom duty magic extend virtual fly"
       - "GRPC_PORT=9091"
@@ -42,7 +41,6 @@ services:
       - 'HTTP_PORT=8092'
       - 'LOG_LEVEL=debug'
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "CLUSTER_ID=${CLUSTER_ID}"
       - "PEER_URL=libp2p://ddc-storage-node-2:9072"
       - "PEER_SECRET_PHRASE=scorpion dish want gorilla novel tape world hip rescue tank oyster pipe"
       - "GRPC_PORT=9092"
@@ -74,7 +72,6 @@ services:
       - 'HTTP_PORT=8093'
       - 'LOG_LEVEL=debug'
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "CLUSTER_ID=${CLUSTER_ID}"
       - "PEER_URL=libp2p://ddc-storage-node-3:9073"
       - "PEER_SECRET_PHRASE=rule output true detect matrix wife raven wreck primary mansion spike coral"
       - "GRPC_PORT=9093"
@@ -106,7 +103,6 @@ services:
       - 'HTTP_PORT=8094'
       - 'LOG_LEVEL=debug'
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "CLUSTER_ID=${CLUSTER_ID}"
       - "PEER_URL=libp2p://ddc-storage-node-4:9074"
       - "PEER_SECRET_PHRASE=paper salon seed crystal gun envelope wolf twice pistol episode guitar borrow"
       - "GRPC_PORT=9094"
