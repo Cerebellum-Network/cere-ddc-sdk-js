@@ -107,8 +107,8 @@ export class DDCStakingPallet {
     const result = (await this.apiPromise.query.ddcStaking.providers(stashAccountId)) as any;
 
     return {
-      keyType: result.isCdnPubKey() ? 'cdn' : 'storage',
-      publicKey: result.isCdnPubKey() ? result.asCdnPubKey.toJSON() : result.asStoragePubKey.toJSON(),
+      keyType: result.isCdnPubKey ? 'cdn' : 'storage',
+      publicKey: result.isCdnPubKey ? result.asCdnPubKey.toJSON() : result.asStoragePubKey.toJSON(),
     };
   }
 }
