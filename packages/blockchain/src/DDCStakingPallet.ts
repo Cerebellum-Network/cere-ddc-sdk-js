@@ -114,6 +114,9 @@ export class DDCStakingPallet {
   async findNodePublicKeyByStashAccountId(stashAccountId: AccountId) {
     const result = await this.apiPromise.query.ddcStaking.providers(stashAccountId);
 
-    return result.toJSON() as unknown as NodePublicKey;
+    return result.toJSON() as unknown as
+      | { storagePubKey: StorageNodePublicKey }
+      | { cdnPubKey: CdnNodePublicKey }
+      | undefined;
   }
 }
