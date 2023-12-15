@@ -146,6 +146,7 @@ export const Playground = () => {
 
   const handleRandomFileUpload = useCallback(async () => {
     setInProgress(true);
+    console.log({ step });
 
     const size = randomFileSize * MB;
     const stream = createDataStream(size);
@@ -164,6 +165,7 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
+      console.log({ errorStep: step });
 
       console.error(error);
     }
@@ -201,13 +203,13 @@ export const Playground = () => {
       }
 
       setRealFileCid(uri.cid);
-      setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
 
       console.error(error);
     }
 
+    setStep(step + 1);
     setInProgress(false);
   }, [client, currentBucketId, dropzone.acceptedFiles, step]);
 
@@ -228,14 +230,14 @@ export const Playground = () => {
       setClusters(clusters);
       setBuckets(buckets);
     } catch (error) {
-      setErrorStep(1);
+      setErrorStep(step);
 
       console.error(error);
     }
 
     setInProgress(false);
-    setStep(2);
-  }, [signer, selectedBc, bcCustomUrl]);
+    setStep(step + 1);
+  }, [selectedBc, step, bcCustomUrl, signer]);
 
   return (
     <Container maxWidth="md" sx={{ paddingY: 2 }}>
@@ -318,7 +320,7 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!currentBucketId && step > 2}>
-            <StepLabel error={errorStep === 0}>
+            <StepLabel error={errorStep === 2}>
               Select bucket
               {!!currentBucketId && step !== 2 && (
                 <Typography color="GrayText" variant="caption">
@@ -402,7 +404,7 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!randomFileCid}>
-            <StepLabel error={errorStep === 2}>
+            <StepLabel error={errorStep === 3}>
               Random file
               {randomFileCid && (
                 <Typography color="GrayText" variant="caption">
@@ -442,7 +444,7 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!realFileCid}>
-            <StepLabel error={errorStep === 3}>
+            <StepLabel error={errorStep === 4}>
               Real file
               {realFileCid && (
                 <Typography color="GrayText" variant="caption">
