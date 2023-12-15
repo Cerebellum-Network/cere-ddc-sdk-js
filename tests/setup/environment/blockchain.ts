@@ -107,7 +107,7 @@ export const setupBlockchain = async () => {
   const clusterNodeAuthorizationContractAddress = await deployAuthContract(apiPromise, clusterManagerAccount);
   console.timeEnd('Deploy cluster node auth contract');
 
-  const blockchain = await Blockchain.connect({ account: clusterManagerAccount, apiPromise });
+  const blockchain = await Blockchain.connect({ apiPromise });
 
   console.time('Create cluster');
   await blockchain.send(
@@ -136,6 +136,7 @@ export const setupBlockchain = async () => {
         },
       ),
     ),
+    { account: clusterManagerAccount },
   );
   console.timeEnd('Create cluster');
 
@@ -164,12 +165,14 @@ export const setupBlockchain = async () => {
     storageNodeAccounts.map((storageNodeAccount) =>
       blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNodeAccount.address),
     ),
+    { account: clusterManagerAccount },
   );
   console.timeEnd('Add nodes to cluster');
 
   console.time('Create buckets');
   const bucketsSendResult = await blockchain.batchAllSend(
     bucketIds.map(() => blockchain.ddcCustomers.createBucket(clusterId)),
+    { account: clusterManagerAccount },
   );
   const createdBucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(bucketsSendResult.events);
   console.timeEnd('Create buckets');
