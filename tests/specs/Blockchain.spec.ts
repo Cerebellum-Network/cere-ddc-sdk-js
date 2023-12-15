@@ -247,6 +247,12 @@ describe('Blockchain', () => {
       storageNode1Account.address,
     );
     expect(stakeClusterId).toBe(clusterId);
+
+    const nodeKey = await blockchain.ddcStaking.findNodePublicKeyByStashAccountId(storageNode1Account.address);
+    expect(nodeKey).toEqual({ storagePubKey: storageNode1Key });
+
+    const stashAccountId = await blockchain.ddcStaking.findStashAccountIdByStorageNodePublicKey(storageNode1Key);
+    expect(stashAccountId).toBe(storageNode1Account.address);
   });
 
   test('Should add storage node to cluster', async () => {
