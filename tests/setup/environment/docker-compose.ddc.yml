@@ -4,15 +4,15 @@ services:
   ddc-storage-node-1:
     platform: linux/amd64
     container_name: ddc-storage-node-1
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    # TODO: Switch back to `devnet` image once it's available
+    image: "cerebellumnetwork/ddc-storage-node:348f926cac24e1d21f717f027db614fdcf2fd7a6"
     environment:
       - 'NODE_ID=1'
       - 'HTTP_PORT=8091'
-      - 'LOG_LEVEL=debug'
+      - "GRPC_PORT=9091"
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
       - "PEER_URL=libp2p://ddc-storage-node-1:9071"
       - "PEER_SECRET_PHRASE=whip clump surface eternal summer acoustic broom duty magic extend virtual fly"
-      - "GRPC_PORT=9091"
       - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
       - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
       - "REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2"
@@ -21,6 +21,7 @@ services:
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
       - "P2P_MAX_MESSAGE_SIZE=68157440"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
+      - 'LOG_LEVEL=debug'
       # - 'TEST_ENABLED=true'
     ports:
       - '8091:8091'
@@ -35,15 +36,14 @@ services:
   ddc-storage-node-2:
     platform: linux/amd64
     container_name: ddc-storage-node-2
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    image: "cerebellumnetwork/ddc-storage-node:348f926cac24e1d21f717f027db614fdcf2fd7a6"
     environment:
       - 'NODE_ID=2'
       - 'HTTP_PORT=8092'
-      - 'LOG_LEVEL=debug'
+      - "GRPC_PORT=9092"
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
       - "PEER_URL=libp2p://ddc-storage-node-2:9072"
       - "PEER_SECRET_PHRASE=scorpion dish want gorilla novel tape world hip rescue tank oyster pipe"
-      - "GRPC_PORT=9092"
       - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
       - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
       - "REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2"
@@ -52,6 +52,7 @@ services:
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
       - "P2P_MAX_MESSAGE_SIZE=68157440"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
+      - 'LOG_LEVEL=debug'
       # - 'TEST_ENABLED=true'
     ports:
       - '8092:8092'
@@ -66,15 +67,14 @@ services:
   ddc-storage-node-3:
     platform: linux/amd64
     container_name: ddc-storage-node-3
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    image: "cerebellumnetwork/ddc-storage-node:348f926cac24e1d21f717f027db614fdcf2fd7a6"
     environment:
       - 'NODE_ID=3'
       - 'HTTP_PORT=8093'
-      - 'LOG_LEVEL=debug'
+      - "GRPC_PORT=9093"
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
       - "PEER_URL=libp2p://ddc-storage-node-3:9073"
       - "PEER_SECRET_PHRASE=rule output true detect matrix wife raven wreck primary mansion spike coral"
-      - "GRPC_PORT=9093"
       - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
       - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
       - "REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2"
@@ -83,6 +83,7 @@ services:
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
       - "P2P_MAX_MESSAGE_SIZE=68157440"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
+      - 'LOG_LEVEL=debug'
       # - 'TEST_ENABLED=true'
     ports:
       - '8093:8093'
@@ -97,15 +98,14 @@ services:
   ddc-storage-node-4:
     platform: linux/amd64
     container_name: ddc-storage-node-4
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    image: "cerebellumnetwork/ddc-storage-node:348f926cac24e1d21f717f027db614fdcf2fd7a6"
     environment:
       - 'NODE_ID=4'
       - 'HTTP_PORT=8094'
-      - 'LOG_LEVEL=debug'
+      - "GRPC_PORT=9094"
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
       - "PEER_URL=libp2p://ddc-storage-node-4:9074"
       - "PEER_SECRET_PHRASE=paper salon seed crystal gun envelope wolf twice pistol episode guitar borrow"
-      - "GRPC_PORT=9094"
       - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
       - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
       - "REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2"
@@ -114,6 +114,7 @@ services:
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
       - "P2P_MAX_MESSAGE_SIZE=68157440"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
+      - 'LOG_LEVEL=debug'
       # - 'TEST_ENABLED=true'
     ports:
       - '8094:8094'

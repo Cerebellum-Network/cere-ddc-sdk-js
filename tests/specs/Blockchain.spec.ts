@@ -195,13 +195,13 @@ describe('Blockchain', () => {
       blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key), {
         account: rootAccount,
       }),
-    ).rejects.toThrow('ddcClusters.NodeHasNoStake:');
+    ).rejects.toThrow('ddcClusters.NodeHasNoActivatedStake:');
   });
 
   test('Should fail to add a CDN Node to a cluster when not staked', async () => {
     await expect(() =>
       blockchain.send(blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNode1Key), { account: rootAccount }),
-    ).rejects.toThrow('ddcClusters.NodeHasNoStake:');
+    ).rejects.toThrow('ddcClusters.NodeHasNoActivatedStake:');
   });
 
   test('Should create 2 Storage nodes in batch', async () => {

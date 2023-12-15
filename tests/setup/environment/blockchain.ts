@@ -14,6 +14,7 @@ import {
   sendMultipleTransfers,
   BLOCKCHAIN_RPC_URL,
   getHostIP,
+  getStorageNodes,
 } from '../../helpers';
 import { Blockchain, ClusterId } from '@cere-ddc-sdk/blockchain';
 
@@ -84,13 +85,8 @@ export const setupBlockchain = async () => {
   const clusterManagerAccount = getAccount('//Alice');
   const clusterId: ClusterId = '0x0000000000000000000000000000000000000001';
   const bucketIds = [1n, 2n, 3n];
-  const storageNodeAccounts = [
-    getAccount('whip clump surface eternal summer acoustic broom duty magic extend virtual fly', 'ed25519'),
-    getAccount('scorpion dish want gorilla novel tape world hip rescue tank oyster pipe', 'ed25519'),
-    getAccount('rule output true detect matrix wife raven wreck primary mansion spike coral', 'ed25519'),
-    getAccount('paper salon seed crystal gun envelope wolf twice pistol episode guitar borrow', 'ed25519'),
-  ];
   const bondAmount = 100n * CERE;
+  const storageNodeAccounts = getStorageNodes().map(({ mnemonic }) => getAccount(mnemonic, 'ed25519'));
 
   console.time('Top-up accounts');
   await sendMultipleTransfers(apiPromise, [
