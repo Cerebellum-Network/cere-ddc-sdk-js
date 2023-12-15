@@ -1,6 +1,14 @@
 import { ApiPromise } from '@polkadot/api';
 import { Sendable } from './Blockchain';
-import type { AccountId, Amount, CdnNodePublicKey, ClusterId, StakingLedger, StorageNodePublicKey } from './types';
+import type {
+  AccountId,
+  Amount,
+  CdnNodePublicKey,
+  ClusterId,
+  NodePublicKey,
+  StakingLedger,
+  StorageNodePublicKey,
+} from './types';
 
 export class DDCStakingPallet {
   constructor(private apiPromise: ApiPromise) {}
@@ -104,11 +112,8 @@ export class DDCStakingPallet {
   }
 
   async findNodePublicKeyByStashAccountId(stashAccountId: AccountId) {
-    const result = (await this.apiPromise.query.ddcStaking.providers(stashAccountId)) as any;
+    const result = await this.apiPromise.query.ddcStaking.providers(stashAccountId);
 
-    return {
-      keyType: result.isCdnPubKey ? 'cdn' : 'storage',
-      publicKey: result.isCdnPubKey ? result.asCdnPubKey.toJSON() : result.asStoragePubKey.toJSON(),
-    };
+    return result.toJSON() as unknown as NodePublicKey;
   }
 }

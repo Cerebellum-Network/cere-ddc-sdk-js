@@ -246,10 +246,7 @@ describe('Blockchain', () => {
     expect(stakeClusterId).toBe(clusterId);
 
     const nodeKey = await blockchain.ddcStaking.findNodePublicKeyByStashAccountId(storageNode1Account.address);
-    expect(nodeKey).toEqual({
-      keyType: 'storage',
-      nodePublicKey: storageNode1Key,
-    });
+    expect(nodeKey).toEqual(storageNode1Key);
 
     const stashAccountId = await blockchain.ddcStaking.findStashAccountIdByStorageNodePublicKey(storageNode1Key);
     expect(stashAccountId).toBe(storageNode1Account.address);
