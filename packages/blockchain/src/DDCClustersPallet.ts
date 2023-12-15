@@ -14,7 +14,7 @@ export class DDCClustersPallet {
   constructor(private apiPromise: ApiPromise) {}
 
   async listClusters() {
-    const entries = await this.apiPromise.query.ddcClusters.clusters.entries();
+    const entries = (await this.apiPromise.query.ddcClusters?.clusters.entries()) || [];
 
     return entries.map(([, clusterOption]) => clusterOption.toJSON() as unknown as Cluster);
   }
