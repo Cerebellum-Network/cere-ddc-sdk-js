@@ -1,6 +1,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { AddressOrPair, SignerOptions } from '@polkadot/api/types';
-import { Index } from '@polkadot/types/interfaces';
+import { Index, AccountInfo } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api-base/types';
 
 import { DDCNodesPallet } from './DDCNodesPallet';
@@ -9,7 +9,6 @@ import { DDCStakingPallet } from './DDCStakingPallet';
 import { DDCCustomersPallet } from './DDCCustomersPallet';
 import { AccountId } from './types';
 import { formatBalance } from '@polkadot/util';
-import { AccountInfo } from '@polkadot/types/interfaces';
 
 export type SendOptions = Pick<Partial<SignerOptions>, 'nonce' | 'signer'> & {
   account: AddressOrPair;

@@ -42,7 +42,7 @@ export class DDCCustomersPallet {
   }
 
   async listBuckets() {
-    const entries = await this.apiPromise.query.ddcCustomers.buckets.entries();
+    const entries = (await this.apiPromise.query.ddcCustomers?.buckets.entries()) || [];
     return entries
       .map(([, bucketOption]) => {
         const bucket = bucketOption.toJSON() as unknown as Bucket | undefined;

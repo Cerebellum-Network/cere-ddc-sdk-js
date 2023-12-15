@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { LoadingButton } from '@mui/lab';
 import FileIcon from '@mui/icons-material/InsertDriveFileOutlined';
+import { Blockchain, Cluster, Bucket, BucketId, ClusterId } from '@cere-ddc-sdk/blockchain';
 import {
   File,
   Signer,
@@ -35,6 +36,11 @@ import {
   styled,
   Link as MuiLink,
   ListItemIcon,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Alert,
 } from '@mui/material';
 
 import { USER_SEED } from './constants';
@@ -52,7 +58,14 @@ const Dropzone = styled(Box)(({ theme }) => ({
 }));
 
 const bcPresets = {
-  devnet: { ...DEVNET, baseUrl: 'https://ddc-devnet.cloud' },
+  devnet: {
+    ...DEVNET,
+    baseUrl: 'https://ddc-devnet.cloud',
+    /**
+     * TODO: Remove this line after switching the preset from EDC to Devnet
+     */
+    blockchain: 'wss://archive.devnet.cere.network/ws',
+  },
   testnet: { ...TESTNET, baseUrl: 'https://ddc-testnet.cloud' },
   mainnet: { ...MAINNET, baseUrl: 'https://ddc.cloud' },
   custom: {
@@ -62,7 +75,6 @@ const bcPresets = {
 };
 
 export const Playground = () => {
-  const bucketId = 1n;
   const cnsName = 'ddc-playground';
   const dropzone = useDropzone({
     multiple: false,
@@ -78,11 +90,26 @@ export const Playground = () => {
   const [errorStep, setErrorStep] = useState<number>();
   const [selectedBc, setSelectedBc] = useState<'devnet' | 'testnet' | 'mainnet' | 'custom'>('devnet');
   const [bcCustomUrl, setBcCustomUrl] = useState(bcPresets.custom.blockchain);
+  const [clusterId, setClusterId] = useState<string>();
+  const [clusters, setClusters] = useState<Cluster[]>([]);
+  const [bucketId, setBucketId] = useState<BucketId | null>();
+  const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [client, setClient] = useState<DdcClient>();
 
   const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, bucketId, cnsName, name].join('/');
   const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].baseUrl, bucketId, cid].join('/');
   const isCompleted = !!realFileCid && !!randomFileCid;
+  const currentClusterId = clusterId || clusters[0]?.clusterId;
+  const clusterBuckets = useMemo(
+    () =>
+      buckets.filter(({ clusterId }) => clusterId === currentClusterId).sort((a, b) => Number(a.bucketId - b.bucketId)),
+    [buckets, currentClusterId],
+  );
+
+  const currentBucketId = useMemo(
+    () => (bucketId === null ? null : bucketId || (clusterBuckets.length ? clusterBuckets[0].bucketId : undefined)),
+    [bucketId, clusterBuckets],
+  );
 
   const handleSkip = useCallback(() => {
     setStep(step + 1);
@@ -97,6 +124,26 @@ export const Playground = () => {
     setSigner(signer);
   }, [seed]);
 
+  const handleSelectBucket = useCallback(async () => {
+    if (currentBucketId) {
+      return setStep(step + 1);
+    }
+
+    if (!currentClusterId) {
+      setBucketId(1n);
+
+      return setStep(step + 1);
+    }
+
+    setInProgress(true);
+    const newBucketId = await client!.createBucket(currentClusterId as ClusterId);
+
+    setBuckets(await client!.getBucketList());
+    setBucketId(newBucketId);
+    setInProgress(false);
+    setStep(step + 1);
+  }, [currentBucketId, client, currentClusterId, step]);
+
   const handleRandomFileUpload = useCallback(async () => {
     setInProgress(true);
 
@@ -105,7 +152,7 @@ export const Playground = () => {
     const file = new File(stream, { size });
 
     try {
-      const uri = await client!.store(bucketId, file);
+      const uri = await client!.store(currentBucketId!, file);
       const fileResponse = await client!.read(uri);
       const contentBuffer = await fileResponse.arrayBuffer();
 
@@ -114,15 +161,15 @@ export const Playground = () => {
       }
 
       setRandomFileCid(uri.cid);
-      setStep(3);
+      setStep(step + 1);
     } catch (error) {
-      setErrorStep(2);
+      setErrorStep(step);
 
       console.error(error);
     }
 
     setInProgress(false);
-  }, [bucketId, client, randomFileSize]);
+  }, [client, currentBucketId, randomFileSize, step]);
 
   const handleRealFileUpload = useCallback(async () => {
     setInProgress(true);
@@ -130,11 +177,11 @@ export const Playground = () => {
 
     try {
       const existingDagNode = await client!
-        .read(new DagNodeUri(bucketId, cnsName))
+        .read(new DagNodeUri(currentBucketId!, cnsName))
         .catch(() => new DagNode(JSON.stringify({ createTime: Date.now() })));
 
       const file = new File(acceptedFile.stream(), { size: acceptedFile.size });
-      const uri = await client!.store(bucketId, file);
+      const uri = await client!.store(currentBucketId!, file);
       const fileLink = new Link(uri.cid, acceptedFile.size, acceptedFile.name);
 
       /**
@@ -145,7 +192,7 @@ export const Playground = () => {
         fileLink,
       ]);
 
-      await client!.store(bucketId, dagNode, { name: cnsName });
+      await client!.store(currentBucketId!, dagNode, { name: cnsName });
       const fileResponse = await client!.read(uri);
       const contentBuffer = await fileResponse.arrayBuffer();
 
@@ -154,15 +201,15 @@ export const Playground = () => {
       }
 
       setRealFileCid(uri.cid);
-      setStep(4);
+      setStep(step + 1);
     } catch (error) {
-      setErrorStep(3);
+      setErrorStep(step);
 
       console.error(error);
     }
 
     setInProgress(false);
-  }, [bucketId, client, dropzone.acceptedFiles]);
+  }, [client, currentBucketId, dropzone.acceptedFiles, step]);
 
   const handleInitClient = useCallback(async () => {
     const preset = bcPresets[selectedBc];
@@ -173,7 +220,13 @@ export const Playground = () => {
 
     try {
       setInProgress(true);
-      setClient(await DdcClient.create(signer!, { ...preset, logLevel: 'debug' }));
+      const blockchain = await Blockchain.connect({ wsEndpoint: preset.blockchain });
+      const client = await DdcClient.create(signer!, { ...preset, blockchain, logLevel: 'debug' });
+      const [clusters, buckets] = await Promise.all([blockchain.ddcClusters.listClusters(), client.getBucketList()]);
+
+      setClient(client);
+      setClusters(clusters);
+      setBuckets(buckets);
     } catch (error) {
       setErrorStep(1);
 
@@ -219,7 +272,7 @@ export const Playground = () => {
           <Step completed={!!client}>
             <StepLabel>
               Initialize client
-              {selectedBc && (
+              {selectedBc && step > 1 && (
                 <Typography color="GrayText" variant="caption" textTransform="capitalize">
                   {' - '}
                   {selectedBc}
@@ -229,7 +282,7 @@ export const Playground = () => {
 
             <StepContent>
               <Stack spacing={2} alignItems="start">
-                <Stack spacing={1} width={400}>
+                <Stack spacing={1} width={450}>
                   <ToggleButtonGroup
                     exclusive
                     fullWidth
@@ -260,6 +313,90 @@ export const Playground = () => {
                 <LoadingButton loading={inProgress} variant="contained" onClick={handleInitClient}>
                   Continue
                 </LoadingButton>
+              </Stack>
+            </StepContent>
+          </Step>
+
+          <Step completed={!!currentBucketId && step > 2}>
+            <StepLabel error={errorStep === 0}>
+              Select bucket
+              {!!currentBucketId && step !== 2 && (
+                <Typography color="GrayText" variant="caption">
+                  {' - '}
+                  {currentBucketId.toString()}
+                </Typography>
+              )}
+            </StepLabel>
+            <StepContent>
+              {clusters.length === 0 && (
+                <Alert severity="warning" sx={{ marginBottom: 1 }}>
+                  No clusters found on the selected blockchain. Falling back to test bucket with ID = 1.
+                </Alert>
+              )}
+
+              <Stack width={450} paddingTop={1} spacing={2} alignItems="start">
+                {!!clusters.length && (
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Cluster</InputLabel>
+                    <Select
+                      label="Cluster"
+                      value={currentClusterId}
+                      onChange={(event) => setClusterId(event.target.value)}
+                    >
+                      {clusters.map(({ clusterId }) => (
+                        <MenuItem key={clusterId} value={clusterId}>
+                          {clusterId}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+
+                {currentClusterId && (
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Bucket</InputLabel>
+                    <Select
+                      label="Bucket"
+                      value={
+                        bucketId === null
+                          ? 'new'
+                          : bucketId || (clusterBuckets.length ? clusterBuckets[0].bucketId : 'new')
+                      }
+                      onChange={(event) =>
+                        setBucketId(event.target.value === 'new' ? null : BigInt(event.target.value))
+                      }
+                    >
+                      <MenuItem key="new" value="new">
+                        <Typography color="GrayText">Create new...</Typography>
+                      </MenuItem>
+
+                      {clusterBuckets.map(({ bucketId, ownerId }) => (
+                        <MenuItem key={bucketId.toString()} value={bucketId.toString()}>
+                          <Box
+                            display="flex"
+                            flex={1}
+                            justifyContent="space-between"
+                            alignItems="center"
+                            marginRight={1}
+                          >
+                            <Typography>{bucketId.toString()}</Typography>
+                            {ownerId === signer?.address && (
+                              <Typography variant="caption" color="GrayText">
+                                My bucket
+                              </Typography>
+                            )}
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+
+                <Stack direction="row" spacing={1}>
+                  <LoadingButton loading={inProgress} variant="contained" onClick={handleSelectBucket}>
+                    Continue
+                  </LoadingButton>
+                </Stack>
               </Stack>
             </StepContent>
           </Step>
