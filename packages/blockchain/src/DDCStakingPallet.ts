@@ -1,14 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { Sendable } from './Blockchain';
-import type {
-  AccountId,
-  Amount,
-  CdnNodePublicKey,
-  ClusterId,
-  NodePublicKey,
-  StakingLedger,
-  StorageNodePublicKey,
-} from './types';
+import type { AccountId, Amount, CdnNodePublicKey, ClusterId, StakingLedger, StorageNodePublicKey } from './types';
 
 export class DDCStakingPallet {
   constructor(private apiPromise: ApiPromise) {}
