@@ -1,9 +1,9 @@
 import { Blockchain } from '@cere-ddc-sdk/blockchain';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
+import { cryptoWaitReady, randomAsHex } from '@polkadot/util-crypto';
 import { ApiPromise } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
 
-import { createAccount, createBlockhainApi, deployAuthContract, getAccount, transferCere } from '../helpers';
+import { createAccount, createBlockhainApi, deployAuthContract, getAccount, sendMultipleTransfers } from '../helpers';
 
 describe('Blockchain', () => {
   let apiPromise: ApiPromise;
@@ -17,7 +17,7 @@ describe('Blockchain', () => {
   let storageNode2Key: string;
   let storageNode3Key: string;
   let nonExistentKey1: string;
-  const clusterId = '0x0000000000000000000000000000000000000001';
+  const clusterId = randomAsHex(20);
   const bondSize = 10_000_000_000n;
   let nodeProviderAuthContract: string;
 
@@ -35,8 +35,11 @@ describe('Blockchain', () => {
 
     apiPromise = await createBlockhainApi();
     nodeProviderAuthContract = await deployAuthContract(apiPromise, rootAccount);
-    await transferCere(apiPromise, storageNode1Account.address, 10);
-    await transferCere(apiPromise, nodeProviderAccount.address, 10);
+
+    await sendMultipleTransfers(apiPromise, [
+      { to: storageNode1Account.address, tokens: 10 },
+      { to: nodeProviderAccount.address, tokens: 10 },
+    ]);
   });
 
   afterAll(async () => {
@@ -192,13 +195,13 @@ describe('Blockchain', () => {
       blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key), {
         account: rootAccount,
       }),
-    ).rejects.toThrow('ddcClusters.NodeHasNoStake:');
+    ).rejects.toThrow('ddcClusters.NodeHasNoActivatedStake:');
   });
 
   test('Should fail to add a CDN Node to a cluster when not staked', async () => {
     await expect(() =>
       blockchain.send(blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNode1Key), { account: rootAccount }),
-    ).rejects.toThrow('ddcClusters.NodeHasNoStake:');
+    ).rejects.toThrow('ddcClusters.NodeHasNoActivatedStake:');
   });
 
   test('Should create 2 Storage nodes in batch', async () => {

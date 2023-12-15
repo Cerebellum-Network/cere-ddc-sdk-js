@@ -4,7 +4,8 @@ import { ApiPromise } from '@polkadot/api';
 import { CodePromise, Abi } from '@polkadot/api-contract';
 import { KeyringPair } from '@polkadot/keyring/types';
 
-import { getGasLimit, signAndSend } from './blockchain';
+import { BLOCKCHAIN_MAX_BLOCK_WEIGHT } from './constants';
+import { signAndSend } from './blockchain';
 
 const readContract = async (path: string) => {
   const contractContent = await fs.readFile(path);
@@ -20,7 +21,7 @@ const deployContract = async (api: ApiPromise, account: KeyringPair, abi: Abi, w
   const codePromise = new CodePromise(api, abi, wasm);
   const tx = codePromise.tx.new({
     value: 0,
-    gasLimit: await getGasLimit(api),
+    gasLimit: BLOCKCHAIN_MAX_BLOCK_WEIGHT / 2,
     storageDepositLimit: 750_000_000_000,
   });
 

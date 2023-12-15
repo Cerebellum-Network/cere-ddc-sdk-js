@@ -12,6 +12,9 @@ import {
   CERE,
   writeBlockchainStateToDisk,
   sendMultipleTransfers,
+  BLOCKCHAIN_RPC_URL,
+  getHostIP,
+  getStorageNodes,
 } from '../../helpers';
 import { Blockchain, ClusterId } from '@cere-ddc-sdk/blockchain';
 
@@ -27,18 +30,30 @@ const uuid = { nextUuid: () => 'blockchain' };
 export const startBlockchain = async (): Promise<BlockchainConfig> => {
   console.group('Blockchain');
 
-  const isCached = fs.existsSync(path.resolve(dataDir, './ddc.json'));
+  const hostIp = getHostIP();
   const composeFile = process.env.CI ? 'docker-compose.blockchain.ci.yml' : 'docker-compose.blockchain.yml';
+  const cachedStatePath = path.resolve(dataDir, './ddc.json');
+  const bcCachePath = path.resolve(dataDir, './blockchain');
+
+  let chachedState = fs.existsSync(cachedStatePath) ? readBlockchainStateFromDisk() : undefined;
+
+  if (chachedState && hostIp !== chachedState?.hostIp) {
+    console.warn('Host IP has changed, removing the cached state');
+
+    chachedState = undefined;
+
+    fs.rmdirSync(bcCachePath, { recursive: true });
+    fs.unlinkSync(cachedStatePath);
+  }
 
   environment = await new DockerComposeEnvironment(__dirname, composeFile, uuid)
-    .withEnv('BC_CAHCHE_DIR', path.resolve(dataDir, './blockchain'))
+    .withEnv('BC_CAHCHE_DIR', bcCachePath)
     .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
     .up();
 
-  const blockchainState: BlockchainState =
-    !process.env.CI && isCached ? readBlockchainStateFromDisk() : await setupBlockchain();
+  const blockchainState: BlockchainState = !process.env.CI && chachedState ? chachedState : await setupBlockchain();
 
-  if (!isCached) {
+  if (!chachedState) {
     writeBlockchainStateToDisk(blockchainState);
   }
 
@@ -48,7 +63,7 @@ export const startBlockchain = async (): Promise<BlockchainConfig> => {
 
   return {
     ...blockchainState,
-    apiUrl: 'ws://localhost:9944',
+    apiUrl: BLOCKCHAIN_RPC_URL,
   };
 };
 
@@ -64,18 +79,14 @@ export const setupBlockchain = async () => {
 
   await cryptoWaitReady();
 
+  const hostIp = getHostIP();
   const apiPromise = await createBlockhainApi();
   const rootAccount = getAccount();
   const clusterManagerAccount = getAccount('//Alice');
-  const clusterId: ClusterId = '0x0000000000000000000000000000000000000000';
+  const clusterId: ClusterId = '0x0000000000000000000000000000000000000001';
   const bucketIds = [1n, 2n, 3n];
-  const storageNodeAccounts = [
-    getAccount('//Eve'),
-    getAccount('//Ferdie'),
-    getAccount('//Charlie'),
-    getAccount('//Alice'),
-  ];
   const bondAmount = 100n * CERE;
+  const storageNodeAccounts = getStorageNodes().map(({ mnemonic }) => getAccount(mnemonic, 'ed25519'));
 
   console.time('Top-up accounts');
   await sendMultipleTransfers(apiPromise, [
@@ -131,7 +142,7 @@ export const setupBlockchain = async () => {
       blockchain.batchAllSend(
         [
           blockchain.ddcNodes.createStorageNode(account.address, {
-            host: 'localhost',
+            host: hostIp,
             httpPort: 8091 + index,
             grpcPort: 9091 + index,
             p2pPort: 9071 + index,
@@ -168,6 +179,7 @@ export const setupBlockchain = async () => {
   await apiPromise.disconnect();
 
   return {
+    hostIp,
     clusterId,
     bucketIds: createdBucketIds,
     account: clusterManagerAccount.address,
