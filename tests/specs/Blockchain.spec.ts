@@ -255,7 +255,7 @@ describe('Blockchain', () => {
     expect(stashAccountId).toBe(storageNode1Account.address);
 
     const stashAccounts = await blockchain.ddcStaking.listStakedStorageNodesStashAccountsAndClusterIds();
-    expect(stashAccounts).toContain({ stashAccountId: storageNode1Account.address, clusterId });
+    expect(stashAccounts).toContainEqual({ stashAccountId: storageNode1Account.address, clusterId });
   });
 
   test('Should add storage node to cluster', async () => {
