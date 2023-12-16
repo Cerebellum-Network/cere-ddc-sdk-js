@@ -49,8 +49,8 @@ export class DDCStakingPallet {
 
   async listStakedStorageNodesStashAccountsAndClusterIds() {
     const result = await this.apiPromise.query.ddcStaking.storages.entries();
-    return result.map(([stashAccountId, clusterId]) => ({
-      stashAccountId: stashAccountId.toJSON() as unknown as AccountId,
+    return result.map(([key, clusterId]) => ({
+      stashAccountId: key.args[1].toJSON() as unknown as AccountId,
       clusterId: clusterId.toJSON() as unknown as ClusterId,
     }));
   }
@@ -62,8 +62,8 @@ export class DDCStakingPallet {
 
   async listStakedCdnNodesStashAccountsAndClusterIds() {
     const result = await this.apiPromise.query.ddcStaking.cdNs.entries();
-    return result.map(([stashAccountId, clusterId]) => ({
-      stashAccountId: stashAccountId.toJSON() as unknown as AccountId,
+    return result.map(([key, clusterId]) => ({
+      stashAccountId: key.args[1].toJSON() as unknown as AccountId,
       clusterId: clusterId.toJSON() as unknown as ClusterId,
     }));
   }
