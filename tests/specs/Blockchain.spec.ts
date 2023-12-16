@@ -265,6 +265,9 @@ describe('Blockchain', () => {
       account: rootAccount,
     });
 
+    const hasNode = await blockchain.ddcClusters.clusterHasStorageNode(clusterId, storageNode1Key);
+    expect(hasNode).toBe(true);
+
     const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode1Key);
     expect(storageNode?.clusterId).toBe(clusterId);
 
