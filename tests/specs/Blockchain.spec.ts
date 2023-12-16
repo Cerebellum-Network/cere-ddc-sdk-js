@@ -253,6 +253,11 @@ describe('Blockchain', () => {
 
     const stashAccountId = await blockchain.ddcStaking.findStashAccountIdByStorageNodePublicKey(storageNode1Key);
     expect(stashAccountId).toBe(storageNode1Account.address);
+
+    const stashAccounts = await blockchain.ddcStaking.listStakedStorageNodesStashAccountsAndClusterIds();
+    expect(stashAccounts).toHaveLength(1);
+    expect(stashAccounts[0].stashAccountId).toBe(storageNode1Account.address);
+    expect(stashAccounts[0].clusterId).toBe(clusterId);
   });
 
   test('Should add storage node to cluster', async () => {
