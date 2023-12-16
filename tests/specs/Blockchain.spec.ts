@@ -259,9 +259,11 @@ describe('Blockchain', () => {
     await blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key), {
       account: rootAccount,
     });
+
     const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode1Key);
     expect(storageNode?.clusterId).toBe(clusterId);
-    const nodeKeys = await blockchain.ddcClusters.listNodeKeys(clusterId);
+
+    const nodeKeys = await blockchain.ddcClusters.filterNodeKeysByClusterId(clusterId);
     expect(nodeKeys).toContainEqual({ keyType: 'storage', nodePublicKey: storageNode1Key });
   });
 

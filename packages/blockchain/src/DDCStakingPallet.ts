@@ -47,10 +47,10 @@ export class DDCStakingPallet {
     return result.toJSON() as unknown as AccountId | undefined;
   }
 
-  async listStakedStorageNodesStashAccountsAndClusters() {
+  async listStakedStorageNodesStashAccountsAndClusterIds() {
     const result = await this.apiPromise.query.ddcStaking.storages.entries();
     return result.map(([stashAccountId, clusterId]) => ({
-      cdnNodeStashAccountId: stashAccountId.toJSON() as unknown as AccountId,
+      stashAccountId: stashAccountId.toJSON() as unknown as AccountId,
       clusterId: clusterId.toJSON() as unknown as ClusterId,
     }));
   }
@@ -60,10 +60,10 @@ export class DDCStakingPallet {
     return result.toJSON() as unknown as ClusterId | undefined;
   }
 
-  async listStakedCdnNodesStashAccountsAndClusters() {
+  async listStakedCdnNodesStashAccountsAndClusterIds() {
     const result = await this.apiPromise.query.ddcStaking.cdNs.entries();
     return result.map(([stashAccountId, clusterId]) => ({
-      storageNodeStashAccountId: stashAccountId.toJSON() as unknown as AccountId,
+      stashAccountId: stashAccountId.toJSON() as unknown as AccountId,
       clusterId: clusterId.toJSON() as unknown as ClusterId,
     }));
   }
@@ -93,13 +93,13 @@ export class DDCStakingPallet {
     return this.apiPromise.tx.ddcStaking.serve(clusterId) as Sendable;
   }
 
-  async findStakingLedgerByControllerAccount(controllerAccount: AccountId) {
-    const result = await this.apiPromise.query.ddcStaking.ledger(controllerAccount);
+  async findStakingLedgerByControllerAccountId(controllerAccountId: AccountId) {
+    const result = await this.apiPromise.query.ddcStaking.ledger(controllerAccountId);
     return result.toJSON() as unknown as StakingLedger | undefined;
   }
 
-  async findControllerAccountByStashAccount(stashAccount: AccountId) {
-    const result = await this.apiPromise.query.ddcStaking.bonded(stashAccount);
+  async findControllerAccountByStashAccountId(stashAccountId: AccountId) {
+    const result = await this.apiPromise.query.ddcStaking.bonded(stashAccountId);
     return result.toJSON() as unknown as AccountId | undefined;
   }
 
