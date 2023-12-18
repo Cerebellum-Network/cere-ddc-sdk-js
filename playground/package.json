@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/playground",
-  "version": "2.0.0-2.0.0-rc.20.0",
+  "version": "2.0.0-rc.20",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,8 +10,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@cere-ddc-sdk/blockchain": "2.0.0-2.0.0-rc.20.0",
-    "@cere-ddc-sdk/ddc-client": "2.0.0-2.0.0-rc.20.0",
+    "@cere-ddc-sdk/blockchain": "2.0.0-rc.20",
+    "@cere-ddc-sdk/ddc-client": "2.0.0-rc.20",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.14.18",
