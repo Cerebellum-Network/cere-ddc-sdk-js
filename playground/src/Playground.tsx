@@ -66,7 +66,7 @@ const bcPresets = {
      */
     blockchain: 'wss://archive.devnet.cere.network/ws',
   },
-  testnet: { ...TESTNET, baseUrl: 'https://ddc-testnet.cloud' },
+  testnet: { ...TESTNET, baseUrl: 'https://storage.testnet.cere.network' },
   mainnet: { ...MAINNET, baseUrl: 'https://ddc.cloud' },
   custom: {
     blockchain: process.env.BC_ENDPOINT || '',
