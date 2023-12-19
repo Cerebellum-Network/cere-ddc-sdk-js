@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/eslint-config",
-  "version": "2.0.0-rc.21",
+  "version": "2.0.0-rc.22",
   "main": "index.js",
   "private": true,
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
