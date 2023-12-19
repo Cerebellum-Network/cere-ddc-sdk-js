@@ -29,11 +29,16 @@ export type ClusterGovernmentParams = /*PalletDdcClustersClusterClusterGovParams
 };
 
 export type BucketId = /*u64;*/ bigint;
+export type BucketParams = /*PalletDdcCustomersBucketParams;*/ {
+  isPublic: boolean;
+};
+
 export type Bucket = /*PalletDdcCustomersBucket;*/ {
   readonly bucketId: BucketId;
   readonly ownerId: AccountId;
   readonly clusterId: ClusterId;
 };
+
 export type AccountId = /*AccountId32;*/ string;
 export type StakingInfo = /*PalletDdcCustomersAccountsLedger;*/ {
   readonly owner: AccountId;
@@ -42,22 +47,23 @@ export type StakingInfo = /*PalletDdcCustomersAccountsLedger;*/ {
 };
 
 export type NodePublicKey = AccountId;
-export type CdnNodePublicKey = NodePublicKey;
 export type StorageNodePublicKey = NodePublicKey;
-export type CdnNodeProps = /*PalletDdcNodesCdnNodeCdnNodeProps;*/ {
+
+export enum StorageNodeMode {
+  Full = 'Full',
+  Storage = 'Storage',
+  Cache = 'Cache',
+}
+
+export type StorageNodeProps = {
   readonly host: string;
   readonly httpPort: number;
   readonly grpcPort: number;
   readonly p2pPort: number;
+  readonly mode: StorageNodeMode;
 };
-export type StorageNodeProps = /*PalletDdcNodesStorageNodeStorageNodeProps;*/ CdnNodeProps;
-export type CdnNode = /*PalletDdcNodesCdnNode;*/ {
-  readonly pubKey: CdnNodePublicKey;
-  readonly providerId: AccountId;
-  readonly clusterId: ClusterId | null | undefined;
-  readonly props: CdnNodeProps;
-};
-export type StorageNode = /*PalletDdcNodesStorageNode;*/ {
+
+export type StorageNode = {
   readonly pubKey: StorageNodePublicKey;
   readonly providerId: AccountId;
   readonly clusterId: ClusterId | null | undefined;

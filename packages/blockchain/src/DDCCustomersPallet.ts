@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { Sendable, Event } from './Blockchain';
-import type { AccountId, Bucket, BucketId, ClusterId, StakingInfo } from './types';
+import type { AccountId, Bucket, BucketId, BucketParams, ClusterId, StakingInfo } from './types';
 
 export class DDCCustomersPallet {
   constructor(private apiPromise: ApiPromise) {}
@@ -21,8 +21,8 @@ export class DDCCustomersPallet {
     return result.toJSON() as unknown as StakingInfo | undefined;
   }
 
-  createBucket(clusterId: ClusterId) {
-    return this.apiPromise.tx.ddcCustomers.createBucket(clusterId) as Sendable;
+  createBucket(clusterId: ClusterId, params: BucketParams) {
+    return this.apiPromise.tx.ddcCustomers.createBucket(clusterId, params) as Sendable;
   }
 
   deposit(value: bigint) {
