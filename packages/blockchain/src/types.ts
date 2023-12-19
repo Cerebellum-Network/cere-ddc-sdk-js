@@ -37,6 +37,7 @@ export type Bucket = /*PalletDdcCustomersBucket;*/ {
   readonly bucketId: BucketId;
   readonly ownerId: AccountId;
   readonly clusterId: ClusterId;
+  readonly isPublic: boolean;
 };
 
 export type AccountId = /*AccountId32;*/ string;
