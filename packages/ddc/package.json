@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/ddc",
   "description": "DDC nodes API",
-  "version": "2.0.0-rc.21",
+  "version": "2.0.0-rc.22",
   "type": "module",
   "repository": {
     "type": "git",
@@ -28,7 +28,7 @@
     "clean": "rimraf dist package"
   },
   "dependencies": {
-    "@cere-ddc-sdk/blockchain": "2.0.0-rc.21",
+    "@cere-ddc-sdk/blockchain": "2.0.0-rc.22",
     "@grpc/grpc-js": "^1.6.0",
     "@protobuf-ts/grpc-transport": "^2.9.1",
     "@protobuf-ts/runtime": "^2.9.1",
