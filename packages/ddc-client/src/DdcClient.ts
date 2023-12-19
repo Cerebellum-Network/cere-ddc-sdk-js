@@ -15,7 +15,7 @@ import {
   bindErrorLogger,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
-import { Blockchain, BucketId, ClusterId } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, BucketId, BucketParams, ClusterId } from '@cere-ddc-sdk/blockchain';
 
 import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
 
@@ -58,12 +58,18 @@ export class DdcClient {
     await this.blockchain.disconnect();
   }
 
-  async createBucket(clusterId: ClusterId) {
-    this.logger.info('Creating bucket on cluster %s', clusterId);
+  async createBucket(clusterId: ClusterId, params: Partial<BucketParams> = {}) {
+    this.logger.info(params, 'Creating bucket on cluster %s', clusterId);
 
-    const response = await this.blockchain.send(this.blockchain.ddcCustomers.createBucket(clusterId), {
-      account: this.signer,
-    });
+    const defaultParams: BucketParams = {
+      isPublic: false,
+    };
+
+    const response = await this.blockchain.send(
+      this.blockchain.ddcCustomers.createBucket(clusterId, { ...defaultParams, ...params }),
+      { account: this.signer },
+    );
+
     const [bucketId] = this.blockchain.ddcCustomers.extractCreatedBucketIds(response.events);
 
     this.logger.debug({ response }, 'Blockchain response');

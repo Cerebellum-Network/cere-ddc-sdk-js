@@ -1,4 +1,4 @@
-import { Blockchain } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 import { cryptoWaitReady, randomAsHex } from '@polkadot/util-crypto';
 import { ApiPromise } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
@@ -12,7 +12,6 @@ describe('Blockchain', () => {
   let rootAccount: KeyringPair;
   let storageNode1Account: KeyringPair;
   let nodeProviderAccount: KeyringPair;
-  let cdnNode1Key: string;
   let storageNode1Key: string;
   let storageNode2Key: string;
   let storageNode3Key: string;
@@ -25,7 +24,6 @@ describe('Blockchain', () => {
     await cryptoWaitReady();
 
     rootAccount = getAccount('//Alice');
-    cdnNode1Key = createAccount().address;
     storageNode1Account = createAccount().account;
     nodeProviderAccount = createAccount().account;
     storageNode1Key = storageNode1Account.address;
@@ -51,46 +49,9 @@ describe('Blockchain', () => {
     expect(blockchain).toBeInstanceOf(Blockchain);
   });
 
-  test('Should return null when finding a non-existent CDN Node', async () => {
-    const cdnNode = await blockchain.ddcNodes.findCdnNodeByPublicKey(nonExistentKey1);
-    expect(cdnNode).toBeUndefined();
-  });
-
   test('Should return null when finding a non-existent Storage Node', async () => {
     const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(nonExistentKey1);
     expect(storageNode).toBeUndefined();
-  });
-
-  test('Should create a CDN Node and find it by public key', async () => {
-    const cdnNodeProps = {
-      host: 'ddc-cdn-node-0',
-      httpPort: 9090,
-      grpcPort: 8080,
-      p2pPort: 7070,
-    };
-
-    await blockchain.send(blockchain.ddcNodes.createCdnNode(cdnNode1Key, cdnNodeProps), { account: rootAccount });
-
-    const cdnNode = await blockchain.ddcNodes.findCdnNodeByPublicKey(cdnNode1Key);
-
-    expect(cdnNode).toBeDefined();
-    expect(cdnNode?.pubKey).toBe(cdnNode1Key);
-    expect(cdnNode?.props).toEqual(cdnNodeProps);
-  });
-
-  test('Should set CDN node props', async () => {
-    const cdnNodeProps = {
-      host: 'ddc-cdn-node-0',
-      httpPort: 1010,
-      grpcPort: 2020,
-      p2pPort: 3030,
-    };
-    await blockchain.send(blockchain.ddcNodes.setCdnNodeProps(cdnNode1Key, cdnNodeProps), { account: rootAccount });
-
-    const cdnNode = await blockchain.ddcNodes.findCdnNodeByPublicKey(cdnNode1Key);
-
-    expect(cdnNode).toBeDefined();
-    expect(cdnNode?.props).toEqual(cdnNodeProps);
   });
 
   test('Should create a Storage Node and find it by public key', async () => {
@@ -99,7 +60,9 @@ describe('Blockchain', () => {
       httpPort: 4010,
       grpcPort: 5020,
       p2pPort: 6030,
+      mode: StorageNodeMode.Storage,
     };
+
     await blockchain.send(blockchain.ddcNodes.createStorageNode(storageNode1Key, storageNodeProps), {
       account: rootAccount,
     });
@@ -117,7 +80,9 @@ describe('Blockchain', () => {
       httpPort: 3010,
       grpcPort: 3020,
       p2pPort: 3030,
+      mode: StorageNodeMode.Storage,
     };
+
     await blockchain.send(blockchain.ddcNodes.setStorageNodeProps(storageNode1Key, storageNodeProps), {
       account: rootAccount,
     });
@@ -198,18 +163,13 @@ describe('Blockchain', () => {
     ).rejects.toThrow('ddcClusters.NodeHasNoActivatedStake:');
   });
 
-  test('Should fail to add a CDN Node to a cluster when not staked', async () => {
-    await expect(() =>
-      blockchain.send(blockchain.ddcClusters.addCdnNodeToCluster(clusterId, cdnNode1Key), { account: rootAccount }),
-    ).rejects.toThrow('ddcClusters.NodeHasNoActivatedStake:');
-  });
-
   test('Should create 2 Storage nodes in batch', async () => {
     const storageNode2Props = {
       host: 'ddc-storage-node-2',
       httpPort: 3010,
       grpcPort: 3020,
       p2pPort: 3030,
+      mode: StorageNodeMode.Storage,
     };
 
     const storageNode3Props = {
@@ -217,6 +177,7 @@ describe('Blockchain', () => {
       httpPort: 3010,
       grpcPort: 3020,
       p2pPort: 3030,
+      mode: StorageNodeMode.Storage,
     };
 
     await blockchain.batchSend(
@@ -270,13 +231,29 @@ describe('Blockchain', () => {
     expect(storageNode?.clusterId).toBe(clusterId);
 
     const nodeKeys = await blockchain.ddcClusters.filterNodeKeysByClusterId(clusterId);
-    expect(nodeKeys).toContainEqual({ keyType: 'storage', nodePublicKey: storageNode1Key });
+    expect(nodeKeys).toContainEqual(storageNode1Key);
   });
 
-  test('Should create bucket', async () => {
-    const result = await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId), { account: rootAccount });
-    const bucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
-    expect(bucketIds.length).toBe(1);
+  test('Should create public bucket', async () => {
+    const result = await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true }), {
+      account: rootAccount,
+    });
+
+    const [bucketId] = blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
+    const bucket = await blockchain.ddcCustomers.getBucket(bucketId);
+
+    expect(bucket?.isPublic).toBe(true);
+  });
+
+  test('Should create private bucket', async () => {
+    const result = await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId, { isPublic: false }), {
+      account: rootAccount,
+    });
+
+    const [bucketId] = blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
+    const bucket = await blockchain.ddcCustomers.getBucket(bucketId);
+
+    expect(bucket?.isPublic).toBe(false);
   });
 
   test('Should list buckets', async () => {

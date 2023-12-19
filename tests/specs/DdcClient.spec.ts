@@ -198,6 +198,14 @@ describe('DDC Client', () => {
       const bucket = await client.getBucket(createdBucketId);
 
       expect(bucket?.bucketId).toEqual(createdBucketId);
+      expect(bucket?.isPublic).toEqual(false);
+    });
+
+    test('Create private bucket', async () => {
+      const privateBucketId = await client.createBucket(clusterId, { isPublic: false });
+      const privateBucket = await client.getBucket(privateBucketId);
+
+      expect(privateBucket?.isPublic).toEqual(false);
     });
 
     test('Get bucket list', async () => {
