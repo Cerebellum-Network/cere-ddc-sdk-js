@@ -2,7 +2,6 @@ import { ApiPromise } from '@polkadot/api';
 import { Sendable } from './Blockchain';
 import type {
   AccountId,
-  CdnNodePublicKey,
   Cluster,
   ClusterGovernmentParams,
   ClusterId,
@@ -21,22 +20,8 @@ export class DDCClustersPallet {
 
   async filterNodeKeysByClusterId(clusterId: ClusterId) {
     const entries = await this.apiPromise.query.ddcClusters.clustersNodes.entries(clusterId);
-    return entries.map(([key]: any) =>
-      key.args[1].isCdnPubKey
-        ? ({
-            keyType: 'cdn',
-            nodePublicKey: key.args[1].asCdnPubKey.toJSON() as unknown as CdnNodePublicKey,
-          } as const)
-        : ({
-            keyType: 'storage',
-            nodePublicKey: key.args[1].asStoragePubKey.toJSON() as unknown as StorageNodePublicKey,
-          } as const),
-    );
-  }
 
-  async clusterHasCdnNode(clusterId: ClusterId, cdnNodePublicKey: CdnNodePublicKey) {
-    const result = await this.apiPromise.query.ddcClusters.clustersNodes(clusterId, { CDNPubKey: cdnNodePublicKey });
-    return result.toJSON() as boolean;
+    return entries.map(([key]: any) => key.args[1].asStoragePubKey.toJSON() as StorageNodePublicKey);
   }
 
   async clusterHasStorageNode(clusterId: ClusterId, storageNodePublicKey: StorageNodePublicKey) {
@@ -73,14 +58,6 @@ export class DDCClustersPallet {
 
   addStorageNodeToCluster(clusterId: ClusterId, storageNodePublicKey: StorageNodePublicKey) {
     return this.apiPromise.tx.ddcClusters.addNode(clusterId, { StoragePubKey: storageNodePublicKey }) as Sendable;
-  }
-
-  addCdnNodeToCluster(clusterId: ClusterId, cdnNodePublicKey: CdnNodePublicKey) {
-    return this.apiPromise.tx.ddcClusters.addNode(clusterId, { CDNPubKey: cdnNodePublicKey }) as Sendable;
-  }
-
-  removeCdnNodeFromCluster(clusterId: ClusterId, cdnNodePublicKey: CdnNodePublicKey) {
-    return this.apiPromise.tx.ddcClusters.removeNode(clusterId, { CDNPubKey: cdnNodePublicKey }) as Sendable;
   }
 
   removeStorageNodeFromCluster(clusterId: ClusterId, storageNodePublicKey: StorageNodePublicKey) {

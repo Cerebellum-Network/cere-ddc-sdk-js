@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { Sendable } from './Blockchain';
-import type { AccountId, Amount, CdnNodePublicKey, ClusterId, StakingLedger, StorageNodePublicKey } from './types';
+import type { AccountId, Amount, ClusterId, StakingLedger, StorageNodePublicKey } from './types';
 
 export class DDCStakingPallet {
   constructor(private apiPromise: ApiPromise) {}
@@ -13,16 +13,8 @@ export class DDCStakingPallet {
     ) as Sendable;
   }
 
-  bondCdnNode(controller: AccountId, cdnNodePublicKey: CdnNodePublicKey, bondAmount: Amount) {
-    return this.apiPromise.tx.ddcStaking.bond(controller, { CDNPubKey: cdnNodePublicKey }, bondAmount) as Sendable;
-  }
-
   chill() {
     return this.apiPromise.tx.ddcStaking.chill() as Sendable;
-  }
-
-  fastChillCdn(cdnNodePublicKey: CdnNodePublicKey) {
-    return this.apiPromise.tx.ddcStaking.fastChill({ CDNPubKey: cdnNodePublicKey }) as Sendable;
   }
 
   fastChillStorage(storageNodePubKey: StorageNodePublicKey) {
@@ -35,11 +27,6 @@ export class DDCStakingPallet {
 
   withdrawUnbonded() {
     return this.apiPromise.tx.ddcStaking.withdrawUnbonded() as Sendable;
-  }
-
-  async findStashAccountIdByCdnNodePublicKey(cdnNodePublicKey: CdnNodePublicKey) {
-    const result = await this.apiPromise.query.ddcStaking.nodes({ CDNPubKey: cdnNodePublicKey });
-    return result.toJSON() as unknown as AccountId | undefined;
   }
 
   async findStashAccountIdByStorageNodePublicKey(storageNodePublicKey: StorageNodePublicKey) {
@@ -81,10 +68,6 @@ export class DDCStakingPallet {
     return this.apiPromise.tx.ddcStaking.setNode({ StoragePubKey: storageNodePublicKey }) as Sendable;
   }
 
-  setCdnNode(cdnNodePublicKey: CdnNodePublicKey) {
-    return this.apiPromise.tx.ddcStaking.setNode({ CDNPubKey: cdnNodePublicKey }) as Sendable;
-  }
-
   store(clusterId: ClusterId) {
     return this.apiPromise.tx.ddcStaking.store(clusterId) as Sendable;
   }
@@ -106,9 +89,6 @@ export class DDCStakingPallet {
   async findNodePublicKeyByStashAccountId(stashAccountId: AccountId) {
     const result = await this.apiPromise.query.ddcStaking.providers(stashAccountId);
 
-    return result.toJSON() as unknown as
-      | { storagePubKey: StorageNodePublicKey }
-      | { cdnPubKey: CdnNodePublicKey }
-      | undefined;
+    return result.toJSON() as unknown as { storagePubKey: StorageNodePublicKey } | undefined;
   }
 }

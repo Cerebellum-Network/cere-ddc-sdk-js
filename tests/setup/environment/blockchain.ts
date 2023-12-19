@@ -16,7 +16,7 @@ import {
   getHostIP,
   getStorageNodes,
 } from '../../helpers';
-import { Blockchain, ClusterId } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, ClusterId, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 
 export type BlockchainConfig = BlockchainState & {
   apiUrl: string;
@@ -146,6 +146,7 @@ export const setupBlockchain = async () => {
             httpPort: 8091 + index,
             grpcPort: 9091 + index,
             p2pPort: 9071 + index,
+            mode: StorageNodeMode.Storage,
           }),
           blockchain.ddcStaking.bondStorageNode(account.address, account.address, bondAmount),
           blockchain.ddcStaking.store(clusterId),
@@ -167,7 +168,7 @@ export const setupBlockchain = async () => {
 
   console.time('Create buckets');
   const bucketsSendResult = await blockchain.batchAllSend(
-    bucketIds.map(() => blockchain.ddcCustomers.createBucket(clusterId)),
+    bucketIds.map(() => blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true })),
     { account: clusterManagerAccount },
   );
   const createdBucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(bucketsSendResult.events);
