@@ -15,7 +15,7 @@ const priorityMap: OperationPriorityMap = {
 
   [Operation.STORE_DAG_NODE]: {
     [Mode.Full]: 1,
-    [Mode.Storage]: 1,
+    [Mode.Storage]: 2,
     [Mode.Cache]: undefined, // Not applicable for the operation
   },
 
@@ -27,7 +27,7 @@ const priorityMap: OperationPriorityMap = {
 
   [Operation.STORE_PIECE]: {
     [Mode.Full]: 1,
-    [Mode.Storage]: 1,
+    [Mode.Storage]: 2,
     [Mode.Cache]: undefined, // Not applicable for the operation
   },
 };
