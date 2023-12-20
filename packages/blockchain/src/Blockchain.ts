@@ -51,8 +51,10 @@ export class Blockchain {
     return blockchain;
   }
 
-  isReady() {
-    return this.apiPromise.isReady;
+  async isReady() {
+    await this.apiPromise.isReady;
+
+    return true;
   }
 
   async getNextNonce(address: string | AccountId) {
