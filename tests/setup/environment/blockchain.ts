@@ -16,7 +16,7 @@ import {
   getHostIP,
   getStorageNodes,
 } from '../../helpers';
-import { Blockchain, ClusterId, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, ClusterId } from '@cere-ddc-sdk/blockchain';
 
 export type BlockchainConfig = BlockchainState & {
   apiUrl: string;
@@ -86,7 +86,8 @@ export const setupBlockchain = async () => {
   const clusterId: ClusterId = '0x0000000000000000000000000000000000000001';
   const bucketIds = [1n, 2n, 3n];
   const bondAmount = 100n * CERE;
-  const storageNodeAccounts = getStorageNodes().map(({ mnemonic }) => getAccount(mnemonic, 'ed25519'));
+  const storageNodeConfigs = getStorageNodes(hostIp);
+  const storageNodeAccounts = storageNodeConfigs.map(({ mnemonic }) => getAccount(mnemonic, 'ed25519'));
 
   console.time('Top-up accounts');
   await sendMultipleTransfers(apiPromise, [
@@ -143,10 +144,10 @@ export const setupBlockchain = async () => {
         [
           blockchain.ddcNodes.createStorageNode(account.address, {
             host: hostIp,
+            mode: storageNodeConfigs[index].mode,
             httpPort: 8091 + index,
             grpcPort: 9091 + index,
             p2pPort: 9071 + index,
-            mode: StorageNodeMode.Storage,
           }),
           blockchain.ddcStaking.bondStorageNode(account.address, account.address, bondAmount),
           blockchain.ddcStaking.store(clusterId),

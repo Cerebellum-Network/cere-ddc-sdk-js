@@ -33,7 +33,7 @@ export class Router {
     this.logger.info('Getting node for operation "%s" in bucket %s', operation, bucketId);
 
     const nodes = await this.strategy.getNodes(bucketId);
-    const node = nodes.length > 1 ? this.strategy.selectNode(operation, nodes) : nodes[0];
+    const node = this.strategy.selectNode(operation, nodes);
 
     if (!node) {
       throw new Error('No nodes available to handle the operation');
