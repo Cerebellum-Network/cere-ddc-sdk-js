@@ -1,17 +1,9 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
-  "version": "2.0.0-rc.23",
+  "version": "2.0.0-rc.22",
   "command": {
     "publish": {
       "directory": "{workspaceRoot}/{projectRoot}/package"
-    },
-    "version": {
-      "preid": "rc",
-      "changelogPreset": "conventionalcommits",
-      "conventionalCommits": true,
-      "changelog": true,
-      "message": "Release %s",
-      "changelogEntryAdditionalMarkdown": "## Changelog\n\n"
     }
   }
 }
