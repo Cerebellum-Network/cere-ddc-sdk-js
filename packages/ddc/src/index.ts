@@ -15,7 +15,13 @@ export * from './Piece';
 export * from './StorageNode';
 export { DagNode, DagNodeResponse, Link, Tag } from './DagNode';
 export { CnsRecord, CnsRecordResponse } from './CnsRecord';
-export { UriSigner, type Signer, type SignerType, type UriSignerOptions } from '@cere-ddc-sdk/blockchain';
+export {
+  UriSigner,
+  StorageNodeMode,
+  type Signer,
+  type SignerType,
+  type UriSignerOptions,
+} from '@cere-ddc-sdk/blockchain';
 
 /**
  * Utilities

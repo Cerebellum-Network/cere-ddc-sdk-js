@@ -1,4 +1,4 @@
-import type { Signer, BucketId } from '@cere-ddc-sdk/blockchain';
+import type { Signer, BucketId, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 
 import { Cid } from './Cid';
 import { CnsApi } from './CnsApi';
@@ -16,6 +16,7 @@ type NamingOptions = {
 
 export type StorageNodeConfig = RpcTransportOptions &
   LoggerOptions & {
+    mode: StorageNodeMode;
     enableAcks?: boolean;
   };
 
