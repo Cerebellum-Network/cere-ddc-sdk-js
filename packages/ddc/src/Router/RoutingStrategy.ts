@@ -15,7 +15,7 @@ export type RouterNode = StorageNodeConfig;
 export abstract class RoutingStrategy {
   constructor(protected logger: Logger) {}
 
-  abstract selectNode(operation: RouterOperation, nodes: RouterNode[]): RouterNode;
+  abstract selectNode(operation: RouterOperation, nodes: RouterNode[]): RouterNode | undefined;
   abstract getNodes(bucketId: BucketId): Promise<RouterNode[]>;
   abstract isReady(): Promise<boolean>;
 }

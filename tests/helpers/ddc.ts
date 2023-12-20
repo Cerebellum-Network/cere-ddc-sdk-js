@@ -1,31 +1,35 @@
-import { StorageNodeConfig } from '@cere-ddc-sdk/ddc';
+import { StorageNodeConfig, StorageNodeMode } from '@cere-ddc-sdk/ddc';
 
 type NodeConfig = StorageNodeConfig & {
   mnemonic: string;
 };
 
-export const getStorageNodes = (): NodeConfig[] => [
+export const getStorageNodes = (host = 'localhost'): NodeConfig[] => [
   {
-    grpcUrl: 'grpc://localhost:9091',
-    httpUrl: 'http://localhost:8091',
+    mode: StorageNodeMode.Storage,
+    grpcUrl: `grpc://${host}:9091`,
+    httpUrl: `http://${host}:8091`,
     mnemonic: 'whip clump surface eternal summer acoustic broom duty magic extend virtual fly',
   },
 
   {
-    grpcUrl: 'grpc://localhost:9092',
-    httpUrl: 'http://localhost:8092',
+    mode: StorageNodeMode.Storage,
+    grpcUrl: `grpc://${host}:9092`,
+    httpUrl: `http://${host}:8092`,
     mnemonic: 'scorpion dish want gorilla novel tape world hip rescue tank oyster pipe',
   },
 
   {
-    grpcUrl: 'grpc://localhost:9093',
-    httpUrl: 'http://localhost:8093',
+    mode: StorageNodeMode.Full,
+    grpcUrl: `grpc://${host}:9093`,
+    httpUrl: `http://${host}:8093`,
     mnemonic: 'rule output true detect matrix wife raven wreck primary mansion spike coral',
   },
 
   {
-    grpcUrl: 'grpc://localhost:9094',
-    httpUrl: 'http://localhost:8094',
+    mode: StorageNodeMode.Cache,
+    grpcUrl: `grpc://${host}:9094`,
+    httpUrl: `http://${host}:8094`,
     mnemonic: 'paper salon seed crystal gun envelope wolf twice pistol episode guitar borrow',
   },
 ];

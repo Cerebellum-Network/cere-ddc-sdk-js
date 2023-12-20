@@ -1,4 +1,4 @@
-import type { Signer, BucketId } from '@cere-ddc-sdk/blockchain';
+import type { Signer, BucketId, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 
 import { Cid } from './Cid';
 import { CnsApi } from './CnsApi';
@@ -16,6 +16,7 @@ type NamingOptions = {
 
 export type StorageNodeConfig = RpcTransportOptions &
   LoggerOptions & {
+    mode: StorageNodeMode;
     enableAcks?: boolean;
   };
 
@@ -35,10 +36,12 @@ export class StorageNode {
   private fileApi: FileApi;
   private cnsApi: CnsApi;
   private logger: Logger;
+  readonly mode: StorageNodeMode;
 
   constructor(signer: Signer, config: StorageNodeConfig) {
     const transport = new DefaultTransport(config);
 
+    this.mode = config.mode;
     this.logger = createLogger('StorageNode', config);
     this.dagApi = new DagApi(transport);
     this.cnsApi = new CnsApi(transport, { signer });

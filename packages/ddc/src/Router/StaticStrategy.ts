@@ -1,14 +1,14 @@
 import { BucketId } from '@cere-ddc-sdk/blockchain';
 
-import { BaseStrategy } from './BaseStrategy';
 import { RouterNode } from './RoutingStrategy';
+import { PriorityStrategy } from './PriorityStrategy';
 import { Logger } from '../Logger';
 
 export type StaticStrategyConfig = {
   nodes: RouterNode[];
 };
 
-export class StaticStrategy extends BaseStrategy {
+export class StaticStrategy extends PriorityStrategy {
   private nodes: RouterNode[];
 
   constructor(logger: Logger, { nodes }: StaticStrategyConfig) {

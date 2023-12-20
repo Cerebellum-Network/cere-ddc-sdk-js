@@ -1,14 +1,14 @@
 import { Blockchain, Bucket, BucketId, ClusterId, StorageNode as BCStorageNode } from '@cere-ddc-sdk/blockchain';
 
-import { BaseStrategy } from './BaseStrategy';
-import { Logger } from '../Logger';
 import { RouterNode } from './RoutingStrategy';
+import { PriorityStrategy } from './PriorityStrategy';
+import { Logger } from '../Logger';
 
 export type BlockchainStrategyConfig = {
   blockchain: Blockchain;
 };
 
-export class BlockchainStrategy extends BaseStrategy {
+export class BlockchainStrategy extends PriorityStrategy {
   private blockchain: Blockchain;
   private bucketCache: Map<BucketId, Bucket> = new Map();
   private clusterNodes: Map<ClusterId, RouterNode[]> = new Map();
@@ -20,7 +20,9 @@ export class BlockchainStrategy extends BaseStrategy {
   }
 
   async isReady() {
-    return this.blockchain.isReady();
+    await this.blockchain.isReady();
+
+    return true;
   }
 
   async getNodes(bucketId: BucketId) {
@@ -43,6 +45,7 @@ export class BlockchainStrategy extends BaseStrategy {
       ssl,
       httpUrl,
       grpcUrl: `grpc://${host}:${grpcPort}`,
+      mode: node.props.mode,
     };
   };
 
