@@ -35,7 +35,7 @@ const priorityMap: OperationPriorityMap = {
 export abstract class PriorityStrategy extends RoutingStrategy {
   selectNode(operation: Operation, nodes: RouterNode[]) {
     const opertaionPriorityMap = priorityMap[operation];
-    const operationNodes = nodes.filter(({ mode }) => !!opertaionPriorityMap[mode]);
+    const operationNodes = nodes.filter(({ mode }) => opertaionPriorityMap[mode] !== undefined);
 
     /**
      * Sort nodes by priority where the lower the number the higher the priority. 0 - highest priority.

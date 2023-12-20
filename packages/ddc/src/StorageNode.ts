@@ -36,10 +36,12 @@ export class StorageNode {
   private fileApi: FileApi;
   private cnsApi: CnsApi;
   private logger: Logger;
+  readonly mode: StorageNodeMode;
 
   constructor(signer: Signer, config: StorageNodeConfig) {
     const transport = new DefaultTransport(config);
 
+    this.mode = config.mode;
     this.logger = createLogger('StorageNode', config);
     this.dagApi = new DagApi(transport);
     this.cnsApi = new CnsApi(transport, { signer });

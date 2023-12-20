@@ -20,7 +20,9 @@ export class BlockchainStrategy extends PriorityStrategy {
   }
 
   async isReady() {
-    return this.blockchain.isReady();
+    await this.blockchain.isReady();
+
+    return true;
   }
 
   async getNodes(bucketId: BucketId) {

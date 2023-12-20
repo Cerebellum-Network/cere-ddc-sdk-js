@@ -23,19 +23,36 @@ export type BlockchainConnectOptions =
     };
 
 export class Blockchain {
+  private readonly apiPromise: ApiPromise;
+
   public readonly ddcNodes: DDCNodesPallet;
   public readonly ddcClusters: DDCClustersPallet;
   public readonly ddcStaking: DDCStakingPallet;
   public readonly ddcCustomers: DDCCustomersPallet;
-  private constructor(private apiPromise: ApiPromise) {
-    this.ddcNodes = new DDCNodesPallet(apiPromise);
-    this.ddcClusters = new DDCClustersPallet(apiPromise);
-    this.ddcStaking = new DDCStakingPallet(apiPromise);
-    this.ddcCustomers = new DDCCustomersPallet(apiPromise);
+
+  constructor(options: BlockchainConnectOptions) {
+    this.apiPromise =
+      'apiPromise' in options
+        ? options.apiPromise
+        : new ApiPromise({
+            provider: new WsProvider(options.wsEndpoint),
+          });
+
+    this.ddcNodes = new DDCNodesPallet(this.apiPromise);
+    this.ddcClusters = new DDCClustersPallet(this.apiPromise);
+    this.ddcStaking = new DDCStakingPallet(this.apiPromise);
+    this.ddcCustomers = new DDCCustomersPallet(this.apiPromise);
+  }
+
+  static async connect(options: BlockchainConnectOptions) {
+    const blockchain = new Blockchain(options);
+    await blockchain.isReady();
+
+    return blockchain;
   }
 
   isReady() {
-    return !!this.apiPromise.isReady;
+    return this.apiPromise.isReady;
   }
 
   async getNextNonce(address: string | AccountId) {
@@ -90,15 +107,6 @@ export class Blockchain {
 
   disconnect() {
     return this.apiPromise.disconnect();
-  }
-
-  static async connect(options: BlockchainConnectOptions) {
-    const api =
-      'apiPromise' in options
-        ? options.apiPromise
-        : await ApiPromise.create({ provider: new WsProvider(options.wsEndpoint) });
-
-    return new Blockchain(api);
   }
 
   formatBalance(balance: string | number | bigint) {
