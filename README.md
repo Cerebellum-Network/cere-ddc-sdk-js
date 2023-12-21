@@ -71,6 +71,12 @@ This command will use [Docker](https://www.docker.com/) to start Cere Blockchain
    ```
    npm run release
    ```
+   It will detect the next version (based on [Conventional Commits](https://www.conventionalcommits.org/) history), update `CHANGELOG.md`s, create release tag, commit and push changes to the current branch.
+
+   To create an unstable release (`-rc.*`):
+   ```
+   npm run release:rc
+   ```
 
 2. Publish the packages using [Publish GitHub Action](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/actions/workflows/publish.yaml)
 
