@@ -4,6 +4,16 @@
   "command": {
     "publish": {
       "directory": "{workspaceRoot}/{projectRoot}/package"
+    },
+
+    "version": {
+      "exact": true,
+      "forcePublish": true,
+      "preid": "rc",
+      "changelog": true,
+      "conventionalCommits": true,
+      "changelogPreset": "@cere-ddc-sdk/changelog-preset",
+      "message": "Release %s"
     }
   }
 }
