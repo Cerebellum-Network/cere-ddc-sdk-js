@@ -1,11 +1,10 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
-  "version": "2.0.0-rc.22",
+  "version": "2.0.0-rc.23",
   "command": {
     "publish": {
       "directory": "{workspaceRoot}/{projectRoot}/package"
     },
-
     "version": {
       "exact": true,
       "forcePublish": true,

@@ -13,8 +13,3 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - Add storage node mode and `isPublic` bucket property ([#193](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/193)) ([ebac903](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/ebac90385eba994371a0da93ca55de9bb772c2c8))
 - Select node for operation based on nodes mode priority ([#195](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/195)) ([5f3e688](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/5f3e688b2bd9208027d0f41fefd3dbbd1d1856bb))
-
-### Miscellaneous Chores
-
-- Setup convectional commits and auto-generation of changelogs ([#196](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/196)) ([e4f819e](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/e4f819e4fc0d4eda7e27bf94bc55119728091129))
-- Update node list in TESTNET preset ([#194](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/194)) ([d4b5015](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/d4b5015161955c373a6aaa3a6770ea592ded2e9b))
