@@ -22,16 +22,10 @@ services:
       - "P2P_MAX_MESSAGE_SIZE=68157440"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
-      # - 'TEST_ENABLED=true'
     ports:
       - '8091:8091'
       - '9071:9071'
       - '9091:9091'
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8091/info || exit 1
-      interval: 3s
-      timeout: 1s
-      retries: 5
 
   ddc-storage-node-2:
     platform: linux/amd64
@@ -54,16 +48,10 @@ services:
       - "P2P_MAX_MESSAGE_SIZE=68157440"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
-      # - 'TEST_ENABLED=true'
     ports:
       - '8092:8092'
       - '9072:9072'
       - '9092:9092'
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8092/info || exit 1
-      interval: 3s
-      timeout: 1s
-      retries: 5
 
   ddc-storage-node-3:
     platform: linux/amd64
@@ -86,21 +74,15 @@ services:
       - "P2P_MAX_MESSAGE_SIZE=68157440"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
-      # - 'TEST_ENABLED=true'
     ports:
       - '8093:8093'
       - '9073:9073'
       - '9093:9093'
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8093/info || exit 1
-      interval: 3s
-      timeout: 1s
-      retries: 5
 
   ddc-storage-node-4:
     platform: linux/amd64
     container_name: ddc-storage-node-4
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    image: "cerebellumnetwork/ddc-storage-node:dev"
     environment:
       - 'NODE_ID=4'
       - 'MODE=cache'
@@ -118,13 +100,7 @@ services:
       - "P2P_MAX_MESSAGE_SIZE=68157440"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
-      # - 'TEST_ENABLED=true'
     ports:
       - '8094:8094'
       - '9074:9074'
       - '9094:9094'
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8094/info || exit 1
-      interval: 3s
-      timeout: 1s
-      retries: 5
