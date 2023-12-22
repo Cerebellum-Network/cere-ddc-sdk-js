@@ -169,8 +169,11 @@ export const setupBlockchain = async () => {
 
   console.time('Create buckets');
   const bucketsSendResult = await blockchain.batchAllSend(
-    bucketIds.map(() => blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true })),
-    { account: clusterManagerAccount },
+    [
+      blockchain.ddcCustomers.deposit(500n * CERE),
+      ...bucketIds.map(() => blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true })),
+    ],
+    { account: rootAccount },
   );
   const createdBucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(bucketsSendResult.events);
   console.timeEnd('Create buckets');

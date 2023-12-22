@@ -4,7 +4,8 @@ services:
   ddc-storage-node-1:
     platform: linux/amd64
     container_name: ddc-storage-node-1
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    # TODO: Sitch back to devnet image when ADR auth merged
+    image: "cerebellumnetwork/ddc-storage-node:051c132c4068b93be860c55ad011fb5c21715a44"
     environment:
       - 'NODE_ID=1'
       - 'MODE=storage'
@@ -30,7 +31,7 @@ services:
   ddc-storage-node-2:
     platform: linux/amd64
     container_name: ddc-storage-node-2
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    image: "cerebellumnetwork/ddc-storage-node:051c132c4068b93be860c55ad011fb5c21715a44"
     environment:
       - 'NODE_ID=2'
       - 'MODE=storage'
@@ -56,7 +57,7 @@ services:
   ddc-storage-node-3:
     platform: linux/amd64
     container_name: ddc-storage-node-3
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    image: "cerebellumnetwork/ddc-storage-node:051c132c4068b93be860c55ad011fb5c21715a44"
     environment:
       - 'NODE_ID=3'
       - 'MODE=full'
@@ -82,7 +83,7 @@ services:
   ddc-storage-node-4:
     platform: linux/amd64
     container_name: ddc-storage-node-4
-    image: "cerebellumnetwork/ddc-storage-node:dev"
+    image: "cerebellumnetwork/ddc-storage-node:051c132c4068b93be860c55ad011fb5c21715a44"
     environment:
       - 'NODE_ID=4'
       - 'MODE=cache'
