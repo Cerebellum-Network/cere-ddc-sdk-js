@@ -9,6 +9,7 @@ import { DagNode, DagNodeResponse, mapDagNodeToAPI } from './DagNode';
 import { CnsRecord, CnsRecordResponse, mapCnsRecordToAPI } from './CnsRecord';
 import { DefaultTransport, RpcTransportOptions } from './transports';
 import { bindErrorLogger, createLogger, Logger, LoggerOptions } from './Logger';
+import { AuthTokenOperation, AuthToken } from './auth';
 
 type NamingOptions = {
   name?: string;
@@ -38,7 +39,10 @@ export class StorageNode {
   private logger: Logger;
   readonly mode: StorageNodeMode;
 
-  constructor(signer: Signer, config: StorageNodeConfig) {
+  constructor(
+    private signer: Signer,
+    config: StorageNodeConfig,
+  ) {
     const transport = new DefaultTransport(config);
 
     this.mode = config.mode;
@@ -64,14 +68,27 @@ export class StorageNode {
     ]);
   }
 
+  /**
+   * Creates an auth token for the given bucket and operation
+   *
+   * TODO: Allow to accept the token as an operation method argument
+   */
+  private async createAuthToken(bucketId: BucketId, operation: AuthTokenOperation) {
+    return new AuthToken({ bucketId, operations: [operation] }).sign(this.signer);
+  }
+
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
     let cidBytes: Uint8Array | undefined = undefined;
+    const token = await this.createAuthToken(bucketId, AuthTokenOperation.PUT);
+
     this.logger.info(options, 'Storing piece into bucket %s', bucketId);
     this.logger.debug({ piece }, 'Piece');
+    this.logger.debug({ token }, 'Auth token');
 
     if (MultipartPiece.isMultipartPiece(piece)) {
       cidBytes = await this.fileApi.putMultipartPiece({
         bucketId,
+        token,
         partHashes: piece.partHashes,
         partSize: piece.meta.partSize,
         totalSize: piece.meta.totalSize,
@@ -82,6 +99,7 @@ export class StorageNode {
       cidBytes = await this.fileApi.putRawPiece(
         {
           bucketId,
+          token,
           isMultipart: piece.isPart,
           offset: piece.offset,
           size: piece.size,
@@ -106,11 +124,15 @@ export class StorageNode {
   }
 
   async storeDagNode(bucketId: BucketId, node: DagNode, options?: DagNodeStoreOptions) {
+    const token = await this.createAuthToken(bucketId, AuthTokenOperation.PUT);
+
     this.logger.info(options, 'Storing DAG node into bucket %s', bucketId);
     this.logger.debug({ node }, 'DAG node');
+    this.logger.debug({ token }, 'Auth token');
 
     const cidBytes = await this.dagApi.putNode({
       bucketId,
+      token,
       node: mapDagNodeToAPI(node),
     });
 
@@ -126,11 +148,15 @@ export class StorageNode {
   }
 
   async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
+    const token = await this.createAuthToken(bucketId, AuthTokenOperation.GET);
+
     this.logger.info(options, 'Reading piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
+    this.logger.debug({ token }, 'Auth token');
 
     const cid = await this.resolveName(bucketId, cidOrName);
     const contentStream = await this.fileApi.getFile({
       bucketId,
+      token,
       cid: cid.toBytes(),
       range: options?.range,
     });
@@ -146,11 +172,15 @@ export class StorageNode {
   }
 
   async getDagNode(bucketId: BucketId, cidOrName: string, options?: DagNodeGetOptions) {
+    const token = await this.createAuthToken(bucketId, AuthTokenOperation.GET);
+
     this.logger.info('Getting DAG Node by CID or name "%s" from bucket %s', cidOrName, bucketId);
+    this.logger.debug({ token }, 'Auth token');
 
     const cid = await this.resolveName(bucketId, cidOrName);
     const node = await this.dagApi.getNode({
       bucketId,
+      token,
       cid: cid.toBytes(),
       path: options?.path,
     });
@@ -164,11 +194,15 @@ export class StorageNode {
   }
 
   async storeCnsRecord(bucketId: BucketId, record: CnsRecord) {
+    const token = await this.createAuthToken(bucketId, AuthTokenOperation.PUT);
+
     this.logger.info('Storing CNS record into bucket %s', bucketId);
     this.logger.debug({ record }, 'CNS record');
+    this.logger.debug({ token }, 'Auth token');
 
     const storredRecord = await this.cnsApi.putRecord({
       bucketId,
+      token,
       record: mapCnsRecordToAPI(record),
     });
 
@@ -178,9 +212,12 @@ export class StorageNode {
   }
 
   async getCnsRecord(bucketId: BucketId, name: string) {
-    this.logger.info(`Getting CNS record by name "${name}" from bucket ${bucketId}`);
+    const token = await this.createAuthToken(bucketId, AuthTokenOperation.GET);
 
-    const record = await this.cnsApi.getRecord({ bucketId, name });
+    this.logger.info(`Getting CNS record by name "${name}" from bucket ${bucketId}`);
+    this.logger.debug({ token }, 'Auth token');
+
+    const record = await this.cnsApi.getRecord({ bucketId, name, token });
 
     this.logger.info('Got CNS record by name "%s" from bucket %s', name, bucketId);
     this.logger.debug({ record }, 'CNS record');
