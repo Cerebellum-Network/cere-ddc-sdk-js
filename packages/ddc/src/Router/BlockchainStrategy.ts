@@ -37,9 +37,9 @@ export class BlockchainStrategy extends PriorityStrategy {
   }
 
   private mapNodeProps = (node: BCStorageNode): RouterNode => {
-    const { grpcPort, host, httpPort } = node.props;
-    const ssl = httpPort === 443;
-    const httpUrl = ssl ? `https://${host}` : `http://${host}:${httpPort}`;
+    const { grpcPort, host, httpPort, ssl, domain } = node.props;
+    const httpHost = domain || host;
+    const httpUrl = ssl ? `https://${httpHost}` : `http://${httpHost}:${httpPort}`;
 
     return {
       ssl,

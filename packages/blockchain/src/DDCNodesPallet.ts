@@ -7,9 +7,14 @@ export class DDCNodesPallet {
   constructor(private apiPromise: ApiPromise) {}
 
   createStorageNode(storageNodePublicKey: StorageNodePublicKey, storageNodeProps: StorageNodeProps) {
+    const defaultProps: Partial<StorageNodeProps> = {
+      domain: '',
+      ssl: false,
+    };
+
     return this.apiPromise.tx.ddcNodes.createNode(
       { StoragePubKey: storageNodePublicKey },
-      { StorageParams: encodeNodeProps(storageNodeProps) },
+      { StorageParams: encodeNodeProps({ ...defaultProps, ...storageNodeProps }) },
     ) as Sendable;
   }
 
@@ -46,16 +51,18 @@ export class DDCNodesPallet {
   }
 }
 
-function decodeNodeProps(nodeProps: StorageNodeProps) {
+function decodeNodeProps(nodeProps: StorageNodeProps): StorageNodeProps {
   return {
     ...nodeProps,
     host: hexToString(nodeProps.host),
+    domain: hexToString(nodeProps.domain),
   };
 }
 
-function encodeNodeProps(nodeProps: StorageNodeProps) {
+function encodeNodeProps(nodeProps: StorageNodeProps): StorageNodeProps {
   return {
     ...nodeProps,
     host: stringToHex(nodeProps.host),
+    domain: stringToHex(nodeProps.domain),
   };
 }

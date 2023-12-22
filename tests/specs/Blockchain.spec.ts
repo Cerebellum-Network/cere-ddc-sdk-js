@@ -56,6 +56,8 @@ describe('Blockchain', () => {
 
   test('Should create a Storage Node and find it by public key', async () => {
     const storageNodeProps = {
+      ssl: false,
+      domain: '',
       host: 'ddc-storage-node-0',
       httpPort: 4010,
       grpcPort: 5020,
@@ -76,6 +78,8 @@ describe('Blockchain', () => {
 
   test('Should set Storage node props', async () => {
     const storageNodeProps = {
+      ssl: false,
+      domain: 'test-domain.com',
       host: 'ddc-storage-node-0',
       httpPort: 3010,
       grpcPort: 3020,
@@ -173,6 +177,8 @@ describe('Blockchain', () => {
     };
 
     const storageNode3Props = {
+      ssl: true,
+      domain: 'test3-domain.com',
       host: 'ddc-storage-node-3',
       httpPort: 3010,
       grpcPort: 3020,
@@ -191,8 +197,8 @@ describe('Blockchain', () => {
     const storageNode2 = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode2Key);
     const storageNode3 = await blockchain.ddcNodes.findStorageNodeByPublicKey(storageNode3Key);
 
-    expect(storageNode2).toBeDefined();
-    expect(storageNode3).toBeDefined();
+    expect(storageNode2?.props).toEqual({ ...storageNode2Props, domain: '', ssl: false });
+    expect(storageNode3?.props).toEqual(storageNode3Props);
   });
 
   test('Should bond storage node', async () => {
