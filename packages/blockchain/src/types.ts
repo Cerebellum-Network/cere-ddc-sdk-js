@@ -62,6 +62,8 @@ export type StorageNodeProps = {
   readonly grpcPort: number;
   readonly p2pPort: number;
   readonly mode: StorageNodeMode;
+  readonly domain?: string;
+  readonly ssl?: boolean;
 };
 
 export type StorageNode = {
