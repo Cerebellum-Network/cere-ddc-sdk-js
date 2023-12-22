@@ -1,6 +1,6 @@
 import type { SignerType } from '@cere-ddc-sdk/blockchain';
 
-import { Signature as ApiSignature, Signature_Algorithm as SigAlg } from '../grpc/pb/signature';
+import { Signature as ApiSignature, Signature_Algorithm as SigAlg } from '../grpc/common/signature';
 
 export type Signature = Omit<ApiSignature, 'algorithm'> & {
   algorithm: SignerType;

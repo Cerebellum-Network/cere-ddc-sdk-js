@@ -18,7 +18,7 @@ import {
   ActivityRequest_ContentType,
   ActivityRequest_RequestType as RequestType,
   ActivityAcknowledgment,
-} from '../grpc/pb/activity_report';
+} from '../grpc/activity_report/activity_report';
 
 type AuthParams = { token?: AuthToken };
 export type ReadFileRange = GetFileRequest_Request['range'];

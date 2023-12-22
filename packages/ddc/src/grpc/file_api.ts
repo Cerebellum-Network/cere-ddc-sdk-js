@@ -13,7 +13,7 @@ import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
-import { ActivityAcknowledgment } from "./pb/activity_report";
+import { ActivityAcknowledgment } from "./activity_report/activity_report";
 /**
  * @generated from protobuf message file.PutRawPieceRequest
  */
@@ -130,7 +130,7 @@ export interface GetFileRequest {
     } | {
         oneofKind: "ack";
         /**
-         * @generated from protobuf field: pb.ActivityAcknowledgment ack = 2;
+         * @generated from protobuf field: activity_report.ActivityAcknowledgment ack = 2;
          */
         ack: ActivityAcknowledgment;
     } | {
@@ -580,7 +580,7 @@ class GetFileRequest$Type extends MessageType<GetFileRequest> {
                         request: GetFileRequest_Request.internalBinaryRead(reader, reader.uint32(), options, (message.body as any).request)
                     };
                     break;
-                case /* pb.ActivityAcknowledgment ack */ 2:
+                case /* activity_report.ActivityAcknowledgment ack */ 2:
                     message.body = {
                         oneofKind: "ack",
                         ack: ActivityAcknowledgment.internalBinaryRead(reader, reader.uint32(), options, (message.body as any).ack)
@@ -601,7 +601,7 @@ class GetFileRequest$Type extends MessageType<GetFileRequest> {
         /* file.GetFileRequest.Request request = 1; */
         if (message.body.oneofKind === "request")
             GetFileRequest_Request.internalBinaryWrite(message.body.request, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* pb.ActivityAcknowledgment ack = 2; */
+        /* activity_report.ActivityAcknowledgment ack = 2; */
         if (message.body.oneofKind === "ack")
             ActivityAcknowledgment.internalBinaryWrite(message.body.ack, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;

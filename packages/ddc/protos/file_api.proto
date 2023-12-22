@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package file;
 
-import "pb/activity_report.proto";
+option go_package = "cere.network/ddc-storage-node/api/file";
 
-option go_package = "api/file";
+import "activity_report/activity_report.proto";
 
 service FileApi {
   rpc putRawPiece(stream PutRawPieceRequest) returns (PutRawPieceResponse) {}
@@ -64,7 +64,7 @@ message GetFileRequest {
 
   oneof Body {
     Request request = 1;
-    pb.ActivityAcknowledgment ack = 2;
+    activity_report.ActivityAcknowledgment ack = 2;
   }
 }
 

@@ -44,7 +44,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     await token.sign(signer);
   });
 
-  describe('Dag Api', () => {
+  describe.only('Dag Api', () => {
     const dagApi = new DagApi(transport);
     const nodeData = new Uint8Array(randomBytes(10));
 

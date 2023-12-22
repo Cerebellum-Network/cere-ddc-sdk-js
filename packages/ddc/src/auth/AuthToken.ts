@@ -2,12 +2,8 @@ import base58 from 'bs58';
 import { BucketId, Signer } from '@cere-ddc-sdk/blockchain';
 
 import { AUTH_TOKEN_EXPIRATION_TIME } from '../constants';
-import {
-  Token as ProtoToken,
-  Token_Payload,
-  Token_Payload_Operation as Operation,
-  Token_Header_Algorithm,
-} from '../grpc/auth';
+import { createSignature } from '../signature';
+import { AuthToken as Token, Payload, Operation } from '../grpc/auth_token';
 
 export { Operation as AuthTokenOperation };
 
@@ -18,36 +14,25 @@ type AuthTokenParams = {
 };
 
 export class AuthToken {
-  private token: ProtoToken;
+  private token: Token;
 
   constructor({ bucketId, operations, expiresAt }: AuthTokenParams) {
-    const payload: Token_Payload = {
+    const payload: Payload = {
       bucketId,
       operations,
       expiresAt: expiresAt ?? Date.now() + AUTH_TOKEN_EXPIRATION_TIME,
       canDelegate: false,
     };
 
-    this.token = ProtoToken.create({ payload });
+    this.token = Token.create({ payload });
   }
 
   private toBinary() {
-    return ProtoToken.toBinary(this.token);
+    return Token.toBinary(this.token);
   }
 
   async sign(signer: Signer) {
-    await signer.isReady();
-
-    const payload = Token_Payload.create(this.token.payload);
-    const binPayload = Token_Payload.toBinary(payload);
-
-    this.token.signature = signer.sign(binPayload);
-
-    // this.token.signature = signer.sign(this.toBinary());
-    this.token.header = {
-      algorithm: signer.type === 'sr25519' ? Token_Header_Algorithm.SR_25519 : Token_Header_Algorithm.ED_25519,
-      issuer: signer.publicKey,
-    };
+    this.token.signature = await createSignature(signer, this.toBinary());
 
     return this;
   }

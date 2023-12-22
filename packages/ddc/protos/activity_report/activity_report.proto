@@ -1,16 +1,16 @@
 syntax = "proto3";
 
-package pb;
+package activity_report;
 
-import "pb/signature.proto";
+option go_package = "cere.network/ddc-storage-node/api/activity_report";
 
-option go_package = "cere.network/ddc-storage-node/pb";
+import "common/signature.proto";
 
 message ActivityRecord {
 	ActivityFulfillment upstream = 1;
 	repeated ActivityFulfillment downstream = 2;
 	uint64 timestamp = 3;
-	Signature signature = 4;
+	common.Signature signature = 10;
 }
 
 message ActivityRequest {
@@ -37,7 +37,7 @@ message ActivityRequest {
 	uint64 size = 8; // size of content stored or delivered
 
 	uint64 timestamp = 9;
-	Signature signature = 10;
+	common.Signature signature = 10;
 }
 
 // we will get this on the server side streaming
@@ -46,7 +46,7 @@ message ActivityAcknowledgment {
 	string requestId = 1;
 	uint64 bytesStoredOrDelivered = 2;
 	uint64 timestamp = 3;
-	Signature signature = 4;
+	common.Signature signature = 10;
 }
 
 message ActivityFulfillment {
