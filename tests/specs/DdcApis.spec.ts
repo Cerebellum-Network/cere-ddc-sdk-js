@@ -30,7 +30,7 @@ const wholeSpecVariants = [
 
 const fileSpecVariants = [
   { name: 'with ACKs', enableAcks: true },
-  { name: 'without ACKs', enableAcks: true },
+  { name: 'without ACKs', enableAcks: false },
 ];
 
 describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
