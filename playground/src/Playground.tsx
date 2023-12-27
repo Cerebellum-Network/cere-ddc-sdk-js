@@ -135,13 +135,21 @@ export const Playground = () => {
       return setStep(step + 1);
     }
 
-    setInProgress(true);
-    const newBucketId = await client!.createBucket(currentClusterId as ClusterId);
+    try {
+      setInProgress(true);
+      const newBucketId = await client!.createBucket(currentClusterId as ClusterId, {
+        isPublic: true,
+      });
 
-    setBuckets(await client!.getBucketList());
-    setBucketId(newBucketId);
-    setInProgress(false);
-    setStep(step + 1);
+      setBuckets(await client!.getBucketList());
+      setBucketId(newBucketId);
+      setStep(step + 1);
+    } catch (error) {
+      setErrorStep(step);
+      console.error(error);
+    } finally {
+      setInProgress(false);
+    }
   }, [currentBucketId, client, currentClusterId, step]);
 
   const handleRandomFileUpload = useCallback(async () => {
