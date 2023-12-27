@@ -21,6 +21,7 @@ export const startDDC = async (bc: BlockchainConfig) => {
     .withWaitStrategy('ddc-storage-node-2', waitStrategy())
     .withWaitStrategy('ddc-storage-node-3', waitStrategy())
     .withWaitStrategy('ddc-storage-node-4', waitStrategy())
+    .withWaitStrategy('ddc-storage-node-5', waitStrategy())
     .up();
 
   console.log('The environment has started!');

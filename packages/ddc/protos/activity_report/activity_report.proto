@@ -46,7 +46,7 @@ message ActivityAcknowledgment {
 	string requestId = 1;
 	uint64 bytesStoredOrDelivered = 2;
 	uint64 timestamp = 3;
-	common.Signature signature = 10;
+	common.Signature signature = 4;
 }
 
 message ActivityFulfillment {
