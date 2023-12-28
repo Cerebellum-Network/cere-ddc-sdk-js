@@ -18,4 +18,5 @@ export abstract class RoutingStrategy {
   abstract selectNode(operation: RouterOperation, nodes: RouterNode[]): RouterNode | undefined;
   abstract getNodes(bucketId: BucketId): Promise<RouterNode[]>;
   abstract isReady(): Promise<boolean>;
+  abstract filterNodes(operation: RouterOperation, nodes: RouterNode[]): Promise<RouterNode[]>;
 }

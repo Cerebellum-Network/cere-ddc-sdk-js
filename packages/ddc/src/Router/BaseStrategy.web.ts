@@ -3,10 +3,14 @@ import { RouterNode, RouterOperation, RoutingStrategy } from './RoutingStrategy'
 const isSSLRequired = () => globalThis.location?.protocol === 'https:';
 
 export abstract class BaseStrategy extends RoutingStrategy {
-  selectNode(operation: RouterOperation, nodes: RouterNode[]) {
-    const sslNodes = isSSLRequired() ? nodes.filter((node) => node.ssl) : nodes;
-    const randomIndex = Math.floor(Math.random() * sslNodes.length);
+  async filterNodes(operation: RouterOperation, allNodes: RouterNode[]) {
+    if (!isSSLRequired()) {
+      return allNodes;
+    }
 
-    return sslNodes[randomIndex];
+    const nodes = allNodes.filter((node) => node.ssl);
+    this.logger.debug({ nodes }, 'Filter nodes suitable for secure web (domain + SSL)');
+
+    return nodes;
   }
 }
