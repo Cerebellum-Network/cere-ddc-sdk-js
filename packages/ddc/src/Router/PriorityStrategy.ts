@@ -1,7 +1,8 @@
 import { StorageNodeMode as Mode } from '@cere-ddc-sdk/blockchain';
 
 import { shuffle } from './RandomStrategy';
-import { RouterOperation as Operation, RouterNode, RoutingStrategy } from './RoutingStrategy';
+import { RouterOperation as Operation, RouterNode } from './RoutingStrategy';
+import { BaseStrategy } from './BaseStrategy.web';
 
 type ModePriorityMap = Partial<Record<Mode, number>>;
 type OperationPriorityMap = Record<Operation, ModePriorityMap>;
@@ -32,7 +33,7 @@ const priorityMap: OperationPriorityMap = {
   },
 };
 
-export abstract class PriorityStrategy extends RoutingStrategy {
+export abstract class PriorityStrategy extends BaseStrategy {
   selectNode(operation: Operation, nodes: RouterNode[]) {
     const opertaionPriorityMap = priorityMap[operation];
     const operationNodes = nodes.filter(({ mode }) => opertaionPriorityMap[mode] !== undefined);

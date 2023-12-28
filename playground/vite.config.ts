@@ -8,7 +8,14 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
  */
 export default defineConfig(({ command }) => {
   const resolve: ResolveOptions = {};
-  const plugins: PluginOption[] = [react(), nodePolyfills()];
+  const plugins: PluginOption[] = [
+    react(),
+    nodePolyfills({
+      globals: {
+        Buffer: false,
+      },
+    }),
+  ];
 
   /**
    * Build SDK from source code in development mode

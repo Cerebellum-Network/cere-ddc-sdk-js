@@ -4,8 +4,7 @@ services:
   ddc-storage-node-1:
     platform: linux/amd64
     container_name: ddc-storage-node-1
-    # TODO: Sitch back to devnet image when possible
-    image: 'cerebellumnetwork/ddc-storage-node:dev'
+    image: 'cerebellumnetwork/ddc-storage-node:devnet'
     environment:
       - 'NODE_ID=1'
       - 'MODE=storage'
@@ -32,7 +31,7 @@ services:
   ddc-storage-node-2:
     platform: linux/amd64
     container_name: ddc-storage-node-2
-    image: 'cerebellumnetwork/ddc-storage-node:dev'
+    image: 'cerebellumnetwork/ddc-storage-node:devnet'
     environment:
       - 'NODE_ID=2'
       - 'MODE=storage'
@@ -59,7 +58,7 @@ services:
   ddc-storage-node-3:
     platform: linux/amd64
     container_name: ddc-storage-node-3
-    image: 'cerebellumnetwork/ddc-storage-node:dev'
+    image: 'cerebellumnetwork/ddc-storage-node:devnet'
     environment:
       - 'NODE_ID=3'
       - 'MODE=full'
@@ -86,7 +85,7 @@ services:
   ddc-storage-node-4:
     platform: linux/amd64
     container_name: ddc-storage-node-4
-    image: 'cerebellumnetwork/ddc-storage-node:dev'
+    image: 'cerebellumnetwork/ddc-storage-node:devnet'
     environment:
       - 'NODE_ID=4'
       - 'MODE=full'
@@ -113,7 +112,7 @@ services:
   ddc-storage-node-5:
     platform: linux/amd64
     container_name: ddc-storage-node-5
-    image: 'cerebellumnetwork/ddc-storage-node:dev'
+    image: 'cerebellumnetwork/ddc-storage-node:devnet'
     environment:
       - 'NODE_ID=5'
       - 'MODE=cache'

@@ -14,9 +14,11 @@ export const startDDC = async (bc: BlockchainConfig) => {
 
   blockchainUrl.hostname = getHostIP();
   environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.ddc.yml', uuid)
-    .withEnv('BLOCKCHAIN_URL', blockchainUrl.href)
-    .withEnv('CLUSTER_ID', bc.clusterId)
-    .withEnv('HOST_IP', blockchainUrl.hostname)
+    .withEnvironment({
+      BLOCKCHAIN_URL: blockchainUrl.href,
+      CLUSTER_ID: bc.clusterId,
+      HOST_IP: blockchainUrl.hostname,
+    })
     .withWaitStrategy('ddc-storage-node-1', waitStrategy())
     .withWaitStrategy('ddc-storage-node-2', waitStrategy())
     .withWaitStrategy('ddc-storage-node-3', waitStrategy())

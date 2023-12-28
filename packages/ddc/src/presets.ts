@@ -36,53 +36,53 @@ export const DEVNET_STATIC: ConfigPreset = {
     {
       mode: StorageNodeMode.Full,
       grpcUrl: 'grpc://38.242.236.247:9090',
-      httpUrl: 'https://storage-1.ddc-devnet.cloud',
+      httpUrl: 'https://storage-1.devnet.cere.network',
       ssl: true,
     },
 
     {
       mode: StorageNodeMode.Full,
       grpcUrl: 'grpc://38.242.236.247:9091',
-      httpUrl: 'http://38.242.236.247:8081',
+      httpUrl: 'https://storage-2.devnet.cere.network',
     },
 
     {
       mode: StorageNodeMode.Full,
       grpcUrl: 'grpc://158.220.87.61:9090',
-      httpUrl: 'https://storage-3.ddc-devnet.cloud',
+      httpUrl: 'https://storage-3.devnet.cere.network',
       ssl: true,
     },
 
     {
       mode: StorageNodeMode.Full,
       grpcUrl: 'grpc://158.220.87.61:9091',
-      httpUrl: 'http://158.220.87.61:8081',
+      httpUrl: 'https://storage-4.devnet.cere.network',
     },
 
     {
       mode: StorageNodeMode.Full,
       grpcUrl: 'grpc://89.117.79.111:9090',
-      httpUrl: 'https://storage-5.ddc-devnet.cloud',
+      httpUrl: 'https://storage-5.devnet.cere.network',
       ssl: true,
     },
 
     {
       mode: StorageNodeMode.Full,
       grpcUrl: 'grpc://89.117.79.111:9091',
-      httpUrl: 'http://89.117.79.111:8081',
+      httpUrl: 'https://storage-6.devnet.cere.network',
     },
 
     {
       mode: StorageNodeMode.Full,
       grpcUrl: 'grpc://154.53.57.124:9090',
-      httpUrl: 'https://storage-7.ddc-devnet.cloud',
+      httpUrl: 'https://storage-7.devnet.cere.network',
       ssl: true,
     },
 
     {
       mode: StorageNodeMode.Full,
       grpcUrl: 'grpc://154.53.57.124:9091',
-      httpUrl: 'http://154.53.57.124:8081',
+      httpUrl: 'https://storage-8.devnet.cere.network',
     },
   ],
 };

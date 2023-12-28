@@ -47,7 +47,9 @@ export const startBlockchain = async (): Promise<BlockchainConfig> => {
   }
 
   environment = await new DockerComposeEnvironment(__dirname, composeFile, uuid)
-    .withEnv('BC_CAHCHE_DIR', bcCachePath)
+    .withEnvironment({
+      BC_CAHCHE_DIR: bcCachePath,
+    })
     .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
     .up();
 
