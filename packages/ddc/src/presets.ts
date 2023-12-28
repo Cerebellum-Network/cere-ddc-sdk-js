@@ -10,24 +10,9 @@ export const MAINNET: ConfigPreset = {
   blockchain: 'wss://rpc.qanet.cere.network/ws',
 };
 
-/**
- * Static DEVNET preset
- *
- * TODO: Remove after full migration to on-chain topology
- */
-// export const DEVNET: ConfigPreset = {
-//   blockchain: 'wss://archive.devnet.cere.network/ws',
-//   nodes: [
-//     { mode: StorageNodeMode.Full, grpcUrl: 'grpc://38.242.236.247:9090', httpUrl: 'https://storage-1.ddc-devnet.cloud', ssl: true },
-//     { mode: StorageNodeMode.Full, grpcUrl: 'grpc://38.242.236.247:9091', httpUrl: 'http://38.242.236.247:8081' },
-//     { mode: StorageNodeMode.Full, grpcUrl: 'grpc://158.220.87.61:9090', httpUrl: 'https://storage-3.ddc-devnet.cloud', ssl: true },
-//     { mode: StorageNodeMode.Full, grpcUrl: 'grpc://158.220.87.61:9091', httpUrl: 'http://158.220.87.61:8081' },
-//     { mode: StorageNodeMode.Full, grpcUrl: 'grpc://89.117.79.111:9090', httpUrl: 'https://storage-5.ddc-devnet.cloud', ssl: true },
-//     { mode: StorageNodeMode.Full, grpcUrl: 'grpc://89.117.79.111:9091', httpUrl: 'http://89.117.79.111:8081' },
-//     { mode: StorageNodeMode.Full, grpcUrl: 'grpc://154.53.57.124:9090', httpUrl: 'https://storage-7.ddc-devnet.cloud', ssl: true },
-//     { mode: StorageNodeMode.Full, grpcUrl: 'grpc://154.53.57.124:9091', httpUrl: 'http://154.53.57.124:8081' },
-//   ],
-// };
+export const TESTNET: ConfigPreset = {
+  blockchain: 'wss://rpc.testnet.cere.network/ws',
+};
 
 export const DEVNET: ConfigPreset = {
   /**
@@ -36,7 +21,80 @@ export const DEVNET: ConfigPreset = {
   blockchain: 'wss://ext-devs-node-1.cluster-3.cere.network:9945',
 };
 
-export const TESTNET: ConfigPreset = {
+export const DEFAULT_PRESET = TESTNET;
+
+/**
+ * Static DEVNET preset
+ *
+ * TODO: Remove after full migration to on-chain topology
+ *
+ * @deprecated Use `DEVNET` instead
+ */
+export const DEVNET_STATIC: ConfigPreset = {
+  blockchain: 'wss://archive.devnet.cere.network/ws',
+  nodes: [
+    {
+      mode: StorageNodeMode.Full,
+      grpcUrl: 'grpc://38.242.236.247:9090',
+      httpUrl: 'https://storage-1.ddc-devnet.cloud',
+      ssl: true,
+    },
+
+    {
+      mode: StorageNodeMode.Full,
+      grpcUrl: 'grpc://38.242.236.247:9091',
+      httpUrl: 'http://38.242.236.247:8081',
+    },
+
+    {
+      mode: StorageNodeMode.Full,
+      grpcUrl: 'grpc://158.220.87.61:9090',
+      httpUrl: 'https://storage-3.ddc-devnet.cloud',
+      ssl: true,
+    },
+
+    {
+      mode: StorageNodeMode.Full,
+      grpcUrl: 'grpc://158.220.87.61:9091',
+      httpUrl: 'http://158.220.87.61:8081',
+    },
+
+    {
+      mode: StorageNodeMode.Full,
+      grpcUrl: 'grpc://89.117.79.111:9090',
+      httpUrl: 'https://storage-5.ddc-devnet.cloud',
+      ssl: true,
+    },
+
+    {
+      mode: StorageNodeMode.Full,
+      grpcUrl: 'grpc://89.117.79.111:9091',
+      httpUrl: 'http://89.117.79.111:8081',
+    },
+
+    {
+      mode: StorageNodeMode.Full,
+      grpcUrl: 'grpc://154.53.57.124:9090',
+      httpUrl: 'https://storage-7.ddc-devnet.cloud',
+      ssl: true,
+    },
+
+    {
+      mode: StorageNodeMode.Full,
+      grpcUrl: 'grpc://154.53.57.124:9091',
+      httpUrl: 'http://154.53.57.124:8081',
+    },
+  ],
+};
+
+/**
+ * Static TESTENT preset
+ *
+ * TODO: Remove after full migration to on-chain topology
+ *
+ * @deprecated Use `TESTNET` instead
+ */
+export const TESTNET_STATIC: ConfigPreset = {
   blockchain: 'wss://rpc.testnet.cere.network/ws',
   nodes: [
     {
@@ -425,5 +483,3 @@ export const TESTNET: ConfigPreset = {
     },
   ],
 };
-
-export const DEFAULT_PRESET = TESTNET;
