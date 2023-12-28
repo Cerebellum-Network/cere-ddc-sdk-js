@@ -67,7 +67,7 @@ export class FileApi {
     activityRequest.signature = await createSignature(signer, ActivityRequest.toBinary(activityRequest));
     this.logger.debug({ activityRequest }, 'Activity request');
 
-    return Buffer.from(ActivityRequest.toBinary(activityRequest)).toString('hex');
+    return Buffer.from(ActivityRequest.toBinary(activityRequest)).toString('base64');
   }
 
   private async createAck(ack: Omit<ActivityAcknowledgment, 'signature'>) {
