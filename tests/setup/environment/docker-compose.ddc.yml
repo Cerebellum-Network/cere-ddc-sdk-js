@@ -11,8 +11,8 @@ services:
       - 'MODE=storage'
       - 'HTTP_PORT=8091'
       - "GRPC_PORT=9091"
+      - "P2P_PORT=9071"
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "PEER_URL=libp2p://ddc-storage-node-1:9071"
       - "PEER_SECRET_PHRASE=whip clump surface eternal summer acoustic broom duty magic extend virtual fly"
       - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
       - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
@@ -21,6 +21,7 @@ services:
       - 'REDUNDANCY_REPLICATION_TOTAL=3'
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
       - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - "DATASTORE_MEM_TABLE_SIZE=536870912"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
     ports:
@@ -37,8 +38,8 @@ services:
       - 'MODE=storage'
       - 'HTTP_PORT=8092'
       - "GRPC_PORT=9092"
+      - "P2P_PORT=9072"
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "PEER_URL=libp2p://ddc-storage-node-2:9072"
       - "PEER_SECRET_PHRASE=scorpion dish want gorilla novel tape world hip rescue tank oyster pipe"
       - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
       - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
@@ -47,6 +48,7 @@ services:
       - 'REDUNDANCY_REPLICATION_TOTAL=3'
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
       - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - "DATASTORE_MEM_TABLE_SIZE=536870912"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
     ports:
@@ -63,8 +65,8 @@ services:
       - 'MODE=full'
       - 'HTTP_PORT=8093'
       - "GRPC_PORT=9093"
+      - "P2P_PORT=9073"
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "PEER_URL=libp2p://ddc-storage-node-3:9073"
       - "PEER_SECRET_PHRASE=rule output true detect matrix wife raven wreck primary mansion spike coral"
       - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
       - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
@@ -73,6 +75,7 @@ services:
       - 'REDUNDANCY_REPLICATION_TOTAL=3'
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
       - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - "DATASTORE_MEM_TABLE_SIZE=536870912"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
     ports:
@@ -89,8 +92,8 @@ services:
       - 'MODE=full'
       - 'HTTP_PORT=8094'
       - "GRPC_PORT=9094"
+      - "P2P_PORT=9074"
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "PEER_URL=libp2p://ddc-storage-node-4:9074"
       - "PEER_SECRET_PHRASE=paper salon seed crystal gun envelope wolf twice pistol episode guitar borrow"
       - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
       - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
@@ -99,6 +102,7 @@ services:
       - 'REDUNDANCY_REPLICATION_TOTAL=3'
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
       - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - "DATASTORE_MEM_TABLE_SIZE=536870912"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
     ports:
@@ -115,8 +119,8 @@ services:
       - 'MODE=cache'
       - 'HTTP_PORT=8095'
       - "GRPC_PORT=9095"
+      - "P2P_PORT=9075"
       - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "PEER_URL=libp2p://ddc-storage-node-5:9075"
       - "PEER_SECRET_PHRASE=spike sun exchange lava weekend october sock wait attend garden carbon promote"
       - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
       - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
@@ -125,6 +129,7 @@ services:
       - 'REDUNDANCY_REPLICATION_TOTAL=3'
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
       - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - "DATASTORE_MEM_TABLE_SIZE=536870912"
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
     ports:
