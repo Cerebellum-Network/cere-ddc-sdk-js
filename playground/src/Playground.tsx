@@ -58,16 +58,9 @@ const Dropzone = styled(Box)(({ theme }) => ({
 }));
 
 const bcPresets = {
-  devnet: {
-    ...DEVNET,
-    baseUrl: 'https://ddc-devnet.cloud',
-    /**
-     * TODO: Remove this line after switching the preset from EDC to Devnet
-     */
-    blockchain: 'wss://archive.devnet.cere.network/ws',
-  },
+  devnet: { ...DEVNET, baseUrl: 'https://storage.devnet.cere.network' },
   testnet: { ...TESTNET, baseUrl: 'https://storage.testnet.cere.network' },
-  mainnet: { ...MAINNET, baseUrl: 'https://ddc.cloud' },
+  mainnet: { ...MAINNET, baseUrl: 'https://ddc.cloud' }, // TODO: replace with real mainnet URL
   custom: {
     blockchain: process.env.BC_ENDPOINT || '',
     baseUrl: 'http://localhost:8091',
