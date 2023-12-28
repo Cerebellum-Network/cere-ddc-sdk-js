@@ -2,10 +2,9 @@ syntax = "proto3";
 
 package cns;
 
-import "pb/signature.proto";
+option go_package = "cere.network/ddc-storage-node/api/cns";
 
-option go_package = "api/cns";
-
+import "common/signature.proto";
 import "google/api/annotations.proto";
 
 service CnsApi {
@@ -40,7 +39,7 @@ message GetResponse {
 }
 
 message Record {
-  Signature signature = 1; // signature of a CnsRecord serialised to protobuf (excluding Signature itself) by a client that have an access to a bucket so requester can verify the validity of the CNS record
+  common.Signature signature = 1; // signature of a CnsRecord serialised to protobuf (excluding Signature itself) by a client that have an access to a bucket so requester can verify the validity of the CNS record
   bytes cid = 2;
   string name = 3;
   // TTL in seconds specifies how long it takes for record updates to reach your end users (time-to-live in cache layer).

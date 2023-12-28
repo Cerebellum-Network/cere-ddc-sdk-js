@@ -10,6 +10,8 @@ import {
   Cid,
   MAX_PIECE_SIZE,
   PieceMeta,
+  AuthToken,
+  AuthTokenOperation,
 } from '@cere-ddc-sdk/ddc';
 
 import { createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes } from '../helpers';
@@ -28,13 +30,19 @@ const wholeSpecVariants = [
 
 const fileSpecVariants = [
   { name: 'with ACKs', enableAcks: true },
-  { name: 'without ACKs', enableAcks: true },
+  { name: 'without ACKs', enableAcks: false },
 ];
 
 describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
   const bucketId = 1n;
   const testRunRandom = Math.round(Math.random() * 10 ** 5);
   const signer = new UriSigner(ROOT_USER_SEED);
+  const operations = [AuthTokenOperation.PUT, AuthTokenOperation.GET];
+  const token = new AuthToken({ bucketId, operations });
+
+  beforeAll(async () => {
+    await token.sign(signer);
+  });
 
   describe('Dag Api', () => {
     const dagApi = new DagApi(transport);
@@ -44,6 +52,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
 
     test('Create node', async () => {
       nodeCid = await dagApi.putNode({
+        token,
         bucketId,
         node: {
           data: nodeData,
@@ -60,6 +69,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
 
       const node = await dagApi.getNode({
         cid: nodeCid,
+        token,
         bucketId,
       });
 
@@ -75,9 +85,10 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
       };
 
       test('Create node tree', async () => {
-        const lastCid = await dagApi.putNode({ bucketId, node: lastNode });
+        const lastCid = await dagApi.putNode({ bucketId, token, node: lastNode });
         const middleCid = await dagApi.putNode({
           bucketId,
+          token,
           node: {
             data: new Uint8Array([]),
             links: [{ cid: lastCid, size: nodeData.byteLength, name: 'last' }],
@@ -87,6 +98,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
 
         rootNodeCid = await dagApi.putNode({
           bucketId,
+          token,
           node: {
             data: nodeData,
             links: [{ cid: middleCid, size: 10, name: 'middle' }],
@@ -96,8 +108,11 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
       });
 
       test('Get last child', async () => {
+        expect(rootNodeCid).toBeDefined();
+
         const foundNode = await dagApi.getNode({
           bucketId,
+          token,
           cid: rootNodeCid,
           path: 'middle/last',
         });
@@ -117,6 +132,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     test('Create alias', async () => {
       const savedRecord = await cnsApi.putRecord({
         bucketId,
+        token,
         record: {
           cid: testCid,
           name: alias,
@@ -129,6 +145,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     test('Get CID by alias', async () => {
       const record = await cnsApi.getRecord({
         bucketId,
+        token,
         name: alias,
       });
 
@@ -144,6 +161,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
       fileApi.putRawPiece(
         {
           bucketId,
+          token,
           isMultipart: meta?.multipartOffset !== undefined,
           offset: meta?.multipartOffset,
           size: meta?.size,
@@ -173,6 +191,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
 
         const contentStream = await fileApi.getFile({
           bucketId,
+          token,
           cid: smallPieceCid,
         });
 
@@ -195,6 +214,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
 
         const contentStream = await fileApi.getFile({
           bucketId,
+          token,
           cid: largePieceCid,
         });
 
@@ -209,6 +229,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
         const rangeSize = 10 * DDC_BLOCK_SIZE;
         const contentStream = await fileApi.getFile({
           bucketId,
+          token,
           cid: largePieceCid,
           range: {
             start: 0,
@@ -253,6 +274,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
 
         multipartPieceCid = await fileApi.putMultipartPiece({
           bucketId,
+          token,
           partHashes,
           partSize,
           totalSize,
@@ -267,6 +289,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
 
         const contentStream = await fileApi.getFile({
           bucketId,
+          token,
           cid: multipartPieceCid,
         });
 
@@ -281,6 +304,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
         const rangeSize = 10 * DDC_BLOCK_SIZE;
         const contentStream = await fileApi.getFile({
           bucketId,
+          token,
           cid: multipartPieceCid,
           range: {
             start: 0,

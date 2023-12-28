@@ -1,130 +1,138 @@
-version: "3.4"
+version: '3.4'
 
 services:
   ddc-storage-node-1:
     platform: linux/amd64
     container_name: ddc-storage-node-1
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    # TODO: Sitch back to devnet image when possible
+    image: 'cerebellumnetwork/ddc-storage-node:dev'
     environment:
       - 'NODE_ID=1'
       - 'MODE=storage'
       - 'HTTP_PORT=8091'
-      - "GRPC_PORT=9091"
-      - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "PEER_URL=libp2p://ddc-storage-node-1:9071"
-      - "PEER_SECRET_PHRASE=whip clump surface eternal summer acoustic broom duty magic extend virtual fly"
-      - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
-      - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
-      - "REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2"
-      - "REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2"
+      - 'GRPC_PORT=9091'
+      - 'P2P_PORT=9071'
+      - 'BLOCKCHAIN_URL=${BLOCKCHAIN_URL}'
+      - 'PEER_SECRET_PHRASE=whip clump surface eternal summer acoustic broom duty magic extend virtual fly'
+      - 'REDUNDANCY_ERASURE_CODING_REQUIRED=2'
+      - 'REDUNDANCY_ERASURE_CODING_TOTAL=3'
+      - 'REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2'
+      - 'REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2'
       - 'REDUNDANCY_REPLICATION_TOTAL=3'
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
-      - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - 'P2P_MAX_MESSAGE_SIZE=68157440'
+      - 'DATASTORE_MEM_TABLE_SIZE=536870912'
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
-      # - 'TEST_ENABLED=true'
     ports:
       - '8091:8091'
       - '9071:9071'
       - '9091:9091'
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8091/info || exit 1
-      interval: 3s
-      timeout: 1s
-      retries: 5
 
   ddc-storage-node-2:
     platform: linux/amd64
     container_name: ddc-storage-node-2
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    image: 'cerebellumnetwork/ddc-storage-node:dev'
     environment:
       - 'NODE_ID=2'
       - 'MODE=storage'
       - 'HTTP_PORT=8092'
-      - "GRPC_PORT=9092"
-      - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "PEER_URL=libp2p://ddc-storage-node-2:9072"
-      - "PEER_SECRET_PHRASE=scorpion dish want gorilla novel tape world hip rescue tank oyster pipe"
-      - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
-      - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
-      - "REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2"
-      - "REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2"
+      - 'GRPC_PORT=9092'
+      - 'P2P_PORT=9072'
+      - 'BLOCKCHAIN_URL=${BLOCKCHAIN_URL}'
+      - 'PEER_SECRET_PHRASE=scorpion dish want gorilla novel tape world hip rescue tank oyster pipe'
+      - 'REDUNDANCY_ERASURE_CODING_REQUIRED=2'
+      - 'REDUNDANCY_ERASURE_CODING_TOTAL=3'
+      - 'REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2'
+      - 'REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2'
       - 'REDUNDANCY_REPLICATION_TOTAL=3'
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
-      - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - 'P2P_MAX_MESSAGE_SIZE=68157440'
+      - 'DATASTORE_MEM_TABLE_SIZE=536870912'
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
-      # - 'TEST_ENABLED=true'
     ports:
       - '8092:8092'
       - '9072:9072'
       - '9092:9092'
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8092/info || exit 1
-      interval: 3s
-      timeout: 1s
-      retries: 5
 
   ddc-storage-node-3:
     platform: linux/amd64
     container_name: ddc-storage-node-3
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    image: 'cerebellumnetwork/ddc-storage-node:dev'
     environment:
       - 'NODE_ID=3'
       - 'MODE=full'
       - 'HTTP_PORT=8093'
-      - "GRPC_PORT=9093"
-      - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "PEER_URL=libp2p://ddc-storage-node-3:9073"
-      - "PEER_SECRET_PHRASE=rule output true detect matrix wife raven wreck primary mansion spike coral"
-      - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
-      - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
-      - "REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2"
-      - "REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2"
+      - 'GRPC_PORT=9093'
+      - 'P2P_PORT=9073'
+      - 'BLOCKCHAIN_URL=${BLOCKCHAIN_URL}'
+      - 'PEER_SECRET_PHRASE=rule output true detect matrix wife raven wreck primary mansion spike coral'
+      - 'REDUNDANCY_ERASURE_CODING_REQUIRED=2'
+      - 'REDUNDANCY_ERASURE_CODING_TOTAL=3'
+      - 'REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2'
+      - 'REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2'
       - 'REDUNDANCY_REPLICATION_TOTAL=3'
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
-      - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - 'P2P_MAX_MESSAGE_SIZE=68157440'
+      - 'DATASTORE_MEM_TABLE_SIZE=536870912'
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
-      # - 'TEST_ENABLED=true'
     ports:
       - '8093:8093'
       - '9073:9073'
       - '9093:9093'
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8093/info || exit 1
-      interval: 3s
-      timeout: 1s
-      retries: 5
 
   ddc-storage-node-4:
     platform: linux/amd64
     container_name: ddc-storage-node-4
-    image: "cerebellumnetwork/ddc-storage-node:devnet"
+    image: 'cerebellumnetwork/ddc-storage-node:dev'
     environment:
       - 'NODE_ID=4'
-      - 'MODE=cache'
+      - 'MODE=full'
       - 'HTTP_PORT=8094'
-      - "GRPC_PORT=9094"
-      - "BLOCKCHAIN_URL=${BLOCKCHAIN_URL}"
-      - "PEER_URL=libp2p://ddc-storage-node-4:9074"
-      - "PEER_SECRET_PHRASE=paper salon seed crystal gun envelope wolf twice pistol episode guitar borrow"
-      - "REDUNDANCY_ERASURE_CODING_REQUIRED=2"
-      - "REDUNDANCY_ERASURE_CODING_TOTAL=3"
-      - "REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2"
-      - "REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2"
+      - 'GRPC_PORT=9094'
+      - 'P2P_PORT=9074'
+      - 'BLOCKCHAIN_URL=${BLOCKCHAIN_URL}'
+      - 'PEER_SECRET_PHRASE=paper salon seed crystal gun envelope wolf twice pistol episode guitar borrow'
+      - 'REDUNDANCY_ERASURE_CODING_REQUIRED=2'
+      - 'REDUNDANCY_ERASURE_CODING_TOTAL=3'
+      - 'REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2'
+      - 'REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2'
       - 'REDUNDANCY_REPLICATION_TOTAL=3'
       - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
-      - "P2P_MAX_MESSAGE_SIZE=68157440"
+      - 'P2P_MAX_MESSAGE_SIZE=68157440'
+      - 'DATASTORE_MEM_TABLE_SIZE=536870912'
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
-      # - 'TEST_ENABLED=true'
     ports:
       - '8094:8094'
       - '9074:9074'
       - '9094:9094'
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://${HOST_IP}:8094/info || exit 1
-      interval: 3s
-      timeout: 1s
-      retries: 5
+
+  ddc-storage-node-5:
+    platform: linux/amd64
+    container_name: ddc-storage-node-5
+    image: 'cerebellumnetwork/ddc-storage-node:dev'
+    environment:
+      - 'NODE_ID=5'
+      - 'MODE=cache'
+      - 'HTTP_PORT=8095'
+      - 'GRPC_PORT=9095'
+      - 'P2P_PORT=9075'
+      - 'BLOCKCHAIN_URL=${BLOCKCHAIN_URL}'
+      - 'PEER_SECRET_PHRASE=spike sun exchange lava weekend october sock wait attend garden carbon promote'
+      - 'REDUNDANCY_ERASURE_CODING_REQUIRED=2'
+      - 'REDUNDANCY_ERASURE_CODING_TOTAL=3'
+      - 'REDUNDANCY_ERASURE_CODING_SUCCESS_THRESHOLD=2'
+      - 'REDUNDANCY_ERASURE_CODING_REPAIR_THRESHOLD=2'
+      - 'REDUNDANCY_REPLICATION_TOTAL=3'
+      - 'REDUNDANCY_REPLICATION_SUCCESS_THRESHOLD=3'
+      - 'P2P_MAX_MESSAGE_SIZE=68157440'
+      - 'DATASTORE_MEM_TABLE_SIZE=536870912'
+      - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
+      - 'LOG_LEVEL=debug'
+    ports:
+      - '8095:8095'
+      - '9075:9075'
+      - '9095:9095'

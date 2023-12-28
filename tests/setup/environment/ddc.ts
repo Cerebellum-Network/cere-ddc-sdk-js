@@ -5,6 +5,8 @@ import { getHostIP } from '../../helpers';
 let environment: StartedDockerComposeEnvironment | undefined;
 
 const uuid = { nextUuid: () => 'ddc' };
+const waitStrategy = () => Wait.forLogMessage(/Start GRPC server on port \d+/).withStartupTimeout(10000);
+
 export const startDDC = async (bc: BlockchainConfig) => {
   console.group('DDC');
 
@@ -15,10 +17,11 @@ export const startDDC = async (bc: BlockchainConfig) => {
     .withEnv('BLOCKCHAIN_URL', blockchainUrl.href)
     .withEnv('CLUSTER_ID', bc.clusterId)
     .withEnv('HOST_IP', blockchainUrl.hostname)
-    .withWaitStrategy('ddc-storage-node-1', Wait.forHealthCheck())
-    .withWaitStrategy('ddc-storage-node-2', Wait.forHealthCheck())
-    .withWaitStrategy('ddc-storage-node-3', Wait.forHealthCheck())
-    .withWaitStrategy('ddc-storage-node-4', Wait.forHealthCheck())
+    .withWaitStrategy('ddc-storage-node-1', waitStrategy())
+    .withWaitStrategy('ddc-storage-node-2', waitStrategy())
+    .withWaitStrategy('ddc-storage-node-3', waitStrategy())
+    .withWaitStrategy('ddc-storage-node-4', waitStrategy())
+    .withWaitStrategy('ddc-storage-node-5', waitStrategy())
     .up();
 
   console.log('The environment has started!');

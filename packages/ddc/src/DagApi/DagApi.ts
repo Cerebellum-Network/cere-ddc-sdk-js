@@ -1,6 +1,11 @@
 import { RpcTransport } from '../transports';
-import { PutRequest, GetRequest, Node } from '../grpc/dag_api';
+import { PutRequest as ProtoPutRequest, GetRequest as ProtoGetRequest, Node } from '../grpc/dag_api';
 import { DagApiClient } from '../grpc/dag_api.client';
+import { createRpcMeta, AuthToken } from '../auth';
+
+type AuthParams = { token?: AuthToken };
+type PutRequest = ProtoPutRequest & AuthParams;
+type GetRequest = ProtoGetRequest & AuthParams;
 
 export class DagApi {
   private api: DagApiClient;
@@ -9,14 +14,18 @@ export class DagApi {
     this.api = new DagApiClient(transport);
   }
 
-  async putNode(request: PutRequest) {
-    const { response } = await this.api.put(request);
+  async putNode({ token, ...request }: PutRequest) {
+    const { response } = await this.api.put(request, {
+      meta: createRpcMeta(token),
+    });
 
     return new Uint8Array(response.cid);
   }
 
-  async getNode(request: GetRequest) {
-    const { response } = await this.api.get(request);
+  async getNode({ token, ...request }: GetRequest) {
+    const { response } = await this.api.get(request, {
+      meta: createRpcMeta(token),
+    });
 
     const node: Node | undefined = response.node && {
       ...response.node,

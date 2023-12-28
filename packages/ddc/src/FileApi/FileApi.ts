@@ -1,26 +1,33 @@
 import { Buffer } from 'buffer';
 import { v4 as uuid } from 'uuid';
-import { RpcMetadata } from '@protobuf-ts/runtime-rpc';
 import { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { RpcTransport } from '../transports';
 import { createSignature } from '../signature';
 import { Content, createContentStream, getContentSize } from '../streams';
 import { createLogger, Logger, LoggerOptions } from '../Logger';
-import { PutMultiPartPieceRequest, GetFileRequest_Request, PutRawPieceRequest_Metadata } from '../grpc/file_api';
+import {
+  PutMultiPartPieceRequest as ProtoPutMultiPartPieceRequest,
+  GetFileRequest_Request,
+  PutRawPieceRequest_Metadata,
+} from '../grpc/file_api';
 import { FileApiClient } from '../grpc/file_api.client';
+import { createRpcMeta, AuthToken } from '../auth';
 import {
   ActivityRequest,
   ActivityRequest_ContentType,
   ActivityRequest_RequestType as RequestType,
   ActivityAcknowledgment,
-} from '../grpc/pb/activity_report';
+} from '../grpc/activity_report/activity_report';
 
-export type GetFileRequest = Omit<GetFileRequest_Request, 'authenticate'>;
+type AuthParams = { token?: AuthToken };
 export type ReadFileRange = GetFileRequest_Request['range'];
-export type PutRawPieceMetadata = Omit<PutRawPieceRequest_Metadata, 'size'> & {
-  size?: number;
-};
+export type GetFileRequest = Omit<GetFileRequest_Request, 'authenticate'> & AuthParams;
+export type PutMultiPartPieceRequest = ProtoPutMultiPartPieceRequest & AuthParams;
+export type PutRawPieceMetadata = Omit<PutRawPieceRequest_Metadata, 'size'> &
+  AuthParams & {
+    size?: number;
+  };
 
 export type FileApiOptions = LoggerOptions & {
   signer?: Signer;
@@ -60,7 +67,7 @@ export class FileApi {
     activityRequest.signature = await createSignature(signer, ActivityRequest.toBinary(activityRequest));
     this.logger.debug({ activityRequest }, 'Activity request');
 
-    return Buffer.from(ActivityRequest.toBinary(activityRequest)).toString('hex');
+    return Buffer.from(ActivityRequest.toBinary(activityRequest)).toString('base64');
   }
 
   private async createAck(ack: Omit<ActivityAcknowledgment, 'signature'>) {
@@ -80,26 +87,31 @@ export class FileApi {
     return signedAck;
   }
 
-  async putMultipartPiece(request: PutMultiPartPieceRequest) {
+  async putMultipartPiece({ token, ...request }: PutMultiPartPieceRequest) {
     const partSize = ceilToPowerOf2(request.partSize);
-    this.logger.debug({ ...request, partSize }, 'Storing multipart piece');
+    this.logger.debug({ ...request, partSize, token }, 'Storing multipart piece');
 
-    const { response } = await this.api.putMultipartPiece({ ...request, partSize });
+    const { response } = await this.api.putMultipartPiece(
+      { ...request, partSize },
+      {
+        meta: createRpcMeta(token),
+      },
+    );
 
     this.logger.debug({ response }, 'Multipart piece stored');
 
     return new Uint8Array(response.cid);
   }
 
-  async putRawPiece(metadata: PutRawPieceMetadata, content: Content) {
-    const meta: RpcMetadata = {};
+  async putRawPiece({ token, ...metadata }: PutRawPieceMetadata, content: Content) {
+    const meta = createRpcMeta(token);
     const size = metadata.size || getContentSize(content);
 
     if (!size) {
       throw new Error('Cannot determine the raw piece size');
     }
 
-    this.logger.debug({ metadata }, 'Storing raw piece of size %d', size);
+    this.logger.debug({ metadata, token }, 'Storing raw piece of size %d', size);
 
     if (this.options.enableAcks) {
       meta.request = await this.createActivityRequest({
@@ -136,11 +148,11 @@ export class FileApi {
     return new Uint8Array(cid);
   }
 
-  async getFile(request: GetFileRequest) {
-    this.logger.debug({ request }, 'Started reading data');
+  async getFile({ token, ...request }: GetFileRequest) {
+    this.logger.debug({ request, token }, 'Started reading data');
 
     const requestId = uuid();
-    const meta: RpcMetadata = {};
+    const meta = createRpcMeta(token);
     const { enableAcks } = this.options;
 
     if (enableAcks) {

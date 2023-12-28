@@ -27,9 +27,16 @@ export const getStorageNodes = (host = 'localhost'): NodeConfig[] => [
   },
 
   {
-    mode: StorageNodeMode.Cache,
+    mode: StorageNodeMode.Full,
     grpcUrl: `grpc://${host}:9094`,
     httpUrl: `http://${host}:8094`,
     mnemonic: 'paper salon seed crystal gun envelope wolf twice pistol episode guitar borrow',
+  },
+
+  {
+    mode: StorageNodeMode.Cache,
+    grpcUrl: `grpc://${host}:9095`,
+    httpUrl: `http://${host}:8095`,
+    mnemonic: 'spike sun exchange lava weekend october sock wait attend garden carbon promote',
   },
 ];

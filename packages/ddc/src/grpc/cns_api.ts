@@ -13,7 +13,7 @@ import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
-import { Signature } from "./pb/signature";
+import { Signature } from "./common/signature";
 /**
  * @generated from protobuf message cns.PutRequest
  */
@@ -59,7 +59,7 @@ export interface GetResponse {
  */
 export interface Record {
     /**
-     * @generated from protobuf field: Signature signature = 1;
+     * @generated from protobuf field: common.Signature signature = 1;
      */
     signature?: Signature; // signature of a CnsRecord serialised to protobuf (excluding Signature itself) by a client that have an access to a bucket so requester can verify the validity of the CNS record
     /**
@@ -281,7 +281,7 @@ class Record$Type extends MessageType<Record> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* Signature signature */ 1:
+                case /* common.Signature signature */ 1:
                     message.signature = Signature.internalBinaryRead(reader, reader.uint32(), options, message.signature);
                     break;
                 case /* bytes cid */ 2:
@@ -305,7 +305,7 @@ class Record$Type extends MessageType<Record> {
         return message;
     }
     internalBinaryWrite(message: Record, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* Signature signature = 1; */
+        /* common.Signature signature = 1; */
         if (message.signature)
             Signature.internalBinaryWrite(message.signature, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
         /* bytes cid = 2; */

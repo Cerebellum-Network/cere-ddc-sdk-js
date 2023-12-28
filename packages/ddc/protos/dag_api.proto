@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package dag;
 
-option go_package = "api/dag";
+option go_package = "cere.network/ddc-storage-node/api/dag";
 
 import "google/api/annotations.proto";
 

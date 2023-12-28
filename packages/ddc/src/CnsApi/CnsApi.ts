@@ -3,20 +3,25 @@ import type { Signer } from '@cere-ddc-sdk/blockchain';
 import { RpcTransport } from '../transports';
 import { createSignature, mapSignature, Signature } from '../signature';
 import { CnsApiClient } from '../grpc/cns_api.client';
-import { GetRequest, PutRequest as ProtoPutRequest, Record as ProtRecord } from '../grpc/cns_api';
+import { GetRequest as ProtoGetRequest, PutRequest as ProtoPutRequest, Record as ProtoRecord } from '../grpc/cns_api';
+import { createRpcMeta, AuthToken } from '../auth';
 
-export type Record = Omit<ProtRecord, 'signature'> & {
+type AuthParams = { token?: AuthToken };
+export type Record = Omit<ProtoRecord, 'signature'> & {
   signature: Signature;
 };
 
-type PutRequest = Omit<ProtoPutRequest, 'record'> & {
-  record: Omit<Record, 'signature'>;
-};
+type PutRequest = Omit<ProtoPutRequest, 'record'> &
+  AuthParams & {
+    record: Omit<Record, 'signature'>;
+  };
+
+type GetRequest = ProtoGetRequest & AuthParams;
 
 const createSignatureMessage = (record: Omit<Record, 'signature'>) => {
-  const message = ProtRecord.create(record);
+  const message = ProtoRecord.create(record);
 
-  return ProtRecord.toBinary(message);
+  return ProtoRecord.toBinary(message);
 };
 
 export type CnsApiOptions = {
@@ -33,7 +38,7 @@ export class CnsApi {
     this.api = new CnsApiClient(transport);
   }
 
-  async putRecord({ bucketId, record }: PutRequest): Promise<Record> {
+  async putRecord({ token, bucketId, record }: PutRequest): Promise<Record> {
     const { signer } = this.options;
 
     if (!signer) {
@@ -42,13 +47,12 @@ export class CnsApi {
 
     const signature = await createSignature(signer, createSignatureMessage(record));
 
-    await this.api.put({
-      bucketId,
-      record: {
-        ...record,
-        signature,
+    await this.api.put(
+      { bucketId, record: { ...record, signature } },
+      {
+        meta: createRpcMeta(token),
       },
-    });
+    );
 
     return {
       ...record,
@@ -56,11 +60,13 @@ export class CnsApi {
     };
   }
 
-  async getRecord(request: GetRequest): Promise<Record | undefined> {
-    let record: ProtRecord | undefined;
+  async getRecord({ token, ...request }: GetRequest): Promise<Record | undefined> {
+    let record: ProtoRecord | undefined;
 
     try {
-      const { response } = await this.api.get(request);
+      const { response } = await this.api.get(request, {
+        meta: createRpcMeta(token),
+      });
 
       record = response.record;
     } catch {
