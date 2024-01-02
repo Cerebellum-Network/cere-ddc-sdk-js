@@ -5,18 +5,17 @@ import { pipeline } from 'stream/promises';
 import { createHash } from 'crypto';
 import { FileStorage, File } from '@cere-ddc-sdk/file-storage';
 
-import { createDataStream, getBlockchainState, MB, ROOT_USER_SEED } from '../helpers';
+import { createDataStream, getBlockchainState, getClientConfig, MB, ROOT_USER_SEED } from '../helpers';
 
 describe('File storage', () => {
   const {
-    rpcUrl,
     bucketIds: [bucketId],
   } = getBlockchainState();
 
   let fileStorage: FileStorage;
 
   beforeAll(async () => {
-    fileStorage = await FileStorage.create(ROOT_USER_SEED, { blockchain: rpcUrl });
+    fileStorage = await FileStorage.create(ROOT_USER_SEED, getClientConfig());
   });
 
   describe('Small file', () => {

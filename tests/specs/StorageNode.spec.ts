@@ -15,7 +15,7 @@ describe('Storage Node', () => {
   const bucketId = 1n;
   const [storageNodeParams] = getStorageNodes();
   const signer = new UriSigner(ROOT_USER_SEED);
-  const storageNode = new StorageNode(signer, storageNodeParams);
+  const storageNode = new StorageNode(signer, { ...storageNodeParams, logLevel: 'silent' });
 
   describe('Raw piece', () => {
     let smallPieceCid: string;
