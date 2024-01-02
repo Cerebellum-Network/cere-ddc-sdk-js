@@ -132,12 +132,15 @@ export class FileApi {
     });
 
     for await (const data of createContentStream(content)) {
-      await requests.send({
-        body: {
-          oneofKind: 'content',
-          content: { data },
-        },
-      });
+      await Promise.race([
+        response,
+        requests.send({
+          body: {
+            oneofKind: 'content',
+            content: { data },
+          },
+        }),
+      ]);
     }
 
     await requests.complete();
