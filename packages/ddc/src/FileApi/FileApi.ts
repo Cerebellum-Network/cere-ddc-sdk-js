@@ -170,10 +170,9 @@ export class FileApi {
 
     const call = this.api.getFile({ meta });
 
-    call.status.then((status) => {
-      this.logger.debug({ status }, 'Request status updated');
-    });
-
+    /**
+     * Send request message.
+     */
     await call.requests.send({
       body: {
         oneofKind: 'request',
@@ -190,33 +189,28 @@ export class FileApi {
     });
 
     /**
-     * Wait for server to respond with trailers.
+     * Wait for responce headers to be received.
      */
     const headers = await call.headers;
-
     this.logger.debug({ headers }, 'Server responded with headers');
 
-    const createAck = (bytesStoredOrDelivered: number) =>
-      this.createAck({
-        requestId,
-        timestamp: Date.now(),
-        bytesStoredOrDelivered,
-      });
-
-    async function* toDataStream() {
-      let bytesDelivered = 0;
+    /**
+     * Create data stream from responce messages.
+     */
+    async function* toDataStream(this: FileApi) {
+      let bytesStoredOrDelivered = 0;
 
       for await (const { body } of call.responses) {
         if (body.oneofKind === 'data') {
           yield body.data;
 
-          bytesDelivered += body.data.byteLength;
+          bytesStoredOrDelivered += body.data.byteLength;
 
           if (enableAcks) {
             await call.requests.send({
               body: {
                 oneofKind: 'ack',
-                ack: await createAck(bytesDelivered),
+                ack: await this.createAck({ requestId, timestamp: Date.now(), bytesStoredOrDelivered }),
               },
             });
           }
@@ -230,6 +224,6 @@ export class FileApi {
       await call.requests.complete();
     }
 
-    return createContentStream(toDataStream());
+    return createContentStream(toDataStream.call(this));
   }
 }

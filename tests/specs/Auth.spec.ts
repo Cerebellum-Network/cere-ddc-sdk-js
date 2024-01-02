@@ -62,12 +62,7 @@ describe('Auth', () => {
       expect(file.cid).toEqual(publicFileUri.cid);
     });
 
-    /**
-     * TODO: This test fails depending on the order of the tests.
-     *
-     * It seems the method triggers several errors, and the first one is the one that is caught.
-     */
-    test.skip('Reader can not read from private bucket', async () => {
+    test('Reader can not read from private bucket', async () => {
       expect(privateFileUri).toBeDefined();
 
       await expect(readerClient.read(privateFileUri)).rejects.toThrow();
