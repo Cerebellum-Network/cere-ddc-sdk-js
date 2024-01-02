@@ -27,7 +27,7 @@ describe('Auth', () => {
 
   beforeEach(async () => {
     normalFile = createFile(KB);
-    largeFile = createFile(10 * MB);
+    largeFile = createFile(150 * MB);
   });
 
   describe('Bucket access', () => {

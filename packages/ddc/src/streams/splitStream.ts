@@ -1,14 +1,14 @@
 import { Buffer } from 'buffer';
 import { TransformStream, ReadableStream, WritableStreamDefaultWriter as Writer } from './streams';
 
-export type SplitStreamMapper<T = any> = (stream: ReadableStream, offset: number) => T;
+export type SplitStreamMapper<T = any> = (stream: ReadableStream, offset: number) => T | Promise<T>;
 
 export const splitStream = async <T = any>(
   stream: ReadableStream<Uint8Array>,
   splitBy: number,
   mapper: SplitStreamMapper<T>,
 ) => {
-  const out: T[] = [];
+  const out: Promise<T>[] = [];
 
   let totalSize = 0;
   let currentSize = 0;
@@ -25,7 +25,11 @@ export const splitStream = async <T = any>(
       totalSize += currentSize;
       currentSize = 0;
 
-      out.push(mapper(readable, totalSize));
+      const mapperResult = Promise.resolve(mapper(readable, totalSize)).catch((reason) => {
+        return currentWriter?.abort(reason);
+      });
+
+      out.push(mapperResult as Promise<T>);
     }
 
     const toWrite = Math.min(splitBy - currentSize, data.byteLength);
@@ -47,5 +51,5 @@ export const splitStream = async <T = any>(
 
   await currentWriter?.close();
 
-  return out;
+  return Promise.all(out);
 };
