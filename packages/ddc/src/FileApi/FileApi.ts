@@ -168,13 +168,13 @@ export class FileApi {
       });
     }
 
-    const { responses, requests, status } = this.api.getFile({ meta });
+    const call = this.api.getFile({ meta });
 
-    status.then((status) => {
-      this.logger.debug({ status }, 'Data stream ended');
+    call.status.then((status) => {
+      this.logger.debug({ status }, 'Request status updated');
     });
 
-    await requests.send({
+    await call.requests.send({
       body: {
         oneofKind: 'request',
         request: {
@@ -189,6 +189,13 @@ export class FileApi {
       },
     });
 
+    /**
+     * Wait for server to respond with trailers.
+     */
+    const headers = await call.headers;
+
+    this.logger.debug({ headers }, 'Server responded with headers');
+
     const createAck = (bytesStoredOrDelivered: number) =>
       this.createAck({
         requestId,
@@ -199,14 +206,14 @@ export class FileApi {
     async function* toDataStream() {
       let bytesDelivered = 0;
 
-      for await (const { body } of responses) {
+      for await (const { body } of call.responses) {
         if (body.oneofKind === 'data') {
           yield body.data;
 
           bytesDelivered += body.data.byteLength;
 
           if (enableAcks) {
-            await requests.send({
+            await call.requests.send({
               body: {
                 oneofKind: 'ack',
                 ack: await createAck(bytesDelivered),
@@ -220,7 +227,7 @@ export class FileApi {
         }
       }
 
-      await requests.complete();
+      await call.requests.complete();
     }
 
     return createContentStream(toDataStream());
