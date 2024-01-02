@@ -1,11 +1,10 @@
-import { DdcClient, DdcClientConfig, File, FileUri, MB } from '@cere-ddc-sdk/ddc-client';
-import { KB, ROOT_USER_SEED, createDataStream, getBlockchainState } from '../helpers';
+import { DdcClient, File, FileUri, MB } from '@cere-ddc-sdk/ddc-client';
+import { KB, ROOT_USER_SEED, createDataStream, getBlockchainState, getClientConfig } from '../helpers';
 
 const createFile = (size: number) => new File(createDataStream(size), { size });
 
 describe('Auth', () => {
   const {
-    rpcUrl,
     bucketIds: [publicBucketId, privateBucketId],
   } = getBlockchainState();
 
@@ -15,7 +14,7 @@ describe('Auth', () => {
   let largeFile: File;
 
   beforeAll(async () => {
-    const configs: DdcClientConfig = { blockchain: rpcUrl };
+    const configs = getClientConfig();
 
     ownerClient = await DdcClient.create(ROOT_USER_SEED, configs);
     readerClient = await DdcClient.create('//Bob', configs);
@@ -35,13 +34,13 @@ describe('Auth', () => {
     let publicFileUri: FileUri;
     let privateFileUri: FileUri;
 
-    test('Owner can write to private bucket', async () => {
+    test('Owner can store to private bucket', async () => {
       privateFileUri = await ownerClient.store(privateBucketId, normalFile);
 
       expect(privateFileUri.cid).toBeDefined();
     });
 
-    test('Owner can write to public bucket', async () => {
+    test('Owner can store to public bucket', async () => {
       publicFileUri = await ownerClient.store(publicBucketId, normalFile);
 
       expect(publicFileUri.cid).toBeDefined();
@@ -76,14 +75,10 @@ describe('Auth', () => {
     });
 
     test('Reader can not store to private bucket', async () => {
-      expect(privateBucketId).toBeDefined();
-
       await expect(readerClient.store(privateBucketId, normalFile)).rejects.toThrow();
     });
 
     test('Reader can not store large file to public bucket', async () => {
-      expect(publicBucketId).toBeDefined();
-
       await expect(readerClient.store(publicBucketId, largeFile)).rejects.toThrow();
     });
   });
