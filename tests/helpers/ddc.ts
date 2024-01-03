@@ -1,4 +1,7 @@
 import { StorageNodeConfig, StorageNodeMode } from '@cere-ddc-sdk/ddc';
+import { DdcClientConfig } from '@cere-ddc-sdk/ddc-client';
+
+import { BLOCKCHAIN_RPC_URL } from './blockchain';
 
 type NodeConfig = StorageNodeConfig & {
   mnemonic: string;
@@ -40,3 +43,10 @@ export const getStorageNodes = (host = 'localhost'): NodeConfig[] => [
     mnemonic: 'spike sun exchange lava weekend october sock wait attend garden carbon promote',
   },
 ];
+
+type ClientOptions = Pick<DdcClientConfig, 'logLevel' | 'nodes'>;
+
+export const getClientConfig = (options: ClientOptions = {}): DdcClientConfig => ({
+  blockchain: BLOCKCHAIN_RPC_URL,
+  logLevel: options.logLevel || 'silent',
+});

@@ -86,7 +86,6 @@ export const setupBlockchain = async () => {
   const rootAccount = getAccount();
   const clusterManagerAccount = getAccount('//Alice');
   const clusterId: ClusterId = '0x0000000000000000000000000000000000000001';
-  const bucketIds = [1n, 2n, 3n];
   const bondAmount = 100n * CERE;
   const storageNodeConfigs = getStorageNodes(hostIp);
   const storageNodeAccounts = storageNodeConfigs.map(({ mnemonic }) => getAccount(mnemonic, 'ed25519'));
@@ -173,7 +172,8 @@ export const setupBlockchain = async () => {
   const bucketsSendResult = await blockchain.batchAllSend(
     [
       blockchain.ddcCustomers.deposit(500n * CERE),
-      ...bucketIds.map(() => blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true })),
+      blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true }), // 1n - public bucket
+      blockchain.ddcCustomers.createBucket(clusterId, { isPublic: false }), // 2n - private bucket
     ],
     { account: rootAccount },
   );

@@ -132,12 +132,15 @@ export class FileApi {
     });
 
     for await (const data of createContentStream(content)) {
-      await requests.send({
-        body: {
-          oneofKind: 'content',
-          content: { data },
-        },
-      });
+      await Promise.race([
+        response,
+        requests.send({
+          body: {
+            oneofKind: 'content',
+            content: { data },
+          },
+        }),
+      ]);
     }
 
     await requests.complete();
@@ -165,13 +168,12 @@ export class FileApi {
       });
     }
 
-    const { responses, requests, status } = this.api.getFile({ meta });
+    const call = this.api.getFile({ meta });
 
-    status.then((status) => {
-      this.logger.debug({ status }, 'Data stream ended');
-    });
-
-    await requests.send({
+    /**
+     * Send request message.
+     */
+    await call.requests.send({
       body: {
         oneofKind: 'request',
         request: {
@@ -186,27 +188,29 @@ export class FileApi {
       },
     });
 
-    const createAck = (bytesStoredOrDelivered: number) =>
-      this.createAck({
-        requestId,
-        timestamp: Date.now(),
-        bytesStoredOrDelivered,
-      });
+    /**
+     * Wait for responce headers to be received.
+     */
+    const headers = await call.headers;
+    this.logger.debug({ headers }, 'Server responded with headers');
 
-    async function* toDataStream() {
-      let bytesDelivered = 0;
+    /**
+     * Create data stream from responce messages.
+     */
+    async function* toDataStream(this: FileApi) {
+      let bytesStoredOrDelivered = 0;
 
-      for await (const { body } of responses) {
+      for await (const { body } of call.responses) {
         if (body.oneofKind === 'data') {
           yield body.data;
 
-          bytesDelivered += body.data.byteLength;
+          bytesStoredOrDelivered += body.data.byteLength;
 
           if (enableAcks) {
-            await requests.send({
+            await call.requests.send({
               body: {
                 oneofKind: 'ack',
-                ack: await createAck(bytesDelivered),
+                ack: await this.createAck({ requestId, timestamp: Date.now(), bytesStoredOrDelivered }),
               },
             });
           }
@@ -217,9 +221,9 @@ export class FileApi {
         }
       }
 
-      await requests.complete();
+      await call.requests.complete();
     }
 
-    return createContentStream(toDataStream());
+    return createContentStream(toDataStream.call(this));
   }
 }

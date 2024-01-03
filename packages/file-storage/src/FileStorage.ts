@@ -76,7 +76,7 @@ export class FileStorage {
 
     return node.storePiece(
       bucketId,
-      new MultipartPiece(await Promise.all(parts), { totalSize: file.size, partSize: MAX_PIECE_SIZE }),
+      new MultipartPiece(parts, { totalSize: file.size, partSize: MAX_PIECE_SIZE }),
       options,
     );
   }

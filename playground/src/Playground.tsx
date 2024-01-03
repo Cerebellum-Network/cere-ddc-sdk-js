@@ -147,7 +147,6 @@ export const Playground = () => {
 
   const handleRandomFileUpload = useCallback(async () => {
     setInProgress(true);
-    console.log({ step });
 
     const size = randomFileSize * MB;
     const stream = createDataStream(size);
@@ -166,7 +165,6 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-      console.log({ errorStep: step });
 
       console.error(error);
     }
