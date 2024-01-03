@@ -15,10 +15,7 @@ export const TESTNET: ConfigPreset = {
 };
 
 export const DEVNET: ConfigPreset = {
-  /**
-   * TODO: Use devnet blockchain once it's ready
-   */
-  blockchain: 'wss://ext-devs-node-1.cluster-3.cere.network:9945',
+  blockchain: 'wss://archive.devnet.cere.network/ws',
 };
 
 export const DEFAULT_PRESET = TESTNET;
