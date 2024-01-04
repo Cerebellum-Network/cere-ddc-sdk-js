@@ -1,4 +1,4 @@
-import { consumers, Content, ContentStream, createContentStream, StreamValidator } from './streams';
+import { consumers, Content, ContentStream, createContentStream } from './streams';
 
 import { ReadFileRange } from './FileApi';
 import { Cid } from './Cid';
@@ -97,19 +97,13 @@ export class MultipartPiece {
 
 export class PieceResponse {
   protected cidObject: Cid;
-  protected validator: StreamValidator;
-  protected validatePromise?: Promise<boolean>;
-
-  readonly body: ContentStream;
 
   constructor(
     cid: string | Uint8Array | Cid,
-    body: ContentStream,
+    readonly body: ContentStream,
     protected meta?: PieceResponseMeta,
   ) {
     this.cidObject = cid instanceof Cid ? cid : new Cid(cid);
-    this.validator = new StreamValidator();
-    this.body = body.pipeThrough(this.validator);
   }
 
   get range() {
@@ -120,50 +114,19 @@ export class PieceResponse {
     return this.cidObject.contentHash;
   }
 
-  async isValid() {
-    return this.validate()
-      .then(() => true)
-      .catch(() => false);
-  }
-
   get cid() {
     return this.cidObject.toString();
   }
 
   async arrayBuffer() {
-    const buffer = await consumers.arrayBuffer(this.body);
-
-    return this.validate().then(() => buffer);
+    return consumers.arrayBuffer(this.body);
   }
 
   async text() {
-    const text = await consumers.text(this.body);
-
-    return this.validate().then(() => text);
+    return consumers.text(this.body);
   }
 
   async json() {
-    const json = await consumers.json(this.body);
-
-    return this.validate().then(() => json);
-  }
-
-  private async validate() {
-    /**
-     * Piece validation is not supported for ranged reads
-     *
-     * TODO: Implement piece validation for ranged reads
-     */
-    if (this.meta?.range) {
-      return;
-    }
-
-    if (!this.validatePromise) {
-      this.validatePromise = this.validator.validate(this.cidObject.contentHash);
-    }
-
-    if (!(await this.validatePromise)) {
-      throw new Error('Received piece is not valid - the content hash does not match');
-    }
+    return consumers.json(this.body);
   }
 }

@@ -2,17 +2,18 @@ import { Buffer } from 'buffer';
 import { v4 as uuid } from 'uuid';
 import { Signer } from '@cere-ddc-sdk/blockchain';
 
+import { ContentValidator } from './ContentValidator';
 import { RpcTransport } from '../transports';
 import { createSignature } from '../signature';
 import { Content, createContentStream, getContentSize } from '../streams';
 import { createLogger, Logger, LoggerOptions } from '../Logger';
+import { createRpcMeta, AuthToken } from '../auth';
 import {
   PutMultiPartPieceRequest as ProtoPutMultiPartPieceRequest,
   GetFileRequest_Request,
   PutRawPieceRequest_Metadata,
 } from '../grpc/file_api';
 import { FileApiClient } from '../grpc/file_api.client';
-import { createRpcMeta, AuthToken } from '../auth';
 import {
   ActivityRequest,
   ActivityRequest_ContentType,
@@ -31,6 +32,7 @@ export type PutRawPieceMetadata = Omit<PutRawPieceRequest_Metadata, 'size'> &
 
 export type FileApiOptions = LoggerOptions & {
   signer?: Signer;
+  authenticate?: boolean;
   enableAcks?: boolean;
 };
 
@@ -157,6 +159,10 @@ export class FileApi {
     const requestId = uuid();
     const meta = createRpcMeta(token);
     const { enableAcks } = this.options;
+    const validator = new ContentValidator(request.cid, {
+      logger: this.logger,
+      range: request.range,
+    });
 
     if (enableAcks) {
       meta.request = await this.createActivityRequest({
@@ -179,11 +185,9 @@ export class FileApi {
         request: {
           ...request,
           /**
-           * Currently the proofs are not validated, so we don't need to authenticate the request.
-           *
-           * TODO: Implement proof validation and enable authentication.
+           * TODO: Implement proof validation and enable authentication by default.
            */
-          authenticate: false,
+          authenticate: this.options.authenticate ?? false,
         },
       },
     });
@@ -214,14 +218,17 @@ export class FileApi {
               },
             });
           }
+
+          await validator.update(body.data);
         }
 
         if (body.oneofKind === 'proof') {
-          // TODO: Enable request authentication and validate the proof here.
+          await validator.prove(body.proof);
         }
       }
 
       await call.requests.complete();
+      await validator.validate();
     }
 
     return createContentStream(toDataStream.call(this));
