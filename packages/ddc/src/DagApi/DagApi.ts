@@ -37,7 +37,10 @@ export class DagApi {
   }
 
   async getNode({ token, ...request }: GetRequest): Promise<Node | undefined> {
-    const authenticate = this.options.authenticate && !request.path; // TODO: Figure out how to validate sub-nodes requested by root CID + path
+    /**
+     * In case a sub-node requested using root CID + path - we don't have the target node CID, so we can't authenticate it.
+     */
+    const authenticate = this.options.authenticate && !request.path;
     const validator = new DagNodeValidator(request.cid, {
       enable: authenticate,
       logger: this.logger,
