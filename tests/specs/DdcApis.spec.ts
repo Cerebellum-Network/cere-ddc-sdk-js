@@ -31,6 +31,8 @@ const wholeSpecVariants = [
 const fileSpecVariants = [
   { name: 'with ACKs', enableAcks: true },
   { name: 'without ACKs', enableAcks: false },
+  { name: 'with proofs', authenticate: false },
+  { name: 'without proofs', authenticate: false },
 ];
 
 describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
@@ -154,8 +156,8 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     });
   });
 
-  describe.each(fileSpecVariants)('File Api ($name)', ({ enableAcks }) => {
-    const fileApi = new FileApi(transport, { signer, enableAcks });
+  describe.each(fileSpecVariants)('File Api ($name)', ({ enableAcks, authenticate }) => {
+    const fileApi = new FileApi(transport, { signer, enableAcks, authenticate });
 
     const storeRawPiece = async (content: Content, meta?: PieceMeta) =>
       fileApi.putRawPiece(
