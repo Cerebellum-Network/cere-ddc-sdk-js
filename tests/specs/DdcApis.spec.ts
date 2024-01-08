@@ -35,7 +35,7 @@ const fileSpecVariants = [
 ];
 
 const dagSpecVariants = [
-  { name: 'with proofs', authenticate: false },
+  { name: 'with proofs', authenticate: true },
   { name: 'without proofs', authenticate: false },
 ];
 
