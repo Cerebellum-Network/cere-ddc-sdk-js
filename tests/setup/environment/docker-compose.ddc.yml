@@ -23,6 +23,7 @@ services:
       - 'DATASTORE_MEM_TABLE_SIZE=536870912'
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
+      - 'GOMEMLIMIT=1024MiB'
     ports:
       - '8091:8091'
       - '9071:9071'
@@ -50,6 +51,7 @@ services:
       - 'DATASTORE_MEM_TABLE_SIZE=536870912'
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
+      - 'GOMEMLIMIT=1024MiB'
     ports:
       - '8092:8092'
       - '9072:9072'
@@ -77,6 +79,7 @@ services:
       - 'DATASTORE_MEM_TABLE_SIZE=536870912'
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
+      - 'GOMEMLIMIT=1024MiB'
     ports:
       - '8093:8093'
       - '9073:9073'
@@ -104,6 +107,7 @@ services:
       - 'DATASTORE_MEM_TABLE_SIZE=536870912'
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
+      - 'GOMEMLIMIT=1024MiB'
     ports:
       - '8094:8094'
       - '9074:9074'
@@ -131,6 +135,7 @@ services:
       - 'DATASTORE_MEM_TABLE_SIZE=536870912'
       - 'DAC_PUBKEY=0x965981080d26f6a00f27eb6794b14d9022957402ba7e41169f6339516caba16c'
       - 'LOG_LEVEL=debug'
+      - 'GOMEMLIMIT=1024MiB'
     ports:
       - '8095:8095'
       - '9075:9075'
