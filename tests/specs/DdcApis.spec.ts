@@ -29,10 +29,10 @@ const wholeSpecVariants = [
 ];
 
 const fileSpecVariants = [
-  { name: 'with ACKs', enableAcks: true },
-  { name: 'without ACKs', enableAcks: false },
-  { name: 'with proofs', authenticate: false },
-  { name: 'without proofs', authenticate: false },
+  { name: 'with ACKs', enableAcks: true, authenticate: false },
+  { name: 'without ACKs', enableAcks: false, authenticate: false },
+  { name: 'with proofs', enableAcks: true, authenticate: true },
+  { name: 'without proofs', enableAcks: true, authenticate: false },
 ];
 
 describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {

@@ -28,7 +28,7 @@ export class CidValidator {
 
   async update(chunk: Uint8Array) {
     if (!this.enable) {
-      return;
+      return this;
     }
 
     const hasher = await this.getHasher();
