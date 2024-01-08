@@ -268,7 +268,7 @@ describe('Blockchain', () => {
   });
 
   test('Should return current era', async () => {
-    const era = await blockchain.ddcStaking.getCurrentEra();
+    const era = await blockchain.getCurrentEra();
     expect(era).toBeGreaterThan(0);
   });
 });
