@@ -1,2 +1,2 @@
 export * from './FileValidator';
-export * from './CidValidator';
+export * from './DagNodeValidator';

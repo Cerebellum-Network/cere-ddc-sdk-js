@@ -19,6 +19,7 @@ export type StorageNodeConfig = RpcTransportOptions &
   LoggerOptions & {
     mode: StorageNodeMode;
     enableAcks?: boolean;
+    authenticate?: boolean;
   };
 
 export type PieceReadOptions = {
@@ -47,13 +48,17 @@ export class StorageNode {
 
     this.mode = config.mode;
     this.logger = createLogger('StorageNode', config);
-    this.dagApi = new DagApi(transport);
-    this.cnsApi = new CnsApi(transport, { signer });
-    this.fileApi = new FileApi(transport, {
+
+    const options = {
       signer,
       logger: this.logger,
+      authenticate: config.authenticate,
       enableAcks: config.enableAcks,
-    });
+    };
+
+    this.cnsApi = new CnsApi(transport, options);
+    this.dagApi = new DagApi(transport, options);
+    this.fileApi = new FileApi(transport, options);
 
     this.logger.debug(config, 'Storage node initialized');
 

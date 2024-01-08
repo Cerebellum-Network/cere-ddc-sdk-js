@@ -2,16 +2,30 @@ import { RpcTransport } from '../transports';
 import { PutRequest as ProtoPutRequest, GetRequest as ProtoGetRequest, Node } from '../grpc/dag_api';
 import { DagApiClient } from '../grpc/dag_api.client';
 import { createRpcMeta, AuthToken } from '../auth';
+import { DagNodeValidator } from '../validators';
+import { createLogger, Logger, LoggerOptions } from '../Logger';
 
 type AuthParams = { token?: AuthToken };
 type PutRequest = ProtoPutRequest & AuthParams;
 type GetRequest = ProtoGetRequest & AuthParams;
 
-export class DagApi {
-  private api: DagApiClient;
+export type DagApiOptions = LoggerOptions & {
+  authenticate?: boolean;
+};
 
-  constructor(transport: RpcTransport) {
+export class DagApi {
+  private logger: Logger;
+  private api: DagApiClient;
+  private options: DagApiOptions;
+
+  constructor(transport: RpcTransport, options: DagApiOptions = {}) {
     this.api = new DagApiClient(transport);
+    this.logger = createLogger('FileApi', options);
+
+    this.options = {
+      ...options,
+      authenticate: options.authenticate ?? true,
+    };
   }
 
   async putNode({ token, ...request }: PutRequest) {
@@ -22,16 +36,28 @@ export class DagApi {
     return new Uint8Array(response.cid);
   }
 
-  async getNode({ token, ...request }: GetRequest) {
+  async getNode({ token, ...request }: GetRequest): Promise<Node | undefined> {
+    const { authenticate } = this.options;
+    const validator = new DagNodeValidator(request.cid, {
+      enable: this.options.authenticate,
+      logger: this.logger,
+    });
+
     const { response } = await this.api.get(request, {
       meta: createRpcMeta(token),
     });
 
-    const node: Node | undefined = response.node && {
-      ...response.node,
-      data: new Uint8Array(response.node.data),
-    };
+    if (response.node && authenticate) {
+      await validator.update(Node.toBinary(response.node));
+    }
 
-    return node;
+    await validator.validate();
+
+    return (
+      response.node && {
+        ...response.node,
+        data: new Uint8Array(response.node.data),
+      }
+    );
   }
 }

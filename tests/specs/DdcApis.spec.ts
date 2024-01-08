@@ -34,6 +34,11 @@ const fileSpecVariants = [
   { name: 'ACKs + proofs', enableAcks: true, authenticate: true },
 ];
 
+const dagSpecVariants = [
+  { name: 'with proofs', authenticate: false },
+  { name: 'without proofs', authenticate: false },
+];
+
 describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
   const bucketId = 1n;
   const testRunRandom = Math.round(Math.random() * 10 ** 5);
@@ -45,8 +50,8 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     await token.sign(signer);
   });
 
-  describe('Dag Api', () => {
-    const dagApi = new DagApi(transport);
+  describe.each(dagSpecVariants)('DAG Api ($name)', ({ authenticate }) => {
+    const dagApi = new DagApi(transport, { authenticate });
     const nodeData = new Uint8Array(randomBytes(10));
 
     let nodeCid: Uint8Array;
