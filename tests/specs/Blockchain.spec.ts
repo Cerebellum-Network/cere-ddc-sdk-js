@@ -266,4 +266,9 @@ describe('Blockchain', () => {
     const buckets = await blockchain.ddcCustomers.listBuckets();
     expect(buckets.length).toBeGreaterThan(0);
   });
+
+  test('Should return current era', async () => {
+    const era = await blockchain.ddcStaking.getCurrentEra();
+    expect(era).toBeGreaterThan(0);
+  });
 });

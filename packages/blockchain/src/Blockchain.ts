@@ -121,6 +121,11 @@ export class Blockchain {
     const { data } = await this.apiPromise.query.system.account<AccountInfo>(accountId);
     return data.free.toBigInt();
   }
+
+  async getCurrentEra() {
+    const currentEra = await this.apiPromise.query.staking.currentEra();
+    return currentEra.toJSON() as number;
+  }
 }
 
 export type Sendable = SubmittableExtrinsic<'promise'>;
