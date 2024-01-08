@@ -28,6 +28,6 @@ export class FileValidator extends CidValidator {
       return;
     }
 
-    super.validate();
+    await super.validate();
   }
 }
