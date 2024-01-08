@@ -125,7 +125,7 @@ export class FileApi {
       });
     }
 
-    const { requests, response } = this.api.putRawPiece({ meta });
+    const { requests, response, headers } = this.api.putRawPiece({ meta });
 
     await requests.send({
       body: {
@@ -134,21 +134,30 @@ export class FileApi {
       },
     });
 
+    let shouldStopSending = false;
+
+    headers
+      .then((headers) => this.logger.debug({ headers }, 'Server responded with headers'))
+      .catch(() => {})
+      .finally(() => {
+        shouldStopSending = true;
+      });
+
     for await (const data of createContentStream(content)) {
-      await Promise.race([
-        response,
-        requests.send({
-          body: {
-            oneofKind: 'content',
-            content: { data },
-          },
-        }),
-      ]);
+      if (shouldStopSending) {
+        break;
+      }
+
+      await requests.send({
+        body: { oneofKind: 'content', content: { data } },
+      });
     }
 
-    await requests.complete();
-    const { cid } = await response;
+    if (!shouldStopSending) {
+      await requests.complete();
+    }
 
+    const { cid } = await response;
     this.logger.debug({ cid }, 'Raw piece stored');
 
     return new Uint8Array(cid);
