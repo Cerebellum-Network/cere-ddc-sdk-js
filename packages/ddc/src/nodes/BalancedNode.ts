@@ -38,12 +38,17 @@ export class BalancedNode implements NodeInterface {
     const exclude: string[] = [];
 
     return retry(
-      async (...args) => {
-        const node = await this.router.getNode(operation, bucketId, exclude);
+      async (bail, attempt) => {
+        try {
+          const node = await this.router.getNode(operation, bucketId, exclude);
+          exclude.push(node.nodeId);
 
-        exclude.push(node.nodeId);
+          return body(node, bail, attempt);
+        } catch (error) {
+          bail(error as Error);
 
-        return body(node, ...args);
+          throw error;
+        }
       },
       {
         retries: 3,
@@ -62,14 +67,14 @@ export class BalancedNode implements NodeInterface {
     return this.withRetry(bucketId, RouterOperation.STORE_PIECE, (node) => node.storePiece(bucketId, piece, options));
   }
 
+  async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
+    return this.withRetry(bucketId, RouterOperation.READ_PIECE, (node) => node.readPiece(bucketId, cidOrName, options));
+  }
+
   async storeDagNode(bucketId: BucketId, dagNode: DagNode, options?: DagNodeStoreOptions) {
     return this.withRetry(bucketId, RouterOperation.STORE_DAG_NODE, (node) =>
       node.storeDagNode(bucketId, dagNode, options),
     );
-  }
-
-  async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
-    return this.withRetry(bucketId, RouterOperation.READ_PIECE, (node) => node.readPiece(bucketId, cidOrName, options));
   }
 
   async getDagNode(bucketId: BucketId, cidOrName: string, options?: DagNodeGetOptions) {
