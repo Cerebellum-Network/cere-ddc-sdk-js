@@ -48,7 +48,7 @@ export class DdcClient {
       ? new Router({ signer, nodes: config.nodes, logger })
       : new Router({ signer, blockchain, logger });
 
-    const ddcNode = new BalancedNode(router);
+    const ddcNode = new BalancedNode({ router, logger });
     const fileStorage = new FileStorage(router, { ...config, logger });
 
     logger.debug(config, 'DdcClient created');

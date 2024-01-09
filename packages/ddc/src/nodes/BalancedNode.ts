@@ -1,8 +1,11 @@
+import retry, { Options as RetryOptions } from 'async-retry';
 import { BucketId } from '@cere-ddc-sdk/blockchain';
+
 import { Router, RouterOperation } from '../routing';
 import { Piece, MultipartPiece } from '../Piece';
 import { DagNode } from '../DagNode';
 import { CnsRecord } from '../CnsRecord';
+import { Logger, LoggerOptions, createLogger } from '../logger';
 import {
   DagNodeGetOptions,
   DagNodeStoreOptions,
@@ -11,48 +14,79 @@ import {
   NodeInterface,
 } from './NodeInterface';
 
+export type BalancedNodeConfig = LoggerOptions & {
+  router: Router;
+};
+
 export class BalancedNode implements NodeInterface {
-  constructor(private router: Router) {}
+  readonly nodeId = 'BalancedNode';
+
+  private router: Router;
+  private logger: Logger;
+
+  constructor({ router, ...config }: BalancedNodeConfig) {
+    this.router = router;
+    this.logger = createLogger('BalancedNode', config);
+  }
+
+  private async withRetry<T>(
+    bucketId: BucketId,
+    operation: RouterOperation,
+    body: (node: NodeInterface, bail: (e: Error) => void, attempt: number) => Promise<T>,
+    options: RetryOptions = {},
+  ) {
+    const exclude: string[] = [];
+
+    return retry(
+      async (...args) => {
+        const node = await this.router.getNode(operation, bucketId, exclude);
+
+        exclude.push(node.nodeId);
+
+        return body(node, ...args);
+      },
+      {
+        retries: 3,
+        minTimeout: 0,
+        ...options,
+        onRetry: (error, attempt) => {
+          options.onRetry?.(error, attempt);
+
+          this.logger.warn({ error, attempt }, 'Retrying operation');
+        },
+      },
+    );
+  }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
-    const node = await this.router.getNode(RouterOperation.STORE_PIECE, bucketId);
-
-    return node.storePiece(bucketId, piece, options);
+    return this.withRetry(bucketId, RouterOperation.STORE_PIECE, (node) => node.storePiece(bucketId, piece, options));
   }
 
   async storeDagNode(bucketId: BucketId, dagNode: DagNode, options?: DagNodeStoreOptions) {
-    const node = await this.router.getNode(RouterOperation.STORE_DAG_NODE, bucketId);
-
-    return node.storeDagNode(bucketId, dagNode, options);
+    return this.withRetry(bucketId, RouterOperation.STORE_DAG_NODE, (node) =>
+      node.storeDagNode(bucketId, dagNode, options),
+    );
   }
 
   async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
-    const node = await this.router.getNode(RouterOperation.READ_PIECE, bucketId);
-
-    return node.readPiece(bucketId, cidOrName, options);
+    return this.withRetry(bucketId, RouterOperation.READ_PIECE, (node) => node.readPiece(bucketId, cidOrName, options));
   }
 
   async getDagNode(bucketId: BucketId, cidOrName: string, options?: DagNodeGetOptions) {
-    const node = await this.router.getNode(RouterOperation.READ_DAG_NODE, bucketId);
-
-    return node.getDagNode(bucketId, cidOrName, options);
+    return this.withRetry(bucketId, RouterOperation.READ_DAG_NODE, (node) =>
+      node.getDagNode(bucketId, cidOrName, options),
+    );
   }
 
   async storeCnsRecord(bucketId: BucketId, record: CnsRecord) {
-    const node = await this.router.getNode(RouterOperation.STORE_CNS_RECORD, bucketId);
-
-    return node.storeCnsRecord(bucketId, record);
+    return this.withRetry(bucketId, RouterOperation.STORE_CNS_RECORD, (node) => node.storeCnsRecord(bucketId, record));
   }
 
   async getCnsRecord(bucketId: BucketId, name: string) {
-    const node = await this.router.getNode(RouterOperation.READ_CNS_RECORD, bucketId);
-
-    return node.getCnsRecord(bucketId, name);
+    return this.withRetry(bucketId, RouterOperation.READ_CNS_RECORD, (node) => node.getCnsRecord(bucketId, name));
   }
 
   async resolveName(bucketId: BucketId, cidOrName: string) {
-    const node = await this.router.getNode(RouterOperation.READ_CNS_RECORD, bucketId);
-
-    return node.resolveName(bucketId, cidOrName);
+    return this.withRetry(bucketId, RouterOperation.READ_CNS_RECORD, (node) => node.resolveName(bucketId, cidOrName));
   }
 }

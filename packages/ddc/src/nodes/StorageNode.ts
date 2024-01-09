@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 import type { Signer, BucketId, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 
 import { Cid } from '../Cid';
@@ -21,11 +22,14 @@ import {
 export type StorageNodeConfig = RpcTransportOptions &
   LoggerOptions & {
     mode: StorageNodeMode;
+    nodeId?: string;
     enableAcks?: boolean;
     authenticate?: boolean;
   };
 
 export class StorageNode implements NodeInterface {
+  readonly nodeId: string;
+
   private dagApi: DagApi;
   private fileApi: FileApi;
   private cnsApi: CnsApi;
@@ -38,6 +42,7 @@ export class StorageNode implements NodeInterface {
   ) {
     const transport = new DefaultTransport(config);
 
+    this.nodeId = config.nodeId || uuid();
     this.mode = config.mode;
     this.logger = createLogger('StorageNode', config);
 

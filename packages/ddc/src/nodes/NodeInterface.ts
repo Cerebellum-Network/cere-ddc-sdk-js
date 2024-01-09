@@ -23,6 +23,8 @@ export type PieceStoreOptions = NamingOptions;
 export type DagNodeStoreOptions = NamingOptions;
 
 export interface NodeInterface {
+  readonly nodeId: string;
+
   storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions): Promise<string>;
   storeDagNode(bucketId: BucketId, node: DagNode, options?: DagNodeStoreOptions): Promise<string>;
   readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions): Promise<PieceResponse>;
