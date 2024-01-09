@@ -6,7 +6,7 @@ import { FileValidator } from '../validators';
 import { RpcTransport } from '../transports';
 import { createSignature } from '../signature';
 import { Content, createContentStream, getContentSize } from '../streams';
-import { createLogger, Logger, LoggerOptions } from '../Logger';
+import { createLogger, Logger, LoggerOptions } from '../logger';
 import { createRpcMeta, AuthToken } from '../auth';
 import {
   PutMultiPartPieceRequest as ProtoPutMultiPartPieceRequest,

@@ -10,9 +10,9 @@ export { GrpcTransport, WebsocketTransport } from './transports';
 /**
  * High level API
  */
-export * from './Router';
+export * from './nodes';
+export * from './routing';
 export * from './Piece';
-export * from './StorageNode';
 export { DagNode, DagNodeResponse, Link, Tag } from './DagNode';
 export { CnsRecord, CnsRecordResponse } from './CnsRecord';
 export { AuthToken, AuthTokenOperation } from './auth';
@@ -28,7 +28,7 @@ export {
  * Utilities
  */
 export { splitStream, createContentStream, type SplitStreamMapper, type Content, type ContentStream } from './streams';
-export * from './Logger';
+export * from './logger';
 
 /**
  * Constants

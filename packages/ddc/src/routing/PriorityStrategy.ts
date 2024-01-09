@@ -31,6 +31,18 @@ const priorityMap: OperationPriorityMap = {
     [Mode.Storage]: 2,
     [Mode.Cache]: undefined, // Not applicable for the operation
   },
+
+  [Operation.READ_CNS_RECORD]: {
+    [Mode.Full]: 1,
+    [Mode.Cache]: 1,
+    [Mode.Storage]: 2,
+  },
+
+  [Operation.STORE_CNS_RECORD]: {
+    [Mode.Full]: 1,
+    [Mode.Storage]: 2,
+    [Mode.Cache]: undefined, // Not applicable for the operation
+  },
 };
 
 export abstract class PriorityStrategy extends BaseStrategy {

@@ -1,10 +1,10 @@
 import { BucketId, Signer } from '@cere-ddc-sdk/blockchain';
 
+import { StorageNode } from '../nodes';
 import { RouterOperation, RoutingStrategy } from './RoutingStrategy';
 import { BlockchainStrategy, BlockchainStrategyConfig } from './BlockchainStrategy';
 import { StaticStrategy, StaticStrategyConfig } from './StaticStrategy';
-import { Logger, LoggerOptions, createLogger } from '../Logger';
-import { StorageNode } from '../StorageNode';
+import { Logger, LoggerOptions, createLogger } from '../logger';
 
 export type RouterConfig = (StaticStrategyConfig | BlockchainStrategyConfig) &
   LoggerOptions & {

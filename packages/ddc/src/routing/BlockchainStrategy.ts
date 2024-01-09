@@ -2,7 +2,7 @@ import { Blockchain, Bucket, BucketId, ClusterId, StorageNode as BCStorageNode }
 
 import { RouterNode } from './RoutingStrategy';
 import { PriorityStrategy } from './PriorityStrategy';
-import { Logger } from '../Logger';
+import { Logger } from '../logger';
 
 export type BlockchainStrategyConfig = {
   blockchain: Blockchain;

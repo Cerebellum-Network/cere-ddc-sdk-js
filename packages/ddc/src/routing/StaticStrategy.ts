@@ -2,7 +2,7 @@ import { BucketId } from '@cere-ddc-sdk/blockchain';
 
 import { RouterNode } from './RoutingStrategy';
 import { PriorityStrategy } from './PriorityStrategy';
-import { Logger } from '../Logger';
+import { Logger } from '../logger';
 
 export type StaticStrategyConfig = {
   nodes: RouterNode[];

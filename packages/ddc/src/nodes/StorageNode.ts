@@ -1,19 +1,22 @@
 import type { Signer, BucketId, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 
-import { Cid } from './Cid';
-import { CnsApi } from './CnsApi';
-import { DagApi } from './DagApi';
-import { FileApi, ReadFileRange } from './FileApi';
-import { MultipartPiece, Piece, PieceResponse } from './Piece';
-import { DagNode, DagNodeResponse, mapDagNodeToAPI } from './DagNode';
-import { CnsRecord, CnsRecordResponse, mapCnsRecordToAPI } from './CnsRecord';
-import { DefaultTransport, RpcTransportOptions } from './transports';
-import { bindErrorLogger, createLogger, Logger, LoggerOptions } from './Logger';
-import { AuthTokenOperation, AuthToken } from './auth';
-
-type NamingOptions = {
-  name?: string;
-};
+import { Cid } from '../Cid';
+import { CnsApi } from '../CnsApi';
+import { DagApi } from '../DagApi';
+import { FileApi } from '../FileApi';
+import { MultipartPiece, Piece, PieceResponse } from '../Piece';
+import { DagNode, DagNodeResponse, mapDagNodeToAPI } from '../DagNode';
+import { CnsRecord, CnsRecordResponse, mapCnsRecordToAPI } from '../CnsRecord';
+import { DefaultTransport, RpcTransportOptions } from '../transports';
+import { bindErrorLogger, createLogger, Logger, LoggerOptions } from '../logger';
+import { AuthTokenOperation, AuthToken } from '../auth';
+import {
+  DagNodeGetOptions,
+  DagNodeStoreOptions,
+  PieceReadOptions,
+  PieceStoreOptions,
+  NodeInterface,
+} from './NodeInterface';
 
 export type StorageNodeConfig = RpcTransportOptions &
   LoggerOptions & {
@@ -22,18 +25,7 @@ export type StorageNodeConfig = RpcTransportOptions &
     authenticate?: boolean;
   };
 
-export type PieceReadOptions = {
-  range?: ReadFileRange;
-};
-
-export type DagNodeGetOptions = {
-  path?: string;
-};
-
-export type PieceStoreOptions = NamingOptions;
-export type DagNodeStoreOptions = NamingOptions;
-
-export class StorageNode {
+export class StorageNode implements NodeInterface {
   private dagApi: DagApi;
   private fileApi: FileApi;
   private cnsApi: CnsApi;
