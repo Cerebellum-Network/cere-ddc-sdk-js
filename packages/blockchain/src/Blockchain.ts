@@ -121,6 +121,11 @@ export class Blockchain {
     const { data } = await this.apiPromise.query.system.account<AccountInfo>(accountId);
     return data.free.toBigInt();
   }
+
+  async getCurrentBlockNumber() {
+    const { number } = await this.apiPromise.rpc.chain.getHeader();
+    return number.toNumber();
+  }
 }
 
 export type Sendable = SubmittableExtrinsic<'promise'>;
