@@ -11,7 +11,7 @@ import {
   NodeInterface,
 } from './NodeInterface';
 
-export class BalancedStorageNode implements NodeInterface {
+export class BalancedNode implements NodeInterface {
   constructor(private router: Router) {}
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
