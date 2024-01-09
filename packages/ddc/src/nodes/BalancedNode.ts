@@ -1,6 +1,9 @@
 import retry, { Options as RetryOptions } from 'async-retry';
+import { RpcError } from '@protobuf-ts/runtime-rpc';
+import { status as GrpcStatus } from '@grpc/grpc-js';
 import { BucketId } from '@cere-ddc-sdk/blockchain';
 
+import { RETRYABLE_GRPC_ERROR_CODES } from '../constants';
 import { Router, RouterOperation } from '../routing';
 import { Piece, MultipartPiece } from '../Piece';
 import { DagNode } from '../DagNode';
@@ -43,24 +46,29 @@ export class BalancedNode implements NodeInterface {
           const node = await this.router.getNode(operation, bucketId, exclude);
           exclude.push(node.nodeId);
 
-          return body(node, bail, attempt);
+          return await body(node, bail, attempt);
         } catch (error) {
-          bail(error as Error);
+          if (
+            error instanceof RpcError &&
+            RETRYABLE_GRPC_ERROR_CODES.map((status) => GrpcStatus[status]).includes(error.code)
+          ) {
+            throw error;
+          }
 
-          throw error;
+          bail(error as Error);
         }
       },
       {
-        retries: 3,
+        retries: 5,
         minTimeout: 0,
         ...options,
-        onRetry: (error, attempt) => {
-          options.onRetry?.(error, attempt);
+        onRetry: (err, attempt) => {
+          options.onRetry?.(err, attempt);
 
-          this.logger.warn({ error, attempt }, 'Retrying operation');
+          this.logger.warn({ err, attempt }, 'Retrying operation');
         },
       },
-    );
+    ) as T;
   }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {

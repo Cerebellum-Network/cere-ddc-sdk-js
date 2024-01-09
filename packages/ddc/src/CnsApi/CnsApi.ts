@@ -1,3 +1,5 @@
+import { status as GrpcStatus } from '@grpc/grpc-js';
+import { RpcError } from '@protobuf-ts/runtime-rpc';
 import type { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { RpcTransport } from '../transports';
@@ -69,7 +71,11 @@ export class CnsApi {
       });
 
       record = response.record;
-    } catch {
+    } catch (error) {
+      if (!(error instanceof RpcError && error.code === GrpcStatus[GrpcStatus.NOT_FOUND])) {
+        throw error;
+      }
+
       record = undefined;
     }
 
