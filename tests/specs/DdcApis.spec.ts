@@ -29,8 +29,14 @@ const wholeSpecVariants = [
 ];
 
 const fileSpecVariants = [
-  { name: 'with ACKs', enableAcks: true },
-  { name: 'without ACKs', enableAcks: false },
+  { name: 'with ACKs', enableAcks: true, authenticate: false },
+  { name: 'without ACKs', enableAcks: false, authenticate: false },
+  { name: 'ACKs + proofs', enableAcks: true, authenticate: true },
+];
+
+const dagSpecVariants = [
+  { name: 'with proofs', authenticate: true },
+  { name: 'without proofs', authenticate: false },
 ];
 
 describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
@@ -44,8 +50,8 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     await token.sign(signer);
   });
 
-  describe('Dag Api', () => {
-    const dagApi = new DagApi(transport);
+  describe.each(dagSpecVariants)('DAG Api ($name)', ({ authenticate }) => {
+    const dagApi = new DagApi(transport, { authenticate });
     const nodeData = new Uint8Array(randomBytes(10));
 
     let nodeCid: Uint8Array;
@@ -154,8 +160,8 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     });
   });
 
-  describe.each(fileSpecVariants)('File Api ($name)', ({ enableAcks }) => {
-    const fileApi = new FileApi(transport, { signer, enableAcks });
+  describe.each(fileSpecVariants)('File Api ($name)', ({ enableAcks, authenticate }) => {
+    const fileApi = new FileApi(transport, { signer, enableAcks, authenticate });
 
     const storeRawPiece = async (content: Content, meta?: PieceMeta) =>
       fileApi.putRawPiece(

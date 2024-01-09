@@ -2,7 +2,7 @@ import { Buffer } from 'buffer';
 import { v4 as uuid } from 'uuid';
 import { Signer } from '@cere-ddc-sdk/blockchain';
 
-import { ContentValidator } from './ContentValidator';
+import { FileValidator } from '../validators';
 import { RpcTransport } from '../transports';
 import { createSignature } from '../signature';
 import { Content, createContentStream, getContentSize } from '../streams';
@@ -50,6 +50,7 @@ export class FileApi {
     this.options = {
       ...options,
       enableAcks: options.enableAcks ?? !!options.signer, // ACKs are enabled by default if signer is provided
+      authenticate: options.authenticate ?? false,
     };
   }
 
@@ -168,7 +169,8 @@ export class FileApi {
     const requestId = uuid();
     const meta = createRpcMeta(token);
     const { enableAcks } = this.options;
-    const validator = new ContentValidator(request.cid, {
+    const validator = new FileValidator(request.cid, {
+      enable: this.options.authenticate,
       logger: this.logger,
       range: request.range,
     });
@@ -193,9 +195,6 @@ export class FileApi {
         oneofKind: 'request',
         request: {
           ...request,
-          /**
-           * TODO: Implement proof validation and enable authentication by default.
-           */
           authenticate: this.options.authenticate ?? false,
         },
       },
