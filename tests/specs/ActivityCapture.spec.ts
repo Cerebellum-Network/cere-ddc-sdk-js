@@ -80,7 +80,7 @@ describe('Activity Capture', () => {
       expect(activityRequest).toEqual({
         bucketId,
         contentType: 0, // ContentType.PIECE
-        requestType: 1, // RequestType.STORE
+        requestType: 1, // RequestType.GET
         offset: 0,
         size: 0,
         id: Buffer.from(fileCid),
