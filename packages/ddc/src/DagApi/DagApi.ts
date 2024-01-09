@@ -24,7 +24,7 @@ export class DagApi {
 
     this.options = {
       ...options,
-      authenticate: options.authenticate ?? true,
+      authenticate: options.authenticate ?? false,
     };
   }
 

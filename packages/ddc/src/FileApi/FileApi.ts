@@ -50,7 +50,7 @@ export class FileApi {
     this.options = {
       ...options,
       enableAcks: options.enableAcks ?? !!options.signer, // ACKs are enabled by default if signer is provided
-      authenticate: options.authenticate ?? false, // TODO: Implement proof validation and enable authentication by default
+      authenticate: options.authenticate ?? false,
     };
   }
 
