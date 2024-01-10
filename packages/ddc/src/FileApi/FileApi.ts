@@ -135,6 +135,7 @@ export class FileApi {
     });
 
     let shouldStopSending = false;
+    const contentStream = createContentStream(content);
 
     headers
       .then((headers) => this.logger.debug({ headers }, 'Server responded with headers'))
@@ -143,7 +144,7 @@ export class FileApi {
         shouldStopSending = true;
       });
 
-    for await (const data of createContentStream(content)) {
+    for await (const data of contentStream) {
       if (shouldStopSending) {
         break;
       }
@@ -152,6 +153,8 @@ export class FileApi {
         body: { oneofKind: 'content', content: { data } },
       });
     }
+
+    await contentStream.cancel();
 
     if (!shouldStopSending) {
       await requests.complete();

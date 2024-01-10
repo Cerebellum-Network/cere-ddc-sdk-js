@@ -41,6 +41,8 @@ describe('DDC Client', () => {
     });
 
     test('Read medium file', async () => {
+      expect(uri).toBeDefined();
+
       const file = await client.read(uri);
       const buffer = await file.arrayBuffer();
 
@@ -48,6 +50,8 @@ describe('DDC Client', () => {
     });
 
     test('Read a range of medium file', async () => {
+      expect(uri).toBeDefined();
+
       const file = await client.read(uri, {
         range: {
           start: 0,
@@ -74,6 +78,8 @@ describe('DDC Client', () => {
     });
 
     test('Read tiny file', async () => {
+      expect(tinyUri).toBeDefined();
+
       const file = await client.read(tinyUri);
       const text = await file.text();
 
