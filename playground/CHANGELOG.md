@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.0-rc.29](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0-rc.28...v2.0.0-rc.29) (2024-01-10)
+
+**Note:** Version bump only for package @cere-ddc-sdk/playground
+
+## [2.0.0-rc.28](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0-rc.27...v2.0.0-rc.28) (2024-01-09)
+
+**Note:** Version bump only for package @cere-ddc-sdk/playground
+
+## [2.0.0-rc.27](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0-rc.26...v2.0.0-rc.27) (2024-01-09)
+
+### Bug Fixes
+
+- **ddc:** Fix sending several excessive messages to already closing upload stream ([#204](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/204)) ([b43dac8](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/b43dac86e77902ebf8bf3eca22fb4b6e51098696))
+
 ## [2.0.0-rc.26](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0-rc.25...v2.0.0-rc.26) (2024-01-03)
 
 ### Bug Fixes

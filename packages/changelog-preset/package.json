@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/conventional-changelog-changelog-preset",
-  "version": "2.0.0-rc.26",
+  "version": "2.0.0-rc.29",
   "private": true,
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",

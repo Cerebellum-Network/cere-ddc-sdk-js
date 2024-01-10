@@ -17,8 +17,8 @@ export class DDCStakingPallet {
     return this.apiPromise.tx.ddcStaking.chill() as Sendable;
   }
 
-  fastChillStorage(storageNodePubKey: StorageNodePublicKey) {
-    return this.apiPromise.tx.ddcStaking.fastChill({ StoragePubKey: storageNodePubKey }) as Sendable;
+  fastChillStorage() {
+    return this.apiPromise.tx.ddcStaking.fastChill() as Sendable;
   }
 
   unbond(amount: Amount) {

@@ -185,6 +185,7 @@ export class FileApi {
         bucketId: request.bucketId,
         offset: request.range?.start,
         size: request.range && request.range.end - request.range.start + 1,
+        requestType: RequestType.GET,
       });
     }
 

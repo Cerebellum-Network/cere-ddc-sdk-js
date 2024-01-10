@@ -266,4 +266,9 @@ describe('Blockchain', () => {
     const buckets = await blockchain.ddcCustomers.listBuckets();
     expect(buckets.length).toBeGreaterThan(0);
   });
+
+  test('Returns current block number', async () => {
+    const currentBlockNumber = await blockchain.getCurrentBlockNumber();
+    expect(currentBlockNumber).toBeGreaterThan(0);
+  });
 });
