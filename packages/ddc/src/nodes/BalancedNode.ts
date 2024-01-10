@@ -3,7 +3,7 @@ import { RpcError } from '@protobuf-ts/runtime-rpc';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { BucketId } from '@cere-ddc-sdk/blockchain';
 
-import { RETRYABLE_GRPC_ERROR_CODES } from '../constants';
+import { RETRYABLE_GRPC_ERROR_CODES, RETRY_MAX_ATTEPTS } from '../constants';
 import { Router, RouterOperation } from '../routing';
 import { Piece, MultipartPiece } from '../Piece';
 import { DagNode } from '../DagNode';
@@ -59,7 +59,7 @@ export class BalancedNode implements NodeInterface {
         }
       },
       {
-        retries: 5,
+        retries: RETRY_MAX_ATTEPTS,
         minTimeout: 0,
         ...options,
         onRetry: (err, attempt) => {
@@ -72,9 +72,20 @@ export class BalancedNode implements NodeInterface {
   }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
-    return this.withRetry(bucketId, RouterOperation.STORE_PIECE, (node) => node.storePiece(bucketId, piece, options), {
-      retries: 0, // TODO: figure out how to enable retries for duplex streaming operations
-    });
+    const isRetriablePiece = Piece.isStaticPiece(piece) || MultipartPiece.isMultipartPiece(piece);
+
+    return this.withRetry(
+      bucketId,
+      RouterOperation.STORE_PIECE,
+      (node, bail, isRetry) => {
+        const finalPiece = isRetry && Piece.isPiece(piece) ? Piece.from(piece) : piece;
+
+        return node.storePiece(bucketId, finalPiece, options);
+      },
+      {
+        retries: isRetriablePiece ? RETRY_MAX_ATTEPTS : 0,
+      },
+    );
   }
 
   async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
