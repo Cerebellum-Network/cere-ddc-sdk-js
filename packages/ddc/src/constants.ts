@@ -1,4 +1,4 @@
-import { status as GrpcStatus } from '@grpc/grpc-js';
+import { GrpcStatus } from './grpc/status';
 
 export const KB = 1024;
 export const MB = 1024 * KB;

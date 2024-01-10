@@ -1,8 +1,8 @@
 import retry, { Options as RetryOptions } from 'async-retry';
 import { RpcError } from '@protobuf-ts/runtime-rpc';
-import { status as GrpcStatus } from '@grpc/grpc-js';
 import { BucketId } from '@cere-ddc-sdk/blockchain';
 
+import { GrpcStatus } from '../grpc/status';
 import { RETRYABLE_GRPC_ERROR_CODES, RETRY_MAX_ATTEPTS } from '../constants';
 import { Router, RouterOperation } from '../routing';
 import { Piece, MultipartPiece } from '../Piece';

@@ -17,6 +17,7 @@ import {
   DeferredState,
 } from '@protobuf-ts/runtime-rpc';
 
+import { GrpcStatus } from '../grpc/status';
 import { RpcTransport, RpcTransportOptions } from './RpcTransport';
 
 export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl' | 'ssl'>;
@@ -77,14 +78,14 @@ export class WebsocketTransport implements RpcTransport {
 
     client.onEnd((status, statusMessage, trailers) => {
       defStatus.resolvePending({
-        code: grpc.Code[status],
+        code: GrpcStatus[status],
         detail: statusMessage,
       });
 
       defTrailer.resolvePending(trailers.headersMap);
 
       if (status !== grpc.Code.OK) {
-        const error = new RpcError(statusMessage, grpc.Code[status]);
+        const error = new RpcError(statusMessage, GrpcStatus[status]);
 
         defHeader.rejectPending(error);
         defMessage.rejectPending(error);
@@ -145,14 +146,14 @@ export class WebsocketTransport implements RpcTransport {
 
     client.onEnd((status, statusMessage, trailers) => {
       defStatus.resolvePending({
-        code: grpc.Code[status],
+        code: GrpcStatus[status],
         detail: statusMessage,
       });
 
       defTrailer.resolvePending(trailers.headersMap);
 
       if (status !== grpc.Code.OK) {
-        const error = new RpcError(statusMessage, grpc.Code[status]);
+        const error = new RpcError(statusMessage, GrpcStatus[status]);
 
         defHeader.rejectPending(error);
         defStatus.rejectPending(error);
@@ -235,12 +236,12 @@ export class WebsocketTransport implements RpcTransport {
         defHeader.resolvePending(output.headers.headersMap);
         defTrailer.resolvePending(output.headers.headersMap);
         defStatus.resolvePending({
-          code: grpc.Code[output.status],
+          code: GrpcStatus[output.status],
           detail: output.statusMessage,
         });
 
         if (output.status !== grpc.Code.OK) {
-          throw new RpcError(output.statusMessage, grpc.Code[output.status]);
+          throw new RpcError(output.statusMessage, GrpcStatus[output.status]);
         }
 
         if (output.message) {

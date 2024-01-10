@@ -1,12 +1,12 @@
-import { status as GrpcStatus } from '@grpc/grpc-js';
 import { RpcError } from '@protobuf-ts/runtime-rpc';
 import type { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { RpcTransport } from '../transports';
+import { createRpcMeta, AuthToken } from '../auth';
+import { GrpcStatus } from '../grpc/status';
 import { createSignature, mapSignature, Signature } from '../signature';
 import { CnsApiClient } from '../grpc/cns_api.client';
 import { GetRequest as ProtoGetRequest, PutRequest as ProtoPutRequest, Record as ProtoRecord } from '../grpc/cns_api';
-import { createRpcMeta, AuthToken } from '../auth';
 
 type AuthParams = { token?: AuthToken };
 export type Record = Omit<ProtoRecord, 'signature'> & {
