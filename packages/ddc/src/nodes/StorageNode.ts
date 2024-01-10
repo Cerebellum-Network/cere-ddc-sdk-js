@@ -1,39 +1,35 @@
+import { v4 as uuid } from 'uuid';
 import type { Signer, BucketId, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 
-import { Cid } from './Cid';
-import { CnsApi } from './CnsApi';
-import { DagApi } from './DagApi';
-import { FileApi, ReadFileRange } from './FileApi';
-import { MultipartPiece, Piece, PieceResponse } from './Piece';
-import { DagNode, DagNodeResponse, mapDagNodeToAPI } from './DagNode';
-import { CnsRecord, CnsRecordResponse, mapCnsRecordToAPI } from './CnsRecord';
-import { DefaultTransport, RpcTransportOptions } from './transports';
-import { bindErrorLogger, createLogger, Logger, LoggerOptions } from './Logger';
-import { AuthTokenOperation, AuthToken } from './auth';
-
-type NamingOptions = {
-  name?: string;
-};
+import { Cid } from '../Cid';
+import { CnsApi } from '../CnsApi';
+import { DagApi } from '../DagApi';
+import { FileApi } from '../FileApi';
+import { MultipartPiece, Piece, PieceResponse } from '../Piece';
+import { DagNode, DagNodeResponse, mapDagNodeToAPI } from '../DagNode';
+import { CnsRecord, CnsRecordResponse, mapCnsRecordToAPI } from '../CnsRecord';
+import { DefaultTransport, RpcTransportOptions } from '../transports';
+import { bindErrorLogger, createLogger, Logger, LoggerOptions } from '../logger';
+import { AuthTokenOperation, AuthToken } from '../auth';
+import {
+  DagNodeGetOptions,
+  DagNodeStoreOptions,
+  PieceReadOptions,
+  PieceStoreOptions,
+  NodeInterface,
+} from './NodeInterface';
 
 export type StorageNodeConfig = RpcTransportOptions &
   LoggerOptions & {
     mode: StorageNodeMode;
+    nodeId?: string;
     enableAcks?: boolean;
     authenticate?: boolean;
   };
 
-export type PieceReadOptions = {
-  range?: ReadFileRange;
-};
+export class StorageNode implements NodeInterface {
+  readonly nodeId: string;
 
-export type DagNodeGetOptions = {
-  path?: string;
-};
-
-export type PieceStoreOptions = NamingOptions;
-export type DagNodeStoreOptions = NamingOptions;
-
-export class StorageNode {
   private dagApi: DagApi;
   private fileApi: FileApi;
   private cnsApi: CnsApi;
@@ -46,6 +42,7 @@ export class StorageNode {
   ) {
     const transport = new DefaultTransport(config);
 
+    this.nodeId = config.nodeId || uuid();
     this.mode = config.mode;
     this.logger = createLogger('StorageNode', config);
 

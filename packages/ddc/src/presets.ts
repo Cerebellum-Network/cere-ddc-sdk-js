@@ -1,5 +1,5 @@
 import { StorageNodeMode } from '@cere-ddc-sdk/blockchain';
-import { RouterNode } from './Router';
+import { RouterNode } from './routing';
 
 export type ConfigPreset = {
   blockchain: string;

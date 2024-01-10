@@ -2,7 +2,6 @@ import {
   DagNode,
   DagNodeResponse,
   Router,
-  RouterOperation,
   Signer,
   UriSigner,
   DagNodeStoreOptions,
@@ -13,6 +12,8 @@ import {
   Logger,
   createLogger,
   bindErrorLogger,
+  NodeInterface,
+  BalancedNode,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
 import { Blockchain, BucketId, BucketParams, ClusterId } from '@cere-ddc-sdk/blockchain';
@@ -26,8 +27,8 @@ export type DdcClientConfig = LoggerOptions &
 
 export class DdcClient {
   protected constructor(
+    private readonly ddcNode: NodeInterface,
     private readonly blockchain: Blockchain,
-    private readonly router: Router,
     private readonly fileStorage: FileStorage,
     private readonly signer: Signer,
     private readonly logger: Logger,
@@ -47,11 +48,12 @@ export class DdcClient {
       ? new Router({ signer, nodes: config.nodes, logger })
       : new Router({ signer, blockchain, logger });
 
+    const ddcNode = new BalancedNode({ router, logger });
     const fileStorage = new FileStorage(router, { ...config, logger });
 
     logger.debug(config, 'DdcClient created');
 
-    return new DdcClient(blockchain, router, fileStorage, signer, logger);
+    return new DdcClient(ddcNode, blockchain, fileStorage, signer, logger);
   }
 
   async disconnect() {
@@ -131,9 +133,7 @@ export class DdcClient {
   }
 
   private async storeDagNode(bucketId: BucketId, node: DagNode, options?: DagNodeStoreOptions) {
-    const ddcNode = await this.router.getNode(RouterOperation.STORE_DAG_NODE, BigInt(bucketId));
-
-    return ddcNode.storeDagNode(bucketId, node, options);
+    return this.ddcNode.storeDagNode(bucketId, node, options);
   }
 
   async read(uri: FileUri, options?: FileReadOptions): Promise<FileResponse>;
@@ -145,8 +145,6 @@ export class DdcClient {
       return this.fileStorage.read(uri.bucketId, uri.cidOrName, options as FileReadOptions);
     }
 
-    const ddcNode = await this.router.getNode(RouterOperation.READ_DAG_NODE, uri.bucketId);
-
-    return ddcNode.getDagNode(uri.bucketId, uri.cidOrName, options as DagNodeGetOptions);
+    return this.ddcNode.getDagNode(uri.bucketId, uri.cidOrName, options as DagNodeGetOptions);
   }
 }

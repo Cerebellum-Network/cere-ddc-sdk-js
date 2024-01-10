@@ -31,7 +31,7 @@ export class Piece {
   constructor(content: Content, meta: StreamPieceMeta);
   constructor(content: Uint8Array, meta?: StaticPieceMeta);
   constructor(
-    content: Content,
+    protected content: Content,
     readonly meta: PieceMeta = {},
   ) {
     this.offset = meta.multipartOffset;
@@ -64,6 +64,14 @@ export class Piece {
       typeof maybePiece.isPart === 'boolean' &&
       !!maybePiece.body
     );
+  }
+
+  static isStaticPiece(object: unknown): object is Piece {
+    return Piece.isPiece(object) && object.content instanceof Uint8Array;
+  }
+
+  static from(piece: Piece) {
+    return new Piece(piece.content, piece.meta as StreamPieceMeta);
   }
 }
 

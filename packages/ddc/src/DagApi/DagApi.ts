@@ -3,7 +3,7 @@ import { PutRequest as ProtoPutRequest, GetRequest as ProtoGetRequest, Node } fr
 import { DagApiClient } from '../grpc/dag_api.client';
 import { createRpcMeta, AuthToken } from '../auth';
 import { DagNodeValidator } from '../validators';
-import { createLogger, Logger, LoggerOptions } from '../Logger';
+import { createLogger, Logger, LoggerOptions } from '../logger';
 
 type AuthParams = { token?: AuthToken };
 type PutRequest = ProtoPutRequest & AuthParams;

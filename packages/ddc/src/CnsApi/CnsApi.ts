@@ -1,10 +1,12 @@
+import { RpcError } from '@protobuf-ts/runtime-rpc';
 import type { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { RpcTransport } from '../transports';
+import { createRpcMeta, AuthToken } from '../auth';
+import { GrpcStatus } from '../grpc/status';
 import { createSignature, mapSignature, Signature } from '../signature';
 import { CnsApiClient } from '../grpc/cns_api.client';
 import { GetRequest as ProtoGetRequest, PutRequest as ProtoPutRequest, Record as ProtoRecord } from '../grpc/cns_api';
-import { createRpcMeta, AuthToken } from '../auth';
 
 type AuthParams = { token?: AuthToken };
 export type Record = Omit<ProtoRecord, 'signature'> & {
@@ -69,8 +71,17 @@ export class CnsApi {
       });
 
       record = response.record;
-    } catch {
-      record = undefined;
+    } catch (error) {
+      /**
+       * The error code is UNKNOWN when the record is not found.
+       *
+       * TODO: figure out a better way to detect NOT_FOUNT error. Probably change the error code on the node side to GRPC NOT_FOUND.
+       */
+      const isNotFound = error instanceof RpcError && error.code === GrpcStatus[GrpcStatus.UNKNOWN];
+
+      if (!isNotFound) {
+        throw error;
+      }
     }
 
     if (!record?.signature) {

@@ -1,6 +1,6 @@
 import { createBLAKE3 } from 'hash-wasm';
 
-import { Logger } from '../Logger';
+import { Logger } from '../logger';
 import { Cid } from '../Cid';
 
 export type CidValidatorOptions = {

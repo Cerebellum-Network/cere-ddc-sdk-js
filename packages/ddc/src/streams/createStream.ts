@@ -82,6 +82,9 @@ export const createContentStream = (input: Content | ContentStream, chunkSize = 
         controller.close();
       }
     },
+    async cancel() {
+      await asyncIterator.return(null);
+    },
   });
 
   return stream.pipeThrough(withChunkSize(chunkSize));

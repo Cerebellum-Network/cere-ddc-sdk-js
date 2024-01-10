@@ -6,8 +6,6 @@ import {
   MultipartPiece,
   splitStream,
   Router,
-  RouterOperation,
-  StorageNode,
   PieceStoreOptions,
   Signer,
   UriSigner,
@@ -18,6 +16,8 @@ import {
   createLogger,
   LoggerOptions,
   bindErrorLogger,
+  NodeInterface,
+  BalancedNode,
 } from '@cere-ddc-sdk/ddc';
 
 import { File, FileResponse } from './File';
@@ -33,20 +33,23 @@ export type FileReadOptions = PieceReadOptions;
 export type FileStoreOptions = PieceStoreOptions;
 
 export class FileStorage {
-  private router: Router;
+  private ddcNode: NodeInterface;
   private logger: Logger;
 
   constructor(config: RouterConfig);
   constructor(router: Router, config: Config);
   constructor(configOrRouter: RouterConfig | Router, config?: Config) {
     if (configOrRouter instanceof Router) {
-      this.router = configOrRouter;
       this.logger = createLogger('FileStorage', config);
+      this.ddcNode = new BalancedNode({ router: configOrRouter, logger: this.logger });
 
       this.logger.debug(config, 'FileStorage created');
     } else {
       this.logger = createLogger('FileStorage', configOrRouter);
-      this.router = new Router({ ...configOrRouter, logger: this.logger });
+      this.ddcNode = new BalancedNode({
+        logger: this.logger,
+        router: new Router({ ...configOrRouter, logger: this.logger }),
+      });
 
       this.logger.debug(configOrRouter, 'FileStorage created');
     }
@@ -64,25 +67,25 @@ export class FileStorage {
     return new FileStorage(new Router({ ...config, blockchain, signer }), config);
   }
 
-  private async storeLarge(node: StorageNode, bucketId: BucketId, file: File, options?: FileStoreOptions) {
+  private async storeLarge(bucketId: BucketId, file: File, options?: FileStoreOptions) {
     const parts = await splitStream(file.body, MAX_PIECE_SIZE, (content, multipartOffset) => {
       const piece = new Piece(content, {
         multipartOffset,
         size: Math.min(file.size - multipartOffset, MAX_PIECE_SIZE),
       });
 
-      return node.storePiece(bucketId, piece);
+      return this.ddcNode.storePiece(bucketId, piece);
     });
 
-    return node.storePiece(
+    return this.ddcNode.storePiece(
       bucketId,
       new MultipartPiece(parts, { totalSize: file.size, partSize: MAX_PIECE_SIZE }),
       options,
     );
   }
 
-  private async storeSmall(node: StorageNode, bucketId: BucketId, file: File, options?: FileStoreOptions) {
-    return node.storePiece(bucketId, new Piece(file.body, { size: file.size }), options);
+  private async storeSmall(bucketId: BucketId, file: File, options?: FileStoreOptions) {
+    return this.ddcNode.storePiece(bucketId, new Piece(file.body, { size: file.size }), options);
   }
 
   async store(bucketId: BucketId, file: File, options?: FileStoreOptions) {
@@ -90,10 +93,9 @@ export class FileStorage {
     this.logger.debug({ file }, 'File');
 
     const isLarge = file.size > MAX_PIECE_SIZE;
-    const node = await this.router.getNode(RouterOperation.STORE_PIECE, BigInt(bucketId));
     const cid = isLarge
-      ? await this.storeLarge(node, bucketId, file, options)
-      : await this.storeSmall(node, bucketId, file, options);
+      ? await this.storeLarge(bucketId, file, options)
+      : await this.storeSmall(bucketId, file, options);
 
     this.logger.info({ cid }, 'File stored');
 
@@ -102,10 +104,7 @@ export class FileStorage {
 
   async read(bucketId: BucketId, cidOrName: string, options?: FileReadOptions) {
     this.logger.info(options, 'Reading file from bucket %s by "%s"', bucketId, cidOrName);
-
-    const node = await this.router.getNode(RouterOperation.READ_PIECE, BigInt(bucketId));
-    const piece = await node.readPiece(bucketId, cidOrName, options);
-
+    const piece = await this.ddcNode.readPiece(bucketId, cidOrName, options);
     this.logger.info({ cid: piece.cid }, 'File read');
 
     return new FileResponse(piece.cid, piece.body, options);
