@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0-rc.29...v2.0.0) (2024-01-10)
+
+DDC SDK was re-worked from the ground. Several packages were removed, some re-written and new packages added to the tool set.
+
+### New packages
+
+- [@cere-ddc-sdk/blockchain](packages/blockchain/README.md) - Work directly with the Cere blockchain
+- [@cere-ddc-sdk/ddc](packages/ddc/README.md) - Low level package to directly communicate with DDC nodes
+
+### Updated packages
+
+- [@cere-ddc-sdk/ddc-client](packages/ddc-client/README.md) - The main DDC SDK interface with all methods for working with DDC
+- [@cere-ddc-sdk/file-storage](packages/file-storage/README.md) - Upload large files, using chunk streaming
+
+### Removed packages
+
+- `@cere-ddc-sdk/content-addressable-storage`
+- `@cere-ddc-sdk/core`
+- `@cere-ddc-sdk/key-value-storage`
+- `@cere-ddc-sdk/proto`
+- `@cere-ddc-sdk/smart-contract`
+
+
+
 ## [2.0.0-rc.29](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0-rc.28...v2.0.0-rc.29) (2024-01-10)
 
 ### Features
