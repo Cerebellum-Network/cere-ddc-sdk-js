@@ -77,7 +77,8 @@ export class BalancedNode implements NodeInterface {
     return this.withRetry(
       bucketId,
       RouterOperation.STORE_PIECE,
-      (node, bail, isRetry) => {
+      (node, bail, attempt) => {
+        const isRetry = attempt > 1;
         const finalPiece = isRetry && Piece.isPiece(piece) ? Piece.from(piece) : piece;
 
         return node.storePiece(bucketId, finalPiece, options);
