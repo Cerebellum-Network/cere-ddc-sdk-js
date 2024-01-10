@@ -1,0 +1,34 @@
+{
+  "name": "@cere-ddc-sdk/playground",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite --open",
+    "build": "tsc && vite build",
+    "playground": "npm run start",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@cere-ddc-sdk/blockchain": "2.0.0",
+    "@cere-ddc-sdk/ddc-client": "2.0.0",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.15.2",
+    "@mui/lab": "^5.0.0-alpha.158",
+    "@mui/material": "^5.15.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-dropzone": "^14.2.3",
+    "vite-tsconfig-paths": "^4.2.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "vite": "^5.0.10",
+    "vite-plugin-node-polyfills": "^0.19.0"
+  }
+}

@@ -1,31 +1,37 @@
-import {DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait} from 'testcontainers';
-import type {Blockchain} from './blockchain';
-import {getHostIP} from '../../helpers';
+import { DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait } from 'testcontainers';
+import type { BlockchainConfig } from './blockchain';
+import { getHostIP } from '../../helpers';
 
 let environment: StartedDockerComposeEnvironment | undefined;
 
-const uuid = {nextUuid: () => 'ddc'};
-export const startDDC = async (bc: Blockchain) => {
-    console.group('DDC');
+const uuid = { nextUuid: () => 'ddc' };
+const waitStrategy = () => Wait.forLogMessage(/Start GRPC server on port \d+/).withStartupTimeout(10000);
 
-    const environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.ddc.yml', uuid)
-        .withEnv('BLOCKCHAIN_API_URL', bc.apiUrl)
-        .withEnv('BLOCKCHAIN_DDC_BUCKET_CONTRACT', bc.contractAddress)
-        .withEnv('CLUSTER_ID', bc.clusterId.toString())
-        .withEnv('HOST_IP', getHostIP())
-        .withWaitStrategy('ddc-cdn-node-0', Wait.forHealthCheck())
-        .withWaitStrategy('ddc-cdn-node-1', Wait.forHealthCheck())
-        .withWaitStrategy('ddc-storage-node-0', Wait.forHealthCheck())
-        .withWaitStrategy('ddc-storage-node-1', Wait.forHealthCheck())
-        .withWaitStrategy('ddc-storage-node-2', Wait.forHealthCheck())
-        .up();
+export const startDDC = async (bc: BlockchainConfig) => {
+  console.group('DDC');
 
-    console.log('The environment has started!');
-    console.groupEnd();
+  const blockchainUrl = new URL(bc.apiUrl);
+
+  blockchainUrl.hostname = getHostIP();
+  environment = await new DockerComposeEnvironment(__dirname, 'docker-compose.ddc.yml', uuid)
+    .withEnvironment({
+      BLOCKCHAIN_URL: blockchainUrl.href,
+      CLUSTER_ID: bc.clusterId,
+      HOST_IP: blockchainUrl.hostname,
+    })
+    .withWaitStrategy('ddc-storage-node-1', waitStrategy())
+    .withWaitStrategy('ddc-storage-node-2', waitStrategy())
+    .withWaitStrategy('ddc-storage-node-3', waitStrategy())
+    .withWaitStrategy('ddc-storage-node-4', waitStrategy())
+    .withWaitStrategy('ddc-storage-node-5', waitStrategy())
+    .up();
+
+  console.log('The environment has started!');
+  console.groupEnd();
 };
 
 export const stopDDC = async () => {
-    await environment?.down();
+  await environment?.down();
 
-    console.log('DDC');
+  console.log('DDC');
 };

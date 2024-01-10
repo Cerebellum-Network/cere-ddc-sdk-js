@@ -8,12 +8,12 @@ coverage/
 tsconfig.*buildinfo
 tests/temp.spec.ts
 
-packages/proto/src/
-!packages/proto/src/index.ts
-
 # IntelliJ
 .idea
 *.ipr
 *.iml
 *.iws
 ddc-test-cluster/volumes
+
+# Lerna
+.nx/cache

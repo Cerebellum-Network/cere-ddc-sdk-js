@@ -1,0 +1,59 @@
+{
+  "name": "@cere-ddc-sdk/ddc",
+  "description": "DDC nodes API",
+  "version": "2.0.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "directory": "packages/ddc",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    "types": "./dist/types/index.d.ts",
+    "require": "./dist/index.cjs",
+    "browser": "./dist/browser.js",
+    "default": "./dist/index.js"
+  },
+  "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "npm-run-all --parallel build:node build:web",
+    "build:node": "microbundle --tsconfig tsconfig.node.json --format esm,cjs --target node",
+    "build:web": "microbundle --tsconfig tsconfig.web.json --format modern --output dist/browser.js",
+    "compile": "rimraf ./src/grpc/* && protoc --ts_opt long_type_number --ts_opt generate_dependencies --ts_opt eslint_disable --ts_out ./src/grpc --proto_path protos ./protos/*.proto",
+    "package": "clean-publish",
+    "clean": "rimraf dist package"
+  },
+  "dependencies": {
+    "@cere-ddc-sdk/blockchain": "2.0.0",
+    "@grpc/grpc-js": "^1.9.13",
+    "@protobuf-ts/grpc-transport": "^2.9.3",
+    "@protobuf-ts/runtime": "^2.9.3",
+    "@protobuf-ts/runtime-rpc": "^2.9.3",
+    "async-retry": "^1.3.3",
+    "bs58": "^5.0.0",
+    "buffer": "^6.0.3",
+    "format-util": "^1.0.5",
+    "hash-wasm": "^4.11.0",
+    "pino": "^8.17.2",
+    "pino-pretty": "^10.3.1",
+    "rfc4648": "^1.5.3",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@improbable-eng/grpc-web": "^0.15.0",
+    "@protobuf-ts/plugin": "^2.9.3",
+    "@types/async-retry": "^1.4.8",
+    "@types/format-util": "^1.0.4",
+    "@types/uuid": "^9.0.7",
+    "multiformats": "^13.0.0",
+    "stream-consumers": "^1.0.2",
+    "web-streams-polyfill": "^3.2.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

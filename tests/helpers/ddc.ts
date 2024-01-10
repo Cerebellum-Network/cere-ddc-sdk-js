@@ -1,16 +1,52 @@
-import {CidBuilder} from '@cere-ddc-sdk/core';
-import {Piece, Tag} from '@cere-ddc-sdk/content-addressable-storage';
-import {BucketId} from '@cere-ddc-sdk/smart-contract/types';
-import {Piece as ProtoPiece} from '@cere-ddc-sdk/proto';
+import { StorageNodeConfig, StorageNodeMode } from '@cere-ddc-sdk/ddc';
+import { DdcClientConfig } from '@cere-ddc-sdk/ddc-client';
 
-export const getPieceCid = async (bucketId: BucketId, piece: Piece) => {
-    const cidBuilder = new CidBuilder();
-    const pbPiece = piece.toProto(bucketId);
-    const pieceAsBytes = ProtoPiece.toBinary(pbPiece);
+import { BLOCKCHAIN_RPC_URL } from './blockchain';
 
-    return cidBuilder.build(pieceAsBytes);
+type NodeConfig = StorageNodeConfig & {
+  mnemonic: string;
 };
 
-export const getDataCid = async (bucketId: BucketId, data: Uint8Array, tags: Tag[] = []) => {
-    return getPieceCid(bucketId, new Piece(data, tags));
-};
+export const getStorageNodes = (host = 'localhost'): NodeConfig[] => [
+  {
+    mode: StorageNodeMode.Storage,
+    grpcUrl: `grpc://${host}:9091`,
+    httpUrl: `http://${host}:8091`,
+    mnemonic: 'whip clump surface eternal summer acoustic broom duty magic extend virtual fly',
+  },
+
+  {
+    mode: StorageNodeMode.Storage,
+    grpcUrl: `grpc://${host}:9092`,
+    httpUrl: `http://${host}:8092`,
+    mnemonic: 'scorpion dish want gorilla novel tape world hip rescue tank oyster pipe',
+  },
+
+  {
+    mode: StorageNodeMode.Full,
+    grpcUrl: `grpc://${host}:9093`,
+    httpUrl: `http://${host}:8093`,
+    mnemonic: 'rule output true detect matrix wife raven wreck primary mansion spike coral',
+  },
+
+  {
+    mode: StorageNodeMode.Full,
+    grpcUrl: `grpc://${host}:9094`,
+    httpUrl: `http://${host}:8094`,
+    mnemonic: 'paper salon seed crystal gun envelope wolf twice pistol episode guitar borrow',
+  },
+
+  {
+    mode: StorageNodeMode.Cache,
+    grpcUrl: `grpc://${host}:9095`,
+    httpUrl: `http://${host}:8095`,
+    mnemonic: 'spike sun exchange lava weekend october sock wait attend garden carbon promote',
+  },
+];
+
+type ClientOptions = Pick<DdcClientConfig, 'logLevel' | 'nodes'>;
+
+export const getClientConfig = (options: ClientOptions = {}): DdcClientConfig => ({
+  blockchain: BLOCKCHAIN_RPC_URL,
+  logLevel: options.logLevel || 'silent',
+});

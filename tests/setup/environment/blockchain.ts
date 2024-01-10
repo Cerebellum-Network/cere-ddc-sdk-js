@@ -1,150 +1,194 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import {DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait} from 'testcontainers';
-import {cryptoWaitReady} from '@polkadot/util-crypto';
-import {SmartContract} from '@cere-ddc-sdk/smart-contract';
-import {NodeStatusInCluster} from '@cere-ddc-sdk/smart-contract/types';
+import { DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait } from 'testcontainers';
+import { cryptoWaitReady } from '@polkadot/util-crypto';
 
-import {bootstrapContract, createBlockhainApi, getAccount, getHostIP, transferCere} from '../../helpers';
+import {
+  createBlockhainApi,
+  getAccount,
+  readBlockchainStateFromDisk,
+  BlockchainState,
+  deployAuthContract,
+  CERE,
+  writeBlockchainStateToDisk,
+  sendMultipleTransfers,
+  BLOCKCHAIN_RPC_URL,
+  getHostIP,
+  getStorageNodes,
+} from '../../helpers';
+import { Blockchain, ClusterId } from '@cere-ddc-sdk/blockchain';
 
-export type ContractData = {
-    account: string;
-    clusterId: number;
-    bucketIds: bigint[];
-    contractAddress: string;
-};
-
-export type Blockchain = ContractData & {
-    apiUrl: string;
+export type BlockchainConfig = BlockchainState & {
+  apiUrl: string;
 };
 
 let environment: StartedDockerComposeEnvironment | undefined;
 
 const dataDir = path.resolve(__dirname, '../../data');
-const uuid = {nextUuid: () => 'blockchain'};
-const hostIp = getHostIP();
+const uuid = { nextUuid: () => 'blockchain' };
 
-const setupContract = async (): Promise<ContractData> => {
-    console.group('Setup smart contract');
-    console.time('Done');
+export const startBlockchain = async (): Promise<BlockchainConfig> => {
+  console.group('Blockchain');
 
-    await cryptoWaitReady();
+  const hostIp = getHostIP();
+  const composeFile = process.env.CI ? 'docker-compose.blockchain.ci.yml' : 'docker-compose.blockchain.yml';
+  const cachedStatePath = path.resolve(dataDir, './ddc.json');
+  const bcCachePath = path.resolve(dataDir, './blockchain');
 
-    const api = await createBlockhainApi();
-    const admin = getAccount();
+  let chachedState = fs.existsSync(cachedStatePath) ? readBlockchainStateFromDisk() : undefined;
 
-    const clusterId = 0; // Always the same for fresh SC
-    const bucketIds = [0n, 1n, 2n]; // Always the same for fresh SC
-    const cdnNodeAccounts = [getAccount('//Bob'), getAccount('//Dave')];
-    const storageNodeAccounts = [
-        getAccount('//Eve'),
-        getAccount('//Ferdie'),
-        getAccount('//Charlie'),
-        getAccount('//Alice'),
-    ];
+  if (chachedState && hostIp !== chachedState?.hostIp) {
+    console.warn('Host IP has changed, removing the cached state');
 
-    console.time('Top-up user');
-    await transferCere(api, admin.address, 1000);
-    console.timeEnd('Top-up user');
+    chachedState = undefined;
 
-    console.time('Deploy contract');
-    const deployedContract = await bootstrapContract(api, admin);
-    const contract = new SmartContract(admin, deployedContract);
-    console.timeEnd('Deploy contract');
+    fs.rmdirSync(bcCachePath, { recursive: true });
+    fs.unlinkSync(cachedStatePath);
+  }
 
-    console.time('Setup network topology');
-    await contract.batch(() => [
-        contract.clusterCreate({replicationFactor: 1}, 100000n),
+  environment = await new DockerComposeEnvironment(__dirname, composeFile, uuid)
+    .withEnvironment({
+      BC_CAHCHE_DIR: bcCachePath,
+    })
+    .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
+    .up();
 
-        ...storageNodeAccounts.flatMap((account, index) => {
-            const nodeUrl = `http://ddc-storage-node-${index + 1}:809${index + 1}`;
+  const blockchainState: BlockchainState = !process.env.CI && chachedState ? chachedState : await setupBlockchain();
 
-            return [
-                contract.nodeCreate(account.address, {url: nodeUrl}, 100000000n, 1n),
-                contract.clusterAddNode(clusterId, account.address, [BigInt(index) * 4611686018427387904n]),
-                contract.clusterSetNodeStatus(clusterId, account.address, NodeStatusInCluster.ACTIVE),
-            ];
-        }),
+  if (!chachedState) {
+    writeBlockchainStateToDisk(blockchainState);
+  }
 
-        ...cdnNodeAccounts.flatMap((account, index) => [
-            contract.cdnNodeCreate(account.address, {url: `http://${hostIp}:808${index + 1}`}),
-            contract.clusterAddCdnNode(clusterId, account.address),
-            contract.clusterSetCdnNodeStatus(clusterId, account.address, NodeStatusInCluster.ACTIVE),
-        ]),
-    ]);
-    console.timeEnd('Setup network topology');
+  console.dir(blockchainState, { depth: null });
 
-    console.time('Setup account and create buckets');
-    await contract.batch(() => [
-        contract.accountDeposit(200n),
-        contract.accountBond(100n),
+  console.groupEnd();
 
-        ...bucketIds.flatMap((bucketId) => [
-            contract.bucketCreate(admin.address, clusterId),
-            contract.bucketSetAvailability(bucketId, true),
-            contract.bucketAllocIntoCluster(bucketId, 1000n),
-        ]),
-    ]);
-    console.timeEnd('Setup account and create buckets');
-
-    await api.disconnect();
-    console.log('');
-    console.timeEnd('Done');
-    console.log('');
-
-    console.groupEnd();
-
-    return {
-        bucketIds,
-        clusterId,
-        account: admin.address,
-        contractAddress: deployedContract.address.toString(),
-    };
-};
-
-export const startBlockchain = async (): Promise<Blockchain> => {
-    console.group('Blockchain');
-
-    const bcStateFile = path.resolve(dataDir, './ddc.json');
-    const isCached = fs.existsSync(bcStateFile);
-    const composeFile = process.env.CI ? 'docker-compose.blockchain.ci.yml' : 'docker-compose.blockchain.yml';
-
-    environment = await new DockerComposeEnvironment(__dirname, composeFile, uuid)
-        .withEnv('BC_CAHCHE_DIR', path.resolve(dataDir, './blockchain'))
-        .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
-        .up();
-
-    const contractData: ContractData = isCached
-        ? JSON.parse(fs.readFileSync(bcStateFile).toString('utf8'), (key, value) =>
-              key === 'bucketIds' ? value.map(BigInt) : value,
-          )
-        : await setupContract();
-
-    if (!isCached) {
-        const contractDataJson = JSON.stringify(
-            contractData,
-            (key, value) => (typeof value === 'bigint' ? value.toString() : value),
-            2,
-        );
-
-        fs.writeFileSync(bcStateFile, contractDataJson);
-    }
-
-    console.log('Contract address', contractData.contractAddress);
-    console.log('Account', contractData.account);
-    console.log('Cluster ID', contractData.clusterId);
-    console.log('Bucket IDs', contractData.bucketIds);
-
-    console.groupEnd();
-
-    return {
-        ...contractData,
-        apiUrl: `ws://${hostIp}:9944`,
-    };
+  return {
+    ...blockchainState,
+    apiUrl: BLOCKCHAIN_RPC_URL,
+  };
 };
 
 export const stopBlockchain = async () => {
-    await environment?.down();
+  await environment?.down();
 
-    console.log('Blockchain');
+  console.log('Blockchain');
+};
+
+export const setupBlockchain = async () => {
+  console.group('Setup pallets');
+  console.time('Done');
+
+  await cryptoWaitReady();
+
+  const hostIp = getHostIP();
+  const apiPromise = await createBlockhainApi();
+  const rootAccount = getAccount();
+  const clusterManagerAccount = getAccount('//Alice');
+  const clusterId: ClusterId = '0x0000000000000000000000000000000000000001';
+  const bondAmount = 100n * CERE;
+  const storageNodeConfigs = getStorageNodes(hostIp);
+  const storageNodeAccounts = storageNodeConfigs.map(({ mnemonic }) => getAccount(mnemonic, 'ed25519'));
+
+  console.time('Top-up accounts');
+  await sendMultipleTransfers(apiPromise, [
+    { to: rootAccount.address, tokens: 1000 },
+
+    /**
+     * Top up node providers
+     */
+    ...storageNodeAccounts.map((storageNodeAccount) => ({ to: storageNodeAccount.address, tokens: 500 })),
+  ]);
+  console.timeEnd('Top-up accounts');
+
+  console.time('Deploy cluster node auth contract');
+  const clusterNodeAuthorizationContractAddress = await deployAuthContract(apiPromise, clusterManagerAccount);
+  console.timeEnd('Deploy cluster node auth contract');
+
+  const blockchain = await Blockchain.connect({ apiPromise });
+
+  console.time('Create cluster');
+  await blockchain.send(
+    blockchain.sudo(
+      blockchain.ddcClusters.createCluster(
+        clusterId,
+        clusterManagerAccount.address,
+        clusterManagerAccount.address,
+        {
+          nodeProviderAuthContract: clusterNodeAuthorizationContractAddress,
+        },
+        {
+          treasuryShare: 100000000,
+          validatorsShare: 100000000,
+          clusterReserveShare: 100000000,
+          cdnBondSize: bondAmount,
+          cdnChillDelay: 20,
+          cdnUnbondingDelay: 20,
+          storageBondSize: bondAmount,
+          storageChillDelay: 20,
+          storageUnbondingDelay: 20,
+          unitPerMbStored: 0n,
+          unitPerMbStreamed: 0n,
+          unitPerPutRequest: 0n,
+          unitPerGetRequest: 0n,
+        },
+      ),
+    ),
+    { account: clusterManagerAccount },
+  );
+  console.timeEnd('Create cluster');
+
+  console.time('Create and bond nodes');
+  await Promise.all(
+    storageNodeAccounts.map((account, index) =>
+      blockchain.batchAllSend(
+        [
+          blockchain.ddcNodes.createStorageNode(account.address, {
+            host: hostIp,
+            mode: storageNodeConfigs[index].mode,
+            httpPort: 8091 + index,
+            grpcPort: 9091 + index,
+            p2pPort: 9071 + index,
+          }),
+          blockchain.ddcStaking.bondStorageNode(account.address, account.address, bondAmount),
+          blockchain.ddcStaking.store(clusterId),
+        ],
+        { account },
+      ),
+    ),
+  );
+  console.timeEnd('Create and bond nodes');
+
+  console.time('Add nodes to cluster');
+  await blockchain.batchAllSend(
+    storageNodeAccounts.map((storageNodeAccount) =>
+      blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNodeAccount.address),
+    ),
+    { account: clusterManagerAccount },
+  );
+  console.timeEnd('Add nodes to cluster');
+
+  console.time('Create buckets');
+  const bucketsSendResult = await blockchain.batchAllSend(
+    [
+      blockchain.ddcCustomers.deposit(500n * CERE),
+      blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true }), // 1n - public bucket
+      blockchain.ddcCustomers.createBucket(clusterId, { isPublic: false }), // 2n - private bucket
+    ],
+    { account: rootAccount },
+  );
+  const createdBucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(bucketsSendResult.events);
+  console.timeEnd('Create buckets');
+
+  console.timeEnd('Done');
+  console.groupEnd();
+
+  await apiPromise.disconnect();
+
+  return {
+    hostIp,
+    clusterId,
+    bucketIds: createdBucketIds,
+    account: clusterManagerAccount.address,
+  };
 };

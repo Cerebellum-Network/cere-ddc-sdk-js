@@ -1,3 +1,0 @@
-[submodule "ddc-schemas"]
-	path = ddc-schemas
-	url = git@github.com:Cerebellum-Network/ddc-schemas.git

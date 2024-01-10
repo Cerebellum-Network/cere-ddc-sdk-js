@@ -2,9 +2,6 @@
     "withoutPublish": true,
     "tempDir": "package",
     "files": [
-        "webpack.config.js",
-        "babel.config.json",
-        "tsconfig.*",
-        ".browserslistrc"
+        "tsconfig.*"
     ]
 }
