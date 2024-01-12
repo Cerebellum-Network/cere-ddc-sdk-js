@@ -54,8 +54,8 @@ export abstract class PriorityStrategy extends BaseStrategy {
      * Sort nodes by priority where the lower the number the higher the priority. 0 - highest priority.
      */
     const [node] = shuffle(operationNodes).sort((a, b) => {
-      const aPriority = opertaionPriorityMap[a.mode] || 0;
-      const bPriority = opertaionPriorityMap[b.mode] || 0;
+      const aPriority = a.priority || opertaionPriorityMap[a.mode] || 0;
+      const bPriority = a.priority || opertaionPriorityMap[b.mode] || 0;
 
       return aPriority - bPriority;
     });

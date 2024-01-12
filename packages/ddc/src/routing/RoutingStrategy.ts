@@ -12,7 +12,9 @@ export enum RouterOperation {
   READ_CNS_RECORD = 'read-cns-record',
 }
 
-export type RouterNode = StorageNodeConfig;
+export type RouterNode = StorageNodeConfig & {
+  priority?: number;
+};
 
 export abstract class RoutingStrategy {
   constructor(protected logger: Logger) {}
