@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0...v2.0.1) (2024-01-12)
+
+### Bug Fixes
+
+- **ddc:** Add support for retries to file store operations ([#214](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/214)) ([48968d1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/48968d1a4e6192e4117f3552f5b81519ade0d1d0))
+
 ## [2.0.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0-rc.29...v2.0.0) (2024-01-10)
 
 DDC SDK was re-worked from the ground. Several packages were removed, some re-written and new packages added to the tool set.
@@ -24,8 +30,6 @@ DDC SDK was re-worked from the ground. Several packages were removed, some re-wr
 - `@cere-ddc-sdk/key-value-storage`
 - `@cere-ddc-sdk/proto`
 - `@cere-ddc-sdk/smart-contract`
-
-
 
 ## [2.0.0-rc.29](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0-rc.28...v2.0.0-rc.29) (2024-01-10)
 
