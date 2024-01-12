@@ -1,4 +1,4 @@
-import { Content, ContentStream, PieceResponse, createContentStream } from '@cere-ddc-sdk/ddc';
+import { Content, ContentStream, PieceResponse, createContentStream, isContentStream } from '@cere-ddc-sdk/ddc';
 
 export type FileContent = Content;
 
@@ -20,7 +20,7 @@ export class File {
     content: FileContent,
     readonly meta: StreamMeta | StaticContentMeta = {},
   ) {
-    this.body = createContentStream(content);
+    this.body = isContentStream(content) ? content : createContentStream(content);
     this.size = content instanceof Uint8Array ? content.byteLength : meta.size!;
   }
 

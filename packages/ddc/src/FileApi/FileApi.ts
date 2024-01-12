@@ -2,10 +2,11 @@ import { Buffer } from 'buffer';
 import { v4 as uuid } from 'uuid';
 import { Signer } from '@cere-ddc-sdk/blockchain';
 
+import { MAX_PIECE_SIZE, MB } from '../constants';
 import { FileValidator } from '../validators';
 import { RpcTransport } from '../transports';
 import { createSignature } from '../signature';
-import { Content, createContentStream, getContentSize } from '../streams';
+import { Content, createContentStream, getContentSize, isContentStream } from '../streams';
 import { createLogger, Logger, LoggerOptions } from '../logger';
 import { createRpcMeta, AuthToken } from '../auth';
 import {
@@ -108,13 +109,17 @@ export class FileApi {
 
   async putRawPiece({ token, ...metadata }: PutRawPieceMetadata, content: Content) {
     const meta = createRpcMeta(token);
-    const size = metadata.size || getContentSize(content);
+    const size = getContentSize(content, metadata.size);
+
+    this.logger.debug({ metadata, token }, 'Storing raw piece of size %d', size);
 
     if (!size) {
       throw new Error('Cannot determine the raw piece size');
     }
 
-    this.logger.debug({ metadata, token }, 'Storing raw piece of size %d', size);
+    if (size > MAX_PIECE_SIZE) {
+      throw new Error(`Raw piece size should not be greather then ${MAX_PIECE_SIZE / MB} MB`);
+    }
 
     if (this.options.enableAcks) {
       meta.request = await this.createActivityRequest({
@@ -125,42 +130,43 @@ export class FileApi {
       });
     }
 
-    const { requests, response, headers } = this.api.putRawPiece({ meta });
+    const call = this.api.putRawPiece({ meta });
 
-    await requests.send({
+    await call.requests.send({
       body: {
         oneofKind: 'metadata',
         metadata: { ...metadata, size },
       },
     });
 
-    let shouldStopSending = false;
-    const contentStream = createContentStream(content);
+    /**
+     * Wait for responce headers before start streaming piece content.
+     */
+    const headers = await call.headers;
+    this.logger.debug({ headers }, 'Server responded with headers');
 
-    headers
-      .then((headers) => this.logger.debug({ headers }, 'Server responded with headers'))
-      .catch(() => {})
-      .finally(() => {
-        shouldStopSending = true;
-      });
+    let bytesSent = 0;
+    const contentStream = isContentStream(content) ? content : createContentStream(content);
+    const reader = contentStream.getReader();
 
-    for await (const data of contentStream) {
-      if (shouldStopSending) {
+    while (bytesSent < MAX_PIECE_SIZE) {
+      const { done, value } = await reader.read();
+
+      if (done || !value) {
         break;
       }
 
-      await requests.send({
-        body: { oneofKind: 'content', content: { data } },
+      await call.requests.send({
+        body: { oneofKind: 'content', content: { data: value } },
       });
+
+      bytesSent += value.byteLength;
     }
 
-    await contentStream.cancel();
+    reader.releaseLock();
 
-    if (!shouldStopSending) {
-      await requests.complete();
-    }
-
-    const { cid } = await response;
+    await call.requests.complete();
+    const { cid } = await call.response;
     this.logger.debug({ cid }, 'Raw piece stored');
 
     return new Uint8Array(cid);

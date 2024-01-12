@@ -27,8 +27,8 @@ export {
 /**
  * Utilities
  */
-export { splitStream, createContentStream, type SplitStreamMapper, type Content, type ContentStream } from './streams';
 export * from './logger';
+export { createContentStream, isContentStream, type Content, type ContentStream } from './streams';
 
 /**
  * Constants

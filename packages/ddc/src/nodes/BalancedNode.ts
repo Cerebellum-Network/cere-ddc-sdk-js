@@ -72,21 +72,7 @@ export class BalancedNode implements NodeInterface {
   }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
-    const isRetriablePiece = Piece.isStaticPiece(piece) || MultipartPiece.isMultipartPiece(piece);
-
-    return this.withRetry(
-      bucketId,
-      RouterOperation.STORE_PIECE,
-      (node, bail, attempt) => {
-        const isRetry = attempt > 1;
-        const finalPiece = isRetry && Piece.isPiece(piece) ? Piece.from(piece) : piece;
-
-        return node.storePiece(bucketId, finalPiece, options);
-      },
-      {
-        retries: isRetriablePiece ? RETRY_MAX_ATTEPTS : 0,
-      },
-    );
+    return this.withRetry(bucketId, RouterOperation.STORE_PIECE, (node) => node.storePiece(bucketId, piece, options));
   }
 
   async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {

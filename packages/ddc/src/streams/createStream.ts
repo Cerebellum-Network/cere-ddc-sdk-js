@@ -3,7 +3,7 @@ import { ReadableStream, TransformStream, ReadableStreamDefaultReader } from './
 
 import { CONTENT_CHUNK_SIZE } from '../constants';
 
-type InputStream = {
+type InputStream = Omit<ReadableStream<Uint8Array>, 'getReader'> & {
   /**
    * Browser's ReadableStream provides overloads to `getReader` which breaks types, so have to use `any` here and later cast the type
    */
@@ -11,7 +11,9 @@ type InputStream = {
 };
 
 export type Content = Uint8Array | Iterable<Uint8Array> | AsyncIterable<Uint8Array> | InputStream;
-export type ContentStream = ReadableStream<Uint8Array>;
+export type ContentStream = ReadableStream<Uint8Array> & {
+  [ContentStreamSymbol]?: true;
+};
 
 const withChunkSize = (chunkSize: number) => {
   let buffer = Buffer.from([]);
@@ -48,18 +50,14 @@ async function* toIterable(input: Content | ContentStream) {
 
   const reader: ReadableStreamDefaultReader<Uint8Array> = input.getReader();
 
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
+  while (true) {
+    const { done, value } = await reader.read();
 
-      if (done) {
-        return;
-      }
-
-      yield value;
+    if (done) {
+      break;
     }
-  } finally {
-    reader.releaseLock();
+
+    yield value;
   }
 }
 
@@ -67,10 +65,15 @@ export const getContentSize = (content: Content, defaultSize?: number) => {
   return 'byteLength' in content ? content.byteLength : defaultSize;
 };
 
+const ContentStreamSymbol = Symbol('ContentStream');
+export const isContentStream = (input: unknown): input is ContentStream => {
+  return !!input && typeof input === 'object' && ContentStreamSymbol in input;
+};
+
 export const createContentStream = (input: Content | ContentStream, chunkSize = CONTENT_CHUNK_SIZE): ContentStream => {
   const asyncIterator = toIterable(input instanceof Uint8Array ? [input] : input);
 
-  const stream: ContentStream = new ReadableStream({
+  const stream = new ReadableStream({
     async pull(controller) {
       const { done, value } = await asyncIterator.next();
 
@@ -82,10 +85,10 @@ export const createContentStream = (input: Content | ContentStream, chunkSize = 
         controller.close();
       }
     },
-    async cancel() {
-      await asyncIterator.return(null);
-    },
   });
 
-  return stream.pipeThrough(withChunkSize(chunkSize));
+  const contentStream: ContentStream = stream.pipeThrough(withChunkSize(chunkSize));
+  contentStream[ContentStreamSymbol] = true;
+
+  return contentStream;
 };
