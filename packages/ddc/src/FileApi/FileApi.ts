@@ -125,42 +125,29 @@ export class FileApi {
       });
     }
 
-    const { requests, response, headers } = this.api.putRawPiece({ meta });
+    const call = this.api.putRawPiece({ meta });
 
-    await requests.send({
+    await call.requests.send({
       body: {
         oneofKind: 'metadata',
         metadata: { ...metadata, size },
       },
     });
 
-    let shouldStopSending = false;
-    const contentStream = createContentStream(content);
+    /**
+     * Wait for responce headers before start streaming piece content.
+     */
+    const headers = await call.headers;
+    this.logger.debug({ headers }, 'Server responded with headers');
 
-    headers
-      .then((headers) => this.logger.debug({ headers }, 'Server responded with headers'))
-      .catch(() => {})
-      .finally(() => {
-        shouldStopSending = true;
-      });
-
-    for await (const data of contentStream) {
-      if (shouldStopSending) {
-        break;
-      }
-
-      await requests.send({
+    for await (const data of createContentStream(content)) {
+      await call.requests.send({
         body: { oneofKind: 'content', content: { data } },
       });
     }
 
-    await contentStream.cancel();
-
-    if (!shouldStopSending) {
-      await requests.complete();
-    }
-
-    const { cid } = await response;
+    await call.requests.complete();
+    const { cid } = await call.response;
     this.logger.debug({ cid }, 'Raw piece stored');
 
     return new Uint8Array(cid);
