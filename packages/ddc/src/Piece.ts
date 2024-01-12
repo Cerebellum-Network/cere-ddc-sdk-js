@@ -1,4 +1,4 @@
-import { consumers, Content, ContentStream, createContentStream } from './streams';
+import { consumers, Content, ContentStream, createContentStream, isContentStream, getContentSize } from './streams';
 
 import { ReadFileRange } from './FileApi';
 import { Cid } from './Cid';
@@ -35,8 +35,8 @@ export class Piece {
     readonly meta: PieceMeta = {},
   ) {
     this.offset = meta.multipartOffset;
-    this.body = createContentStream(content);
-    this.contentLength = content instanceof Uint8Array ? content.byteLength : meta.size;
+    this.body = isContentStream(content) ? content : createContentStream(content);
+    this.contentLength = getContentSize(content, meta.size);
   }
 
   get isPart() {

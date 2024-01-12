@@ -4,7 +4,6 @@ import {
   MAX_PIECE_SIZE,
   Piece,
   MultipartPiece,
-  splitStream,
   Router,
   PieceStoreOptions,
   Signer,
@@ -68,14 +67,18 @@ export class FileStorage {
   }
 
   private async storeLarge(bucketId: BucketId, file: File, options?: FileStoreOptions) {
-    const parts = await splitStream(file.body, MAX_PIECE_SIZE, (content, multipartOffset) => {
-      const piece = new Piece(content, {
-        multipartOffset,
-        size: Math.min(file.size - multipartOffset, MAX_PIECE_SIZE),
+    const pieces = Math.ceil(file.size / MAX_PIECE_SIZE);
+    const parts: string[] = [];
+
+    for (let index = 0; index < pieces; index++) {
+      const offset = index * MAX_PIECE_SIZE;
+      const piece = new Piece(file.body, {
+        multipartOffset: offset,
+        size: Math.min(file.size - offset, MAX_PIECE_SIZE),
       });
 
-      return this.ddcNode.storePiece(bucketId, piece);
-    });
+      parts.push(await this.ddcNode.storePiece(bucketId, piece));
+    }
 
     return this.ddcNode.storePiece(
       bucketId,
