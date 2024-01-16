@@ -1,4 +1,4 @@
-import { DdcClient, File, FileUri, MB } from '@cere-ddc-sdk/ddc-client';
+import { AuthToken, AuthTokenOperation, DdcClient, File, FileUri, MB, UriSigner } from '@cere-ddc-sdk/ddc-client';
 import { KB, ROOT_USER_SEED, createDataStream, getBlockchainState, getClientConfig } from '../helpers';
 
 const createFile = (size: number) => new File(createDataStream(size), { size });
@@ -8,6 +8,9 @@ describe('Auth', () => {
     bucketIds: [publicBucketId, privateBucketId],
   } = getBlockchainState();
 
+  const ownerSigner = new UriSigner(ROOT_USER_SEED);
+  const readerSigner = new UriSigner('//Bob');
+
   let ownerClient: DdcClient;
   let readerClient: DdcClient;
   let normalFile: File;
@@ -16,8 +19,8 @@ describe('Auth', () => {
   beforeAll(async () => {
     const configs = getClientConfig();
 
-    ownerClient = await DdcClient.create(ROOT_USER_SEED, configs);
-    readerClient = await DdcClient.create('//Bob', configs);
+    ownerClient = await DdcClient.create(ownerSigner, configs);
+    readerClient = await DdcClient.create(readerSigner, configs);
   });
 
   afterAll(async () => {
@@ -28,6 +31,44 @@ describe('Auth', () => {
   beforeEach(async () => {
     normalFile = createFile(KB);
     largeFile = createFile(150 * MB);
+  });
+
+  describe('Auth token', () => {
+    const rootToken = new AuthToken({
+      bucketId: privateBucketId,
+      operations: [AuthTokenOperation.PUT, AuthTokenOperation.GET],
+    });
+
+    let delegatedToken: AuthToken;
+
+    beforeAll(async () => {
+      await rootToken.sign(ownerSigner);
+    });
+
+    test('Delegate token', async () => {
+      delegatedToken = rootToken.delegate(readerSigner.address, {
+        operations: [AuthTokenOperation.GET],
+      });
+
+      await delegatedToken.sign(ownerSigner);
+
+      expect(delegatedToken.parent).toEqual(rootToken);
+      expect(delegatedToken.signer).toEqual(ownerSigner.address);
+      expect(delegatedToken.subject).toEqual(readerSigner.address);
+      expect(delegatedToken.operations).toEqual([AuthTokenOperation.GET]);
+    });
+
+    test('Accept token delegation', async () => {
+      expect(delegatedToken).toBeDefined();
+
+      const token = AuthToken.from(delegatedToken);
+      await token.sign(readerSigner);
+
+      expect(token.parent).toEqual(delegatedToken);
+      expect(token.signer).toEqual(readerSigner.address);
+      expect(token.subject).toBeUndefined();
+      expect(token.operations).toEqual([AuthTokenOperation.GET]);
+    });
   });
 
   describe('Bucket access', () => {

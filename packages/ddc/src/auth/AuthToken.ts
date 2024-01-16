@@ -8,7 +8,7 @@ import { Cid } from '../Cid';
 
 export { Operation as AuthTokenOperation };
 
-type AuthTokenParams = Omit<Payload, 'subject' | 'prev' | 'pieceCid'> & {
+export type AuthTokenParams = Omit<Payload, 'subject' | 'prev' | 'pieceCid'> & {
   pieceCid?: string | Uint8Array;
   expiresIn?: number;
 };
@@ -16,7 +16,7 @@ type AuthTokenParams = Omit<Payload, 'subject' | 'prev' | 'pieceCid'> & {
 type DelegateTokenParams = Partial<AuthTokenParams>;
 
 export class AuthToken {
-  private token: Token;
+  protected token: Token;
 
   constructor(params: AuthTokenParams) {
     const expiresIn = params.expiresIn ?? AUTH_TOKEN_EXPIRATION_TIME;
@@ -29,6 +29,27 @@ export class AuthToken {
     };
 
     this.token = Token.create({ payload });
+  }
+
+  get parent(): AuthToken | undefined {
+    const parentProtoToken = this.token.payload?.prev;
+
+    if (!parentProtoToken) {
+      return undefined;
+    }
+
+    const parentToken = new AuthToken({ operations: [] });
+
+    /**
+     * Patch token property directly do preserv hidden propertties like `prev` and `signature`
+     */
+    parentToken.token = parentProtoToken;
+
+    return parentToken;
+  }
+
+  get subject() {
+    return this.token.payload!.subject && encodeAddress(this.token.payload!.subject);
   }
 
   get signer() {
@@ -90,9 +111,9 @@ export class AuthToken {
     return delegatedToken;
   }
 
-  static from(parentToken: string | AuthToken) {
+  static from(accessToken: string | AuthToken) {
     const protoParentToken =
-      typeof parentToken === 'string' ? Token.fromBinary(base58.decode(parentToken)) : parentToken.token;
+      typeof accessToken === 'string' ? Token.fromBinary(base58.decode(accessToken)) : accessToken.token;
 
     if (!protoParentToken.payload) {
       throw new Error('Invalid token');
@@ -104,5 +125,9 @@ export class AuthToken {
     nextToken.token.payload!.subject = undefined;
 
     return nextToken;
+  }
+
+  static fullAccess(params: Pick<AuthTokenParams, 'bucketId' | 'pieceCid' | 'expiresAt' | 'expiresIn'> = {}) {
+    return new AuthToken({ ...params, operations: [Operation.GET, Operation.PUT, Operation.DELETE] });
   }
 }

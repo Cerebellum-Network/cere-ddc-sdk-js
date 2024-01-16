@@ -15,7 +15,7 @@ export * from './routing';
 export * from './Piece';
 export { DagNode, DagNodeResponse, Link, Tag } from './DagNode';
 export { CnsRecord, CnsRecordResponse } from './CnsRecord';
-export { AuthToken, AuthTokenOperation } from './auth';
+export { AuthToken, AuthTokenOperation, type AuthTokenParams } from './auth';
 export {
   UriSigner,
   StorageNodeMode,

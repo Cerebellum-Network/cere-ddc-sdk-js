@@ -10,7 +10,7 @@ import { DagNode, DagNodeResponse, mapDagNodeToAPI } from '../DagNode';
 import { CnsRecord, CnsRecordResponse, mapCnsRecordToAPI } from '../CnsRecord';
 import { DefaultTransport, RpcTransportOptions } from '../transports';
 import { bindErrorLogger, createLogger, Logger, LoggerOptions } from '../logger';
-import { AuthTokenOperation, AuthToken } from '../auth';
+import { AuthToken } from '../auth';
 import {
   DagNodeGetOptions,
   DagNodeStoreOptions,
@@ -70,19 +70,8 @@ export class StorageNode implements NodeInterface {
     ]);
   }
 
-  /**
-   * Creates a full access auth token for the given bucket
-   *
-   * TODO: Allow to accept the token as an operation method argument
-   */
   private async createAuthToken(bucketId: BucketId) {
-    const operations: AuthTokenOperation[] = [
-      AuthTokenOperation.PUT,
-      AuthTokenOperation.GET,
-      AuthTokenOperation.DELETE,
-    ];
-
-    return new AuthToken({ bucketId, operations }).sign(this.signer);
+    return AuthToken.fullAccess({ bucketId }).sign(this.signer);
   }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
