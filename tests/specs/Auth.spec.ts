@@ -1,4 +1,15 @@
-import { AuthToken, AuthTokenOperation, DdcClient, File, FileUri, MB, UriSigner } from '@cere-ddc-sdk/ddc-client';
+import {
+  AuthToken,
+  AuthTokenOperation,
+  DagNode,
+  DagNodeUri,
+  DdcClient,
+  File,
+  FileUri,
+  MB,
+  UriSigner,
+} from '@cere-ddc-sdk/ddc-client';
+
 import { KB, ROOT_USER_SEED, createDataStream, getBlockchainState, getClientConfig } from '../helpers';
 
 const createFile = (size: number) => new File(createDataStream(size), { size });
@@ -126,14 +137,16 @@ describe('Auth', () => {
 
   describe('Bucket access delegation', () => {
     let privateFileUri: FileUri;
+    let privateDagNodeUri: DagNodeUri;
     let writeToken: AuthToken;
     let readToken: AuthToken;
 
     beforeAll(async () => {
       privateFileUri = await ownerClient.store(privateBucketId, createFile(KB));
+      privateDagNodeUri = await ownerClient.store(privateBucketId, new DagNode(new Uint8Array([1, 2, 3]), [], []));
     });
 
-    test('Owner grants access', async () => {
+    test('Owner grants access to private bucket', async () => {
       writeToken = await ownerClient.grantAccess(readerSigner.address, {
         bucketId: privateBucketId,
         operations: [AuthTokenOperation.PUT],
@@ -148,7 +161,7 @@ describe('Auth', () => {
       expect(readToken).toBeDefined();
     });
 
-    test('Reader can store', async () => {
+    test('Reader can store file to private bucket', async () => {
       expect(writeToken).toBeDefined();
 
       const fileUri = await readerClient.store(privateBucketId, normalFile, { accessToken: writeToken });
@@ -156,7 +169,7 @@ describe('Auth', () => {
       expect(fileUri.cid).toBeDefined();
     });
 
-    test('Reader can store large file', async () => {
+    test('Reader can store large file to private bucket', async () => {
       expect(writeToken).toBeDefined();
 
       const fileUri = await readerClient.store(privateBucketId, largeFile, { accessToken: writeToken });
@@ -164,7 +177,7 @@ describe('Auth', () => {
       expect(fileUri.cid).toBeDefined();
     });
 
-    test('Reader can read', async () => {
+    test('Reader can read from private bucket', async () => {
       expect(readToken).toBeDefined();
 
       const file = await readerClient.read(privateFileUri, { accessToken: readToken });
@@ -172,16 +185,34 @@ describe('Auth', () => {
       expect(file.cid).toEqual(privateFileUri.cid);
     });
 
-    test('Reader can not read with write-only token', async () => {
+    test('Reader can not read file with write-only token', async () => {
       expect(writeToken).toBeDefined();
 
       await expect(readerClient.read(privateFileUri, { accessToken: writeToken })).rejects.toThrow();
     });
 
-    test('Reader can not store with read-only token', async () => {
+    test('Reader can not store file with read-only token', async () => {
       expect(readToken).toBeDefined();
 
       await expect(readerClient.store(privateBucketId, normalFile, { accessToken: readToken })).rejects.toThrow();
+    });
+
+    test('Reader can store DagNode to private bucket', async () => {
+      expect(writeToken).toBeDefined();
+
+      const dagNodeUri = await readerClient.store(privateBucketId, new DagNode(new Uint8Array([1, 2, 3]), [], []), {
+        accessToken: writeToken,
+      });
+
+      expect(dagNodeUri.cid).toBeDefined();
+    });
+
+    test('Reader can read DagNode from private bucket', async () => {
+      expect(readToken).toBeDefined();
+
+      const dagNode = await readerClient.read(privateDagNodeUri, { accessToken: readToken });
+
+      expect(dagNode.cid).toEqual(privateDagNodeUri.cid);
     });
   });
 });
