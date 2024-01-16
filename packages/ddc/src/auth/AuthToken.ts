@@ -1,5 +1,5 @@
 import base58 from 'bs58';
-import { AccountId, Signer, decodeAddress, encodeAddress } from '@cere-ddc-sdk/blockchain';
+import { AccountId, Signer, decodeAddress } from '@cere-ddc-sdk/blockchain';
 
 import { AUTH_TOKEN_EXPIRATION_TIME } from '../constants';
 import { createSignature } from '../signature';
@@ -11,9 +11,8 @@ export { Operation as AuthTokenOperation };
 export type AuthTokenParams = Omit<Payload, 'subject' | 'prev' | 'pieceCid'> & {
   pieceCid?: string | Uint8Array;
   expiresIn?: number;
+  subject?: AccountId;
 };
-
-type DelegateTokenParams = Partial<AuthTokenParams>;
 
 export class AuthToken {
   protected token: Token;
@@ -23,37 +22,17 @@ export class AuthToken {
     const payload: Payload = {
       bucketId: params.bucketId,
       operations: params.operations,
-      canDelegate: params.canDelegate ?? true,
-      pieceCid: params.pieceCid ? new Cid(params.pieceCid).toBytes() : undefined,
+      canDelegate: params.canDelegate ?? false,
       expiresAt: params.expiresAt ?? Date.now() + expiresIn,
+      subject: params.subject ? decodeAddress(params.subject) : undefined,
+      pieceCid: params.pieceCid ? new Cid(params.pieceCid).toBytes() : undefined,
     };
 
     this.token = Token.create({ payload });
   }
 
-  get parent(): AuthToken | undefined {
-    const parentProtoToken = this.token.payload?.prev;
-
-    if (!parentProtoToken) {
-      return undefined;
-    }
-
-    const parentToken = new AuthToken({ operations: [] });
-
-    /**
-     * Patch token property directly do preserv hidden propertties like `prev` and `signature`
-     */
-    parentToken.token = parentProtoToken;
-
-    return parentToken;
-  }
-
-  get subject() {
-    return this.token.payload!.subject && encodeAddress(this.token.payload!.subject);
-  }
-
-  get signer() {
-    return this.token.signature && encodeAddress(this.token.signature.signer);
+  get canDelegate() {
+    return this.token.payload!.canDelegate ?? false;
   }
 
   get bucketId() {
@@ -69,7 +48,7 @@ export class AuthToken {
   }
 
   get expiresAt() {
-    return this.token.payload!.expiresAt;
+    return this.token.payload!.expiresAt!;
   }
 
   private toBinary() {
@@ -86,43 +65,22 @@ export class AuthToken {
     return this;
   }
 
-  delegate(to: AccountId, params: DelegateTokenParams = {}) {
-    const prevPayload = this.token.payload!;
-
-    if (!prevPayload.canDelegate) {
-      throw new Error('The token delegation is not allowed');
-    }
-
-    if (!this.token.signature) {
-      throw new Error('Cannopt delegate unsigned token');
-    }
-
-    const delegatedToken = new AuthToken({
-      ...prevPayload,
-      ...params,
-      canDelegate: params.canDelegate ?? false,
-    });
-
-    const nextPayload = delegatedToken.token.payload!;
-
-    nextPayload.prev = this.token;
-    nextPayload.subject = decodeAddress(to);
-
-    return delegatedToken;
-  }
-
-  static from(accessToken: string | AuthToken) {
-    const protoParentToken =
-      typeof accessToken === 'string' ? Token.fromBinary(base58.decode(accessToken)) : accessToken.token;
+  static from(token: string | AuthToken) {
+    const protoParentToken = typeof token === 'string' ? Token.fromBinary(base58.decode(token)) : token.token;
 
     if (!protoParentToken.payload) {
       throw new Error('Invalid token');
     }
 
-    const nextToken = new AuthToken({ ...protoParentToken.payload });
+    const { subject, ...params } = protoParentToken.payload;
+    const nextToken = new AuthToken({ ...params });
 
-    nextToken.token.payload!.prev = protoParentToken;
-    nextToken.token.payload!.subject = undefined;
+    if (subject) {
+      /**
+       * Set `prev` token in case of delegation
+       */
+      nextToken.token.payload!.prev = protoParentToken;
+    }
 
     return nextToken;
   }

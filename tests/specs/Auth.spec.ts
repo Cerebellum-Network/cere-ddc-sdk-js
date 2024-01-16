@@ -39,23 +39,25 @@ describe('Auth', () => {
       operations: [AuthTokenOperation.PUT, AuthTokenOperation.GET],
     });
 
-    let delegatedToken: AuthToken;
+    let delegatedToken: string;
 
     beforeAll(async () => {
       await rootToken.sign(ownerSigner);
     });
 
     test('Delegate token', async () => {
-      delegatedToken = rootToken.delegate(readerSigner.address, {
+      const token = new AuthToken({
+        subject: readerSigner.address,
         operations: [AuthTokenOperation.GET],
       });
 
-      await delegatedToken.sign(ownerSigner);
+      await token.sign(ownerSigner);
 
-      expect(delegatedToken.parent).toEqual(rootToken);
-      expect(delegatedToken.signer).toEqual(ownerSigner.address);
-      expect(delegatedToken.subject).toEqual(readerSigner.address);
-      expect(delegatedToken.operations).toEqual([AuthTokenOperation.GET]);
+      delegatedToken = token.toString();
+
+      expect(delegatedToken).toEqual(expect.any(String));
+      expect(token.canDelegate).toEqual(false);
+      expect(token.operations).toEqual([AuthTokenOperation.GET]);
     });
 
     test('Accept token delegation', async () => {
@@ -64,9 +66,7 @@ describe('Auth', () => {
       const token = AuthToken.from(delegatedToken);
       await token.sign(readerSigner);
 
-      expect(token.parent).toEqual(delegatedToken);
-      expect(token.signer).toEqual(readerSigner.address);
-      expect(token.subject).toBeUndefined();
+      expect(token.canDelegate).toEqual(false);
       expect(token.operations).toEqual([AuthTokenOperation.GET]);
     });
   });

@@ -114,13 +114,11 @@ export class DdcClient {
     return this.getBucketList();
   }
 
-  async grantAccess(accountId: string, params: Partial<AuthTokenParams> = {}) {
+  async grantAccess(accountId: string, params: AuthTokenParams) {
     this.logger.info('Granting access to account %s', accountId);
     this.logger.debug({ params }, 'Grant access params');
 
-    const rootToken = await AuthToken.fullAccess(params).sign(this.signer);
-
-    return rootToken.delegate(accountId, params).sign(this.signer);
+    return new AuthToken({ ...params, subject: accountId }).sign(this.signer);
   }
 
   async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<FileUri>;
