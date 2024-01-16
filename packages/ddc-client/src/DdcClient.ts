@@ -14,6 +14,8 @@ import {
   bindErrorLogger,
   NodeInterface,
   BalancedNode,
+  AuthTokenParams,
+  AuthToken,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
 import { Blockchain, BucketId, BucketParams, ClusterId } from '@cere-ddc-sdk/blockchain';
@@ -110,6 +112,15 @@ export class DdcClient {
    */
   bucketList() {
     return this.getBucketList();
+  }
+
+  async grantAccess(accountId: string, params: Partial<AuthTokenParams> = {}) {
+    this.logger.info('Granting access to account %s', accountId);
+    this.logger.debug({ params }, 'Grant access params');
+
+    const rootToken = await AuthToken.fullAccess(params).sign(this.signer);
+
+    return rootToken.delegate(accountId, params).sign(this.signer);
   }
 
   async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<FileUri>;

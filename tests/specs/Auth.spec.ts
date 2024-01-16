@@ -123,4 +123,65 @@ describe('Auth', () => {
       await expect(readerClient.store(publicBucketId, largeFile)).rejects.toThrow();
     });
   });
+
+  describe('Bucket access delegation', () => {
+    let privateFileUri: FileUri;
+    let writeToken: AuthToken;
+    let readToken: AuthToken;
+
+    beforeAll(async () => {
+      privateFileUri = await ownerClient.store(privateBucketId, createFile(KB));
+    });
+
+    test('Owner grants access', async () => {
+      writeToken = await ownerClient.grantAccess(readerSigner.address, {
+        bucketId: privateBucketId,
+        operations: [AuthTokenOperation.PUT],
+      });
+
+      readToken = await ownerClient.grantAccess(readerSigner.address, {
+        bucketId: privateBucketId,
+        operations: [AuthTokenOperation.GET],
+      });
+
+      expect(writeToken).toBeDefined();
+      expect(readToken).toBeDefined();
+    });
+
+    test('Reader can store', async () => {
+      expect(writeToken).toBeDefined();
+
+      const fileUri = await readerClient.store(privateBucketId, normalFile, { accessToken: writeToken });
+
+      expect(fileUri.cid).toBeDefined();
+    });
+
+    test('Reader can store large file', async () => {
+      expect(writeToken).toBeDefined();
+
+      const fileUri = await readerClient.store(privateBucketId, largeFile, { accessToken: writeToken });
+
+      expect(fileUri.cid).toBeDefined();
+    });
+
+    test('Reader can read', async () => {
+      expect(readToken).toBeDefined();
+
+      const file = await readerClient.read(privateFileUri, { accessToken: readToken });
+
+      expect(file.cid).toEqual(privateFileUri.cid);
+    });
+
+    test('Reader can not read with write-only token', async () => {
+      expect(writeToken).toBeDefined();
+
+      await expect(readerClient.read(privateFileUri, { accessToken: writeToken })).rejects.toThrow();
+    });
+
+    test('Reader can not store with read-only token', async () => {
+      expect(readToken).toBeDefined();
+
+      await expect(readerClient.store(privateBucketId, normalFile, { accessToken: readToken })).rejects.toThrow();
+    });
+  });
 });

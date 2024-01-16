@@ -77,7 +77,11 @@ export class FileStorage {
         size: Math.min(file.size - offset, MAX_PIECE_SIZE),
       });
 
-      parts.push(await this.ddcNode.storePiece(bucketId, piece));
+      parts.push(
+        await this.ddcNode.storePiece(bucketId, piece, {
+          accessToken: options?.accessToken,
+        }),
+      );
     }
 
     return this.ddcNode.storePiece(
