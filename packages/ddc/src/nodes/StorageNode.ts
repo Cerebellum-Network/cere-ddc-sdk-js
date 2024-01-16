@@ -17,6 +17,9 @@ import {
   PieceReadOptions,
   PieceStoreOptions,
   NodeInterface,
+  OperationAuthOptions,
+  CnsRecordStoreOptions,
+  CnsRecordGetOptions,
 } from './NodeInterface';
 
 export type StorageNodeConfig = RpcTransportOptions &
@@ -70,13 +73,15 @@ export class StorageNode implements NodeInterface {
     ]);
   }
 
-  private async createAuthToken(bucketId: BucketId) {
-    return AuthToken.fullAccess({ bucketId }).sign(this.signer);
+  private async createAuthToken(bucketId: BucketId, { accessToken }: OperationAuthOptions = {}) {
+    const token = accessToken ? AuthToken.from(accessToken) : AuthToken.fullAccess({ bucketId });
+
+    return token.sign(this.signer);
   }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
     let cidBytes: Uint8Array | undefined = undefined;
-    const token = await this.createAuthToken(bucketId);
+    const token = await this.createAuthToken(bucketId, options);
 
     this.logger.info(options, 'Storing piece into bucket %s', bucketId);
     this.logger.debug({ piece }, 'Piece');
@@ -112,7 +117,7 @@ export class StorageNode implements NodeInterface {
     const cid = new Cid(cidBytes).toString();
 
     if (options?.name) {
-      await this.storeCnsRecord(bucketId, new CnsRecord(cid, options.name));
+      await this.storeCnsRecord(bucketId, new CnsRecord(cid, options.name), options);
     }
 
     this.logger.info({ cid }, 'Stored piece into bucket %s', bucketId);
@@ -121,7 +126,7 @@ export class StorageNode implements NodeInterface {
   }
 
   async storeDagNode(bucketId: BucketId, node: DagNode, options?: DagNodeStoreOptions) {
-    const token = await this.createAuthToken(bucketId);
+    const token = await this.createAuthToken(bucketId, options);
 
     this.logger.info(options, 'Storing DAG node into bucket %s', bucketId);
     this.logger.debug({ node }, 'DAG node');
@@ -136,7 +141,7 @@ export class StorageNode implements NodeInterface {
     const cid = new Cid(cidBytes).toString();
 
     if (options?.name) {
-      await this.storeCnsRecord(bucketId, new CnsRecord(cid, options.name));
+      await this.storeCnsRecord(bucketId, new CnsRecord(cid, options.name), options);
     }
 
     this.logger.info({ cid }, 'Stored DAG Node into bucket %s', bucketId);
@@ -145,7 +150,7 @@ export class StorageNode implements NodeInterface {
   }
 
   async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
-    const token = await this.createAuthToken(bucketId);
+    const token = await this.createAuthToken(bucketId, options);
 
     this.logger.info(options, 'Reading piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
     this.logger.debug({ token }, 'Auth token');
@@ -169,7 +174,7 @@ export class StorageNode implements NodeInterface {
   }
 
   async getDagNode(bucketId: BucketId, cidOrName: string, options?: DagNodeGetOptions) {
-    const token = await this.createAuthToken(bucketId);
+    const token = await this.createAuthToken(bucketId, options);
 
     this.logger.info('Getting DAG Node by CID or name "%s" from bucket %s', cidOrName, bucketId);
     this.logger.debug({ token }, 'Auth token');
@@ -190,8 +195,8 @@ export class StorageNode implements NodeInterface {
     return response;
   }
 
-  async storeCnsRecord(bucketId: BucketId, record: CnsRecord) {
-    const token = await this.createAuthToken(bucketId);
+  async storeCnsRecord(bucketId: BucketId, record: CnsRecord, options?: CnsRecordStoreOptions) {
+    const token = await this.createAuthToken(bucketId, options);
 
     this.logger.info('Storing CNS record into bucket %s', bucketId);
     this.logger.debug({ record }, 'CNS record');
@@ -208,8 +213,8 @@ export class StorageNode implements NodeInterface {
     return storredRecord;
   }
 
-  async getCnsRecord(bucketId: BucketId, name: string) {
-    const token = await this.createAuthToken(bucketId);
+  async getCnsRecord(bucketId: BucketId, name: string, options?: CnsRecordGetOptions) {
+    const token = await this.createAuthToken(bucketId, options);
 
     this.logger.info(`Getting CNS record by name "${name}" from bucket ${bucketId}`);
     this.logger.debug({ token }, 'Auth token');
@@ -222,13 +227,13 @@ export class StorageNode implements NodeInterface {
     return record && new CnsRecordResponse(record.cid, record.name, record.signature);
   }
 
-  async resolveName(bucketId: BucketId, cidOrName: string) {
+  async resolveName(bucketId: BucketId, cidOrName: string, options?: CnsRecordGetOptions) {
     if (Cid.isCid(cidOrName)) {
       return new Cid(cidOrName);
     }
 
     this.logger.info('Resolving CNS name "%s" from bucket %s', cidOrName, bucketId);
-    const record = await this.getCnsRecord(bucketId, cidOrName);
+    const record = await this.getCnsRecord(bucketId, cidOrName, options);
 
     if (!record) {
       throw new Error(`Cannot resolve CNS name: "${cidOrName}"`);
