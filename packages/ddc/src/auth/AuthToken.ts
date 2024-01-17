@@ -12,6 +12,7 @@ export type AuthTokenParams = Omit<Payload, 'subject' | 'prev' | 'pieceCid'> & {
   pieceCid?: string | Uint8Array;
   expiresIn?: number;
   subject?: AccountId;
+  prev?: AuthToken | string;
 };
 
 export class AuthToken {
@@ -26,6 +27,7 @@ export class AuthToken {
       expiresAt: params.expiresAt ?? Date.now() + expiresIn,
       subject: params.subject ? decodeAddress(params.subject) : undefined,
       pieceCid: params.pieceCid ? new Cid(params.pieceCid).toBytes() : undefined,
+      prev: AuthToken.maybeToken(params.prev)?.token,
     };
 
     this.token = Token.create({ payload });
@@ -65,27 +67,38 @@ export class AuthToken {
     return this;
   }
 
-  static from(token: string | AuthToken) {
-    const protoParentToken = typeof token === 'string' ? Token.fromBinary(base58.decode(token)) : token.token;
+  private static fromProto(protoToken: Token) {
+    const newToken = new AuthToken({ operations: [] });
 
-    if (!protoParentToken.payload) {
+    newToken.token = protoToken;
+
+    return newToken;
+  }
+
+  private static maybeToken(token?: string | AuthToken) {
+    if (typeof token !== 'string') {
+      return token;
+    }
+
+    return this.fromProto(Token.fromBinary(base58.decode(token)));
+  }
+
+  static from(token: string | AuthToken) {
+    const parent = this.maybeToken(token);
+
+    if (!parent?.token.payload) {
       throw new Error('Invalid token');
     }
 
-    const { subject, ...params } = protoParentToken.payload;
-    const nextToken = new AuthToken({ ...params });
+    const { subject, ...params } = parent.token.payload;
 
-    if (subject) {
-      /**
-       * Set `prev` token in case of delegation
-       */
-      nextToken.token.payload!.prev = protoParentToken;
-    }
-
-    return nextToken;
+    return new AuthToken({
+      ...params,
+      prev: subject && parent, // Set `prev` only if `subject` is provided
+    });
   }
 
-  static fullAccess(params: Pick<AuthTokenParams, 'bucketId' | 'pieceCid' | 'expiresAt' | 'expiresIn'> = {}) {
+  static fullAccess(params: Omit<AuthTokenParams, 'operations'> = {}) {
     return new AuthToken({ ...params, operations: [Operation.GET, Operation.PUT, Operation.DELETE] });
   }
 }
