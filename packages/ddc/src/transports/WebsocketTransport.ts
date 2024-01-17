@@ -33,6 +33,13 @@ const createHost = ({ httpUrl, ssl }: WebsocketTransportOptions) => {
   return url.href.replace(/\/+$/, '');
 };
 
+const getStatus = (headers: grpc.Metadata): RpcStatus | null => {
+  const [statusCode] = headers.get('grpc-status') || [];
+  const [message] = headers.get('grpc-message') || [];
+
+  return statusCode ? { code: GrpcStatus[Number(statusCode)], detail: message || '' } : null;
+};
+
 export class WebsocketTransport implements RpcTransport {
   private defaultOptions: RpcOptions = {};
   private host: string;
@@ -68,8 +75,14 @@ export class WebsocketTransport implements RpcTransport {
       },
     );
 
-    client.onHeaders((headers) => {
-      defHeader.resolvePending(headers.headersMap);
+    client.onHeaders((meta) => {
+      const status = getStatus(meta);
+
+      if (status && status.code !== GrpcStatus[GrpcStatus.OK]) {
+        return defHeader.rejectPending(new RpcError(status.detail, status.code));
+      }
+
+      defHeader.resolvePending(meta.headersMap);
     });
 
     client.onMessage((message) => {
@@ -77,13 +90,6 @@ export class WebsocketTransport implements RpcTransport {
     });
 
     client.onEnd((status, statusMessage, trailers) => {
-      defStatus.resolvePending({
-        code: GrpcStatus[status],
-        detail: statusMessage,
-      });
-
-      defTrailer.resolvePending(trailers.headersMap);
-
       if (status !== grpc.Code.OK) {
         const error = new RpcError(statusMessage, GrpcStatus[status]);
 
@@ -91,7 +97,12 @@ export class WebsocketTransport implements RpcTransport {
         defMessage.rejectPending(error);
         defStatus.rejectPending(error);
         defTrailer.rejectPending(error);
+
+        return;
       }
+
+      defStatus.resolvePending({ code: GrpcStatus[status], detail: statusMessage });
+      defTrailer.resolvePending(trailers.headersMap);
     });
 
     client.start(new grpc.Metadata(options.meta));
@@ -136,8 +147,14 @@ export class WebsocketTransport implements RpcTransport {
       },
     );
 
-    client.onHeaders((headers) => {
-      defHeader.resolvePending(headers.headersMap);
+    client.onHeaders((meta) => {
+      const status = getStatus(meta);
+
+      if (status && status.code !== GrpcStatus[GrpcStatus.OK]) {
+        return defHeader.rejectPending(new RpcError(status.detail, status.code));
+      }
+
+      defHeader.resolvePending(meta.headersMap);
     });
 
     client.onMessage((message) => {
@@ -145,13 +162,6 @@ export class WebsocketTransport implements RpcTransport {
     });
 
     client.onEnd((status, statusMessage, trailers) => {
-      defStatus.resolvePending({
-        code: GrpcStatus[status],
-        detail: statusMessage,
-      });
-
-      defTrailer.resolvePending(trailers.headersMap);
-
       if (status !== grpc.Code.OK) {
         const error = new RpcError(statusMessage, GrpcStatus[status]);
 
@@ -162,7 +172,12 @@ export class WebsocketTransport implements RpcTransport {
         if (!outStream.closed) {
           outStream.notifyError(error);
         }
+
+        return;
       }
+
+      defStatus.resolvePending({ code: GrpcStatus[status], detail: statusMessage });
+      defTrailer.resolvePending(trailers.headersMap);
 
       if (!outStream.closed) {
         outStream.notifyComplete();
