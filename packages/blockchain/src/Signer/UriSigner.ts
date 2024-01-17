@@ -3,6 +3,7 @@ import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/keyring';
 
 import { Signer } from './Signer';
+import { CERE_SS58_PREFIX } from '../constants';
 
 export type UriSignerOptions = Pick<KeyringOptions, 'type'>;
 
@@ -27,7 +28,7 @@ export class UriSigner implements Signer {
       return false;
     }
 
-    this.pair = new Keyring({ ss58Format: 54, type: this.type }).addFromUri(this.uri);
+    this.pair = new Keyring({ ss58Format: CERE_SS58_PREFIX, type: this.type }).addFromUri(this.uri);
 
     return true;
   }

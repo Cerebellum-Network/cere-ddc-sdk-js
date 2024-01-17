@@ -12,6 +12,8 @@ export {
   TESTNET,
   DEVNET,
   MAINNET,
+  AuthToken,
+  AuthTokenOperation,
   type DagNodeStoreOptions,
   type Signer,
 } from '@cere-ddc-sdk/ddc';
