@@ -8,7 +8,6 @@ import {
   getAccount,
   readBlockchainStateFromDisk,
   BlockchainState,
-  deployAuthContract,
   CERE,
   writeBlockchainStateToDisk,
   sendMultipleTransfers,
@@ -101,10 +100,6 @@ export const setupBlockchain = async () => {
   ]);
   console.timeEnd('Top-up accounts');
 
-  console.time('Deploy cluster node auth contract');
-  const clusterNodeAuthorizationContractAddress = await deployAuthContract(apiPromise, clusterManagerAccount);
-  console.timeEnd('Deploy cluster node auth contract');
-
   const blockchain = await Blockchain.connect({ apiPromise });
 
   console.time('Create cluster');
@@ -115,7 +110,7 @@ export const setupBlockchain = async () => {
         clusterManagerAccount.address,
         clusterManagerAccount.address,
         {
-          nodeProviderAuthContract: clusterNodeAuthorizationContractAddress,
+          nodeProviderAuthContract: null,
         },
         {
           treasuryShare: 100000000,

@@ -110,11 +110,10 @@ export const getBlockchainState = () => {
   };
 };
 
-export const signAndSend = (tx: SubmittableExtrinsic<'promise'>, account: AddressOrPair, apiPromise?: ApiPromise) =>
+export const signAndSend = (tx: SubmittableExtrinsic<'promise'>, account: AddressOrPair) =>
   new Promise<SignAndSendResult>((resolve, reject) =>
     tx.signAndSend(account, (result) => {
       const { events = [], status, contractEvents = [], dispatchError } = result as TxResult;
-
       if (status.isFinalized) {
         return resolve({
           events,
@@ -125,13 +124,12 @@ export const signAndSend = (tx: SubmittableExtrinsic<'promise'>, account: Addres
 
       if (dispatchError) {
         let errorMessage: string | undefined;
-        if (apiPromise) {
-          if (dispatchError.isModule) {
-            const decoded = apiPromise.registry.findMetaError(dispatchError.asModule);
-            errorMessage = `${decoded.section}.${decoded.name}: ${decoded.docs.join(' ')}`;
-          } else {
-            errorMessage = dispatchError.toString();
-          }
+
+        if (dispatchError.isModule) {
+          const decoded = tx.registry.findMetaError(dispatchError.asModule);
+          errorMessage = `${decoded.section}.${decoded.name}: ${decoded.docs.join(' ')}`;
+        } else {
+          errorMessage = dispatchError.toString();
         }
 
         return reject(new Error(errorMessage || dispatchError.toString()));

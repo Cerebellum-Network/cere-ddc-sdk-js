@@ -3,7 +3,7 @@ import { cryptoWaitReady, randomAsHex } from '@polkadot/util-crypto';
 import { ApiPromise } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
 
-import { createAccount, createBlockhainApi, deployAuthContract, getAccount, sendMultipleTransfers } from '../helpers';
+import { createAccount, createBlockhainApi, getAccount, sendMultipleTransfers } from '../helpers';
 
 describe('Blockchain', () => {
   let apiPromise: ApiPromise;
@@ -18,7 +18,6 @@ describe('Blockchain', () => {
   let nonExistentKey1: string;
   const clusterId = randomAsHex(20);
   const bondSize = 10_000_000_000n;
-  let nodeProviderAuthContract: string;
 
   beforeAll(async () => {
     await cryptoWaitReady();
@@ -32,7 +31,6 @@ describe('Blockchain', () => {
     nonExistentKey1 = createAccount().address;
 
     apiPromise = await createBlockhainApi();
-    nodeProviderAuthContract = await deployAuthContract(apiPromise, rootAccount);
 
     await sendMultipleTransfers(apiPromise, [
       { to: storageNode1Account.address, tokens: 10 },
@@ -98,8 +96,6 @@ describe('Blockchain', () => {
   });
 
   test('Should create a cluster and find it by public key', async () => {
-    expect(nodeProviderAuthContract).toBeDefined();
-
     const clusterGovernmentParams = {
       treasuryShare: 0,
       validatorsShare: 0,
@@ -115,8 +111,9 @@ describe('Blockchain', () => {
       unitPerPutRequest: 0n,
       unitPerGetRequest: 0n,
     };
+
     const clusterProps = {
-      nodeProviderAuthContract,
+      nodeProviderAuthContract: null,
     };
 
     await blockchain.send(
@@ -149,8 +146,9 @@ describe('Blockchain', () => {
 
   test('Should set cluster props', async () => {
     const clusterProps = {
-      nodeProviderAuthContract,
+      nodeProviderAuthContract: null,
     };
+
     await blockchain.send(blockchain.ddcClusters.setClusterParams(clusterId, clusterProps), { account: rootAccount });
 
     const cluster = await blockchain.ddcClusters.findClusterById(clusterId);
