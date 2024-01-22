@@ -32,6 +32,11 @@ const deployContract = async (api: ApiPromise, account: KeyringPair, abi: Abi, w
   return address;
 };
 
+/**
+ * This Auth contract is optional and no longer used in the tests.
+ *
+ * TODO: Remove this function and the contract from the fixtures if it will not be needed in future.
+ */
 export const deployAuthContract = async (api: ApiPromise, signer: KeyringPair) => {
   const contractDir = path.resolve(__dirname, '../fixtures/contract');
   const contractPath = path.resolve(contractDir, 'cluster_node_candidate_authorization.contract');
