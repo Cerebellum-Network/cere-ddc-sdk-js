@@ -8,9 +8,6 @@ export abstract class BaseStrategy extends RoutingStrategy {
       return allNodes;
     }
 
-    const nodes = allNodes.filter((node) => node.ssl);
-    this.logger.debug({ nodes }, 'Filter nodes suitable for secure web (domain + SSL)');
-
-    return nodes;
+    return allNodes.filter((node) => node.ssl);
   }
 }
