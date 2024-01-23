@@ -85,15 +85,16 @@ export abstract class PingStrategy extends NodeTypeStrategy {
     /**
      * Shuffle nodes and sort by latency levels
      */
-    const latencySortedNodes = shuffle(this.getPingedNodes(DeferredState.RESOLVED)).sort((a, b) => {
-      const pingA = this.nodesMap.get(a.httpUrl)!;
-      const pingB = this.nodesMap.get(b.httpUrl)!;
+    const latencySortedNodes = shuffle(allOperationNodes).sort((a, b) => {
+      const pingA = this.nodesMap.get(a.httpUrl);
+      const pingB = this.nodesMap.get(b.httpUrl);
 
       /**
-       * Group latency by PING_LATENCY_GROUP ms levels to avaoid sorting by small differences
+       * Group latency by PING_LATENCY_GROUP ms levels to avaoid sorting by small differences.
+       * Keep nodes without ping at the end for fallback scenarios when all pings fail.
        */
-      const levelA = Math.ceil(pingA.latency! / PING_LATENCY_GROUP);
-      const levelB = Math.ceil(pingB.latency! / PING_LATENCY_GROUP);
+      const levelA = pingA ? Math.ceil(pingA.latency! / PING_LATENCY_GROUP) : Infinity;
+      const levelB = pingB ? Math.ceil(pingB.latency! / PING_LATENCY_GROUP) : Infinity;
 
       return levelA - levelB;
     });
