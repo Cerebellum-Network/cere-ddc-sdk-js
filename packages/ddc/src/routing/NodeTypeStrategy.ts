@@ -1,6 +1,5 @@
 import { StorageNodeMode as Mode } from '@cere-ddc-sdk/blockchain';
 
-import { shuffle } from './RandomStrategy';
 import { RouterOperation as Operation, RouterNode } from './RoutingStrategy';
 import { BaseStrategy } from './BaseStrategy.web';
 
@@ -45,21 +44,22 @@ const priorityMap: OperationPriorityMap = {
   },
 };
 
-export abstract class PriorityStrategy extends BaseStrategy {
-  selectNode(operation: Operation, nodes: RouterNode[]) {
+export abstract class NodeTypeStrategy extends BaseStrategy {
+  async marshalNodes(operation: Operation, allNodes: RouterNode[]): Promise<RouterNode[]> {
+    const nodes = await super.marshalNodes(operation, allNodes);
+
     const opertaionPriorityMap = priorityMap[operation];
     const operationNodes = nodes.filter(({ mode }) => opertaionPriorityMap[mode] !== undefined);
 
-    /**
-     * Sort nodes by priority where the lower the number the higher the priority. 0 - highest priority.
-     */
-    const [node] = shuffle(operationNodes).sort((a, b) => {
+    return operationNodes.sort((a, b) => {
       const aPriority = a.priority || opertaionPriorityMap[a.mode] || 0;
       const bPriority = a.priority || opertaionPriorityMap[b.mode] || 0;
 
       return aPriority - bPriority;
     });
+  }
 
-    return node;
+  selectNode(operation: Operation, nodes: RouterNode[]): RouterNode | undefined {
+    return nodes[0]; // select first node from the rundomly shuffled list
   }
 }

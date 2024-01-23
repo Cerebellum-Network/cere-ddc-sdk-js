@@ -34,10 +34,12 @@ export class Router {
   async getNode(operation: RouterOperation, bucketId: BucketId, exclude: string[] = []) {
     this.logger.info('Getting node for operation "%s" in bucket %s', operation, bucketId);
 
+    await this.strategy.isReady();
+
     const allNodes = await this.strategy.getNodes(bucketId);
     const nodes = allNodes.filter((node) => !exclude.includes(getNodeId(node)));
-    const filterNodes = await this.strategy.filterNodes(operation, nodes);
-    const node = this.strategy.selectNode(operation, filterNodes);
+    const finalNodes = await this.strategy.marshalNodes(operation, nodes);
+    const node = this.strategy.selectNode(operation, finalNodes);
 
     if (!node) {
       throw new Error('No nodes available to handle the operation');
