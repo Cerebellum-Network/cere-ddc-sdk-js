@@ -1,4 +1,4 @@
-import { fetch } from 'cross-fetch';
+import fetch from 'cross-fetch';
 import { Deferred, DeferredState } from '@protobuf-ts/runtime-rpc';
 
 import { PING_BACKGROUND_DELAY, PING_LATENCY_GROUP, PING_THRESHOLD, PING_THRESHOLD_INC } from '../constants';
@@ -29,13 +29,13 @@ export abstract class PingStrategy extends NodeTypeStrategy {
     const pingUrl = new URL('/info', record.node.httpUrl);
 
     try {
-      const response = await fetch(pingUrl);
+      const response = await fetch(pingUrl, { cache: 'no-cache' });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status} ${response.statusText}`);
       }
     } catch (err: any) {
-      this.logger.warn('Node ping %s failed with error %s', record.node.httpUrl, err);
+      this.logger.warn({ err }, 'Node ping %s failed with error %s', record.node.httpUrl, err);
 
       throw err;
     }

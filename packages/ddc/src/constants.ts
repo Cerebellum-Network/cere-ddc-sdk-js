@@ -13,5 +13,5 @@ export const RETRY_MAX_ATTEPTS = 5;
 
 export const PING_THRESHOLD = 10; // Minimum number of nodes to ping before any DDC operation
 export const PING_THRESHOLD_INC = 2; // Number of nodes to ping more in background after each operation
-export const PING_LATENCY_GROUP = 10; // The coeficient in ms to group nodes by latency
+export const PING_LATENCY_GROUP = 100; // The coeficient in ms to group nodes by latency
 export const PING_BACKGROUND_DELAY = 100; // Delay in ms before starting background pings after an operation
