@@ -1,10 +1,16 @@
 import fetch from 'cross-fetch';
 import { Deferred, DeferredState } from '@protobuf-ts/runtime-rpc';
 
-import { PING_BACKGROUND_DELAY, PING_LATENCY_GROUP, PING_THRESHOLD, PING_THRESHOLD_INC } from '../constants';
 import { RouterOperation, RouterNode } from '.';
 import { NodeTypeStrategy } from './NodeTypeStrategy';
 import { shuffle } from './RandomStrategy';
+import {
+  PING_ABORT_TIMEOUT,
+  PING_BACKGROUND_DELAY,
+  PING_LATENCY_GROUP,
+  PING_THRESHOLD,
+  PING_THRESHOLD_INC,
+} from '../constants';
 
 type PingRecord = {
   node: RouterNode;
@@ -29,7 +35,10 @@ export abstract class PingStrategy extends NodeTypeStrategy {
     const pingUrl = new URL('/info', record.node.httpUrl);
 
     try {
-      const response = await fetch(pingUrl, { cache: 'no-cache' });
+      const response = await fetch(pingUrl, {
+        cache: 'no-cache',
+        signal: AbortSignal.timeout(PING_ABORT_TIMEOUT),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status} ${response.statusText}`);
