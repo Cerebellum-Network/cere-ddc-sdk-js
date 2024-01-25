@@ -28,10 +28,15 @@ The `DdcClient` instance can be created using static `create` method
   ```ts
   type Config = {
     blockchain: string; // CERE blockchain rpc endpoint
+
+    /**
+     * Optional, predefined list of nodes, by default retrieved from blockchain
+     */
     nodes?: {
-      // Optional, predefined list of nodes, by default retrieved from blockchain
       grpcUrl: string; // gRPC endpoint for NodeJs communication
       httpUrl: string; // WebSocket endpoint for Web communication
+      ssl?: boolean; // Flag indicating that the node can accept secure connections
+      mode: StorageNodeMode; // The storage node mode
     }[];
   };
   ```
@@ -69,6 +74,7 @@ const ddcClient = await DdcClient.create(seed, {
 - [createBucket()](#createbucket)
 - [getBucket()](#getbucket)
 - [getBucketList()](#getbucketlist)
+- [grantAccess()](#grantaccess)
 - [store()](#store)
 - [read()](#read)
 
@@ -76,9 +82,17 @@ const ddcClient = await DdcClient.create(seed, {
 
 Creates a new bucket and returns its ID
 
+> **Note:** The SDK account should have positive CERE tokens balance and DDC deposit to create a bucket
+
 ### Arguments
 
 - `clusterId` - the ID of a cluster to which the bucket will be connected
+- `bucketParams` - the parameters with which the bucket will be created
+  - `isPublic` - indicates if the bucket is publicly accessible (optional, `false` by default)
+
+### Returns
+
+Returns a `BucketId` representing the newly created bucket
 
 ### Example
 
@@ -86,16 +100,22 @@ Creates a new bucket and returns its ID
 import type { ClusterId, BucketId } from '@cere-ddc-sdk/ddc-client';
 
 const clusterId: ClusterId = '0x...';
-const bucketId: BucketId = await ddcClient.createBucket(clusterId);
+const bucketId: BucketId = await ddcClient.createBucket(clusterId, {
+  isPublic: true,
+});
 ```
 
 ## getBucket()
 
-Returns information about a bucket by the bucket ID, or `undefined` if the bucket not found
+Returns information about a bucket by its ID, or undefined if the bucket is not found
 
 ### Arguments
 
-- `bucketId` - requested bucket ID
+- `bucketId` -  the ID of the requested bucket
+
+### Returns
+
+Returns an object of [Bucket](packages/blockchain/src/types.ts#L32) type with information about the found bucket
 
 ### Example
 
@@ -118,6 +138,43 @@ import type { Bucket } from '@cere-ddc-sdk/ddc-client';
 const buckets: Bucket[] = await ddcClient.getBucketList();
 ```
 
+## grantAccess()
+
+Grants access to a bucket. It returns an instance of DDC [AuthToken](packages/ddc/src/auth/AuthToken.ts) which can be used by `subject` account to access the bucket.
+
+### Arguments
+
+- `subject` - a `base58` address of account to whom the access is granted
+- `accessParams` - parameters of access being granted
+  - `operations` - list of allowed operations (required)
+  - `bucketId` - bucket ID to which the access is granted (optional, if missing the access is granted to all user buckets)
+  - `pieceCid` - piece CID to which the access is granted (optional, if missing the access is granted to all user/bucket pieces)
+  - `canDelegate` - indicates if the token can be delegated further (optional, `false` by default)
+  - `expiresIn` - the token expiration period (optional, the default value is 1 month)
+  - `expiresAt` - the token expiration time (optional)s
+  - `prev` - previous AuthToken for access chaining (optional)
+
+### Example
+
+```ts
+import type { BucketId, AuthTokenOperation } from '@cere-ddc-sdk/ddc-client';
+
+const privateBucketId: BucketId = 1n;
+
+const accessToken = ownerClient.grantAccess('6QWS...dpJP', {
+  bucketId: privateBucketId,
+  operations: [AuthTokenOperation.GET],
+  expiresIn: 60 * 1000, // 1 minute
+});
+
+// Share the token with another user somehow
+const shareableToken = accessToken.toString();
+
+const fileCid = '...';
+const fileUri = new FileUri(bucketId, fileCid);
+const fileResponse = await userClient.read(fileUri, { accessToken: shareableToken });
+```
+
 ## store()
 
 Stores an object to DDC. The object can be either `File` or `DagNode`
@@ -127,7 +184,8 @@ Stores an object to DDC. The object can be either `File` or `DagNode`
 - `bucketId` - Bucket ID to store the object to
 - `object` - Object to store: `File` or `DagNode`
 - `options` - Operation options
-  - `name` - CNS name to assign to the created object
+  - `name` - CNS name to assign to the created object (optional)
+  - `accessToken` - token to access the resource, created by [grantAccess()](#grantaccess)
 
 ### Example
 
@@ -176,6 +234,7 @@ Reads an object from DDC. The object can be either `File` or `DagNode`
 - `options` - Operation options
   - `path` - Optional path argument to traverse the DAG Node links by their names (available only for DAG nodes)
   - `range` - Optional range argument to read a part of the requested file (available only for files)
+  - `accessToken` - token to access the resource, created by [grantAccess()](#grantaccess)
 
 ### Example
 
@@ -185,7 +244,9 @@ Read a file from DDC
 import { FileUri } from '@cere-ddc-sdk/ddc-client';
 
 const bucketId = 1n;
-const nodeResponse = await ddcClient.read(nodeUri, {
+const fileCid = '...';
+const fileUri = new FileUri(bucketId, fileCid);
+const fileResponse = await ddcClient.read(fileUri, {
   range: {
     // Optional range argument to read a part of the requested file
     start: 0,
@@ -193,7 +254,7 @@ const nodeResponse = await ddcClient.read(nodeUri, {
   },
 });
 
-const text = await nodeResponse.text(); // It is also possible to read `arrayBuffer()` or `json()`
+const text = await fileResponse.text(); // It is also possible to read `arrayBuffer()` or `json()`
 
 console.log(text);
 ```

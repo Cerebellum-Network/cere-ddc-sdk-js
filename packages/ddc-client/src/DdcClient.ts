@@ -27,6 +27,11 @@ export type DdcClientConfig = LoggerOptions &
     blockchain: Blockchain | ConfigPreset['blockchain'];
   };
 
+/**
+ * `DdcClient` is a class that provides methods to interact with the DDC.
+ *
+ * It provides methods to manage buckets, grant access, and store and read files and DAG nodes.
+ */
 export class DdcClient {
   protected constructor(
     private readonly ddcNode: NodeInterface,
@@ -38,6 +43,20 @@ export class DdcClient {
     bindErrorLogger(this, this.logger, ['createBucket', 'getBucket', 'getBucketList', 'store', 'read']);
   }
 
+  /**
+   * Creates a new instance of the DdcClient.
+   *
+   * @param uriOrSigner - A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri).
+   * @param config - Configuration options for the DdcClient. Defaults to TESTNET.
+   *
+   * @returns A promise that resolves to a new instance of the DdcClient.
+   *
+   * @example
+   *
+   * ```typescript
+   * const ddcClient = await DdcClient.create('//Alice', DEVNET);
+   * ```
+   */
   static async create(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
     const logger = createLogger('DdcClient', config);
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
@@ -62,6 +81,24 @@ export class DdcClient {
     await this.blockchain.disconnect();
   }
 
+  /**
+   * Creates a new bucket on a specified cluster.
+   *
+   * @param clusterId - The ID of the cluster where the bucket will be created.
+   * @param params - Optional parameters for the new bucket. Defaults to an empty object.
+   *                 Currently, the only parameter is `isPublic`, which defaults to `false`.
+   *
+   * @returns A promise that resolves to the ID of the newly created bucket.
+   *
+   * @example
+   *
+   * ```typescript
+   * const clusterId: ClusterId = '0x...';
+   * const bucketId: BucketId = await ddcClient.createBucket(clusterId, {
+   *   isPublic: true,
+   * });
+   * ```
+   */
   async createBucket(clusterId: ClusterId, params: Partial<BucketParams> = {}) {
     this.logger.info(params, 'Creating bucket on cluster %s', clusterId);
 
@@ -82,6 +119,22 @@ export class DdcClient {
     return bucketId;
   }
 
+  /**
+   * Retrieves information about a specific bucket by its ID.
+   *
+   * @param bucketId - The ID of the bucket to retrieve.
+   *
+   * @returns A promise that resolves to the bucket information.
+   *
+   * @example
+   *
+   * ```typescript
+   * const bucketId: BucketId = '0x...';
+   * const bucket = await ddcClient.getBucket(bucketId);
+   *
+   * console.log(bucket);
+   * ```
+   */
   async getBucket(bucketId: BucketId) {
     this.logger.info('Getting bucket %s', bucketId);
     const bucket = await this.blockchain.ddcCustomers.getBucket(bucketId);
@@ -90,6 +143,19 @@ export class DdcClient {
     return bucket;
   }
 
+  /**
+   * Retrieves a list of all available buckets.
+   *
+   * @returns A promise that resolves to an array of buckets.
+   *
+   * @example
+   *
+   * ```typescript
+   * const buckets = await ddcClient.getBucketList();
+   *
+   * console.log(buckets);
+   * ```
+   */
   async getBucketList() {
     this.logger.info('Getting bucket list');
     const list = await this.blockchain.ddcCustomers.listBuckets();
@@ -114,13 +180,55 @@ export class DdcClient {
     return this.getBucketList();
   }
 
-  async grantAccess(subject: AccountId, params: AuthTokenParams) {
+  /**
+   * Grants access to a bucket to a specific account.
+   *
+   * @param subject - The account ID to grant access to.
+   * @param params - The parameters for the access being granted.
+   *
+   * @returns A new AuthToken that the subject account can use to access the bucket.
+   *
+   * @example
+   *
+   * ```typescript
+   * const subject: AccountId = '0x...';
+   * const authToken = await ddcClient.grantAccess(subject, {
+   *   bucketId: '0x...',
+   *   operations: [AuthTokenOperation.GET],
+   * });
+   *
+   * console.log(authToken.toString());
+   * ```
+   */
+  async grantAccess(subject: AccountId, params: Omit<AuthTokenParams, 'subject'>) {
     this.logger.info('Granting access to account %s', subject);
     this.logger.debug({ params }, 'Grant access params');
 
     return new AuthToken({ ...params, subject }).sign(this.signer);
   }
 
+  /**
+   * Stores a file or DAG node in a specific bucket.
+   *
+   * @param bucketId - The ID of the bucket to store the entity in.
+   * @param entity - The file or DAG node to store.
+   * @param options - Optional parameters for storing the entity.
+   *
+   * @returns A promise that resolves to a URI for the stored entity.
+   *
+   * @throws Will throw an error if the `entity` argument is neither a File nor a DagNode.
+   *
+   * @example
+   *
+   * ```typescript
+   * const bucketId: BucketId = '0x...';
+   * const fileContent = ...;
+   * const file: File = new File(fileContent, { size: 1000 });
+   * const fileUri = await ddcClient.store(bucketId, file);
+   *
+   * console.log(fileUri);
+   * ```
+   */
   async store(bucketId: BucketId, entity: File, options?: FileStoreOptions): Promise<FileUri>;
   async store(bucketId: BucketId, entity: DagNode, options?: DagNodeStoreOptions): Promise<DagNodeUri>;
   async store(bucketId: BucketId, entity: File | DagNode, options?: FileStoreOptions | DagNodeStoreOptions) {
@@ -145,6 +253,24 @@ export class DdcClient {
     return this.ddcNode.storeDagNode(bucketId, node, options);
   }
 
+  /**
+   * Reads a file or DAG node from a specific URI.
+   *
+   * @param uri - The URI of the file or DAG node to read.
+   * @param options - Optional parameters for reading the entity.
+   *
+   * @returns A promise that resolves to the file or DAG node response.
+   *
+   * @example
+   *
+   * ```typescript
+   * const fileUri = new FileUri(bucketId, cid);
+   * const fileResponse = await ddcClient.read(fileUri);
+   * const textContent = await fileResponse.text();
+   *
+   * console.log(textContent);
+   * ```
+   */
   async read(uri: FileUri, options?: FileReadOptions): Promise<FileResponse>;
   async read(uri: DagNodeUri, options?: DagNodeGetOptions): Promise<DagNodeResponse>;
   async read(uri: DdcUri, options?: FileReadOptions | DagNodeGetOptions) {
