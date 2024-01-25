@@ -18,6 +18,9 @@ type PingRecord = {
   latency?: number;
 };
 
+/**
+ * The `PingStrategy` selects a node based on the operation type and ping latency.
+ */
 export abstract class PingStrategy extends NodeTypeStrategy {
   private nodesMap = new Map<RouterNode['httpUrl'], PingRecord>();
 

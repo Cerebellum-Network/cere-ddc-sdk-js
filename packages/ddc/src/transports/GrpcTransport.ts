@@ -10,6 +10,9 @@ const getHost = (href: string) => {
   return href.startsWith(URL_PROTOCOL) ? href.slice(URL_PROTOCOL.length) : href;
 };
 
+/**
+ * The `GrpcTransport` class represents a gRPC transport layer for RPC communication.
+ */
 export class GrpcTransport extends NativeTransport implements RpcTransport {
   constructor({ grpcUrl, interceptors }: GrpcTransportOptions) {
     super({

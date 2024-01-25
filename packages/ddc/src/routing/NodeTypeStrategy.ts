@@ -44,6 +44,9 @@ const priorityMap: OperationPriorityMap = {
   },
 };
 
+/**
+ * The `NodeTypeStrategy` selects a node based on the operation type and node mode.
+ */
 export abstract class NodeTypeStrategy extends BaseStrategy {
   async marshalNodes(operation: Operation, allNodes: RouterNode[]): Promise<RouterNode[]> {
     const nodes = await super.marshalNodes(operation, allNodes);

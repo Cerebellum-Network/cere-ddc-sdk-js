@@ -8,6 +8,9 @@ export type BlockchainStrategyConfig = {
   blockchain: Blockchain;
 };
 
+/**
+ * The `BlockchainStrategy` retrieves nodes from the blockchain. And appiles the `PingStrategy` + `NodeTypeStrategy` to select the best node.
+ */
 export class BlockchainStrategy extends PingStrategy {
   private blockchain: Blockchain;
   private bucketCache: Map<BucketId, Bucket> = new Map();
