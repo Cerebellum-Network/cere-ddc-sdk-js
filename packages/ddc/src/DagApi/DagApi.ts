@@ -13,6 +13,19 @@ export type DagApiOptions = LoggerOptions & {
   authenticate?: boolean;
 };
 
+/**
+ * The `DagApi` class provides methods to interact with the DDC DAG API.
+ *
+ * @group DAG API
+ * @example
+ *
+ * ```typescript
+ * import { DagApi, GrpcTransport } from '@cere-ddc-sdk/ddc';
+ *
+ * const transport = new GrpcTransport(...);
+ * const dagApi = new DagApi(transport);
+ * ```
+ */
 export class DagApi {
   private logger: Logger;
   private api: DagApiClient;
@@ -28,6 +41,22 @@ export class DagApi {
     };
   }
 
+  /**
+   * Stores a node in DDC DAG.
+   *
+   * @param request - An object that includes the access token and the node to store.
+   *
+   * @returns The CID of the stored node as a `Uint8Array`.
+   *
+   * @example
+   *
+   * ```typescript
+   * const request: PutRequest = { token: '...', node: { ... } };
+   * const cid = await dagApi.putNode(request);
+   *
+   * console.log(cid);
+   * ```
+   */
   async putNode({ token, ...request }: PutRequest) {
     const { response } = await this.api.put(request, {
       meta: createRpcMeta(token),
@@ -36,6 +65,23 @@ export class DagApi {
     return new Uint8Array(response.cid);
   }
 
+  /**
+   * Retrieves a DAG node from DDC.
+   *
+   * @group Low level API
+   * @param request - An object that includes the access token and the CID of the node to retrieve.
+   *
+   * @returns The retrieved node as a `Node` object, or `undefined` if the node does not exist.
+   *
+   * @example
+   *
+   * ```typescript
+   * const request: GetRequest = { token: '...', cid: '...' };
+   * const node = await dagApi.getNode(request);
+   *
+   * console.log(node);
+   * ```
+   */
   async getNode({ token, ...request }: GetRequest): Promise<Node | undefined> {
     /**
      * In case a sub-node requested using root CID + path - we don't have the target node CID, so we can't authenticate it.

@@ -10,7 +10,20 @@ type InputStream = Omit<ReadableStream<Uint8Array>, 'getReader'> & {
   getReader: () => any;
 };
 
+/**
+ * The `Content` type represents the content of a file or a piece.
+ *
+ * It can be a `Uint8Array`, an iterable of `Uint8Array`, an async iterable of `Uint8Array`, or an `InputStream`.
+ *
+ * @hidden
+ */
 export type Content = Uint8Array | Iterable<Uint8Array> | AsyncIterable<Uint8Array> | InputStream;
+
+/**
+ * The `ContentStream` type represents a stream of content.
+ *
+ * @hidden
+ */
 export type ContentStream = ReadableStream<Uint8Array> & {
   [ContentStreamSymbol]?: true;
 };

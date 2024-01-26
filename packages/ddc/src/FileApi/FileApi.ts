@@ -39,6 +39,19 @@ export type FileApiOptions = LoggerOptions & {
 
 const ceilToPowerOf2 = (n: number) => Math.pow(2, Math.ceil(Math.log2(n)));
 
+/**
+ * The `FileApi` class provides methods to interact with the DDC File API.
+ *
+ * @group File API
+ * @example
+ *
+ * ```typescript
+ * import { FileApi, GrpcTransport } from '@cere-ddc-sdk/ddc';
+ *
+ * const transport = new GrpcTransport(...);
+ * const fileApi = new FileApi(transport);
+ * ```
+ */
 export class FileApi {
   private logger: Logger;
   private api: FileApiClient;
@@ -91,6 +104,27 @@ export class FileApi {
     return signedAck;
   }
 
+  /**
+   * Stores a multipart piece in DDC.
+   *
+   * @param request - An object that includes the access token, the part size, and the piece to store.
+   *
+   * @returns The CID of the stored piece as a `Uint8Array`.
+   *
+   * @example
+   *
+   * ```typescript
+   * const request: PutMultiPartPieceRequest = {
+   *   token: '...',
+   *   partSize: 1024,
+   *   piece: { ... }
+   * };
+   *
+   * const cid = await fileApi.putMultipartPiece(request);
+   *
+   * console.log(cid);
+   * ```
+   */
   async putMultipartPiece({ token, ...request }: PutMultiPartPieceRequest) {
     const partSize = ceilToPowerOf2(request.partSize);
     this.logger.debug({ ...request, partSize, token }, 'Storing multipart piece');
@@ -107,6 +141,31 @@ export class FileApi {
     return new Uint8Array(response.cid);
   }
 
+  /**
+   * Stores a raw piece in DDC.
+   *
+   * @param metadata - An object that includes the access token and the metadata for the raw piece.
+   * @param content - The content of the raw piece as a `Content` object.
+   *
+   * @returns The CID of the stored piece as a `Uint8Array`.
+   *
+   * @throws Will throw an error if the size of the raw piece cannot be determined, or if it exceeds the maximum size.
+   *
+   * @example
+   *
+   * ```typescript
+   * const content: Content = ...;
+   * const metadata: PutRawPieceMetadata = {
+   *   token: '...',
+   *   bucketId: '...',
+   *   ...
+   * };
+   *
+   * const cid = await fileApi.putRawPiece(metadata, content);
+   *
+   * console.log(cid);
+   * ```
+   */
   async putRawPiece({ token, ...metadata }: PutRawPieceMetadata, content: Content) {
     const meta = createRpcMeta(token);
     const size = getContentSize(content, metadata.size);
@@ -172,6 +231,25 @@ export class FileApi {
     return new Uint8Array(cid);
   }
 
+  /**
+   * Retrieves a file from DDC.
+   *
+   * @param request - An object that includes the access token, the CID of the file to retrieve, and an optional range.
+   *
+   * @returns A stream of the file's content as a `ContentStream`.
+   *
+   * @example
+   *
+   * ```typescript
+   * const request: GetFileRequest = { token: '...', cid: '...' };
+   *
+   * const contentStream = await fileApi.getFile(request);
+   *
+   * for await (const chunk of contentStream) {
+   *   console.log(chunk);
+   * }
+   * ```
+   */
   async getFile({ token, ...request }: GetFileRequest) {
     this.logger.debug({ request, token }, 'Started reading data');
 

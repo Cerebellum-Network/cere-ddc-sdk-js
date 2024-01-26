@@ -33,7 +33,7 @@ export { createContentStream, isContentStream, type Content, type ContentStream 
 /**
  * Constants
  */
-export * from './constants';
+export { KB, MB, MAX_PIECE_SIZE } from './constants';
 
 /**
  * Configuration

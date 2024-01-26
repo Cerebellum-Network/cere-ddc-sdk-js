@@ -25,7 +25,8 @@
     "build:web": "microbundle --tsconfig tsconfig.web.json --format modern --output dist/browser.js",
     "compile": "rimraf ./src/grpc/* && protoc --ts_opt long_type_number --ts_opt generate_dependencies --ts_opt eslint_disable --ts_out ./src/grpc --proto_path protos ./protos/*.proto",
     "package": "clean-publish",
-    "clean": "rimraf dist package"
+    "clean": "rimraf dist package",
+    "docs": "typedoc"
   },
   "dependencies": {
     "@cere-ddc-sdk/blockchain": "2.0.1",
