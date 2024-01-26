@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / MultipartPiece
+[@cere-ddc-sdk/ddc](../README.md) / MultipartPiece
 
 # Class: MultipartPiece
 

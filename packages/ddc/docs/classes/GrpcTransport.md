@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / GrpcTransport
+[@cere-ddc-sdk/ddc](../README.md) / GrpcTransport
 
 # Class: GrpcTransport
 

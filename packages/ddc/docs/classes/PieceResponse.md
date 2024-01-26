@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / PieceResponse
+[@cere-ddc-sdk/ddc](../README.md) / PieceResponse
 
 # Class: PieceResponse
 

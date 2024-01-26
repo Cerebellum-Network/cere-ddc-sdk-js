@@ -3,7 +3,6 @@
   "description": "DDC nodes API",
   "version": "2.0.1",
   "type": "module",
-  "readme": "./docs/README.md",
   "repository": {
     "type": "git",
     "directory": "packages/ddc",

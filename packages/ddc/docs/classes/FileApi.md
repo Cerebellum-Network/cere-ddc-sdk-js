@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / FileApi
+[@cere-ddc-sdk/ddc](../README.md) / FileApi
 
 # Class: FileApi
 

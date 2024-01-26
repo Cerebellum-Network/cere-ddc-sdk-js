@@ -1,27 +1,39 @@
-@cere-ddc-sdk/ddc / [Exports](modules.md)
+@cere-ddc-sdk/ddc
 
 # @cere-ddc-sdk/ddc
 
-The package provides API for interacting with DDC Storage nodes.
+## Storage Node
 
-# Installation
+- [BalancedNode](classes/BalancedNode.md)
+- [StorageNode](classes/StorageNode.md)
+- [NodeInterface](interfaces/NodeInterface.md)
 
-Using `NPM`:
+## Authentication
 
-```bash
-npm install @cere-ddc-sdk/ddc --save
-```
+- [AuthToken](classes/AuthToken.md)
 
-Using `yarn`:
+## CNS API
 
-```bash
-yarn add @cere-ddc-sdk/ddc
-```
+- [CnsApi](classes/CnsApi.md)
+- [CnsRecord](classes/CnsRecord.md)
+- [CnsRecordResponse](classes/CnsRecordResponse.md)
 
-# Documentation
+## DAG API
 
-See [API reference](./docs/README.md)
+- [DagApi](classes/DagApi.md)
+- [DagNode](classes/DagNode.md)
+- [DagNodeResponse](classes/DagNodeResponse.md)
+- [Link](classes/Link.md)
+- [Tag](classes/Tag.md)
 
-# Links
+## File API
 
-- [Tests](/tests/specs/StorageNode.spec.ts)
+- [FileApi](classes/FileApi.md)
+- [MultipartPiece](classes/MultipartPiece.md)
+- [Piece](classes/Piece.md)
+- [PieceResponse](classes/PieceResponse.md)
+
+## RPC Transport
+
+- [GrpcTransport](classes/GrpcTransport.md)
+- [WebsocketTransport](classes/WebsocketTransport.md)

@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / CnsApi
+[@cere-ddc-sdk/ddc](../README.md) / CnsApi
 
 # Class: CnsApi
 

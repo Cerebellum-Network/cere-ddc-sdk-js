@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / Link
+[@cere-ddc-sdk/ddc](../README.md) / Link
 
 # Class: Link
 

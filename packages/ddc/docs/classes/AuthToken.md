@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / AuthToken
+[@cere-ddc-sdk/ddc](../README.md) / AuthToken
 
 # Class: AuthToken
 

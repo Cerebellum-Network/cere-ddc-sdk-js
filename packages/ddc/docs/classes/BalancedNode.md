@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / BalancedNode
+[@cere-ddc-sdk/ddc](../README.md) / BalancedNode
 
 # Class: BalancedNode
 

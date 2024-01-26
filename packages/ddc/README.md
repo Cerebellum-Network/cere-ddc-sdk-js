@@ -16,10 +16,34 @@ Using `yarn`:
 yarn add @cere-ddc-sdk/ddc
 ```
 
+# Usage
+
+The package provides various low-level APIs to work with DDC. Here is a simple example of how to upload a small piece of data using the `StorageNode` API.
+
+```ts
+import { StorageNode, StorageNodeMode, UriSigner, Piece } from '@cere-ddc-sdk/ddc';
+
+const signer = new UriSigner('hybrid label reunion only dawn maze asset draft cousin height flock nation');
+const storageNode = new StorageNode(signer, {
+  mode: StorageNodeMode.Storage,
+  logLevel: 'debug',
+  grpcUrl: 'grpc://localhost:9091',
+  httpUrl: 'http://localhost:8091',
+});
+
+const bucketId = 1n;
+const content = new TextEncoder().encode('Hello DDC');
+const piece = new Piece(content);
+
+const cid = await storageNode.storePiece(bucketId, piece);
+
+console.log('Stored piece CID', cid);
+```
+
 # Documentation
 
-See [API reference](./docs/modules.md)
+For more information about what this package provides, see [API reference](./docs/README.md)
 
-# Links
+# License
 
-- [Tests](/tests/specs/StorageNode.spec.ts)
+Licensed under the [Apache License](./LICENSE)

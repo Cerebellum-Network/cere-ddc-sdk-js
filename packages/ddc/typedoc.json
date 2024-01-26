@@ -4,6 +4,7 @@
   "plugin": ["typedoc-plugin-markdown"],
   "entryPoints": ["src/index.ts"],
   "exclude": ["src/grpc/**/*"],
+  "readme": "none",
   "out": "docs",
   "logLevel": "Error",
   "githubPages": false,
@@ -17,7 +18,5 @@
   "hideInPageTOC": true,
   "hidePageTitle": false,
   "hideParameterTypesInTitle": true,
-  "groupOrder": [
-    "Storage Node",
-  ],
+  "groupOrder": ["Storage Node"]
 }

@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / NodeInterface
+[@cere-ddc-sdk/ddc](../README.md) / NodeInterface
 
 # Interface: NodeInterface
 

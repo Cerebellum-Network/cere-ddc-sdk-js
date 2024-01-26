@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / DagApi
+[@cere-ddc-sdk/ddc](../README.md) / DagApi
 
 # Class: DagApi
 

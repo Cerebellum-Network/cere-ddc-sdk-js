@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / DagNode
+[@cere-ddc-sdk/ddc](../README.md) / DagNode
 
 # Class: DagNode
 

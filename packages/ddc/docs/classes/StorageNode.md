@@ -1,4 +1,4 @@
-[@cere-ddc-sdk/ddc](../README.md) / [Exports](../modules.md) / StorageNode
+[@cere-ddc-sdk/ddc](../README.md) / StorageNode
 
 # Class: StorageNode
 
