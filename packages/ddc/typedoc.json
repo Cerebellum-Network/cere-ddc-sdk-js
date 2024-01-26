@@ -1,0 +1,23 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "tsconfig": "./tsconfig.node.json",
+  "plugin": ["typedoc-plugin-markdown"],
+  "entryPoints": ["src/index.ts"],
+  "exclude": ["src/grpc/**/*"],
+  "out": "docs",
+  "logLevel": "Error",
+  "githubPages": false,
+  "disableSources": true,
+  "excludeNotDocumented": true,
+  "excludeExternals": true,
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeReferences": true,
+  "hideInPageTOC": true,
+  "hidePageTitle": false,
+  "hideParameterTypesInTitle": true,
+  "groupOrder": [
+    "Storage Node",
+  ],
+}

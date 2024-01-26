@@ -33,6 +33,7 @@ export type StorageNodeConfig = RpcTransportOptions &
 /**
  * The `StorageNode` class provides methods for communicating with a DDC storage node.
  *
+ * @group Storage Node
  * @example
  *
  * ```typescript

@@ -26,6 +26,7 @@ export type BalancedNodeConfig = LoggerOptions & {
  *
  * A balanced node is a node that distributes operations across multiple underlying nodes to balance the load.
  *
+ * @group Storage Node
  * @example
  *
  * ```typescript

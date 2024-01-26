@@ -1,3 +1,5 @@
+@cere-ddc-sdk/ddc / [Exports](modules.md)
+
 # @cere-ddc-sdk/ddc
 
 The package provides API for interacting with DDC Storage nodes.
@@ -18,7 +20,7 @@ yarn add @cere-ddc-sdk/ddc
 
 # Documentation
 
-See [API reference](./docs/modules.md)
+See [API reference](./docs/README.md)
 
 # Links
 

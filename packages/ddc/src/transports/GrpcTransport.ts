@@ -12,6 +12,8 @@ const getHost = (href: string) => {
 
 /**
  * The `GrpcTransport` class represents a gRPC transport layer for RPC communication.
+ *
+ * @group RPC Transport
  */
 export class GrpcTransport extends NativeTransport implements RpcTransport {
   constructor({ grpcUrl, interceptors }: GrpcTransportOptions) {

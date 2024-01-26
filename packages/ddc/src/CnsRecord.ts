@@ -5,6 +5,7 @@ import { Signature } from './signature';
 /**
  * The `CnsRecord` class represents a CNS record.
  *
+ * @group CNS API
  * @property cid - The content identifier of the CNS record.
  * @property name - The name of the CNS record.
  *
@@ -47,6 +48,7 @@ export class CnsRecord implements Omit<cns.Record, 'cid' | 'signature'> {
 /**
  * The `CnsRecordResponse` class represents a response for a CNS record.
  *
+ * @group CNS API
  * @property signature - The signature of the response as a `Signature` object.
  */
 export class CnsRecordResponse extends CnsRecord {

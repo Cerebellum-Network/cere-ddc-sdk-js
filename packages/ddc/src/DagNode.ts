@@ -6,6 +6,7 @@ import { Cid } from './Cid';
 /**
  * The `Link` class represents a link in a DAG.
  *
+ * @group DAG API
  * @property cid - The content identifier of the link.
  * @property size - The content size on which the link points to.
  * @property name - The name of the link.
@@ -35,6 +36,7 @@ export class Link implements Omit<dag.Link, 'cid'> {
  * @property key - The key of the tag.
  * @property value - The value of the tag.
  *
+ * @group DAG API
  * @example
  *
  * ```typescript
@@ -55,6 +57,7 @@ export class Tag implements dag.Tag {
 /**
  * The `DagNode` class represents a node in a Directed Acyclic Graph (DAG).
  *
+ * @group DAG API
  * @property links - The links of the node.
  * @property tags - The tags of the node.
  * @property data - The data of the node as a `Buffer`.
@@ -120,6 +123,7 @@ export class DagNode {
 /**
  * The `DagNodeResponse` class represents a response for a DAG Node.
  *
+ * @group DAG API
  * @property cid - This getter retrieves the content identifier of the response as a string.
  */
 export class DagNodeResponse extends DagNode {

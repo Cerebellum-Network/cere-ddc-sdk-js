@@ -11,6 +11,7 @@ export { Operation as AuthTokenOperation };
 /**
  * The `AuthTokenParams` type represents the parameters for creating an `AuthToken`.
  *
+ * @hidden
  * @property operations - The operations that the token grants access to.
  * @property bucketId - The bucket identifier that the token grants access to.
  * @property pieceCid - An optional piece CID as a string or a `Uint8Array`.
@@ -29,6 +30,7 @@ export type AuthTokenParams = Omit<Payload, 'subject' | 'prev' | 'pieceCid'> & {
 /**
  * The `AuthToken` class represents an authentication token.
  *
+ * @group Authentication
  * @property canDelegate - Indicates if the token can be delegated.
  * @property bucketId - The bucket identifier that the token grants access to.
  * @property operations - The operations that the token grants access to.

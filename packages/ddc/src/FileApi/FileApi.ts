@@ -42,6 +42,7 @@ const ceilToPowerOf2 = (n: number) => Math.pow(2, Math.ceil(Math.log2(n)));
 /**
  * The `FileApi` class provides methods to interact with the DDC File API.
  *
+ * @group File API
  * @example
  *
  * ```typescript

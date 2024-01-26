@@ -51,5 +51,9 @@
     "nohoist": [
       "playground/**"
     ]
+  },
+  "devDependencies": {
+    "typedoc": "^0.25.7",
+    "typedoc-plugin-markdown": "^3.17.1"
   }
 }

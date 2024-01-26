@@ -16,6 +16,7 @@ const getNodeId = (node: RouterNode) => node.nodeId || node.grpcUrl;
 /**
  * The `Router` class provides methods for routing operations to different nodes based on a routing strategy.
  *
+ * @internal
  * @example
  *
  * ```typescript

@@ -5,6 +5,8 @@ export const MB = 1024 * KB;
 
 /**
  * Maximum size of a piece of content, in bytes.
+ *
+ * @hidden
  */
 export const MAX_PIECE_SIZE = 128 * MB;
 

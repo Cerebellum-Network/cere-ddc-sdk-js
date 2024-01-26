@@ -3,6 +3,7 @@ import { base32 } from 'multiformats/bases/base32';
 /**
  * The `Cid` class represents a Content Identifier (CID) in DDC.
  *
+ * @internal
  * @property contentHash - This getter retrieves the content hash of the CID.
  */
 export class Cid {

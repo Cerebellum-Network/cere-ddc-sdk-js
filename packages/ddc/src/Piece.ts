@@ -26,6 +26,7 @@ export type PieceResponseMeta = {
 /**
  * The `Piece` class represents a piece of content.
  *
+ * @group File API
  * @property offset - The offset of the piece in a multipart upload.
  * @property body - The body of the piece as a content stream.
  * @property meta - The metadata of the piece.
@@ -117,6 +118,7 @@ export class Piece {
 /**
  * The `MultipartPiece` class represents a piece cobined from multiple parts (raw pieces).
  *
+ * @group File API
  * @property parts - The parts of the multipart piece.
  * @property meta - The metadata of the multipart piece.
  * @property partHashes - The hashes of the parts of the multipart piece.
@@ -170,6 +172,8 @@ export class MultipartPiece {
 
 /**
  * The `PieceResponse` class represents a response for a piece content.
+ *
+ * @group File API
  *
  * @property body - The body of the piece as a stream.
  * @property range - The range of the piece response.

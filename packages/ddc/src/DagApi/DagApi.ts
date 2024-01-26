@@ -16,6 +16,7 @@ export type DagApiOptions = LoggerOptions & {
 /**
  * The `DagApi` class provides methods to interact with the DDC DAG API.
  *
+ * @group DAG API
  * @example
  *
  * ```typescript
@@ -67,6 +68,7 @@ export class DagApi {
   /**
    * Retrieves a DAG node from DDC.
    *
+   * @group Low level API
    * @param request - An object that includes the access token and the CID of the node to retrieve.
    *
    * @returns The retrieved node as a `Node` object, or `undefined` if the node does not exist.
