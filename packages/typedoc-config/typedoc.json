@@ -1,0 +1,17 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "plugin": ["typedoc-plugin-markdown"],
+  "readme": "none",
+  "logLevel": "Error",
+  "githubPages": false,
+  "disableSources": true,
+  "excludeNotDocumented": true,
+  "excludeExternals": true,
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeReferences": true,
+  "hideInPageTOC": true,
+  "hidePageTitle": false,
+  "hideParameterTypesInTitle": true
+}
