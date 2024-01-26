@@ -64,6 +64,14 @@ This command will use [Docker](https://www.docker.com/) to start Cere Blockchain
 
 > There is can only be one instance of local environment running at the same time.
 
+## Documentation
+
+The main source of documentation for all SDK packages is the source code doc comments, which are in the [tsdoc](https://tsdoc.org/) format. If you have changed or added new doc comments, run the following command to regenerate the READMEs.
+
+```bash
+npm run docs
+```
+
 ## Publish
 
 1. Create a release

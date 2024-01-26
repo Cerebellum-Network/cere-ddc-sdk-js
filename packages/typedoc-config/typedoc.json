@@ -13,5 +13,6 @@
   "excludeReferences": true,
   "hideInPageTOC": true,
   "hidePageTitle": false,
-  "hideParameterTypesInTitle": true
+  "hideParameterTypesInTitle": true,
+  "externalPattern": ["**/node_modules/**", "**/grpc/**"]
 }

@@ -24,7 +24,8 @@
     "build:node": "microbundle --tsconfig tsconfig.build.json --format esm,cjs --target node",
     "build:web": "microbundle --tsconfig tsconfig.build.json --format modern --output dist/browser.js",
     "package": "clean-publish",
-    "clean": "rimraf dist package"
+    "clean": "rimraf dist package",
+    "docs": "typedoc"
   },
   "dependencies": {
     "@cere-ddc-sdk/blockchain": "2.0.1",

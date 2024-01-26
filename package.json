@@ -16,6 +16,7 @@
     "test:clean": "lerna run test:clean",
     "test:env": "lerna run test:env",
     "clean": "lerna run clean",
+    "docs": "lerna run docs",
     "build": "lerna run build",
     "build:watch": "lerna watch -- lerna run build",
     "package": "lerna run package",
