@@ -3,7 +3,7 @@ import { GrpcTransport as NativeTransport, GrpcOptions } from '@protobuf-ts/grpc
 
 import { RpcTransport, RpcTransportOptions } from './RpcTransport';
 
-export type GrpcTransportOptions = Pick<RpcTransportOptions, 'grpcUrl'> & Pick<GrpcOptions, 'interceptors'>;
+export type GrpcTransportOptions = Pick<RpcTransportOptions, 'grpcUrl'> & Pick<GrpcOptions, 'interceptors' | 'timeout'>;
 
 const URL_PROTOCOL = 'grpc://';
 const getHost = (href: string) => {
@@ -16,9 +16,10 @@ const getHost = (href: string) => {
  * @group RPC Transport
  */
 export class GrpcTransport extends NativeTransport implements RpcTransport {
-  constructor({ grpcUrl, interceptors }: GrpcTransportOptions) {
+  constructor({ grpcUrl, interceptors, timeout }: GrpcTransportOptions) {
     super({
       interceptors,
+      timeout,
       host: getHost(grpcUrl),
       channelCredentials: ChannelCredentials.createInsecure(),
     });

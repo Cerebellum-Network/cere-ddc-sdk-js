@@ -5,6 +5,7 @@ import { Cid } from '../Cid';
 import { CnsApi } from '../CnsApi';
 import { DagApi } from '../DagApi';
 import { FileApi } from '../FileApi';
+import { GTRPC_REQUEST_TIMEOUT } from '../constants';
 import { MultipartPiece, Piece, PieceResponse } from '../Piece';
 import { DagNode, DagNodeResponse, mapDagNodeToAPI } from '../DagNode';
 import { CnsRecord, CnsRecordResponse, mapCnsRecordToAPI } from '../CnsRecord';
@@ -57,7 +58,10 @@ export class StorageNode implements NodeInterface {
     private signer: Signer,
     config: StorageNodeConfig,
   ) {
-    const transport = new DefaultTransport(config);
+    const transport = new DefaultTransport({
+      ...config,
+      timeout: config.timeout ?? GTRPC_REQUEST_TIMEOUT,
+    });
 
     this.nodeId = config.nodeId || uuid();
     this.mode = config.mode;

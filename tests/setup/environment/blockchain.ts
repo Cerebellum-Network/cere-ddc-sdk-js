@@ -41,7 +41,7 @@ export const startBlockchain = async (): Promise<BlockchainConfig> => {
 
     chachedState = undefined;
 
-    fs.rmdirSync(bcCachePath, { recursive: true });
+    fs.rmSync(bcCachePath, { recursive: true });
     fs.unlinkSync(cachedStatePath);
   }
 

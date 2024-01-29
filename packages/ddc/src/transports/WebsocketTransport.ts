@@ -20,7 +20,7 @@ import {
 import { GrpcStatus } from '../grpc/status';
 import { RpcTransport, RpcTransportOptions } from './RpcTransport';
 
-export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl' | 'ssl'>;
+export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl' | 'ssl' | 'timeout'>;
 
 const createHost = ({ httpUrl, ssl }: WebsocketTransportOptions) => {
   const sanitizedUrl = /^https?:\/\//i.test(httpUrl) ? httpUrl : `http://${httpUrl}`;
