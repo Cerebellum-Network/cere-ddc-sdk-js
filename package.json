@@ -16,6 +16,7 @@
     "test:clean": "lerna run test:clean",
     "test:env": "lerna run test:env",
     "clean": "lerna run clean",
+    "docs": "lerna run docs",
     "build": "lerna run build",
     "build:watch": "lerna watch -- lerna run build",
     "package": "lerna run package",
@@ -39,6 +40,7 @@
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "typedoc": "^0.25.7",
     "typescript": "^5.3.3",
     "wait-port": "^1.1.0"
   },
@@ -51,9 +53,5 @@
     "nohoist": [
       "playground/**"
     ]
-  },
-  "devDependencies": {
-    "typedoc": "^0.25.7",
-    "typedoc-plugin-markdown": "^3.17.1"
   }
 }
