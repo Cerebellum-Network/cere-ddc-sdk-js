@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.1...v2.1.0) (2024-01-30)
+
+### Features
+
+- Extend auth token API with methods to delegate access ([#215](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/215)) ([1da5e38](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/1da5e387369645893ff512bc1a00d78ad2dbd6bd))
+
+### Documentation
+
+- Add reusable typedoc configs package ([#222](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/222)) ([8af0a66](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/8af0a6657906f09cc29136abd751065f18ba9510))
+- **ddc-client:** Update README with documentation of added APIs ([#220](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/220)) ([d01972c](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/d01972c0cb56e6e9709e7f6cbf91789a2ea7a0f0))
+
 ## [2.0.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0...v2.0.1) (2024-01-12)
 
 **Note:** Version bump only for package @cere-ddc-sdk/ddc-client
