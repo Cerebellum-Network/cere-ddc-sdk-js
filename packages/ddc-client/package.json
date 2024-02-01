@@ -28,7 +28,7 @@
     "docs": "typedoc"
   },
   "dependencies": {
-    "@cere-ddc-sdk/blockchain": "2.2.0",
+    "@cere-ddc-sdk/blockchain": "2.1.0",
     "@cere-ddc-sdk/ddc": "2.1.1",
     "@cere-ddc-sdk/file-storage": "2.1.1"
   },
