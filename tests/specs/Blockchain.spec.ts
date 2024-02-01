@@ -249,6 +249,27 @@ describe('Blockchain', () => {
     expect(bucket?.isPublic).toBe(true);
   });
 
+  test('Should change bucket params', async () => {
+    const createBucketResult = await blockchain.send(
+      blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true }),
+      {
+        account: rootAccount,
+      },
+    );
+
+    const [bucketId] = blockchain.ddcCustomers.extractCreatedBucketIds(createBucketResult.events);
+    const bucket = await blockchain.ddcCustomers.getBucket(bucketId);
+
+    expect(bucket?.isPublic).toBe(true);
+
+    await blockchain.send(blockchain.ddcCustomers.setBucketParams(bucketId, { isPublic: false }), {
+      account: rootAccount,
+    });
+
+    const bucketAfterUpdate = await blockchain.ddcCustomers.getBucket(bucketId);
+    expect(bucketAfterUpdate?.isPublic).toBe(true);
+  });
+
   test('Should create private bucket', async () => {
     const result = await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId, { isPublic: false }), {
       account: rootAccount,

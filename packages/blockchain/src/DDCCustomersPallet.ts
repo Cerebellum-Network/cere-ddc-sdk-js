@@ -25,6 +25,10 @@ export class DDCCustomersPallet {
     return this.apiPromise.tx.ddcCustomers.createBucket(clusterId, params) as Sendable;
   }
 
+  setBucketParams(bucketId: BucketId, params: BucketParams) {
+    return this.apiPromise.tx.ddcCustomers.setBucketParams(bucketId, params) as Sendable;
+  }
+
   deposit(value: bigint) {
     return this.apiPromise.tx.ddcCustomers.deposit(value) as Sendable;
   }
