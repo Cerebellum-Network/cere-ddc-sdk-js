@@ -262,7 +262,7 @@ describe('Blockchain', () => {
 
     expect(bucket?.isPublic).toBe(true);
 
-    await blockchain.send(blockchain.ddcCustomers.setBucketParams(bucketId, { isPublic: false }), {
+    await blockchain.send(blockchain.ddcCustomers.setBucketParams(bucketId, { isPublic: true }), {
       account: rootAccount,
     });
 
