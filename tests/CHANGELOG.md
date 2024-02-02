@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.1.1...v2.2.0) (2024-02-02)
+
+### Features
+
+- **blockchain:** Add change bucket parameters method ([93c47eb](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/93c47eb9fdb30718e923e594a27e0441ce3cb7f8))
+
 ## [2.1.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.1.0...v2.1.1) (2024-01-31)
 
 **Note:** Version bump only for package @cere-ddc-sdk/tests
