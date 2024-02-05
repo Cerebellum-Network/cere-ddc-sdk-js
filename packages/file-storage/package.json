@@ -24,6 +24,7 @@
     "build:node": "microbundle --tsconfig tsconfig.build.json --format esm,cjs --target node",
     "build:web": "microbundle --tsconfig tsconfig.build.json --format modern --output dist/browser.js",
     "package": "clean-publish",
+    "docs": "typedoc",
     "clean": "rimraf dist package"
   },
   "dependencies": {

@@ -31,6 +31,11 @@ export type FileStorageConfig = Config &
 export type FileReadOptions = PieceReadOptions;
 export type FileStoreOptions = PieceStoreOptions;
 
+/**
+ * Represents a storage system for files.
+ *
+ * It provides methods to read and store files in the DDC.
+ */
 export class FileStorage {
   private ddcNode: NodeInterface;
   private logger: Logger;
@@ -56,6 +61,14 @@ export class FileStorage {
     bindErrorLogger(this, this.logger, ['store', 'read']);
   }
 
+  /**
+   * Creates a new instance of the `FileStorage` class asynchronously.
+   *
+   * @param uriOrSigner - A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri).
+   * @param config - Configuration options for the `FileStorage`. Defaults to TESTNET.
+   *
+   * @returns A promise that resolves to a new `FileStorage` instance.
+   */
   static async create(uriOrSigner: Signer | string, config: FileStorageConfig = DEFAULT_PRESET) {
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
     const blockchain =
@@ -95,6 +108,15 @@ export class FileStorage {
     return this.ddcNode.storePiece(bucketId, new Piece(file.body, { size: file.size }), options);
   }
 
+  /**
+   * Stores a file in the DDC. Large files are stored as a collection of pieces.
+   *
+   * @param bucketId - The ID of the bucket where the file will be stored.
+   * @param file - The file to store.
+   * @param options - The options for storing the file.
+   *
+   * @returns A promise that resolves to the CID of the stored file.
+   */
   async store(bucketId: BucketId, file: File, options?: FileStoreOptions) {
     this.logger.info(options, 'Storing file into bucket %s', bucketId);
     this.logger.debug({ file }, 'File');
@@ -109,6 +131,15 @@ export class FileStorage {
     return cid;
   }
 
+  /**
+   * Reads a file from the file storage.
+   *
+   * @param bucketId - The ID of the bucket where the file is stored.
+   * @param cidOrName - The CID or CNS name of the file to read.
+   * @param options - The options for reading the file.
+   *
+   * @returns A promise that resolves to a `FileResponse` instance.
+   */
   async read(bucketId: BucketId, cidOrName: string, options?: FileReadOptions) {
     this.logger.info(options, 'Reading file from bucket %s by "%s"', bucketId, cidOrName);
     const piece = await this.ddcNode.readPiece(bucketId, cidOrName, options);
