@@ -16,7 +16,7 @@ export type DagApiOptions = LoggerOptions & {
 /**
  * The `DagApi` class provides methods to interact with the DDC DAG API.
  *
- * @group DAG API
+ * @group Directed Acyclic Graph (DAG)
  * @example
  *
  * ```typescript

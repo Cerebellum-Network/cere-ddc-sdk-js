@@ -43,3 +43,23 @@ Checks if an object is an instance of `CnsRecord`.
 object is CnsRecord
 
 `true` if the object is an instance of `CnsRecord` or has the same properties as a `CnsRecord`, `false` otherwise.
+
+## Properties
+
+### cid
+
+• `Readonly` **cid**: `string`
+
+The content identifier (CID) of the CNS record.
+
+___
+
+### name
+
+• `Readonly` **name**: `string`
+
+The name of the CNS record.
+
+#### Implementation of
+
+Omit.name

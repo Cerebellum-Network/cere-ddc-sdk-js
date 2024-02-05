@@ -14,6 +14,18 @@ const tag = new Tag(key, value);
 console.log(tag);
 ```
 
-## Implements
+## Properties
 
-- `Tag`
+### key
+
+• **key**: `string`
+
+The key of the tag.
+
+___
+
+### value
+
+• **value**: `string`
+
+The value of the tag.

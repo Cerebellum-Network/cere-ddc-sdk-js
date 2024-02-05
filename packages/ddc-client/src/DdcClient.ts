@@ -129,7 +129,7 @@ export class DdcClient {
    * @example
    *
    * ```typescript
-   * const bucketId: BucketId = '0x...';
+   * const bucketId: BucketId = 1n;
    * const bucket = await ddcClient.getBucket(bucketId);
    *
    * console.log(bucket);
@@ -193,7 +193,7 @@ export class DdcClient {
    * ```typescript
    * const subject: AccountId = '0x...';
    * const authToken = await ddcClient.grantAccess(subject, {
-   *   bucketId: '0x...',
+   *   bucketId: 1n,
    *   operations: [AuthTokenOperation.GET],
    * });
    *
@@ -221,7 +221,7 @@ export class DdcClient {
    * @example
    *
    * ```typescript
-   * const bucketId: BucketId = '0x...';
+   * const bucketId: BucketId = 1n;
    * const fileContent = ...;
    * const file: File = new File(fileContent, { size: 1000 });
    * const fileUri = await ddcClient.store(bucketId, file);

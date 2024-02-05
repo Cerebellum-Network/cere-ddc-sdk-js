@@ -15,6 +15,26 @@ const link = new Link(cid, size, name);
 console.log(link);
 ```
 
-## Implements
+## Properties
 
-- `Omit`\<`dag.Link`, ``"cid"``\>
+### cid
+
+• **cid**: `string`
+
+The content identifier of the link.
+
+___
+
+### name
+
+• **name**: `string`
+
+The name of the link.
+
+___
+
+### size
+
+• **size**: `number`
+
+The content size on which the link points to.

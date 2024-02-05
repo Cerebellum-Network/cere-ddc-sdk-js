@@ -93,7 +93,7 @@ A promise that resolves to the bucket information.
 **`Example`**
 
 ```typescript
-const bucketId: BucketId = '0x...';
+const bucketId: BucketId = 1n;
 const bucket = await ddcClient.getBucket(bucketId);
 
 console.log(bucket);
@@ -147,7 +147,7 @@ A new AuthToken that the subject account can use to access the bucket.
 ```typescript
 const subject: AccountId = '0x...';
 const authToken = await ddcClient.grantAccess(subject, {
-  bucketId: '0x...',
+  bucketId: 1n,
   operations: [AuthTokenOperation.GET],
 });
 
@@ -158,7 +158,7 @@ ___
 
 ### read
 
-▸ **read**(`uri`, `options?`): `Promise`\<`FileResponse`\>
+▸ **read**(`uri`, `options?`): `Promise`\<[`FileResponse`](FileResponse.md)\>
 
 Reads a file or DAG node from a specific URI.
 
@@ -171,7 +171,7 @@ Reads a file or DAG node from a specific URI.
 
 #### Returns
 
-`Promise`\<`FileResponse`\>
+`Promise`\<[`FileResponse`](FileResponse.md)\>
 
 A promise that resolves to the file or DAG node response.
 
@@ -198,7 +198,7 @@ Stores a file or DAG node in a specific bucket.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `bucketId` | `bigint` | The ID of the bucket to store the entity in. |
-| `entity` | `File` | The file or DAG node to store. |
+| `entity` | [`File`](File.md) | The file or DAG node to store. |
 | `options?` | `PieceStoreOptions` | Optional parameters for storing the entity. |
 
 #### Returns
@@ -214,7 +214,7 @@ Will throw an error if the `entity` argument is neither a File nor a DagNode.
 **`Example`**
 
 ```typescript
-const bucketId: BucketId = '0x...';
+const bucketId: BucketId = 1n;
 const fileContent = ...;
 const file: File = new File(fileContent, { size: 1000 });
 const fileUri = await ddcClient.store(bucketId, file);

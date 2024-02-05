@@ -1,8 +1,26 @@
-[@cere-ddc-sdk/ddc](../README.md) / PieceResponse
+[@cere-ddc-sdk/file-storage](../README.md) / FileResponse
 
-# Class: PieceResponse
+# Class: FileResponse
 
-The `PieceResponse` class represents a response for a piece content.
+Represents a response from a file read operation.
+
+## Hierarchy
+
+- `PieceResponse`
+
+  ↳ **`FileResponse`**
+
+## Properties
+
+### body
+
+• `Readonly` **body**: `ContentStream`
+
+The content of the piece response as a stream.
+
+#### Inherited from
+
+PieceResponse.body
 
 ## Accessors
 
@@ -16,6 +34,10 @@ The content identifier (CID) of the piece.
 
 `string`
 
+#### Inherited from
+
+PieceResponse.cid
+
 ___
 
 ### hash
@@ -28,6 +50,10 @@ The hash of the piece response content.
 
 `Uint8Array`
 
+#### Inherited from
+
+PieceResponse.hash
+
 ___
 
 ### range
@@ -39,6 +65,10 @@ The range of the piece response.
 #### Returns
 
 `undefined` \| `GetFileRequest_Request_Range`
+
+#### Inherited from
+
+PieceResponse.range
 
 ## Methods
 
@@ -54,6 +84,10 @@ Converts the body stream of the piece to an `ArrayBuffer`.
 
 The piece content as an `ArrayBuffer`.
 
+#### Inherited from
+
+PieceResponse.arrayBuffer
+
 ___
 
 ### json
@@ -67,6 +101,10 @@ Converts the body stream of the piece to a JSON object.
 `Promise`\<`unknown`\>
 
 The piece content as a JSON object.
+
+#### Inherited from
+
+PieceResponse.json
 
 ___
 
@@ -82,10 +120,6 @@ Converts the body stream of the piece to a string.
 
 The piece content as a string.
 
-## Properties
+#### Inherited from
 
-### body
-
-• `Readonly` **body**: `ContentStream`
-
-The content of the piece response as a stream.
+PieceResponse.text

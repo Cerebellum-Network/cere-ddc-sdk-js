@@ -162,3 +162,11 @@ Stores a piece in a specific bucket.
 `Promise`\<`string`\>
 
 A promise that resolves to the CID of the stored piece.
+
+## Properties
+
+### nodeId
+
+• `Readonly` **nodeId**: `string`
+
+The identifier of the node.

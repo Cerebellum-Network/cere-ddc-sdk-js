@@ -54,7 +54,7 @@ A quick guide of how to upload a file to DDC TESTNET using the `DdcClient` API.
 4. That is it. You can open the file from your browser
 
     ```ts
-    const fileUrl = `https://storage.devnet.cere.network/${bucketId}/${fileUri.cid}`;
+    const fileUrl = `https://storage.testnet.cere.network/${bucketId}/${fileUri.cid}`;
 
     console.log('The file URL', fileUrl);
     ```

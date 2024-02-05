@@ -33,7 +33,7 @@ export type CnsApiOptions = {
 /**
  * The `CnsApi` class provides methods to interact with the DDC CNS API.
  *
- * @group CNS API
+ * @group Content Name System (CNS)
  * @example
  *
  * ```typescript
