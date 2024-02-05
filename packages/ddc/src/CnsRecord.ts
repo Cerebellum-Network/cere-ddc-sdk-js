@@ -6,8 +6,6 @@ import { Signature } from './signature';
  * The `CnsRecord` class represents a CNS record.
  *
  * @group Content Name System (CNS)
- * @property cid - The content identifier of the CNS record.
- * @property name - The name of the CNS record.
  *
  * @example
  *
@@ -20,10 +18,20 @@ import { Signature } from './signature';
  * ```
  */
 export class CnsRecord implements Omit<cns.Record, 'cid' | 'signature'> {
-  constructor(
-    readonly cid: string,
-    readonly name: string,
-  ) {}
+  /**
+   * The content identifier (CID) of the CNS record.
+   */
+  readonly cid: string;
+
+  /**
+   * The name of the CNS record.
+   */
+  readonly name: string;
+
+  constructor(cid: string, name: string) {
+    this.cid = cid;
+    this.name = name;
+  }
 
   /**
    * Checks if an object is an instance of `CnsRecord`.
@@ -49,17 +57,17 @@ export class CnsRecord implements Omit<cns.Record, 'cid' | 'signature'> {
  * The `CnsRecordResponse` class represents a response for a CNS record.
  *
  * @group Content Name System (CNS)
- * @property signature - The signature of the response as a `Signature` object.
  */
 export class CnsRecordResponse extends CnsRecord {
-  constructor(
-    cid: string | Uint8Array,
-    name: string,
-    readonly signature: Signature,
-  ) {
-    const cidObject = new Cid(cid);
+  /**
+   * The signature of the response as a `Signature` object.
+   */
+  readonly signature: Signature;
 
-    super(cidObject.toString(), name);
+  constructor(cid: string | Uint8Array, name: string, signature: Signature) {
+    super(new Cid(cid).toString(), name);
+
+    this.signature = signature;
   }
 }
 

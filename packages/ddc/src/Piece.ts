@@ -27,11 +27,6 @@ export type PieceResponseMeta = {
  * The `Piece` class represents a piece of content.
  *
  * @group Files
- * @property offset - The offset of the piece in a multipart upload.
- * @property body - The body of the piece as a content stream.
- * @property meta - The metadata of the piece.
- * @property isPart - Checks if the piece is part of a multipart upload.
- * @property size - The size of the piece.
  *
  * @example
  *
@@ -43,25 +38,44 @@ export type PieceResponseMeta = {
  * ```
  */
 export class Piece {
-  public offset?: number;
-  readonly body: ContentStream;
   private contentLength?: number;
+  protected content: Content;
+
+  /**
+   * The offset of the piece in a multipart upload.
+   */
+  public offset?: number;
+
+  /**
+   * The content of the piece as a stream.
+   */
+  readonly body: ContentStream;
+
+  /**
+   * The metadata for the piece.
+   */
+  readonly meta: PieceMeta;
 
   constructor(content: Content, meta: StreamPieceMeta);
   constructor(content: Uint8Array, meta?: StaticPieceMeta);
-  constructor(
-    protected content: Content,
-    readonly meta: PieceMeta = {},
-  ) {
+  constructor(content: Content, meta: PieceMeta = {}) {
     this.offset = meta.multipartOffset;
     this.body = isContentStream(content) ? content : createContentStream(content);
     this.contentLength = getContentSize(content, meta.size);
+    this.meta = meta;
+    this.content = content;
   }
 
+  /**
+   * Checks if the piece is part of a multipart upload.
+   */
   get isPart() {
     return this.offset !== undefined;
   }
 
+  /**
+   * The size of the piece.
+   */
   get size() {
     if (!this.contentLength) {
       throw new Error('The piece size can not be determined');
@@ -119,9 +133,6 @@ export class Piece {
  * The `MultipartPiece` class represents a piece cobined from multiple parts (raw pieces).
  *
  * @group Files
- * @property parts - The parts of the multipart piece.
- * @property meta - The metadata of the multipart piece.
- * @property partHashes - The hashes of the parts of the multipart piece.
  *
  * @example
  *
@@ -136,13 +147,25 @@ export class Piece {
  * ```
  */
 export class MultipartPiece {
+  /**
+   * The hashes of the parts of the multipart piece.
+   */
   readonly partHashes: Uint8Array[];
 
-  constructor(
-    readonly parts: string[],
-    readonly meta: MultipartPieceMeta,
-  ) {
+  /**
+   * The metadata of the multipart piece.
+   */
+  readonly meta: MultipartPieceMeta;
+
+  /**
+   * The parts of the multipart piece.
+   */
+  readonly parts: string[];
+
+  constructor(parts: string[], meta: MultipartPieceMeta) {
     this.partHashes = parts.map((part) => new Cid(part).contentHash);
+    this.meta = meta;
+    this.parts = parts;
   }
 
   /**
@@ -174,31 +197,39 @@ export class MultipartPiece {
  * The `PieceResponse` class represents a response for a piece content.
  *
  * @group Files
- *
- * @property body - The body of the piece as a stream.
- * @property range - The range of the piece response.
- * @property hash - The hash of the piece.
- * @property cid - The CID of the piece.
  */
 export class PieceResponse {
   protected cidObject: Cid;
+  protected meta?: PieceResponseMeta;
 
-  constructor(
-    cid: string | Uint8Array | Cid,
-    readonly body: ContentStream,
-    protected meta?: PieceResponseMeta,
-  ) {
+  /**
+   * The content of the piece response as a stream.
+   */
+  readonly body: ContentStream;
+
+  constructor(cid: string | Uint8Array | Cid, body: ContentStream, meta?: PieceResponseMeta) {
     this.cidObject = cid instanceof Cid ? cid : new Cid(cid);
+    this.body = body;
+    this.meta = meta;
   }
 
+  /**
+   * The range of the piece response.
+   */
   get range() {
     return this.meta?.range;
   }
 
+  /**
+   * The hash of the piece response content.
+   */
   get hash() {
     return this.cidObject.contentHash;
   }
 
+  /**
+   * The content identifier (CID) of the piece.
+   */
   get cid() {
     return this.cidObject.toString();
   }

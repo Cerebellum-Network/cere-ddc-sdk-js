@@ -10,6 +10,50 @@ The `DagNodeResponse` class represents a response for a DAG Node.
 
   ↳ **`DagNodeResponse`**
 
+## Accessors
+
+### cid
+
+• `get` **cid**(): `string`
+
+The content identifier of the response as a string.
+
+#### Returns
+
+`string`
+
+___
+
+### data
+
+• `get` **data**(): `Buffer`
+
+The data of the node as a `Buffer`.
+
+#### Returns
+
+`Buffer`
+
+#### Inherited from
+
+DagNode.data
+
+___
+
+### size
+
+• `get` **size**(): `number`
+
+The size of the node in bytes.
+
+#### Returns
+
+`number`
+
+#### Inherited from
+
+DagNode.size
+
 ## Methods
 
 ### isDagNode
@@ -33,3 +77,27 @@ object is DagNode
 #### Inherited from
 
 [DagNode](DagNode.md).[isDagNode](DagNode.md#isdagnode)
+
+## Properties
+
+### links
+
+• **links**: [`Link`](Link.md)[]
+
+The links of the node.
+
+#### Inherited from
+
+[DagNode](DagNode.md).[links](DagNode.md#links)
+
+___
+
+### tags
+
+• **tags**: [`Tag`](Tag.md)[]
+
+The tags of the node.
+
+#### Inherited from
+
+[DagNode](DagNode.md).[tags](DagNode.md#tags)

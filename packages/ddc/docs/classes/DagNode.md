@@ -21,6 +21,30 @@ console.log(DagNode.isDagNode(node)); // true
 
   ↳ [`DagNodeResponse`](DagNodeResponse.md)
 
+## Accessors
+
+### data
+
+• `get` **data**(): `Buffer`
+
+The data of the node as a `Buffer`.
+
+#### Returns
+
+`Buffer`
+
+___
+
+### size
+
+• `get` **size**(): `number`
+
+The size of the node in bytes.
+
+#### Returns
+
+`number`
+
 ## Methods
 
 ### isDagNode
@@ -40,3 +64,19 @@ Checks if an object is an instance of `DagNode`.
 object is DagNode
 
 `true` if the object is an instance of `DagNode` or has the same properties as a `DagNode`, `false` otherwise.
+
+## Properties
+
+### links
+
+• **links**: [`Link`](Link.md)[]
+
+The links of the node.
+
+___
+
+### tags
+
+• **tags**: [`Tag`](Tag.md)[]
+
+The tags of the node.

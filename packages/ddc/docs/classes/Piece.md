@@ -13,6 +13,30 @@ const piece = new Piece(content, { size: 3 });
 console.log(Piece.isPiece(piece)); // true
 ```
 
+## Accessors
+
+### isPart
+
+• `get` **isPart**(): `boolean`
+
+Checks if the piece is part of a multipart upload.
+
+#### Returns
+
+`boolean`
+
+___
+
+### size
+
+• `get` **size**(): `number`
+
+The size of the piece.
+
+#### Returns
+
+`number`
+
 ## Methods
 
 ### from
@@ -72,3 +96,27 @@ Checks if an object is an instance of `Piece` with static content.
 object is Piece
 
 `true` if the object is an instance of `Piece` and its content is a `Uint8Array`, `false` otherwise.
+
+## Properties
+
+### body
+
+• `Readonly` **body**: `ContentStream`
+
+The content of the piece as a stream.
+
+___
+
+### meta
+
+• `Readonly` **meta**: `StaticPieceMeta`
+
+The metadata for the piece.
+
+___
+
+### offset
+
+• `Optional` **offset**: `number`
+
+The offset of the piece in a multipart upload.

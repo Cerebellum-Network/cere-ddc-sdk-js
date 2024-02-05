@@ -4,6 +4,30 @@
 
 Represents a file with content and metadata.
 
+## Properties
+
+### body
+
+• `Readonly` **body**: `ContentStream`
+
+The content of the file as a stream.
+
+___
+
+### meta
+
+• `Readonly` **meta**: `StreamMeta` \| `StaticContentMeta`
+
+The metadata for the file.
+
+___
+
+### size
+
+• `Readonly` **size**: `number`
+
+The size of the file in bytes.
+
 ## Methods
 
 ### isFile

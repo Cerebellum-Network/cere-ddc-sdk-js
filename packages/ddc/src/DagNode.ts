@@ -7,9 +7,6 @@ import { Cid } from './Cid';
  * The `Link` class represents a link in a DAG.
  *
  * @group Directed Acyclic Graph (DAG)
- * @property cid - The content identifier of the link.
- * @property size - The content size on which the link points to.
- * @property name - The name of the link.
  *
  * @example
  *
@@ -22,19 +19,31 @@ import { Cid } from './Cid';
  * console.log(link);
  * ```
  */
-export class Link implements Omit<dag.Link, 'cid'> {
-  constructor(
-    public cid: string,
-    public size: number,
-    public name = '',
-  ) {}
+export class Link {
+  /**
+   * The content identifier of the link.
+   */
+  public cid: string;
+
+  /**
+   * The content size on which the link points to.
+   */
+  public size: number;
+
+  /**
+   * The name of the link.
+   */
+  public name = '';
+
+  constructor(cid: string, size: number, name = '') {
+    this.cid = cid;
+    this.size = size;
+    this.name = name;
+  }
 }
 
 /**
  * The `Tag` class represents a DAG Node tag.
- *
- * @property key - The key of the tag.
- * @property value - The value of the tag.
  *
  * @group Directed Acyclic Graph (DAG)
  * @example
@@ -47,21 +56,27 @@ export class Link implements Omit<dag.Link, 'cid'> {
  * console.log(tag);
  * ```
  */
-export class Tag implements dag.Tag {
-  constructor(
-    public key: string,
-    public value: string,
-  ) {}
+export class Tag {
+  /**
+   * The key of the tag.
+   */
+  public key: string;
+
+  /**
+   * The value of the tag.
+   */
+  public value: string;
+
+  constructor(key: string, value: string) {
+    this.key = key;
+    this.value = value;
+  }
 }
 
 /**
  * The `DagNode` class represents a node in a Directed Acyclic Graph (DAG).
  *
  * @group Directed Acyclic Graph (DAG)
- * @property links - The links of the node.
- * @property tags - The tags of the node.
- * @property data - The data of the node as a `Buffer`.
- * @property size - The size of the node.
  *
  * @example
  *
@@ -77,18 +92,32 @@ export class Tag implements dag.Tag {
 export class DagNode {
   private dataBuffer: Buffer;
 
-  constructor(
-    data: Uint8Array | string | Buffer,
-    public links: Link[] = [],
-    public tags: Tag[] = [],
-  ) {
+  /**
+   * The links of the node.
+   */
+  public links: Link[];
+
+  /**
+   * The tags of the node.
+   */
+  public tags: Tag[];
+
+  constructor(data: Uint8Array | string | Buffer, links: Link[] = [], tags: Tag[] = []) {
     this.dataBuffer = Buffer.from(data);
+    this.links = links;
+    this.tags = tags;
   }
 
+  /**
+   * The size of the node in bytes.
+   */
   get size() {
     return dag.Node.toBinary(mapDagNodeToAPI(this)).byteLength;
   }
 
+  /**
+   * The data of the node as a `Buffer`.
+   */
   get data(): Buffer {
     return this.dataBuffer;
   }
@@ -124,7 +153,7 @@ export class DagNode {
  * The `DagNodeResponse` class represents a response for a DAG Node.
  *
  * @group Directed Acyclic Graph (DAG)
- * @property cid - This getter retrieves the content identifier of the response as a string.
+ * @extends DagNode
  */
 export class DagNodeResponse extends DagNode {
   protected cidObject: Cid;
@@ -137,6 +166,9 @@ export class DagNodeResponse extends DagNode {
     this.cidObject = new Cid(cid);
   }
 
+  /**
+   * The content identifier of the response as a string.
+   */
   get cid() {
     return this.cidObject.toString();
   }

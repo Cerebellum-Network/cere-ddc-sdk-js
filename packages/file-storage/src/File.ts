@@ -14,22 +14,29 @@ type StaticContentMeta = {
  * Represents a file with content and metadata.
  *
  * @group Files
- * @property body - The content of the file as a stream.
- * @property size - The size of the file in bytes.
- * @property meta - The metadata for the file.
  */
 export class File {
+  /**
+   * The content of the file as a stream.
+   */
   readonly body: ContentStream;
+
+  /**
+   * The size of the file in bytes.
+   */
   readonly size: number;
+
+  /**
+   * The metadata for the file.
+   */
+  readonly meta: StreamMeta | StaticContentMeta;
 
   constructor(content: FileContent, meta: StreamMeta);
   constructor(content: Uint8Array, meta?: StaticContentMeta);
-  constructor(
-    content: FileContent,
-    readonly meta: StreamMeta | StaticContentMeta = {},
-  ) {
+  constructor(content: FileContent, meta: StreamMeta | StaticContentMeta = {}) {
     this.body = isContentStream(content) ? content : createContentStream(content);
     this.size = content instanceof Uint8Array ? content.byteLength : meta.size!;
+    this.meta = meta;
   }
 
   /**

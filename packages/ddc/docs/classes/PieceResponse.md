@@ -4,6 +4,42 @@
 
 The `PieceResponse` class represents a response for a piece content.
 
+## Accessors
+
+### cid
+
+• `get` **cid**(): `string`
+
+The content identifier (CID) of the piece.
+
+#### Returns
+
+`string`
+
+___
+
+### hash
+
+• `get` **hash**(): `Uint8Array`
+
+The hash of the piece response content.
+
+#### Returns
+
+`Uint8Array`
+
+___
+
+### range
+
+• `get` **range**(): `undefined` \| `GetFileRequest_Request_Range`
+
+The range of the piece response.
+
+#### Returns
+
+`undefined` \| `GetFileRequest_Request_Range`
+
 ## Methods
 
 ### arrayBuffer
@@ -45,3 +81,11 @@ Converts the body stream of the piece to a string.
 `Promise`\<`string`\>
 
 The piece content as a string.
+
+## Properties
+
+### body
+
+• `Readonly` **body**: `ContentStream`
+
+The content of the piece response as a stream.

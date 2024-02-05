@@ -10,6 +10,66 @@ Represents a response from a file read operation.
 
   ↳ **`FileResponse`**
 
+## Properties
+
+### body
+
+• `Readonly` **body**: `ContentStream`
+
+The content of the piece response as a stream.
+
+#### Inherited from
+
+PieceResponse.body
+
+## Accessors
+
+### cid
+
+• `get` **cid**(): `string`
+
+The content identifier (CID) of the piece.
+
+#### Returns
+
+`string`
+
+#### Inherited from
+
+PieceResponse.cid
+
+___
+
+### hash
+
+• `get` **hash**(): `Uint8Array`
+
+The hash of the piece response content.
+
+#### Returns
+
+`Uint8Array`
+
+#### Inherited from
+
+PieceResponse.hash
+
+___
+
+### range
+
+• `get` **range**(): `undefined` \| `GetFileRequest_Request_Range`
+
+The range of the piece response.
+
+#### Returns
+
+`undefined` \| `GetFileRequest_Request_Range`
+
+#### Inherited from
+
+PieceResponse.range
+
 ## Methods
 
 ### arrayBuffer

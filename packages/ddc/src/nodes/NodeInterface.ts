@@ -16,9 +16,11 @@ type NamingOptions = {
  * The `OperationAuthOptions` type defines the authentication options for a DDC operation.
  *
  * @hidden
- * @property accessToken - An optional access token that can be either an `AuthToken` object or a string.
  */
 export type OperationAuthOptions = {
+  /**
+   * An optional access token that can be either an `AuthToken` object or a string.
+   */
   accessToken?: AuthToken | string;
 };
 
@@ -26,10 +28,12 @@ export type OperationAuthOptions = {
  * The `PieceReadOptions` type defines the options for reading a piece.
  *
  * @hidden
- * @property range - An optional range to read from the piece.
- * @property accessToken - An optional access token that can be either an `AuthToken` object or a string.
+ * @extends OperationAuthOptions
  */
 export type PieceReadOptions = OperationAuthOptions & {
+  /**
+   * An optional range to read from the piece.
+   */
   range?: ReadFileRange;
 };
 
@@ -37,10 +41,12 @@ export type PieceReadOptions = OperationAuthOptions & {
  * The `DagNodeGetOptions` type defines the options for retrieving a DAG node.
  *
  * @hidden
- * @property path - An optional path to retrieve from the DAG node.
- * @property accessToken - An optional access token that can be either an `AuthToken` object or a string.
+ * @extends OperationAuthOptions
  */
 export type DagNodeGetOptions = OperationAuthOptions & {
+  /**
+   * An optional path to retrieve from the DAG node.
+   */
   path?: string;
 };
 
@@ -48,10 +54,12 @@ export type DagNodeGetOptions = OperationAuthOptions & {
  * The `CnsRecordGetOptions` type defines the options for retrieving a CNS record.
  *
  * @hidden
- * @property path - An optional path to retrieve from the CNS record.
- * @property accessToken - An optional access token that can be either an `AuthToken` object or a string.
+ * @extends OperationAuthOptions
  */
 export type CnsRecordGetOptions = OperationAuthOptions & {
+  /**
+   * An optional path to retrieve from the CNS record.
+   */
   path?: string;
 };
 
@@ -59,8 +67,8 @@ export type CnsRecordGetOptions = OperationAuthOptions & {
  * The `PieceStoreOptions` type defines the options for storing a piece.
  *
  * @hidden
- * @property name - An optional name for the piece.
- * @property accessToken - An optional access token that can be either an `AuthToken` object or a string.
+ * @extends NamingOptions
+ * @extends OperationAuthOptions
  */
 export type PieceStoreOptions = NamingOptions & OperationAuthOptions;
 
@@ -68,8 +76,8 @@ export type PieceStoreOptions = NamingOptions & OperationAuthOptions;
  * The `DagNodeStoreOptions` type defines the options for storing a DAG node.
  *
  * @hidden
- * @property name - An optional name for the DAG node.
- * @property accessToken - An optional access token that can be either an `AuthToken` object or a string.
+ * @extends NamingOptions
+ * @extends OperationAuthOptions
  */
 export type DagNodeStoreOptions = NamingOptions & OperationAuthOptions;
 
@@ -77,7 +85,7 @@ export type DagNodeStoreOptions = NamingOptions & OperationAuthOptions;
  * The `CnsRecordStoreOptions` type defines the options for storing a CNS record.
  *
  * @hidden
- * @property accessToken - An optional access token that can be either an `AuthToken` object or a string.
+ * @extends OperationAuthOptions
  */
 export type CnsRecordStoreOptions = OperationAuthOptions;
 
@@ -87,6 +95,9 @@ export type CnsRecordStoreOptions = OperationAuthOptions;
  * @group Storage Node
  */
 export interface NodeInterface {
+  /**
+   * The identifier of the node.
+   */
   readonly nodeId: string;
 
   /**

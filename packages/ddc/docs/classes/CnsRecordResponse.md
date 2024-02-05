@@ -33,3 +33,35 @@ object is CnsRecord
 #### Inherited from
 
 [CnsRecord](CnsRecord.md).[isCnsRecord](CnsRecord.md#iscnsrecord)
+
+## Properties
+
+### cid
+
+• `Readonly` **cid**: `string`
+
+The content identifier (CID) of the CNS record.
+
+#### Inherited from
+
+[CnsRecord](CnsRecord.md).[cid](CnsRecord.md#cid)
+
+___
+
+### name
+
+• `Readonly` **name**: `string`
+
+The name of the CNS record.
+
+#### Inherited from
+
+[CnsRecord](CnsRecord.md).[name](CnsRecord.md#name)
+
+___
+
+### signature
+
+• `Readonly` **signature**: `Signature`
+
+The signature of the response as a `Signature` object.
