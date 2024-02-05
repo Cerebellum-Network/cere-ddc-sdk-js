@@ -1,7 +1,7 @@
 export * from './types';
-export * from './Signer';
 
 export { Blockchain } from './Blockchain';
+export { Signer, type SignerType, UriSigner, type UriSignerOptions } from './Signer';
 
 /**
  * Utilities
@@ -9,6 +9,6 @@ export { Blockchain } from './Blockchain';
 export { decodeAddress, encodeAddress, cryptoWaitReady } from './utils';
 
 /**
- * Utilities
+ * Constants
  */
 export { CERE_SS58_PREFIX } from './constants';

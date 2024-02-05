@@ -2,16 +2,17 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { AddressOrPair, SignerOptions } from '@polkadot/api/types';
 import { Index, AccountInfo } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api-base/types';
+import { formatBalance } from '@polkadot/util';
 
+import { AccountId } from './types';
+import { Signer, toBlockchainSigner } from './Signer';
 import { DDCNodesPallet } from './DDCNodesPallet';
 import { DDCClustersPallet } from './DDCClustersPallet';
 import { DDCStakingPallet } from './DDCStakingPallet';
 import { DDCCustomersPallet } from './DDCCustomersPallet';
-import { AccountId } from './types';
-import { formatBalance } from '@polkadot/util';
 
 export type SendOptions = Pick<Partial<SignerOptions>, 'nonce' | 'signer'> & {
-  account: AddressOrPair;
+  account: AddressOrPair | Signer;
 };
 
 export type BlockchainConnectOptions =
@@ -64,9 +65,22 @@ export class Blockchain {
   }
 
   async send(sendable: Sendable, { account, nonce, signer }: SendOptions) {
+    let finalAccount: AddressOrPair;
+    let finalSigner = signer;
+
+    /**
+     * If the account is a Signer instance, we need to convert it to a blockchain signer
+     */
+    if (Signer.isSigner(account)) {
+      finalSigner ||= toBlockchainSigner(account);
+      finalAccount = account.address;
+    } else {
+      finalAccount = account;
+    }
+
     return new Promise<SendResult>((resolve, reject) => {
       sendable
-        .signAndSend(account, { nonce, signer }, (result) => {
+        .signAndSend(finalAccount, { nonce, signer: finalSigner }, (result) => {
           if (result.status.isFinalized) {
             const events = result.events.map(({ event }) => ({
               method: event.method,

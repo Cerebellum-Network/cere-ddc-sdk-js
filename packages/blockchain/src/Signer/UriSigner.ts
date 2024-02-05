@@ -1,4 +1,4 @@
-import { SignOptions, KeyringPair, KeyringOptions } from '@polkadot/keyring/types';
+import { KeyringPair, KeyringOptions, SignOptions } from '@polkadot/keyring/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/keyring';
 
@@ -53,11 +53,7 @@ export class UriSigner implements Signer {
     return this.getPair().publicKey;
   }
 
-  get addressRaw() {
-    return this.getPair().addressRaw;
-  }
-
-  sign(data: Uint8Array, options?: SignOptions) {
+  async sign(data: Uint8Array | string, options?: SignOptions) {
     return this.getPair().sign(data, options);
   }
 
