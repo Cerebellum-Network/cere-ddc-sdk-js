@@ -35,6 +35,8 @@ export type FileStoreOptions = PieceStoreOptions;
  * Represents a storage system for files.
  *
  * It provides methods to read and store files in the DDC.
+ *
+ * @group Files
  */
 export class FileStorage {
   private ddcNode: NodeInterface;

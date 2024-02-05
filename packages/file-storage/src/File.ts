@@ -13,6 +13,7 @@ type StaticContentMeta = {
 /**
  * Represents a file with content and metadata.
  *
+ * @group Files
  * @property body - The content of the file as a stream.
  * @property size - The size of the file in bytes.
  * @property meta - The metadata for the file.
@@ -35,6 +36,7 @@ export class File {
    * Checks if a given object is an instance of the `File` class.
    *
    * @param object - The object to check.
+   *
    * @returns True if the object is a `File` instance, false otherwise.
    */
   static isFile(object: unknown): object is File {
@@ -51,6 +53,7 @@ export class File {
 /**
  * Represents a response from a file read operation.
  *
+ * @group Files
  * @extends PieceResponse
  */
 export class FileResponse extends PieceResponse {}

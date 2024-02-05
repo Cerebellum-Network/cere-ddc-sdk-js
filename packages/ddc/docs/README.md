@@ -12,13 +12,13 @@
 
 - [AuthToken](classes/AuthToken.md)
 
-## CNS API
+## Content Name System (CNS)
 
 - [CnsApi](classes/CnsApi.md)
 - [CnsRecord](classes/CnsRecord.md)
 - [CnsRecordResponse](classes/CnsRecordResponse.md)
 
-## DAG API
+## Directed Acyclic Graph (DAG)
 
 - [DagApi](classes/DagApi.md)
 - [DagNode](classes/DagNode.md)
@@ -26,7 +26,7 @@
 - [Link](classes/Link.md)
 - [Tag](classes/Tag.md)
 
-## File API
+## Files
 
 - [FileApi](classes/FileApi.md)
 - [MultipartPiece](classes/MultipartPiece.md)

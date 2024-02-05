@@ -158,7 +158,7 @@ ___
 
 ### read
 
-▸ **read**(`uri`, `options?`): `Promise`\<`FileResponse`\>
+▸ **read**(`uri`, `options?`): `Promise`\<[`FileResponse`](FileResponse.md)\>
 
 Reads a file or DAG node from a specific URI.
 
@@ -171,7 +171,7 @@ Reads a file or DAG node from a specific URI.
 
 #### Returns
 
-`Promise`\<`FileResponse`\>
+`Promise`\<[`FileResponse`](FileResponse.md)\>
 
 A promise that resolves to the file or DAG node response.
 
@@ -198,7 +198,7 @@ Stores a file or DAG node in a specific bucket.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `bucketId` | `bigint` | The ID of the bucket to store the entity in. |
-| `entity` | `File` | The file or DAG node to store. |
+| `entity` | [`File`](File.md) | The file or DAG node to store. |
 | `options?` | `PieceStoreOptions` | Optional parameters for storing the entity. |
 
 #### Returns

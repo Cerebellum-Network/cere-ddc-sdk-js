@@ -52,6 +52,8 @@ export class DdcUri<T extends DdcEntity = DdcEntity> {
  * Represents a URI for a file in DDC.
  *
  * A FileUri extends the DdcUri class with the entity type set to 'file'.
+ *
+ * @group Files
  */
 export class FileUri extends DdcUri<'file'> {
   constructor(bucketId: BucketId, cidOrName: string, options?: DdcUriOptions) {
@@ -63,6 +65,8 @@ export class FileUri extends DdcUri<'file'> {
  * Represents a URI for a DAG (Directed Acyclic Graph) node in DDC.
  *
  * A DagNodeUri extends the DdcUri class with the entity type set to 'dag-node'.
+ *
+ * @group Directed Acyclic Graph (DAG)
  */
 export class DagNodeUri extends DdcUri<'dag-node'> {
   constructor(bucketId: BucketId, cidOrName: string, options?: DdcUriOptions) {
