@@ -93,7 +93,7 @@ A promise that resolves to the bucket information.
 **`Example`**
 
 ```typescript
-const bucketId: BucketId = '0x...';
+const bucketId: BucketId = 1n;
 const bucket = await ddcClient.getBucket(bucketId);
 
 console.log(bucket);
@@ -147,7 +147,7 @@ A new AuthToken that the subject account can use to access the bucket.
 ```typescript
 const subject: AccountId = '0x...';
 const authToken = await ddcClient.grantAccess(subject, {
-  bucketId: '0x...',
+  bucketId: 1n,
   operations: [AuthTokenOperation.GET],
 });
 
@@ -214,7 +214,7 @@ Will throw an error if the `entity` argument is neither a File nor a DagNode.
 **`Example`**
 
 ```typescript
-const bucketId: BucketId = '0x...';
+const bucketId: BucketId = 1n;
 const fileContent = ...;
 const file: File = new File(fileContent, { size: 1000 });
 const fileUri = await ddcClient.store(bucketId, file);

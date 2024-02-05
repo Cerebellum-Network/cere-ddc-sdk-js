@@ -28,6 +28,17 @@ Reads a file from the file storage.
 
 A promise that resolves to a `FileResponse` instance.
 
+**`Example`**
+
+```typescript
+const bucketId = 1n;
+const fileCid = 'CID';
+const file = await fileStorage.read(bucketId, fileCid);
+const content = await file.text();
+
+console.log(content);
+```
+
 ___
 
 ### store
@@ -50,6 +61,17 @@ Stores a file in the DDC. Large files are stored as a collection of pieces.
 
 A promise that resolves to the CID of the stored file.
 
+**`Example`**
+
+```typescript
+const bucketId = 1n;
+const fileContent = ...;
+const file: File = new File(fileContent, { size: 1000 });
+const fileCid = await fileStorage.store(bucketId, file);
+
+console.log(fileCid);
+```
+
 ___
 
 ### create
@@ -70,3 +92,13 @@ Creates a new instance of the `FileStorage` class asynchronously.
 `Promise`\<[`FileStorage`](FileStorage.md)\>
 
 A promise that resolves to a new `FileStorage` instance.
+
+*
+
+**`Example`**
+
+```typescript
+import { FileStorage, TESTNET } from '@cere-ddc-sdk/file-storage';
+
+const fileStorage = await FileStorage.create('//Alice', TESTNET);
+```

@@ -70,6 +70,14 @@ export class FileStorage {
    * @param config - Configuration options for the `FileStorage`. Defaults to TESTNET.
    *
    * @returns A promise that resolves to a new `FileStorage` instance.
+   *
+   * * @example
+   *
+   * ```typescript
+   * import { FileStorage, TESTNET } from '@cere-ddc-sdk/file-storage';
+   *
+   * const fileStorage = await FileStorage.create('//Alice', TESTNET);
+   * ```
    */
   static async create(uriOrSigner: Signer | string, config: FileStorageConfig = DEFAULT_PRESET) {
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
@@ -118,6 +126,17 @@ export class FileStorage {
    * @param options - The options for storing the file.
    *
    * @returns A promise that resolves to the CID of the stored file.
+   *
+   * @example
+   *
+   * ```typescript
+   * const bucketId = 1n;
+   * const fileContent = ...;
+   * const file: File = new File(fileContent, { size: 1000 });
+   * const fileCid = await fileStorage.store(bucketId, file);
+   *
+   * console.log(fileCid);
+   * ```
    */
   async store(bucketId: BucketId, file: File, options?: FileStoreOptions) {
     this.logger.info(options, 'Storing file into bucket %s', bucketId);
@@ -141,6 +160,17 @@ export class FileStorage {
    * @param options - The options for reading the file.
    *
    * @returns A promise that resolves to a `FileResponse` instance.
+   *
+   * @example
+   *
+   * ```typescript
+   * const bucketId = 1n;
+   * const fileCid = 'CID';
+   * const file = await fileStorage.read(bucketId, fileCid);
+   * const content = await file.text();
+   *
+   * console.log(content);
+   * ```
    */
   async read(bucketId: BucketId, cidOrName: string, options?: FileReadOptions) {
     this.logger.info(options, 'Reading file from bucket %s by "%s"', bucketId, cidOrName);
