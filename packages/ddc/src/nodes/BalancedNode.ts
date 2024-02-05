@@ -21,6 +21,19 @@ export type BalancedNodeConfig = LoggerOptions & {
   router: Router;
 };
 
+/**
+ * The `BalancedNode` class implements the `NodeInterface` and provides methods for interacting with storage nodes.
+ *
+ * A balanced node is a node that distributes operations across multiple underlying nodes to balance the load.
+ *
+ * @group Storage Node
+ * @example
+ *
+ * ```typescript
+ * const router = new Router(...);
+ * const balancedNode = new BalancedNode({ router });
+ * ```
+ */
 export class BalancedNode implements NodeInterface {
   readonly nodeId = 'BalancedNode';
 
@@ -32,6 +45,14 @@ export class BalancedNode implements NodeInterface {
     this.logger = createLogger('BalancedNode', config);
   }
 
+  /**
+   * Executes a function with automatic retry on failure.
+   *
+   * @param fn - The function to execute.
+   * @param options - Optional parameters for retrying the function.
+   *
+   * @returns A promise that resolves to the result of the function.
+   */
   private async withRetry<T>(
     bucketId: BucketId,
     operation: RouterOperation,

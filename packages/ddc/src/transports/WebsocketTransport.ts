@@ -40,6 +40,11 @@ const getStatus = (headers: grpc.Metadata): RpcStatus | null => {
   return statusCode ? { code: GrpcStatus[Number(statusCode)], detail: message || '' } : null;
 };
 
+/**
+ * The `WebsocketTransport` class represents a gRPC transport layer for RPC communication over WebSockets.
+ *
+ * @group RPC Transport
+ */
 export class WebsocketTransport implements RpcTransport {
   private defaultOptions: RpcOptions = {};
   private host: string;

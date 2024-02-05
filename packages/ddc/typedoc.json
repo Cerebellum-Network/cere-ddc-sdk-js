@@ -1,0 +1,8 @@
+{
+  "extends": ["@cere-ddc-sdk/typedoc-config"],
+  "out": "./docs",
+  "tsconfig": "./tsconfig.node.json",
+  "entryPoints": ["./src/index.ts"],
+  "exclude": ["./src/grpc/**/*"],
+  "groupOrder": ["Storage Node"]
+}

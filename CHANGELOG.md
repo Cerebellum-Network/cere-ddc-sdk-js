@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.1.1...v2.2.0) (2024-02-02)
+
+### Features
+
+- **blockchain:** Add change bucket parameters method ([93c47eb](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/93c47eb9fdb30718e923e594a27e0441ce3cb7f8))
+
+## [2.1.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.1.0...v2.1.1) (2024-01-31)
+
+### Bug Fixes
+
+- **ddc:** Use proper MAINNET preset blockchain endpoint ([#224](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/224)) ([d8a2f22](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/d8a2f22aab4f0907bc05e6fe772656abbbd76ba1))
+
+## [2.1.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.1...v2.1.0) (2024-01-30)
+
+### Features
+
+- **ddc:** Add network latency based routing to select closest nodes to the client ([#218](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/218)) ([6ddc828](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/6ddc8284b03b397bd4f7ae7c16a9f1235585946c))
+- Extend auth token API with methods to delegate access ([#215](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/215)) ([1da5e38](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/1da5e387369645893ff512bc1a00d78ad2dbd6bd))
+
+### Bug Fixes
+
+- **ddc:** Properly handle grpc headers error in WebSocket transport ([#216](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/216)) ([b3aac34](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/b3aac340cb05138b97aede6f11164d857cbff6ed))
+
+### Documentation
+
+- Add reusable typedoc configs package ([#222](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/222)) ([8af0a66](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/8af0a6657906f09cc29136abd751065f18ba9510))
+- **ddc-client:** Update README with documentation of added APIs ([#220](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/220)) ([d01972c](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/d01972c0cb56e6e9709e7f6cbf91789a2ea7a0f0))
+- **ddc:** Update ddc package documentation ([#221](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/221)) ([1d9ade3](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/1d9ade363f29a11f63a7b960c6dbf16271085292))
+
 ## [2.0.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0...v2.0.1) (2024-01-12)
 
 ### Bug Fixes

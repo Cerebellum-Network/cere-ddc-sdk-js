@@ -60,7 +60,7 @@ const Dropzone = styled(Box)(({ theme }) => ({
 const bcPresets = {
   devnet: { ...DEVNET, baseUrl: 'https://storage.devnet.cere.network' },
   testnet: { ...TESTNET, baseUrl: 'https://storage.testnet.cere.network' },
-  mainnet: { ...MAINNET, baseUrl: 'https://ddc.cloud' }, // TODO: replace with real mainnet URL
+  mainnet: { ...MAINNET, baseUrl: 'https://storage.dragon.cere.network' },
   custom: {
     blockchain: process.env.BC_ENDPOINT || '',
     baseUrl: 'http://localhost:8091',
@@ -286,9 +286,7 @@ export const Playground = () => {
                   >
                     <ToggleButton value="devnet">Devnet</ToggleButton>
                     <ToggleButton value="testnet">Testnet</ToggleButton>
-                    <ToggleButton disabled value="mainnet">
-                      Mainnet
-                    </ToggleButton>
+                    <ToggleButton value="mainnet">Mainnet</ToggleButton>
                     <ToggleButton value="custom">Custom</ToggleButton>
                   </ToggleButtonGroup>
                   <TextField

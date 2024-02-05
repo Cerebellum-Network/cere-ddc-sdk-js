@@ -1,14 +1,17 @@
 import { Blockchain, Bucket, BucketId, ClusterId, StorageNode as BCStorageNode } from '@cere-ddc-sdk/blockchain';
 
 import { RouterNode } from './RoutingStrategy';
-import { PriorityStrategy } from './PriorityStrategy';
 import { Logger } from '../logger';
+import { PingStrategy } from './PingStrategy';
 
 export type BlockchainStrategyConfig = {
   blockchain: Blockchain;
 };
 
-export class BlockchainStrategy extends PriorityStrategy {
+/**
+ * The `BlockchainStrategy` retrieves nodes from the blockchain. And appiles the `PingStrategy` + `NodeTypeStrategy` to select the best node.
+ */
+export class BlockchainStrategy extends PingStrategy {
   private blockchain: Blockchain;
   private bucketCache: Map<BucketId, Bucket> = new Map();
   private clusterNodes: Map<ClusterId, RouterNode[]> = new Map();
@@ -26,8 +29,6 @@ export class BlockchainStrategy extends PriorityStrategy {
   }
 
   async getNodes(bucketId: BucketId) {
-    await this.isReady();
-
     const { clusterId } = await this.getBucket(bucketId);
     const nodes = await this.getClusterNodes(clusterId);
 

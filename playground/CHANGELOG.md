@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.1.1...v2.2.0) (2024-02-02)
+
+**Note:** Version bump only for package @cere-ddc-sdk/playground
+
+## [2.1.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.1.0...v2.1.1) (2024-01-31)
+
+### Bug Fixes
+
+- **ddc:** Use proper MAINNET preset blockchain endpoint ([#224](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/224)) ([d8a2f22](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/d8a2f22aab4f0907bc05e6fe772656abbbd76ba1))
+
+## [2.1.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.1...v2.1.0) (2024-01-30)
+
+**Note:** Version bump only for package @cere-ddc-sdk/playground
+
 ## [2.0.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.0.0...v2.0.1) (2024-01-12)
 
 **Note:** Version bump only for package @cere-ddc-sdk/playground

@@ -13,6 +13,19 @@ export type RouterConfig = (StaticStrategyConfig | BlockchainStrategyConfig) &
 
 const getNodeId = (node: RouterNode) => node.nodeId || node.grpcUrl;
 
+/**
+ * The `Router` class provides methods for routing operations to different nodes based on a routing strategy.
+ *
+ * @internal
+ * @example
+ *
+ * ```typescript
+ * const router = new Router({
+ *   signer: new UriSigner('...'),
+ *   nodes: [...],
+ * });
+ * ```
+ */
 export class Router {
   private strategy: RoutingStrategy;
   private signer: Signer;
@@ -31,13 +44,26 @@ export class Router {
     }
   }
 
+  /**
+   * Retrieves a node for a specific operation in a specific bucket, excluding certain nodes.
+   *
+   * @param operation - The operation for which to retrieve a node.
+   * @param bucketId - The ID of the bucket in which to retrieve a node.
+   * @param exclude - An optional array of node IDs to exclude from the retrieval.
+   *
+   * @returns A promise that resolves to the `StorageNode` selected for the operation.
+   *
+   * @throws Will throw an error if no nodes are available to handle the operation.
+   */
   async getNode(operation: RouterOperation, bucketId: BucketId, exclude: string[] = []) {
     this.logger.info('Getting node for operation "%s" in bucket %s', operation, bucketId);
 
+    await this.strategy.isReady();
+
     const allNodes = await this.strategy.getNodes(bucketId);
     const nodes = allNodes.filter((node) => !exclude.includes(getNodeId(node)));
-    const filterNodes = await this.strategy.filterNodes(operation, nodes);
-    const node = this.strategy.selectNode(operation, filterNodes);
+    const finalNodes = await this.strategy.marshalNodes(operation, nodes);
+    const node = this.strategy.selectNode(operation, finalNodes);
 
     if (!node) {
       throw new Error('No nodes available to handle the operation');

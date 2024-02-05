@@ -30,6 +30,19 @@ export type CnsApiOptions = {
   signer?: Signer;
 };
 
+/**
+ * The `CnsApi` class provides methods to interact with the DDC CNS API.
+ *
+ * @group CNS API
+ * @example
+ *
+ * ```typescript
+ * import { CnsApi, GrpcTransport } from '@cere-ddc-sdk/ddc';
+ *
+ * const transport = new GrpcTransport(...);
+ * const cnsApi = new CnsApi(transport);
+ * ```
+ */
 export class CnsApi {
   private api: CnsApiClient;
 
@@ -40,6 +53,27 @@ export class CnsApi {
     this.api = new CnsApiClient(transport);
   }
 
+  /**
+   * Stores a CNS record to DDC.
+   *
+   * @param request - An object that includes the token, bucket ID, and record to store.
+   *
+   * @returns The stored record with its signature.
+   *
+   * @example
+   *
+   * ```typescript
+   * const request: PutRequest = {
+   *   token: '...',
+   *   bucketId: '...',
+   *   record: { ... }
+   * };
+   *
+   * const record = await cnsApi.putRecord(request);
+   *
+   * console.log(record); //
+   * ```
+   */
   async putRecord({ token, bucketId, record }: PutRequest): Promise<Record> {
     const { signer } = this.options;
 
@@ -62,6 +96,27 @@ export class CnsApi {
     };
   }
 
+  /**
+   * Retrieves a CNS record from DDC.
+   *
+   * @param request - An object that includes the token, bucket ID, and record name to retrieve.
+   *
+   * @returns The retrieved record with its signature.
+   *
+   * @example
+   *
+   * ```typescript
+   * const request: GetRequest = {
+   *   token: '...',
+   *   bucketId: '...',
+   *   name: 'example'
+   * };
+   *
+   * const record = await cnsApi.getRecord(getRequest);
+   *
+   * console.log(record);
+   * ```
+   */
   async getRecord({ token, ...request }: GetRequest): Promise<Record | undefined> {
     let record: ProtoRecord | undefined;
 

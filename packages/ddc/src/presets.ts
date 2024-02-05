@@ -6,14 +6,29 @@ export type ConfigPreset = {
   nodes?: RouterNode[];
 };
 
+/**
+ * DDC mainnet configuration preset
+ *
+ * @hidden
+ */
 export const MAINNET: ConfigPreset = {
-  blockchain: 'wss://rpc.qanet.cere.network/ws',
+  blockchain: 'wss://rpc.mainnet.cere.network/ws',
 };
 
+/**
+ * DDC testnet configuration preset
+ *
+ * @hidden
+ */
 export const TESTNET: ConfigPreset = {
   blockchain: 'wss://rpc.testnet.cere.network/ws',
 };
 
+/**
+ * DDC devnet configuration preset
+ *
+ * @hidden
+ */
 export const DEVNET: ConfigPreset = {
   blockchain: 'wss://archive.devnet.cere.network/ws',
 };
@@ -26,6 +41,7 @@ export const DEFAULT_PRESET = TESTNET;
  * TODO: Remove after full migration to on-chain topology
  *
  * @deprecated Use `DEVNET` instead
+ * @ignore
  */
 export const DEVNET_STATIC: ConfigPreset = {
   blockchain: 'wss://archive.devnet.cere.network/ws',
@@ -90,6 +106,7 @@ export const DEVNET_STATIC: ConfigPreset = {
  * TODO: Remove after full migration to on-chain topology
  *
  * @deprecated Use `TESTNET` instead
+ * @ignore
  */
 export const TESTNET_STATIC: ConfigPreset = {
   blockchain: 'wss://rpc.testnet.cere.network/ws',

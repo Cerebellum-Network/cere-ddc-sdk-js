@@ -3,6 +3,25 @@ import { Buffer } from 'buffer';
 import * as dag from './DagApi';
 import { Cid } from './Cid';
 
+/**
+ * The `Link` class represents a link in a DAG.
+ *
+ * @group DAG API
+ * @property cid - The content identifier of the link.
+ * @property size - The content size on which the link points to.
+ * @property name - The name of the link.
+ *
+ * @example
+ *
+ * ```typescript
+ * const cid = '...';
+ * const size = 10;
+ * const name = 'example';
+ * const link = new Link(cid, size, name);
+ *
+ * console.log(link);
+ * ```
+ */
 export class Link implements Omit<dag.Link, 'cid'> {
   constructor(
     public cid: string,
@@ -11,6 +30,23 @@ export class Link implements Omit<dag.Link, 'cid'> {
   ) {}
 }
 
+/**
+ * The `Tag` class represents a DAG Node tag.
+ *
+ * @property key - The key of the tag.
+ * @property value - The value of the tag.
+ *
+ * @group DAG API
+ * @example
+ *
+ * ```typescript
+ * const key = 'exampleKey';
+ * const value = 'exampleValue';
+ * const tag = new Tag(key, value);
+ *
+ * console.log(tag);
+ * ```
+ */
 export class Tag implements dag.Tag {
   constructor(
     public key: string,
@@ -18,6 +54,26 @@ export class Tag implements dag.Tag {
   ) {}
 }
 
+/**
+ * The `DagNode` class represents a node in a Directed Acyclic Graph (DAG).
+ *
+ * @group DAG API
+ * @property links - The links of the node.
+ * @property tags - The tags of the node.
+ * @property data - The data of the node as a `Buffer`.
+ * @property size - The size of the node.
+ *
+ * @example
+ *
+ * ```typescript
+ * const data = 'Node data';
+ * const links = [new Link('...', 10, 'link1')];
+ * const tags = [new Tag('exampleKey', 'exampleValue')];
+ * const node = new DagNode(data, links, tags);
+ *
+ * console.log(DagNode.isDagNode(node)); // true
+ * ```
+ */
 export class DagNode {
   private dataBuffer: Buffer;
 
@@ -41,6 +97,13 @@ export class DagNode {
     this.dataBuffer = Buffer.from(data);
   }
 
+  /**
+   * Checks if an object is an instance of `DagNode`.
+   *
+   * @param object - The object to check.
+   *
+   * @returns `true` if the object is an instance of `DagNode` or has the same properties as a `DagNode`, `false` otherwise.
+   */
   static isDagNode(object: unknown): object is DagNode {
     const maybeNode = object as DagNode | null;
 
@@ -57,6 +120,12 @@ export class DagNode {
   }
 }
 
+/**
+ * The `DagNodeResponse` class represents a response for a DAG Node.
+ *
+ * @group DAG API
+ * @property cid - This getter retrieves the content identifier of the response as a string.
+ */
 export class DagNodeResponse extends DagNode {
   protected cidObject: Cid;
 

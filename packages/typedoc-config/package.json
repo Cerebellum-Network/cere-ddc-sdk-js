@@ -1,0 +1,14 @@
+{
+  "name": "@cere-ddc-sdk/typedoc-config",
+  "version": "2.1.0",
+  "private": true,
+  "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+  "license": "Apache-2.0",
+  "main": "./typedoc.json",
+  "dependencies": {
+    "typedoc-plugin-markdown": "^3.17.1"
+  },
+  "peerDependencies": {
+    "typedoc": "^0.25.7"
+  }
+}

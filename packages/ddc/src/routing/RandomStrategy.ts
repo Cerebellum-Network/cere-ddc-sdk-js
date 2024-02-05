@@ -1,3 +1,4 @@
+import { StorageNodeConfig } from '..';
 import { BaseStrategy } from './BaseStrategy';
 import { RouterOperation, RouterNode } from './RoutingStrategy';
 
@@ -12,9 +13,11 @@ export const shuffle = (array: RouterNode[]) => {
 };
 
 export abstract class RandomStrategy extends BaseStrategy {
-  selectNode(operation: RouterOperation, nodes: RouterNode[]): RouterNode {
-    const [node] = shuffle(nodes);
+  async marshalNodes(operation: RouterOperation, nodes: StorageNodeConfig[]): Promise<StorageNodeConfig[]> {
+    return shuffle(nodes);
+  }
 
-    return node;
+  selectNode(operation: RouterOperation, nodes: RouterNode[]): RouterNode {
+    return nodes[0];
   }
 }
