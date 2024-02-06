@@ -74,7 +74,7 @@ export const Playground = () => {
   });
 
   const [signerType, setSignerType] = useState<'seed' | 'extension' | 'cere-wallet'>('seed');
-  const [signerError, setSignerError] = useState<string>();
+  const [signerError, setSignerError] = useState(false);
   const [signer, setSigner] = useState<Signer>();
   const [seed, setSeed] = useState(USER_SEED);
   const [randomFileSize, setRandomFileSize] = useState(150);
@@ -124,13 +124,10 @@ export const Playground = () => {
     try {
       await signer?.isReady();
       setStep(1);
-    } catch (error: any) {
-      const errorMessage =
-        signerType === 'extension'
-          ? 'Compatible browser extensions are not detected or the app is not authorized.'
-          : 'Cere Wallet is not connected';
+    } catch (error) {
+      console.error(error);
 
-      setSignerError(errorMessage);
+      setSignerError(true);
       setErrorStep(0);
 
       return;
@@ -306,7 +303,11 @@ export const Playground = () => {
                   </Alert>
                 )}
 
-                {signerError && <Alert severity="warning">{signerError}</Alert>}
+                {signerError && signerType === 'extension' && (
+                  <Alert severity="warning">
+                    Compatible browser extensions are not detected or the app is not authorized.
+                  </Alert>
+                )}
               </Stack>
 
               <Stack paddingTop={2} spacing={2} alignItems="start">
