@@ -1,7 +1,7 @@
+import type { InjectedAccount } from '@polkadot/extension-inject/types';
 import { SignOptions } from '@polkadot/keyring/types';
 import { hexToU8a } from '@polkadot/util';
-import { decodeAddress } from '@polkadot/util-crypto';
-import type { InjectedAccount } from '@polkadot/extension-inject/types';
+import { decodeAddress, encodeAddress, cryptoWaitReady } from '@polkadot/util-crypto';
 import { web3Enable, web3Accounts, isWeb3Injected, web3FromAddress, web3EnablePromise } from '@polkadot/extension-dapp';
 
 import { Signer } from './Signer';
@@ -31,7 +31,7 @@ export class Web3Signer extends Signer {
   }
 
   get address() {
-    return this.accountAddress || this.account.address;
+    return this.accountAddress || encodeAddress(this.account.address, CERE_SS58_PREFIX);
   }
 
   get publicKey() {
@@ -93,6 +93,8 @@ export class Web3Signer extends Signer {
   }
 
   async isReady() {
+    await cryptoWaitReady();
+
     if (this.injectedAccount) {
       return true;
     }
