@@ -5,7 +5,7 @@ import { SubmittableExtrinsic } from '@polkadot/api-base/types';
 import { formatBalance } from '@polkadot/util';
 
 import { AccountId } from './types';
-import { Signer, toBlockchainSigner } from './Signer';
+import { Signer } from './Signer';
 import { DDCNodesPallet } from './DDCNodesPallet';
 import { DDCClustersPallet } from './DDCClustersPallet';
 import { DDCStakingPallet } from './DDCStakingPallet';
@@ -72,7 +72,7 @@ export class Blockchain {
      * If the account is a Signer instance, we need to convert it to a blockchain signer
      */
     if (Signer.isSigner(account)) {
-      finalSigner ||= toBlockchainSigner(account);
+      finalSigner ||= await account.getSigner();
       finalAccount = account.address;
     } else {
       finalAccount = account;
