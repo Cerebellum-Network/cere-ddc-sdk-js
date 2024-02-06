@@ -41,6 +41,8 @@ import {
   InputLabel,
   FormControl,
   Alert,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 
 import { USER_SEED } from './constants';
@@ -89,6 +91,7 @@ export const Playground = () => {
   const [clusters, setClusters] = useState<Cluster[]>([]);
   const [bucketId, setBucketId] = useState<BucketId | null>();
   const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [myBucketsOnly, setMyBucketsOnly] = useState(true);
   const [client, setClient] = useState<DdcClient>();
 
   const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, bucketId, cnsName, name].join('/');
@@ -97,8 +100,13 @@ export const Playground = () => {
   const currentClusterId = clusterId || clusters[0]?.clusterId;
   const clusterBuckets = useMemo(
     () =>
-      buckets.filter(({ clusterId }) => clusterId === currentClusterId).sort((a, b) => Number(a.bucketId - b.bucketId)),
-    [buckets, currentClusterId],
+      buckets
+        .filter(
+          ({ clusterId, ownerId }) =>
+            clusterId === currentClusterId && (myBucketsOnly ? signer?.address === ownerId : true),
+        )
+        .sort((a, b) => Number(a.bucketId - b.bucketId)),
+    [buckets, currentClusterId, myBucketsOnly, signer],
   );
 
   const currentBucketId = useMemo(
@@ -400,43 +408,56 @@ export const Playground = () => {
                 )}
 
                 {currentClusterId && (
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Bucket</InputLabel>
-                    <Select
-                      label="Bucket"
-                      value={
-                        bucketId === null
-                          ? 'new'
-                          : bucketId || (clusterBuckets.length ? clusterBuckets[0].bucketId : 'new')
-                      }
-                      onChange={(event) =>
-                        setBucketId(event.target.value === 'new' ? null : BigInt(event.target.value))
-                      }
-                    >
-                      <MenuItem key="new" value="new">
-                        <Typography color="GrayText">Create new...</Typography>
-                      </MenuItem>
-
-                      {clusterBuckets.map(({ bucketId, ownerId }) => (
-                        <MenuItem key={bucketId.toString()} value={bucketId.toString()}>
-                          <Box
-                            display="flex"
-                            flex={1}
-                            justifyContent="space-between"
-                            alignItems="center"
-                            marginRight={1}
-                          >
-                            <Typography>{bucketId.toString()}</Typography>
-                            {ownerId === signer?.address && (
-                              <Typography variant="caption" color="GrayText">
-                                My bucket
-                              </Typography>
-                            )}
-                          </Box>
+                  <Stack spacing={1} direction="row" alignSelf="stretch">
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Bucket</InputLabel>
+                      <Select
+                        label="Bucket"
+                        value={
+                          bucketId === null
+                            ? 'new'
+                            : bucketId || (clusterBuckets.length ? clusterBuckets[0].bucketId : 'new')
+                        }
+                        onChange={(event) =>
+                          setBucketId(event.target.value === 'new' ? null : BigInt(event.target.value))
+                        }
+                      >
+                        <MenuItem key="new" value="new">
+                          <Typography color="GrayText">Create new...</Typography>
                         </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+
+                        {clusterBuckets.map(({ bucketId, ownerId }) => (
+                          <MenuItem key={bucketId.toString()} value={bucketId.toString()}>
+                            <Box
+                              display="flex"
+                              flex={1}
+                              justifyContent="space-between"
+                              alignItems="center"
+                              marginRight={1}
+                            >
+                              <Typography>{bucketId.toString()}</Typography>
+                              {ownerId === signer?.address && (
+                                <Typography variant="caption" color="GrayText">
+                                  My bucket
+                                </Typography>
+                              )}
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <FormControlLabel
+                      label="My buckets"
+                      sx={{ whiteSpace: 'nowrap' }}
+                      control={
+                        <Checkbox
+                          checked={myBucketsOnly}
+                          onChange={(event) => setMyBucketsOnly(event.target.checked)}
+                        />
+                      }
+                    />
+                  </Stack>
                 )}
 
                 <Stack direction="row" spacing={1}>

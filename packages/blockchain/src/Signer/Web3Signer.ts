@@ -1,7 +1,7 @@
 import type { InjectedAccount } from '@polkadot/extension-inject/types';
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress, cryptoWaitReady } from '@polkadot/util-crypto';
-import { web3Enable, web3Accounts, isWeb3Injected, web3FromAddress, web3EnablePromise } from '@polkadot/extension-dapp';
+import { web3Enable, web3Accounts, web3FromAddress, web3EnablePromise } from '@polkadot/extension-dapp';
 
 import { Signer } from './Signer';
 import { CERE_SS58_PREFIX } from '../constants';
@@ -41,10 +41,6 @@ export class Web3Signer extends Signer {
     return this.account.type || 'sr25519';
   }
 
-  get isAvailable() {
-    return isWeb3Injected;
-  }
-
   protected get account() {
     if (!this.injectedAccount) {
       throw new Error('Web3Signer account is not ready');
@@ -77,10 +73,6 @@ export class Web3Signer extends Signer {
   }
 
   async connect() {
-    if (!isWeb3Injected) {
-      throw new Error('Web3 is not injected');
-    }
-
     await web3Enable(this.originName);
     const accounts = await web3Accounts({
       accountType: ['ed25519', 'sr25519'],
