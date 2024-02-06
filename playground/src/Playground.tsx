@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { LoadingButton } from '@mui/lab';
 import FileIcon from '@mui/icons-material/InsertDriveFileOutlined';
-import { Blockchain, Cluster, Bucket, BucketId, ClusterId } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, Cluster, Bucket, BucketId, ClusterId, Web3Signer } from '@cere-ddc-sdk/blockchain';
 import {
   File,
   Signer,
@@ -41,6 +41,8 @@ import {
   InputLabel,
   FormControl,
   Alert,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 
 import { USER_SEED } from './constants';
@@ -73,6 +75,8 @@ export const Playground = () => {
     multiple: false,
   });
 
+  const [signerType, setSignerType] = useState<'seed' | 'extension' | 'cere-wallet'>('seed');
+  const [signerError, setSignerError] = useState(false);
   const [signer, setSigner] = useState<Signer>();
   const [seed, setSeed] = useState(USER_SEED);
   const [randomFileSize, setRandomFileSize] = useState(150);
@@ -87,6 +91,7 @@ export const Playground = () => {
   const [clusters, setClusters] = useState<Cluster[]>([]);
   const [bucketId, setBucketId] = useState<BucketId | null>();
   const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [myBucketsOnly, setMyBucketsOnly] = useState(true);
   const [client, setClient] = useState<DdcClient>();
 
   const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, bucketId, cnsName, name].join('/');
@@ -95,8 +100,13 @@ export const Playground = () => {
   const currentClusterId = clusterId || clusters[0]?.clusterId;
   const clusterBuckets = useMemo(
     () =>
-      buckets.filter(({ clusterId }) => clusterId === currentClusterId).sort((a, b) => Number(a.bucketId - b.bucketId)),
-    [buckets, currentClusterId],
+      buckets
+        .filter(
+          ({ clusterId, ownerId }) =>
+            clusterId === currentClusterId && (myBucketsOnly ? signer?.address === ownerId : true),
+        )
+        .sort((a, b) => Number(a.bucketId - b.bucketId)),
+    [buckets, currentClusterId, myBucketsOnly, signer],
   );
 
   const currentBucketId = useMemo(
@@ -109,13 +119,32 @@ export const Playground = () => {
   }, [step]);
 
   const handleConnectWallet = useCallback(async () => {
-    setStep(1);
+    setInProgress(true);
 
-    const signer = new UriSigner(seed);
-    await signer.isReady();
+    let signer: Signer | undefined;
+
+    if (signerType === 'extension') {
+      signer = new Web3Signer();
+    } else if (signerType === 'seed') {
+      signer = new UriSigner(seed);
+    }
+
+    try {
+      await signer?.isReady();
+      setStep(1);
+    } catch (error) {
+      console.error(error);
+
+      setSignerError(true);
+      setErrorStep(0);
+
+      return;
+    } finally {
+      setInProgress(false);
+    }
 
     setSigner(signer);
-  }, [seed]);
+  }, [seed, signerType]);
 
   const handleSelectBucket = useCallback(async () => {
     if (currentBucketId) {
@@ -248,17 +277,51 @@ export const Playground = () => {
               )}
             </StepLabel>
             <StepContent>
-              <Stack paddingTop={1} spacing={2} alignItems="start">
-                <TextField
+              <Stack spacing={1} width={450}>
+                <ToggleButtonGroup
+                  exclusive
                   fullWidth
-                  label="Seed phrase"
-                  value={seed}
-                  onChange={(event) => setSeed(event.target.value)}
-                ></TextField>
+                  size="small"
+                  value={signerType}
+                  onChange={(event, value) => value && setSignerType(value)}
+                >
+                  <ToggleButton value="seed">Seed phrase</ToggleButton>
+                  <ToggleButton value="extension">Browser extension</ToggleButton>
+                  <ToggleButton disabled value="cere-wallet">
+                    Cere Wallet
+                  </ToggleButton>
+                </ToggleButtonGroup>
 
-                <Button variant="contained" onClick={handleConnectWallet}>
-                  Continue
-                </Button>
+                {signerType === 'seed' && (
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={seed}
+                    onChange={(event) => setSeed(event.target.value)}
+                  ></TextField>
+                )}
+
+                {!signerError && signerType === 'cere-wallet' && (
+                  <Alert severity="info">Connect Cere Wallet to continue.</Alert>
+                )}
+
+                {!signerError && signerType === 'extension' && (
+                  <Alert severity="info">
+                    Connect your browser extension to continue. The extension will ask you to authorize the connection.
+                  </Alert>
+                )}
+
+                {signerError && signerType === 'extension' && (
+                  <Alert severity="warning">
+                    Compatible browser extensions are not detected or the app is not authorized.
+                  </Alert>
+                )}
+              </Stack>
+
+              <Stack paddingTop={2} spacing={2} alignItems="start">
+                <LoadingButton loading={inProgress} variant="contained" onClick={handleConnectWallet}>
+                  {signerType === 'seed' ? 'Continue' : signerError ? 'Retry' : 'Connect'}
+                </LoadingButton>
               </Stack>
             </StepContent>
           </Step>
@@ -345,43 +408,56 @@ export const Playground = () => {
                 )}
 
                 {currentClusterId && (
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Bucket</InputLabel>
-                    <Select
-                      label="Bucket"
-                      value={
-                        bucketId === null
-                          ? 'new'
-                          : bucketId || (clusterBuckets.length ? clusterBuckets[0].bucketId : 'new')
-                      }
-                      onChange={(event) =>
-                        setBucketId(event.target.value === 'new' ? null : BigInt(event.target.value))
-                      }
-                    >
-                      <MenuItem key="new" value="new">
-                        <Typography color="GrayText">Create new...</Typography>
-                      </MenuItem>
-
-                      {clusterBuckets.map(({ bucketId, ownerId }) => (
-                        <MenuItem key={bucketId.toString()} value={bucketId.toString()}>
-                          <Box
-                            display="flex"
-                            flex={1}
-                            justifyContent="space-between"
-                            alignItems="center"
-                            marginRight={1}
-                          >
-                            <Typography>{bucketId.toString()}</Typography>
-                            {ownerId === signer?.address && (
-                              <Typography variant="caption" color="GrayText">
-                                My bucket
-                              </Typography>
-                            )}
-                          </Box>
+                  <Stack spacing={1} direction="row" alignSelf="stretch">
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Bucket</InputLabel>
+                      <Select
+                        label="Bucket"
+                        value={
+                          bucketId === null
+                            ? 'new'
+                            : bucketId || (clusterBuckets.length ? clusterBuckets[0].bucketId : 'new')
+                        }
+                        onChange={(event) =>
+                          setBucketId(event.target.value === 'new' ? null : BigInt(event.target.value))
+                        }
+                      >
+                        <MenuItem key="new" value="new">
+                          <Typography color="GrayText">Create new...</Typography>
                         </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+
+                        {clusterBuckets.map(({ bucketId, ownerId }) => (
+                          <MenuItem key={bucketId.toString()} value={bucketId.toString()}>
+                            <Box
+                              display="flex"
+                              flex={1}
+                              justifyContent="space-between"
+                              alignItems="center"
+                              marginRight={1}
+                            >
+                              <Typography>{bucketId.toString()}</Typography>
+                              {ownerId === signer?.address && (
+                                <Typography variant="caption" color="GrayText">
+                                  My bucket
+                                </Typography>
+                              )}
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <FormControlLabel
+                      label="My buckets"
+                      sx={{ whiteSpace: 'nowrap' }}
+                      control={
+                        <Checkbox
+                          checked={myBucketsOnly}
+                          onChange={(event) => setMyBucketsOnly(event.target.checked)}
+                        />
+                      }
+                    />
+                  </Stack>
                 )}
 
                 <Stack direction="row" spacing={1}>

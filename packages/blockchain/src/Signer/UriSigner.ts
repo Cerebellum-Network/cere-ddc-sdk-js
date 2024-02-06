@@ -1,5 +1,7 @@
-import { SignOptions, KeyringPair, KeyringOptions } from '@polkadot/keyring/types';
+import { Signer as BcSigner, SignerPayloadRaw } from '@polkadot/types/types';
+import { KeyringPair, KeyringOptions } from '@polkadot/keyring/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
+import { u8aToHex } from '@polkadot/util';
 import { Keyring } from '@polkadot/keyring';
 
 import { Signer } from './Signer';
@@ -7,13 +9,15 @@ import { CERE_SS58_PREFIX } from '../constants';
 
 export type UriSignerOptions = Pick<KeyringOptions, 'type'>;
 
-export class UriSigner implements Signer {
+export class UriSigner extends Signer {
   private pair?: KeyringPair;
 
   constructor(
     private uri: string,
     private options: UriSignerOptions = {},
   ) {
+    super();
+
     this.isReady();
   }
 
@@ -53,12 +57,21 @@ export class UriSigner implements Signer {
     return this.getPair().publicKey;
   }
 
-  get addressRaw() {
-    return this.getPair().addressRaw;
+  async sign(data: Uint8Array | string) {
+    return this.getPair().sign(data);
   }
 
-  sign(data: Uint8Array, options?: SignOptions) {
-    return this.getPair().sign(data, options);
+  async getSigner(): Promise<BcSigner> {
+    return {
+      signRaw: async ({ data }: SignerPayloadRaw) => {
+        const signature = this.getPair().sign(data, { withType: true });
+
+        return {
+          id: 0,
+          signature: u8aToHex(signature),
+        };
+      },
+    };
   }
 
   static async create(uri: string, options: UriSignerOptions = {}) {

@@ -16,6 +16,6 @@ export const createSignature = async (signer: Signer, message: Uint8Array) => {
   return Signature.create({
     algorithm: algorithm === 'ed25519' ? SigAlg.ED_25519 : SigAlg.SR_25519,
     signer: signer.publicKey,
-    value: signer.sign(message),
+    value: await signer.sign(message),
   });
 };
