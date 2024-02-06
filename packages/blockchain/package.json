@@ -33,6 +33,8 @@
     "@polkadot/api": "^10.11.2",
     "@polkadot/api-base": "^10.11.2",
     "@polkadot/api-contract": "^10.11.2",
+    "@polkadot/extension-dapp": "^0.46.6",
+    "@polkadot/extension-inject": "^0.46.6",
     "@polkadot/keyring": "^12.6.2",
     "@polkadot/types": "^10.11.2",
     "@polkadot/util": "^12.6.2",

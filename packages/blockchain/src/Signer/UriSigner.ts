@@ -7,13 +7,15 @@ import { CERE_SS58_PREFIX } from '../constants';
 
 export type UriSignerOptions = Pick<KeyringOptions, 'type'>;
 
-export class UriSigner implements Signer {
+export class UriSigner extends Signer {
   private pair?: KeyringPair;
 
   constructor(
     private uri: string,
     private options: UriSignerOptions = {},
   ) {
+    super();
+
     this.isReady();
   }
 

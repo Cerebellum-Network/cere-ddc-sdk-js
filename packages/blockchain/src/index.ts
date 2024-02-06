@@ -1,7 +1,7 @@
 export * from './types';
 
 export { Blockchain } from './Blockchain';
-export { Signer, type SignerType, UriSigner, type UriSignerOptions } from './Signer';
+export { Signer, type SignerType, UriSigner, type UriSignerOptions, Web3Signer } from './Signer';
 
 /**
  * Utilities
