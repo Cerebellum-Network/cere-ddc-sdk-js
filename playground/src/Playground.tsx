@@ -56,7 +56,7 @@ import {
   FormControlLabel,
 } from '@mui/material';
 
-import { USER_SEED } from './constants';
+import { CERE, USER_SEED } from './constants';
 import { createDataStream } from './helpers';
 
 const Dropzone = styled(Box)(({ theme }) => ({
@@ -104,6 +104,9 @@ export const Playground = () => {
   const [bucketId, setBucketId] = useState<BucketId | null>();
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [myBucketsOnly, setMyBucketsOnly] = useState(true);
+  const [balance, setBalance] = useState<string>();
+  const [deposit, setDeposit] = useState<string>();
+  const [extraDeposit, setExtraDeposit] = useState<number>(0);
   const [client, setClient] = useState<DdcClient>();
 
   const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, bucketId, cnsName, name].join('/');
@@ -129,6 +132,7 @@ export const Playground = () => {
   const cereWallet = useMemo(() => new EmbedWallet({ env: 'dev', appId: 'ddc-playground' }), []);
 
   const handleSkip = useCallback(() => {
+    setErrorStep(undefined);
     setStep(step + 1);
   }, [step]);
 
@@ -196,6 +200,7 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
+      console.error(error);
     } finally {
       setInProgress(false);
     }
@@ -221,6 +226,7 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
+      console.error(error);
     }
 
     setInProgress(false);
@@ -256,11 +262,12 @@ export const Playground = () => {
       }
 
       setRealFileCid(uri.cid);
+      setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
+      console.error(error);
     }
 
-    setStep(step + 1);
     setInProgress(false);
   }, [client, currentBucketId, dropzone.acceptedFiles, step]);
 
@@ -275,18 +282,39 @@ export const Playground = () => {
       setInProgress(true);
       const blockchain = await Blockchain.connect({ wsEndpoint: preset.blockchain });
       const client = await DdcClient.create(signer!, { ...preset, blockchain, logLevel: 'debug' });
-      const [clusters, buckets] = await Promise.all([blockchain.ddcClusters.listClusters(), client.getBucketList()]);
+      const [clusters, buckets, balance, deposit] = await Promise.all([
+        blockchain.ddcClusters.listClusters(),
+        client.getBucketList(),
+        client.getBalance(),
+        client.getDeposit(),
+      ]);
 
       setClient(client);
       setClusters(clusters);
       setBuckets(buckets);
+      setBalance(blockchain.formatBalance(balance, false));
+      setDeposit(blockchain.formatBalance(deposit, false));
+      setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
+      console.error(error);
     }
 
     setInProgress(false);
-    setStep(step + 1);
   }, [selectedBc, step, bcCustomUrl, signer]);
+
+  const handleDeposit = useCallback(async () => {
+    try {
+      setInProgress(true);
+      await client!.depositBalance(BigInt(extraDeposit) * CERE);
+      setStep(step + 1);
+    } catch (error) {
+      setErrorStep(step);
+      console.error(error);
+    }
+
+    setInProgress(false);
+  }, [client, extraDeposit, step]);
 
   return (
     <Container maxWidth="md" sx={{ paddingY: 2 }}>
@@ -402,10 +430,57 @@ export const Playground = () => {
             </StepContent>
           </Step>
 
-          <Step completed={!!currentBucketId && step > 2}>
-            <StepLabel error={errorStep === 2}>
+          <Step completed={!!currentClusterId}>
+            <StepLabel error={errorStep === 2}>Make deposit</StepLabel>
+            <StepContent>
+              <Stack spacing={2} alignItems="start">
+                <Stack spacing={0}>
+                  <Typography variant="body2">Balance: {balance}</Typography>
+                  <Typography variant="body2">Deposit: {deposit}</Typography>
+                </Stack>
+
+                {Number(deposit) > 0 ? (
+                  <Alert severity="info">
+                    You already have a deposit, so you can either add an additional deposit or skip this step
+                  </Alert>
+                ) : (
+                  <Alert severity="warning">
+                    You need to have a positive deposit in order to create buckets in future steps.
+                  </Alert>
+                )}
+
+                <TextField
+                  size="small"
+                  type="number"
+                  value={extraDeposit || ''}
+                  onChange={(event) => setExtraDeposit(+event.target.value)}
+                  label={Number(deposit) ? 'Extra deposit amount' : 'Deposit amount'}
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">CERE</InputAdornment>,
+                  }}
+                />
+
+                <Stack direction="row" spacing={1}>
+                  <LoadingButton
+                    disabled={!extraDeposit}
+                    loading={inProgress}
+                    variant="contained"
+                    onClick={handleDeposit}
+                  >
+                    Continue
+                  </LoadingButton>
+                  <Button variant="outlined" disabled={inProgress} onClick={handleSkip}>
+                    Skip
+                  </Button>
+                </Stack>
+              </Stack>
+            </StepContent>
+          </Step>
+
+          <Step completed={!!currentBucketId && step > 3}>
+            <StepLabel error={errorStep === 3}>
               Select bucket
-              {!!currentBucketId && step !== 2 && (
+              {!!currentBucketId && step > 3 && (
                 <Typography color="GrayText" variant="caption">
                   {' - '}
                   {currentBucketId.toString()}
@@ -500,7 +575,7 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!randomFileCid}>
-            <StepLabel error={errorStep === 3}>
+            <StepLabel error={errorStep === 4}>
               Random file
               {randomFileCid && (
                 <Typography color="GrayText" variant="caption">
@@ -540,7 +615,7 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!realFileCid}>
-            <StepLabel error={errorStep === 4}>
+            <StepLabel error={errorStep === 5}>
               Real file
               {realFileCid && (
                 <Typography color="GrayText" variant="caption">

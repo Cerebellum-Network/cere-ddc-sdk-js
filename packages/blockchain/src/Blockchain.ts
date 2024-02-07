@@ -125,10 +125,10 @@ export class Blockchain {
     return this.apiPromise.disconnect();
   }
 
-  formatBalance(balance: string | number | bigint) {
+  formatBalance(balance: string | number | bigint, withUnit: boolean | string = 'CERE') {
     const [chainDecimals] = this.apiPromise.registry.chainDecimals;
 
-    return formatBalance(balance, { withSiFull: true, decimals: chainDecimals, withUnit: 'CERE' });
+    return formatBalance(balance, { withSiFull: true, decimals: chainDecimals, withUnit });
   }
 
   async getAccountFreeBalance(accountId: AccountId) {
