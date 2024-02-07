@@ -166,7 +166,7 @@ export const setupBlockchain = async () => {
   console.time('Create buckets');
   const bucketsSendResult = await blockchain.batchAllSend(
     [
-      blockchain.ddcCustomers.deposit(500n * CERE),
+      blockchain.ddcCustomers.deposit(100n * CERE),
       blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true }), // 1n - public bucket
       blockchain.ddcCustomers.createBucket(clusterId, { isPublic: false }), // 2n - private bucket
     ],

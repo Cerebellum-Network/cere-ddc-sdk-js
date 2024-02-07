@@ -143,10 +143,12 @@ export class Blockchain {
 }
 
 export type Sendable = SubmittableExtrinsic<'promise'>;
+
 export type SendResult = {
   events: Event[];
   txHash: string;
 };
+
 export type Event = {
   section: string;
   method: string;

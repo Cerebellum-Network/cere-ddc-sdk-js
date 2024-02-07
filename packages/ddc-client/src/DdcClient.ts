@@ -18,7 +18,7 @@ import {
   AuthToken,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
-import { AccountId, Blockchain, BucketId, BucketParams, ClusterId } from '@cere-ddc-sdk/blockchain';
+import { AccountId, Blockchain, BucketId, BucketParams, ClusterId, Sendable } from '@cere-ddc-sdk/blockchain';
 
 import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
 
@@ -26,6 +26,10 @@ export type DdcClientConfig = LoggerOptions &
   Omit<ConfigPreset, 'blockchain'> & {
     blockchain: Blockchain | ConfigPreset['blockchain'];
   };
+
+type DepositBalanceOptions = {
+  allowExtra?: boolean;
+};
 
 /**
  * `DdcClient` is a class that provides methods to interact with the DDC.
@@ -79,6 +83,75 @@ export class DdcClient {
 
   async disconnect() {
     await this.blockchain.disconnect();
+  }
+
+  /**
+   * Retrieves the current free balance of the account.
+   *
+   * @returns A promise that resolves to the current balance of the account.
+   *
+   * @example
+   * ```typescript
+   * const balance = await ddcClient.getBalance();
+   *
+   * console.log(balance);
+   * ```
+   * */
+  async getBalance() {
+    return this.blockchain.getAccountFreeBalance(this.signer.address);
+  }
+
+  /**
+   * Deposits a specified amount of tokens to the account. The account must have enough tokens to cover the deposit.
+   *
+   * @param amount - The amount of tokens to deposit.
+   *
+   * @returns A promise that resolves to the transaction hash of the deposit.
+   *
+   * @example
+   *
+   * ```typescript
+   * const amount = 100n;
+   * const txHash = await ddcClient.depositBalance(amount);
+   *
+   * console.log(txHash);
+   * ```
+   * */
+  async depositBalance(amount: bigint, options: DepositBalanceOptions = {}) {
+    let tx: Sendable;
+    const currentDeposit =
+      options.allowExtra === false
+        ? undefined
+        : await this.blockchain.ddcCustomers.getStackingInfo(this.signer.address);
+
+    if (currentDeposit === undefined) {
+      this.logger.info('Depositing balance %s to %s', amount, this.signer.address);
+      tx = this.blockchain.ddcCustomers.deposit(amount);
+    } else {
+      this.logger.info('Depositing extra balance %s to %s', amount, this.signer.address);
+      tx = this.blockchain.ddcCustomers.depositExtra(amount);
+    }
+
+    return this.blockchain.send(tx, { account: this.signer });
+  }
+
+  /**
+   * Retrieves the current active deposit of the account.
+   *
+   * @returns A promise that resolves to the current active deposit of the account.
+   *
+   * @example
+   *
+   * ```typescript
+   * const deposit = await ddcClient.getDeposit();
+   *
+   * console.log(deposit);
+   * ```
+   * */
+  async getDeposit() {
+    const info = await this.blockchain.ddcCustomers.getStackingInfo(this.signer.address);
+
+    return BigInt(info?.active || 0n);
   }
 
   /**

@@ -1,7 +1,7 @@
 export * from './types';
 
 export * from './Signer';
-export { Blockchain } from './Blockchain';
+export { Blockchain, type Sendable } from './Blockchain';
 
 /**
  * Utilities
