@@ -125,10 +125,10 @@ export class Blockchain {
     return this.apiPromise.disconnect();
   }
 
-  formatBalance(balance: string | number | bigint) {
+  formatBalance(balance: string | number | bigint, withUnit: boolean | string = 'CERE') {
     const [chainDecimals] = this.apiPromise.registry.chainDecimals;
 
-    return formatBalance(balance, { withSiFull: true, decimals: chainDecimals, withUnit: 'CERE' });
+    return formatBalance(balance, { withSiFull: true, decimals: chainDecimals, withUnit });
   }
 
   async getAccountFreeBalance(accountId: AccountId) {
@@ -143,10 +143,12 @@ export class Blockchain {
 }
 
 export type Sendable = SubmittableExtrinsic<'promise'>;
+
 export type SendResult = {
   events: Event[];
   txHash: string;
 };
+
 export type Event = {
   section: string;
   method: string;

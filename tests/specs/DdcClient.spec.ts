@@ -1,6 +1,6 @@
 import { DagNode, DagNodeUri, DdcClient, File, FileUri, KB, Link, MB, Tag } from '@cere-ddc-sdk/ddc-client';
 
-import { ROOT_USER_SEED, createDataStream, getBlockchainState, getClientConfig } from '../helpers';
+import { CERE, ROOT_USER_SEED, createDataStream, getBlockchainState, getClientConfig } from '../helpers';
 
 describe('DDC Client', () => {
   const { clusterId } = getBlockchainState();
@@ -189,6 +189,28 @@ describe('DDC Client', () => {
 
   describe('Blockhain operations', () => {
     let createdBucketId: bigint;
+
+    test('Get balance', async () => {
+      const balance = await client.getBalance();
+      console.log('Balance:', balance);
+
+      expect(balance).toEqual(expect.any(BigInt));
+    });
+
+    test('Get deposit', async () => {
+      const deposit = await client.getDeposit();
+
+      expect(deposit).toEqual(expect.any(BigInt));
+    });
+
+    test('Deposit balance', async () => {
+      const toDeposit = 10n * CERE;
+      const prevDeposit = await client.getDeposit();
+      await client.depositBalance(toDeposit);
+      const nextDeposit = await client.getDeposit();
+
+      expect(nextDeposit - prevDeposit).toEqual(toDeposit);
+    });
 
     test('Create bucket', async () => {
       createdBucketId = await client.createBucket(clusterId);
