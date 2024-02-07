@@ -1,8 +1,18 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { LoadingButton } from '@mui/lab';
+import { EmbedWallet } from '@cere/embed-wallet';
 import FileIcon from '@mui/icons-material/InsertDriveFileOutlined';
-import { Blockchain, Cluster, Bucket, BucketId, ClusterId, Web3Signer } from '@cere-ddc-sdk/blockchain';
+import {
+  Blockchain,
+  Cluster,
+  Bucket,
+  BucketId,
+  ClusterId,
+  Web3Signer,
+  CereWalletSigner,
+} from '@cere-ddc-sdk/blockchain';
+
 import {
   File,
   Signer,
@@ -16,6 +26,7 @@ import {
   Link,
   DagNodeUri,
 } from '@cere-ddc-sdk/ddc-client';
+
 import {
   Container,
   Stepper,
@@ -77,6 +88,7 @@ export const Playground = () => {
 
   const [signerType, setSignerType] = useState<'seed' | 'extension' | 'cere-wallet'>('seed');
   const [signerError, setSignerError] = useState(false);
+
   const [signer, setSigner] = useState<Signer>();
   const [seed, setSeed] = useState(USER_SEED);
   const [randomFileSize, setRandomFileSize] = useState(150);
@@ -114,6 +126,8 @@ export const Playground = () => {
     [bucketId, clusterBuckets],
   );
 
+  const cereWallet = useMemo(() => new EmbedWallet({ env: 'dev', appId: 'ddc-playground' }), []);
+
   const handleSkip = useCallback(() => {
     setStep(step + 1);
   }, [step]);
@@ -123,9 +137,23 @@ export const Playground = () => {
 
     let signer: Signer | undefined;
 
+    if (signerType === 'cere-wallet') {
+      if (cereWallet.status === 'not-ready') {
+        await cereWallet.init({
+          connectOptions: {
+            mode: 'modal',
+          },
+        });
+      }
+
+      signer = new CereWalletSigner(cereWallet);
+    }
+
     if (signerType === 'extension') {
       signer = new Web3Signer();
-    } else if (signerType === 'seed') {
+    }
+
+    if (signerType === 'seed') {
       signer = new UriSigner(seed);
     }
 
@@ -144,7 +172,7 @@ export const Playground = () => {
     }
 
     setSigner(signer);
-  }, [seed, signerType]);
+  }, [cereWallet, seed, signerType]);
 
   const handleSelectBucket = useCallback(async () => {
     if (currentBucketId) {
@@ -287,9 +315,7 @@ export const Playground = () => {
                 >
                   <ToggleButton value="seed">Seed phrase</ToggleButton>
                   <ToggleButton value="extension">Browser extension</ToggleButton>
-                  <ToggleButton disabled value="cere-wallet">
-                    Cere Wallet
-                  </ToggleButton>
+                  <ToggleButton value="cere-wallet">Cere Wallet</ToggleButton>
                 </ToggleButtonGroup>
 
                 {signerType === 'seed' && (
@@ -299,10 +325,6 @@ export const Playground = () => {
                     value={seed}
                     onChange={(event) => setSeed(event.target.value)}
                   ></TextField>
-                )}
-
-                {!signerError && signerType === 'cere-wallet' && (
-                  <Alert severity="info">Connect Cere Wallet to continue.</Alert>
                 )}
 
                 {!signerError && signerType === 'extension' && (
@@ -315,6 +337,14 @@ export const Playground = () => {
                   <Alert severity="warning">
                     Compatible browser extensions are not detected or the app is not authorized.
                   </Alert>
+                )}
+
+                {!signerError && signerType === 'cere-wallet' && (
+                  <Alert severity="info">Connect Cere Wallet to continue.</Alert>
+                )}
+
+                {signerError && signerType === 'cere-wallet' && (
+                  <Alert severity="warning">Cere Wallet is not connected or the app is not authorized.</Alert>
                 )}
               </Stack>
 

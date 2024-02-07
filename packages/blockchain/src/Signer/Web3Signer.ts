@@ -11,6 +11,7 @@ export type Web3SignerOptions = {
   accountIndex?: number;
   originName?: string;
   autoConnect?: boolean;
+  extensions?: string[];
 };
 
 export class Web3Signer extends Signer {
@@ -19,14 +20,22 @@ export class Web3Signer extends Signer {
   protected originName: string;
   protected autoConnect: boolean;
   protected injectedAccount?: InjectedAccount;
+  protected extensions?: string[];
 
-  constructor({ address, autoConnect = true, originName = 'DDC', accountIndex = 0 }: Web3SignerOptions = {}) {
+  constructor({
+    address,
+    extensions,
+    autoConnect = true,
+    originName = 'DDC',
+    accountIndex = 0,
+  }: Web3SignerOptions = {}) {
     super();
 
     this.accountAddress = address;
     this.originName = originName;
     this.autoConnect = autoConnect;
     this.accountIndex = accountIndex;
+    this.extensions = extensions;
   }
 
   get address() {
@@ -75,6 +84,7 @@ export class Web3Signer extends Signer {
   async connect() {
     await web3Enable(this.originName);
     const accounts = await web3Accounts({
+      extensions: this.extensions,
       accountType: ['ed25519', 'sr25519'],
     });
 
