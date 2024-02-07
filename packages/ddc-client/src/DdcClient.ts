@@ -120,11 +120,9 @@ export class DdcClient {
   async depositBalance(amount: bigint, options: DepositBalanceOptions = {}) {
     let tx: Sendable;
     const currentDeposit =
-      options.allowExtra === false
-        ? undefined
-        : await this.blockchain.ddcCustomers.getStackingInfo(this.signer.address);
+      options.allowExtra === false ? null : await this.blockchain.ddcCustomers.getStackingInfo(this.signer.address);
 
-    if (currentDeposit === undefined) {
+    if (currentDeposit === null) {
       this.logger.info('Depositing balance %s to %s', amount, this.signer.address);
       tx = this.blockchain.ddcCustomers.deposit(amount);
     } else {

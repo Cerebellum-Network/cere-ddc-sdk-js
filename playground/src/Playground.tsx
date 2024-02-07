@@ -368,7 +368,13 @@ export const Playground = () => {
                 )}
 
                 {!signerError && signerType === 'cere-wallet' && (
-                  <Alert severity="info">Connect Cere Wallet to continue.</Alert>
+                  <>
+                    <Alert severity="info">Connect Cere Wallet to continue.</Alert>
+                    <Alert severity="warning">
+                      Cere Wallet integration is not yet complete; it works, but the wallet is always pointed to Cere
+                      Network DEVNET.
+                    </Alert>
+                  </>
                 )}
 
                 {signerError && signerType === 'cere-wallet' && (
