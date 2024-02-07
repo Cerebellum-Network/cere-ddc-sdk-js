@@ -37,3 +37,8 @@
 
 - [GrpcTransport](classes/GrpcTransport.md)
 - [WebsocketTransport](classes/WebsocketTransport.md)
+
+## Signers
+
+- [Signer](classes/Signer.md)
+- [UriSigner](classes/UriSigner.md)

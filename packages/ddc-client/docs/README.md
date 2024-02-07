@@ -24,3 +24,8 @@
 - [File](classes/File.md)
 - [FileResponse](classes/FileResponse.md)
 - [FileUri](classes/FileUri.md)
+
+## Signers
+
+- [Signer](classes/Signer.md)
+- [UriSigner](classes/UriSigner.md)

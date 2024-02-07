@@ -93,7 +93,7 @@ Signs the authentication token using the provided signer.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `signer` | `Signer` | The instance of Signer to use for signing the token. |
+| `signer` | [`Signer`](Signer.md) | The instance of Signer to use for signing the token. |
 
 #### Returns
 

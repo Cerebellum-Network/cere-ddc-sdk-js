@@ -9,6 +9,20 @@ import { CERE_SS58_PREFIX } from '../constants';
 
 export type UriSignerOptions = Pick<KeyringOptions, 'type'>;
 
+/**
+ * Signer that uses a Substrate URI to create a keypair.
+ *
+ * @group Signers
+ * @extends Signer
+ * @example
+ *
+ * ```typescript
+ * const uriSigner = new UriSigner('//Alice', );
+ * const signature = await uriSigner.sign('data');
+ *
+ * console.log(signature);
+ * ```
+ */
 export class UriSigner extends Signer {
   private pair?: KeyringPair;
 

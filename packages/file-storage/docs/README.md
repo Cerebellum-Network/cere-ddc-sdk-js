@@ -7,3 +7,8 @@
 - [File](classes/File.md)
 - [FileResponse](classes/FileResponse.md)
 - [FileStorage](classes/FileStorage.md)
+
+## Signers
+
+- [Signer](classes/Signer.md)
+- [UriSigner](classes/UriSigner.md)
