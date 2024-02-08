@@ -1,5 +1,5 @@
 import type { InjectedAccount } from '@polkadot/extension-inject/types';
-import { hexToU8a, u8aToHex } from '@polkadot/util';
+import { hexToU8a, u8aToHex, u8aWrapBytes } from '@polkadot/util';
 import { decodeAddress, encodeAddress, cryptoWaitReady } from '@polkadot/util-crypto';
 import { web3Enable, web3Accounts, web3FromAddress, web3EnablePromise } from '@polkadot/extension-dapp';
 
@@ -62,20 +62,29 @@ export class Web3Signer extends Signer {
     return web3FromAddress(this.address);
   }
 
+  /**
+   * @inheritdoc
+   */
   async getSigner() {
     const { signer } = await this.getInjector();
 
     return signer;
   }
 
+  /**
+   * @inheritdoc
+   */
   async sign(message: string | Uint8Array) {
     const injector = await this.getInjector();
-    const data = typeof message === 'string' ? message : u8aToHex(message);
 
     if (!injector.signer.signRaw) {
       throw new Error('Signer does not support signing raw messages');
     }
 
+    /**
+     * Wrap the message in <Bytes>...</Bytes> to make it impossible to sign extrinsics with this method.
+     */
+    const data = u8aToHex(u8aWrapBytes(message));
     const { signature } = await injector.signer.signRaw({ address: this.address, data, type: 'bytes' });
 
     return hexToU8a(signature);
@@ -99,6 +108,9 @@ export class Web3Signer extends Signer {
     return this;
   }
 
+  /**
+   * @inheritdoc
+   */
   async isReady() {
     await cryptoWaitReady();
 
