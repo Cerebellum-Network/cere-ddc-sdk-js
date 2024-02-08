@@ -1,4 +1,4 @@
-# @cere-ddc-sdk/file-storage
+# @cere-ddc-sdk/blockchain
 
 The package provides API for interacting with Cere blockchain.
 
