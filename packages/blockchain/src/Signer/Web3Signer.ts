@@ -14,6 +14,20 @@ export type Web3SignerOptions = {
   extensions?: string[];
 };
 
+/**
+ * Signer that uses browser extensions (eg. PolkadotJs) to sign messages.
+ *
+ * @group Signers
+ * @extends Signer
+ * @example
+ *
+ * ```typescript
+ * const web3Signer = new Web3Signer({ autoConnect: true });
+ * const signature = await web3Signer.sign('data');
+ *
+ * console.log(signature);
+ * ```
+ */
 export class Web3Signer extends Signer {
   protected accountAddress?: string;
   protected accountIndex: number;
@@ -38,14 +52,23 @@ export class Web3Signer extends Signer {
     this.extensions = extensions;
   }
 
+  /**
+   * @inheritdoc
+   */
   get address() {
     return this.accountAddress || encodeAddress(this.account.address, CERE_SS58_PREFIX);
   }
 
+  /**
+   * @inheritdoc
+   */
   get publicKey() {
     return decodeAddress(this.address, true, CERE_SS58_PREFIX);
   }
 
+  /**
+   * @inheritdoc
+   */
   get type() {
     return this.account.type || 'sr25519';
   }
@@ -81,6 +104,18 @@ export class Web3Signer extends Signer {
     return hexToU8a(signature);
   }
 
+  /**
+   * Connects to the underlying Web3 signer.
+   *
+   * @returns A promise that resolves to the signer.
+   * @throws An error if the signer cannot be detected.
+   *
+   * @example
+   *
+   * ```typescript
+   * await web3Signer.connect();
+   * ```
+   */
   async connect() {
     await web3Enable(this.originName);
     const accounts = await web3Accounts({

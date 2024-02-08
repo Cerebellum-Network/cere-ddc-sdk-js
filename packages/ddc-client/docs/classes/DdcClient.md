@@ -72,6 +72,58 @@ const bucketId: BucketId = await ddcClient.createBucket(clusterId, {
 
 ___
 
+### depositBalance
+
+▸ **depositBalance**(`amount`, `options?`): `Promise`\<`SendResult`\>
+
+Deposits a specified amount of tokens to the account. The account must have enough tokens to cover the deposit.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `amount` | `bigint` | The amount of tokens to deposit. |
+| `options` | `DepositBalanceOptions` | - |
+
+#### Returns
+
+`Promise`\<`SendResult`\>
+
+A promise that resolves to the transaction hash of the deposit.
+
+**`Example`**
+
+```typescript
+const amount = 100n;
+const txHash = await ddcClient.depositBalance(amount);
+
+console.log(txHash);
+```
+
+___
+
+### getBalance
+
+▸ **getBalance**(): `Promise`\<`bigint`\>
+
+Retrieves the current free balance of the account.
+
+#### Returns
+
+`Promise`\<`bigint`\>
+
+A promise that resolves to the current balance of the account.
+
+**`Example`**
+
+```typescript
+const balance = await ddcClient.getBalance();
+
+console.log(balance);
+```
+
+___
+
 ### getBucket
 
 ▸ **getBucket**(`bucketId`): `Promise`\<`undefined` \| `Bucket`\>
@@ -119,6 +171,28 @@ A promise that resolves to an array of buckets.
 const buckets = await ddcClient.getBucketList();
 
 console.log(buckets);
+```
+
+___
+
+### getDeposit
+
+▸ **getDeposit**(): `Promise`\<`bigint`\>
+
+Retrieves the current active deposit of the account.
+
+#### Returns
+
+`Promise`\<`bigint`\>
+
+A promise that resolves to the current active deposit of the account.
+
+**`Example`**
+
+```typescript
+const deposit = await ddcClient.getDeposit();
+
+console.log(deposit);
 ```
 
 ___
@@ -234,7 +308,7 @@ Creates a new instance of the DdcClient.
 
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
-| `uriOrSigner` | `string` \| `Signer` | `undefined` | A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri). |
+| `uriOrSigner` | `string` \| [`Signer`](Signer.md) | `undefined` | A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri). |
 | `config` | `DdcClientConfig` | `DEFAULT_PRESET` | Configuration options for the DdcClient. Defaults to TESTNET. |
 
 #### Returns

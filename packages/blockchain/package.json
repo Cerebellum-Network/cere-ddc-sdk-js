@@ -25,7 +25,8 @@
     "build:node": "microbundle --tsconfig tsconfig.node.json --format esm,cjs --target node",
     "build:web": "microbundle --tsconfig tsconfig.web.json --format modern --output dist/browser.js",
     "package": "clean-publish",
-    "clean": "rimraf dist package"
+    "clean": "rimraf dist package",
+    "docs": "typedoc"
   },
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",

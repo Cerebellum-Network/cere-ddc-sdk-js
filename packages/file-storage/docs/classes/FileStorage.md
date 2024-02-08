@@ -84,7 +84,7 @@ Creates a new instance of the `FileStorage` class asynchronously.
 
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
-| `uriOrSigner` | `string` \| `Signer` | `undefined` | A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri). |
+| `uriOrSigner` | `string` \| [`Signer`](Signer.md) | `undefined` | A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri). |
 | `config` | `FileStorageConfig` | `DEFAULT_PRESET` | Configuration options for the `FileStorage`. Defaults to TESTNET. |
 
 #### Returns
