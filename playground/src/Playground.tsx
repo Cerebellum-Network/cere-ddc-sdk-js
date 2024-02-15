@@ -145,7 +145,9 @@ export const Playground = () => {
       if (cereWallet.status === 'not-ready') {
         await cereWallet.init({
           connectOptions: {
-            mode: 'modal',
+            permissions: {
+              ed25519_signRaw: {}, // Request permission to sign messages in the login process
+            },
           },
         });
       }
