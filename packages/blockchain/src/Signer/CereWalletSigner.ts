@@ -1,9 +1,13 @@
-import type { EmbedWallet } from '@cere/embed-wallet';
+import type { EmbedWallet, PermissionRequest } from '@cere/embed-wallet';
 import { inject } from '@cere/embed-wallet-inject';
 
 import { Web3Signer } from './Web3Signer';
 
 const CERE_WALLET_EXTENSION = 'Cere Wallet';
+
+export type CereWalletSignerOptions = {
+  permissions?: PermissionRequest;
+};
 
 /**
  * Signer that uses Cere Wallet to sign messages.
@@ -27,14 +31,23 @@ const CERE_WALLET_EXTENSION = 'Cere Wallet';
 export class CereWalletSigner extends Web3Signer {
   protected wallet: EmbedWallet;
 
-  constructor(wallet: EmbedWallet) {
+  constructor(
+    wallet: EmbedWallet,
+    private options: CereWalletSignerOptions = {},
+  ) {
     super({ extensions: [CERE_WALLET_EXTENSION] });
 
     this.wallet = wallet;
   }
 
   async connect() {
-    await inject(this.wallet, { name: CERE_WALLET_EXTENSION, autoConnect: true });
+    await inject(this.wallet, {
+      name: CERE_WALLET_EXTENSION,
+      autoConnect: true,
+      permissions: this.options.permissions || {
+        ed25519_signRaw: {}, // Request permission to sign messages in the login process
+      },
+    });
 
     await super.connect();
 
