@@ -143,11 +143,7 @@ export const Playground = () => {
 
     if (signerType === 'cere-wallet') {
       if (cereWallet.status === 'not-ready') {
-        await cereWallet.init({
-          connectOptions: {
-            mode: 'modal',
-          },
-        });
+        await cereWallet.init();
       }
 
       signer = new CereWalletSigner(cereWallet);

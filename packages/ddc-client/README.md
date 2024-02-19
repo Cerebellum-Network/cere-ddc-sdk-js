@@ -46,17 +46,26 @@ A quick guide of how to upload a file to DDC TESTNET using the `DdcClient` API.
     const fileStream = fs.createReadStream(filePath);
     const file = new File(fileStream, { size: fileStats.size });
 
-    const fileUri = await fileStorage.store(bucketId, file);
+    const { cid: fileCid } = await ddcClient.store(bucketId, file);
 
-    console.log('The uploaded file CID', fileUri.cid)
+    console.log('The uploaded file CID', fileCid)
     ```
 
-4. That is it. You can open the file from your browser
+4. That is it. You can open the file from your browser:
 
     ```ts
     const fileUrl = `https://storage.testnet.cere.network/${bucketId}/${fileUri.cid}`;
 
     console.log('The file URL', fileUrl);
+    ```
+    or download it using the SDK
+    ```ts
+    const uri = new FileUri(bucketId, fileCid);
+
+    const fileResponse = await ddcClient.read(uri);
+    const content = await fileResponse.arrayBuffer();
+
+    console.log(content);
     ```
 
 # Documentation

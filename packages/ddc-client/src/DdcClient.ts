@@ -351,6 +351,10 @@ export class DdcClient {
       return this.fileStorage.read(uri.bucketId, uri.cidOrName, options as FileReadOptions);
     }
 
-    return this.ddcNode.getDagNode(uri.bucketId, uri.cidOrName, options as DagNodeGetOptions);
+    if (uri.entity === 'dag-node') {
+      return this.ddcNode.getDagNode(uri.bucketId, uri.cidOrName, options as DagNodeGetOptions);
+    }
+
+    throw new Error('`uri` argument is neither FileUri or DagNodeUri');
   }
 }
