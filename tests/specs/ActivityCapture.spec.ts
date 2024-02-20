@@ -1,5 +1,15 @@
 import { arrayBuffer } from 'stream/consumers';
-import { ActivityRequest, AuthToken, AuthTokenOperation, FileApi, GrpcTransport, UriSigner } from '@cere-ddc-sdk/ddc';
+import {
+  ActivityRequest,
+  AuthToken,
+  AuthTokenOperation,
+  Cid,
+  CnsApi,
+  DagApi,
+  FileApi,
+  GrpcTransport,
+  UriSigner,
+} from '@cere-ddc-sdk/ddc';
 
 import { createDataStream, MB, ROOT_USER_SEED, DDC_BLOCK_SIZE, getStorageNodes } from '../helpers';
 
@@ -16,6 +26,18 @@ describe('Activity Capture', () => {
     ...node,
     interceptors: [
       {
+        interceptUnary(next, method, input, options) {
+          activityRequestHeader = options.meta?.request as string;
+
+          return next(method, input, options);
+        },
+
+        interceptClientStreaming: (next, method, options) => {
+          activityRequestHeader = options.meta?.request as string;
+
+          return next(method, options);
+        },
+
         interceptDuplex: (next, method, options) => {
           const call = next(method, options);
 
@@ -23,12 +45,6 @@ describe('Activity Capture', () => {
           duplexSendSpy = jest.spyOn(call.requests, 'send');
 
           return call;
-        },
-
-        interceptClientStreaming: (next, method, options) => {
-          activityRequestHeader = options.meta?.request as string;
-
-          return next(method, options);
         },
       },
     ],
@@ -138,6 +154,95 @@ describe('Activity Capture', () => {
             timestamp: expect.any(Number),
           },
         },
+      });
+    });
+  });
+
+  describe('DagApi', () => {
+    const dagApi = new DagApi(transport, { signer });
+
+    let nodeCid: Uint8Array;
+
+    test('Store DAG Node', async () => {
+      nodeCid = await dagApi.putNode({
+        token,
+        bucketId,
+        node: { data: new Uint8Array([1, 2, 3]), links: [], tags: [] },
+      });
+
+      const activityRequest = getActivityRequest();
+
+      expect(activityRequest).toEqual({
+        bucketId,
+        contentType: 0, // ContentType.PIECE
+        requestType: 0, // RequestType.STORE
+        offset: 0,
+        size: expect.any(Number),
+        id: expect.any(Uint8Array),
+        timestamp: expect.any(Number),
+        signature: expect.any(Object),
+        requestId: expect.any(String),
+      });
+
+      expect(activityRequest?.size).toBeGreaterThan(0);
+    });
+
+    test('Read node', async () => {
+      expect(nodeCid).toBeDefined();
+
+      await dagApi.getNode({ cid: nodeCid, token, bucketId });
+
+      expect(getActivityRequest()).toEqual({
+        bucketId,
+        contentType: 0, // ContentType.PIECE
+        requestType: 1, // RequestType.GET
+        offset: 0,
+        size: 0,
+        id: Buffer.from(nodeCid),
+        signature: expect.any(Object),
+        timestamp: expect.any(Number),
+        requestId: expect.any(String),
+      });
+    });
+  });
+
+  describe('CNS Api', () => {
+    const cnsApi = new CnsApi(transport, { signer });
+    const cid = new Cid('baebb4ia66qb5z353wntpaw54kzgzpaomzifkmezlffrz7shnzwlr7d6kyi').toBytes();
+    const record = { name: 'test-dac', cid };
+
+    test('Store CNS Record', async () => {
+      await cnsApi.putRecord({ token, bucketId, record });
+      const activityRequest = getActivityRequest();
+
+      expect(activityRequest).toEqual({
+        bucketId,
+        contentType: 0, // ContentType.PIECE
+        requestType: 0, // RequestType.STORE
+        offset: 0,
+        size: expect.any(Number),
+        id: expect.any(Uint8Array),
+        timestamp: expect.any(Number),
+        signature: expect.any(Object),
+        requestId: expect.any(String),
+      });
+
+      expect(activityRequest?.size).toBeGreaterThan(0);
+    });
+
+    test('Read CNS Record', async () => {
+      await cnsApi.getRecord({ token, bucketId, name: record.name });
+
+      expect(getActivityRequest()).toEqual({
+        bucketId,
+        contentType: 0, // ContentType.PIECE
+        requestType: 1, // RequestType.GET
+        offset: 0,
+        size: 0,
+        id: new Uint8Array([]),
+        signature: expect.any(Object),
+        timestamp: expect.any(Number),
+        requestId: expect.any(String),
       });
     });
   });

@@ -63,21 +63,21 @@ export class DagApi {
    * console.log(cid);
    * ```
    */
-  async putNode({ token, ...request }: PutRequest) {
+  async putNode({ token, bucketId, node, cid }: PutRequest) {
     const meta = createRpcMeta(token);
 
-    this.logger.debug({ ...request, token }, 'Storing DAG Node');
+    this.logger.debug({ token, bucketId, node, cid }, 'Storing DAG Node');
 
-    if (this.options.enableAcks) {
+    if (this.options.enableAcks && node) {
       meta.request = await createActivityRequest(
-        { bucketId: request.bucketId, requestType: ActivityRequestType.STORE },
+        { id: cid, bucketId, size: Node.toBinary(node).byteLength, requestType: ActivityRequestType.STORE },
         { logger: this.logger, signer: this.options.signer },
       );
     }
 
-    const { response } = await this.api.put(request, { meta });
+    const { response } = await this.api.put({ bucketId, node, cid }, { meta });
 
-    this.logger.debug({ cid: response.cid }, 'DAG Node stored');
+    this.logger.debug({ cid }, 'DAG Node stored');
 
     return new Uint8Array(response.cid);
   }
@@ -115,7 +115,7 @@ export class DagApi {
 
     if (this.options.enableAcks) {
       meta.request = await createActivityRequest(
-        { bucketId: request.bucketId, requestType: ActivityRequestType.GET },
+        { id: request.cid, bucketId: request.bucketId, requestType: ActivityRequestType.GET },
         { logger: this.logger, signer: this.options.signer },
       );
     }

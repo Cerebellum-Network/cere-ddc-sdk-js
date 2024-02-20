@@ -94,7 +94,7 @@ export class CnsApi {
 
     if (this.options.enableAcks) {
       meta.request = await createActivityRequest(
-        { bucketId, requestType: ActivityRequestType.STORE },
+        { bucketId, size: ProtoRecord.toBinary(record).byteLength, requestType: ActivityRequestType.STORE },
         { logger: this.logger, signer: this.options.signer },
       );
     }
@@ -132,21 +132,21 @@ export class CnsApi {
    * console.log(record);
    * ```
    */
-  async getRecord({ token, ...request }: GetRequest): Promise<Record | undefined> {
-    this.logger.debug({ ...request, token }, 'Retrieving CNS record');
+  async getRecord({ token, name, bucketId }: GetRequest): Promise<Record | undefined> {
+    this.logger.debug({ name, bucketId, token }, 'Retrieving CNS record');
 
     let record: ProtoRecord | undefined;
     const meta = createRpcMeta(token);
 
     if (this.options.enableAcks) {
       meta.request = await createActivityRequest(
-        { bucketId: request.bucketId, requestType: ActivityRequestType.GET },
+        { bucketId, requestType: ActivityRequestType.GET },
         { logger: this.logger, signer: this.options.signer },
       );
     }
 
     try {
-      const { response } = await this.api.get(request, { meta });
+      const { response } = await this.api.get({ name, bucketId }, { meta });
 
       record = response.record;
     } catch (error) {
@@ -163,7 +163,7 @@ export class CnsApi {
     }
 
     if (!record?.signature) {
-      this.logger.debug({ ...request }, 'CNS record not found');
+      this.logger.debug({ name, bucketId }, 'CNS record not found');
 
       return undefined;
     }
