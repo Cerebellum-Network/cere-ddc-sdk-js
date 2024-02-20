@@ -47,11 +47,13 @@
   "workspaces": {
     "packages": [
       "packages/*",
+      "examples/*",
       "playground",
       "tests"
     ],
     "nohoist": [
-      "playground/**"
+      "playground/**",
+      "examples/**"
     ]
   }
 }
