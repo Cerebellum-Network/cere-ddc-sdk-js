@@ -3,10 +3,12 @@ import type { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { RpcTransport } from '../transports';
 import { createRpcMeta, AuthToken } from '../auth';
+import { Logger, LoggerOptions, createLogger } from '../logger';
 import { GrpcStatus } from '../grpc/status';
 import { createSignature, mapSignature, Signature } from '../signature';
 import { CnsApiClient } from '../grpc/cns_api.client';
 import { GetRequest as ProtoGetRequest, PutRequest as ProtoPutRequest, Record as ProtoRecord } from '../grpc/cns_api';
+import { ActivityRequestType, createActivityRequest } from '../activity';
 
 type AuthParams = { token?: AuthToken };
 export type Record = Omit<ProtoRecord, 'signature'> & {
@@ -26,8 +28,9 @@ const createSignatureMessage = (record: Omit<Record, 'signature'>) => {
   return ProtoRecord.toBinary(message);
 };
 
-export type CnsApiOptions = {
+export type CnsApiOptions = LoggerOptions & {
   signer?: Signer;
+  enableAcks?: boolean;
 };
 
 /**
@@ -44,13 +47,18 @@ export type CnsApiOptions = {
  * ```
  */
 export class CnsApi {
+  private logger: Logger;
   private api: CnsApiClient;
+  private options: CnsApiOptions;
 
-  constructor(
-    transport: RpcTransport,
-    private options: CnsApiOptions = {},
-  ) {
+  constructor(transport: RpcTransport, options: CnsApiOptions = {}) {
     this.api = new CnsApiClient(transport);
+    this.logger = createLogger('CnsApi', options);
+
+    this.options = {
+      ...options,
+      enableAcks: options.enableAcks ?? !!options.signer, // ACKs are enabled by default if signer is provided
+    };
   }
 
   /**
@@ -75,20 +83,27 @@ export class CnsApi {
    * ```
    */
   async putRecord({ token, bucketId, record }: PutRequest): Promise<Record> {
+    this.logger.debug({ bucketId, record, token }, 'Storing CNS record');
+
+    const meta = createRpcMeta(token);
     const { signer } = this.options;
 
     if (!signer) {
       throw new Error('Unnable to store CNS record. Signer required!');
     }
 
+    if (this.options.enableAcks) {
+      meta.request = await createActivityRequest(
+        { bucketId, requestType: ActivityRequestType.STORE },
+        { logger: this.logger, signer: this.options.signer },
+      );
+    }
+
     const signature = await createSignature(signer, createSignatureMessage(record));
 
-    await this.api.put(
-      { bucketId, record: { ...record, signature } },
-      {
-        meta: createRpcMeta(token),
-      },
-    );
+    await this.api.put({ bucketId, record: { ...record, signature } }, { meta });
+
+    this.logger.debug({ ...record }, 'CNS record stored');
 
     return {
       ...record,
@@ -118,12 +133,20 @@ export class CnsApi {
    * ```
    */
   async getRecord({ token, ...request }: GetRequest): Promise<Record | undefined> {
+    this.logger.debug({ ...request, token }, 'Retrieving CNS record');
+
     let record: ProtoRecord | undefined;
+    const meta = createRpcMeta(token);
+
+    if (this.options.enableAcks) {
+      meta.request = await createActivityRequest(
+        { bucketId: request.bucketId, requestType: ActivityRequestType.GET },
+        { logger: this.logger, signer: this.options.signer },
+      );
+    }
 
     try {
-      const { response } = await this.api.get(request, {
-        meta: createRpcMeta(token),
-      });
+      const { response } = await this.api.get(request, { meta });
 
       record = response.record;
     } catch (error) {
@@ -140,8 +163,12 @@ export class CnsApi {
     }
 
     if (!record?.signature) {
+      this.logger.debug({ ...request }, 'CNS record not found');
+
       return undefined;
     }
+
+    this.logger.debug({ ...record }, 'CNS record retrieved');
 
     return {
       ...record,

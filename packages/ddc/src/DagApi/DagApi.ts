@@ -66,6 +66,8 @@ export class DagApi {
   async putNode({ token, ...request }: PutRequest) {
     const meta = createRpcMeta(token);
 
+    this.logger.debug({ ...request, token }, 'Storing DAG Node');
+
     if (this.options.enableAcks) {
       meta.request = await createActivityRequest(
         { bucketId: request.bucketId, requestType: ActivityRequestType.STORE },
@@ -74,6 +76,8 @@ export class DagApi {
     }
 
     const { response } = await this.api.put(request, { meta });
+
+    this.logger.debug({ cid: response.cid }, 'DAG Node stored');
 
     return new Uint8Array(response.cid);
   }
@@ -96,6 +100,8 @@ export class DagApi {
    * ```
    */
   async getNode({ token, ...request }: GetRequest): Promise<Node | undefined> {
+    this.logger.debug({ ...request, token }, 'Retrieving DAG Node');
+
     /**
      * In case a sub-node requested using root CID + path - we don't have the target node CID, so we can't authenticate it.
      */
@@ -121,6 +127,8 @@ export class DagApi {
     }
 
     await validator.validate();
+
+    this.logger.debug({ node: response.node }, 'DAG Node retrieved');
 
     return (
       response.node && {
