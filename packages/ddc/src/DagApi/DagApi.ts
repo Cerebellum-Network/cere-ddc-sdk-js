@@ -38,7 +38,7 @@ export class DagApi {
 
   constructor(transport: RpcTransport, options: DagApiOptions = {}) {
     this.api = new DagApiClient(transport);
-    this.logger = createLogger('FileApi', options);
+    this.logger = createLogger('DagApi', options);
 
     this.options = {
       ...options,

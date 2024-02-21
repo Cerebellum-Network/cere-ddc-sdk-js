@@ -196,7 +196,6 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-      console.error(error);
     } finally {
       setInProgress(false);
     }
@@ -222,7 +221,6 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-      console.error(error);
     }
 
     setInProgress(false);
@@ -261,7 +259,6 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-      console.error(error);
     }
 
     setInProgress(false);
@@ -293,7 +290,6 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-      console.error(error);
     }
 
     setInProgress(false);
@@ -306,7 +302,6 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-      console.error(error);
     }
 
     setInProgress(false);

@@ -257,34 +257,40 @@ export class FileApi {
     async function* toDataStream(this: FileApi) {
       let bytesStoredOrDelivered = 0;
 
-      for await (const { body } of call.responses) {
-        if (body.oneofKind === 'data') {
-          yield body.data;
+      try {
+        for await (const { body } of call.responses) {
+          if (body.oneofKind === 'data') {
+            yield body.data;
 
-          bytesStoredOrDelivered += body.data.byteLength;
+            bytesStoredOrDelivered += body.data.byteLength;
 
-          if (enableAcks) {
-            await call.requests.send({
-              body: {
-                oneofKind: 'ack',
-                ack: await createAck(
-                  { requestId, bytesStoredOrDelivered, timestamp: Date.now() },
-                  { signer: this.options.signer },
-                ),
-              },
-            });
+            if (enableAcks) {
+              await call.requests.send({
+                body: {
+                  oneofKind: 'ack',
+                  ack: await createAck(
+                    { requestId, bytesStoredOrDelivered, timestamp: Date.now() },
+                    { signer: this.options.signer },
+                  ),
+                },
+              });
+            }
+
+            await validator.update(body.data);
           }
 
-          await validator.update(body.data);
+          if (body.oneofKind === 'proof') {
+            await validator.prove(body.proof);
+          }
         }
 
-        if (body.oneofKind === 'proof') {
-          await validator.prove(body.proof);
-        }
+        await call.requests.complete();
+        await validator.validate();
+      } catch (error) {
+        this.logger.error(error, 'An error occurred while reading file stream');
+
+        throw error;
       }
-
-      await call.requests.complete();
-      await validator.validate();
     }
 
     return createContentStream(toDataStream.call(this));
