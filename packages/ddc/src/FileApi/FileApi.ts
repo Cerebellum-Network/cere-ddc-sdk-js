@@ -1,11 +1,8 @@
-import { Buffer } from 'buffer';
-import { v4 as uuid } from 'uuid';
 import { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { MAX_PIECE_SIZE, MB } from '../constants';
 import { FileValidator } from '../validators';
 import { RpcTransport } from '../transports';
-import { createSignature } from '../signature';
 import { Content, createContentStream, getContentSize, isContentStream } from '../streams';
 import { createLogger, Logger, LoggerOptions } from '../logger';
 import { createRpcMeta, AuthToken } from '../auth';
@@ -15,12 +12,7 @@ import {
   PutRawPieceRequest_Metadata,
 } from '../grpc/file_api';
 import { FileApiClient } from '../grpc/file_api.client';
-import {
-  ActivityRequest,
-  ActivityRequest_ContentType,
-  ActivityRequest_RequestType as RequestType,
-  ActivityAcknowledgment,
-} from '../grpc/activity_report/activity_report';
+import { ActivityRequestType, createAck, createActivityRequest, createRequestId } from '../activity';
 
 type AuthParams = { token?: AuthToken };
 export type ReadFileRange = GetFileRequest_Request['range'];
@@ -66,42 +58,6 @@ export class FileApi {
       enableAcks: options.enableAcks ?? !!options.signer, // ACKs are enabled by default if signer is provided
       authenticate: options.authenticate ?? false,
     };
-  }
-
-  private async createActivityRequest(request: Partial<Omit<ActivityRequest, 'contentType' | 'signature'>>) {
-    const { signer } = this.options;
-
-    if (!signer) {
-      throw new Error('Activity capturing cannot be enabled. Signer requred!');
-    }
-
-    const activityRequest = ActivityRequest.create({
-      timestamp: Date.now(),
-      ...request,
-      contentType: ActivityRequest_ContentType.PIECE,
-    });
-
-    activityRequest.signature = await createSignature(signer, ActivityRequest.toBinary(activityRequest));
-    this.logger.debug({ activityRequest }, 'Activity request');
-
-    return Buffer.from(ActivityRequest.toBinary(activityRequest)).toString('base64');
-  }
-
-  private async createAck(ack: Omit<ActivityAcknowledgment, 'signature'>) {
-    const { signer } = this.options;
-
-    if (!signer) {
-      throw new Error('Cannot sign acknowledgment. Signer requred!');
-    }
-
-    const signedAck = ActivityAcknowledgment.create({
-      ...ack,
-      signature: await createSignature(signer, ActivityAcknowledgment.toBinary(ack)),
-    });
-
-    this.logger.debug({ signedAck }, 'Activity acknowledgment');
-
-    return signedAck;
   }
 
   /**
@@ -181,12 +137,10 @@ export class FileApi {
     }
 
     if (this.options.enableAcks) {
-      meta.request = await this.createActivityRequest({
-        size,
-        requestId: uuid(),
-        bucketId: metadata.bucketId,
-        requestType: RequestType.STORE,
-      });
+      meta.request = await createActivityRequest(
+        { size, bucketId: metadata.bucketId, requestType: ActivityRequestType.STORE },
+        { logger: this.logger, signer: this.options.signer },
+      );
     }
 
     const call = this.api.putRawPiece({ meta });
@@ -253,7 +207,7 @@ export class FileApi {
   async getFile({ token, ...request }: GetFileRequest) {
     this.logger.debug({ request, token }, 'Started reading data');
 
-    const requestId = uuid();
+    const requestId = createRequestId();
     const meta = createRpcMeta(token);
     const { enableAcks } = this.options;
     const validator = new FileValidator(request.cid, {
@@ -263,14 +217,17 @@ export class FileApi {
     });
 
     if (enableAcks) {
-      meta.request = await this.createActivityRequest({
-        requestId,
-        id: request.cid,
-        bucketId: request.bucketId,
-        offset: request.range?.start,
-        size: request.range && request.range.end - request.range.start + 1,
-        requestType: RequestType.GET,
-      });
+      meta.request = await createActivityRequest(
+        {
+          requestId,
+          id: request.cid,
+          bucketId: request.bucketId,
+          offset: request.range?.start,
+          size: request.range && request.range.end - request.range.start + 1,
+          requestType: ActivityRequestType.GET,
+        },
+        { logger: this.logger, signer: this.options.signer },
+      );
     }
 
     const call = this.api.getFile({ meta });
@@ -310,7 +267,10 @@ export class FileApi {
             await call.requests.send({
               body: {
                 oneofKind: 'ack',
-                ack: await this.createAck({ requestId, timestamp: Date.now(), bytesStoredOrDelivered }),
+                ack: await createAck(
+                  { requestId, bytesStoredOrDelivered, timestamp: Date.now() },
+                  { signer: this.options.signer },
+                ),
               },
             });
           }

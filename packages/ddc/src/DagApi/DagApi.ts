@@ -1,16 +1,21 @@
+import { Signer } from '@cere-ddc-sdk/blockchain';
+
 import { RpcTransport } from '../transports';
 import { PutRequest as ProtoPutRequest, GetRequest as ProtoGetRequest, Node } from '../grpc/dag_api';
 import { DagApiClient } from '../grpc/dag_api.client';
 import { createRpcMeta, AuthToken } from '../auth';
 import { DagNodeValidator } from '../validators';
 import { createLogger, Logger, LoggerOptions } from '../logger';
+import { createActivityRequest, ActivityRequestType } from '../activity';
 
 type AuthParams = { token?: AuthToken };
 type PutRequest = ProtoPutRequest & AuthParams;
 type GetRequest = ProtoGetRequest & AuthParams;
 
 export type DagApiOptions = LoggerOptions & {
+  signer?: Signer;
   authenticate?: boolean;
+  enableAcks?: boolean;
 };
 
 /**
@@ -37,6 +42,7 @@ export class DagApi {
 
     this.options = {
       ...options,
+      enableAcks: options.enableAcks ?? !!options.signer, // ACKs are enabled by default if signer is provided
       authenticate: options.authenticate ?? false,
     };
   }
@@ -57,10 +63,21 @@ export class DagApi {
    * console.log(cid);
    * ```
    */
-  async putNode({ token, ...request }: PutRequest) {
-    const { response } = await this.api.put(request, {
-      meta: createRpcMeta(token),
-    });
+  async putNode({ token, bucketId, node, cid }: PutRequest) {
+    const meta = createRpcMeta(token);
+
+    this.logger.debug({ token, bucketId, node, cid }, 'Storing DAG Node');
+
+    if (this.options.enableAcks && node) {
+      meta.request = await createActivityRequest(
+        { id: cid, bucketId, size: Node.toBinary(node).byteLength, requestType: ActivityRequestType.STORE },
+        { logger: this.logger, signer: this.options.signer },
+      );
+    }
+
+    const { response } = await this.api.put({ bucketId, node, cid }, { meta });
+
+    this.logger.debug({ cid }, 'DAG Node stored');
 
     return new Uint8Array(response.cid);
   }
@@ -83,24 +100,35 @@ export class DagApi {
    * ```
    */
   async getNode({ token, ...request }: GetRequest): Promise<Node | undefined> {
+    this.logger.debug({ ...request, token }, 'Retrieving DAG Node');
+
     /**
      * In case a sub-node requested using root CID + path - we don't have the target node CID, so we can't authenticate it.
      */
     const authenticate = this.options.authenticate && !request.path;
+    const meta = createRpcMeta(token);
+
     const validator = new DagNodeValidator(request.cid, {
       enable: authenticate,
       logger: this.logger,
     });
 
-    const { response } = await this.api.get(request, {
-      meta: createRpcMeta(token),
-    });
+    if (this.options.enableAcks) {
+      meta.request = await createActivityRequest(
+        { id: request.cid, bucketId: request.bucketId, requestType: ActivityRequestType.GET },
+        { logger: this.logger, signer: this.options.signer },
+      );
+    }
+
+    const { response } = await this.api.get(request, { meta });
 
     if (response.node && authenticate) {
       await validator.update(Node.toBinary(response.node));
     }
 
     await validator.validate();
+
+    this.logger.debug({ node: response.node }, 'DAG Node retrieved');
 
     return (
       response.node && {
