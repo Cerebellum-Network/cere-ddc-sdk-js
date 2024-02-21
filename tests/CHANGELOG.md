@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.2.0...v2.3.0) (2024-02-21)
+
+### Features
+
+- Add Cere Wallet support ([#228](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/228)) ([3cdb22e](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/3cdb22e6caf0bd1ad61c55776515c9242227cd46))
+- **ddc:** Add activity request header to CNS and DAG API ([#232](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/232)) ([7321a0d](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/7321a0d106487f1c94e75de77dadcdd991038b8c))
+
 ## [2.2.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.1.1...v2.2.0) (2024-02-02)
 
 ### Features

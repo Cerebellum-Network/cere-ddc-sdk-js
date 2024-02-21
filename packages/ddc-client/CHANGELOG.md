@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.2.0...v2.3.0) (2024-02-21)
+
+### Features
+
+- Add Cere Wallet support ([#228](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/228)) ([3cdb22e](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/3cdb22e6caf0bd1ad61c55776515c9242227cd46))
+- **blockchain:** Update Cere Wallet SDK to allow auto-signing messages during DDC operations ([#231](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/231)) ([78691d6](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/78691d623973d0c4dcd779d4c588a02268bd5313))
+
+### Documentation
+
+- **blockchain:** Add blockchain package documentation ([#229](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/229)) ([080ae5f](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/080ae5f050bf162e33ce2c339fe9dac38b7da58b))
+- DDC SDK examples directory ([#233](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/233)) ([6ea4564](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/6ea4564b95166ad4d9e533a209b44a51ea5fcabf))
+- Update source code and README documentation for `file-storage` package ([#226](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/226)) ([f3ff248](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/f3ff248268acfdde90544d81a5c39214a62a322b))
+
 ## [2.2.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.1.1...v2.2.0) (2024-02-02)
 
 **Note:** Version bump only for package @cere-ddc-sdk/ddc-client

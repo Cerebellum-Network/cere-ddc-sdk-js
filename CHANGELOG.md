@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.2.0...v2.3.0) (2024-02-21)
+
+### Features
+
+- Add Cere Wallet support ([#228](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/228)) ([3cdb22e](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/3cdb22e6caf0bd1ad61c55776515c9242227cd46))
+- **blockchain:** Add support for PolkadotJs compatible browser extensions ([#227](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/227)) ([94e5083](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/94e508375a9a34290b825a27a4a2de6bd3f898f5))
+- **blockchain:** Update Cere Wallet SDK to allow auto-signing messages during DDC operations ([#231](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/231)) ([78691d6](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/78691d623973d0c4dcd779d4c588a02268bd5313))
+- **ddc:** Add activity request header to CNS and DAG API ([#232](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/232)) ([7321a0d](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/7321a0d106487f1c94e75de77dadcdd991038b8c))
+
+### Documentation
+
+- **blockchain:** Add blockchain package documentation ([#229](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/229)) ([080ae5f](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/080ae5f050bf162e33ce2c339fe9dac38b7da58b))
+- DDC SDK examples directory ([#233](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/233)) ([6ea4564](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/6ea4564b95166ad4d9e533a209b44a51ea5fcabf))
+- Update source code and README documentation for `file-storage` package ([#226](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/226)) ([f3ff248](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/f3ff248268acfdde90544d81a5c39214a62a322b))
+
+### Miscellaneous Chores
+
+- **blockchain:** Update all blockchain package dependencies to the latest versions ([#219](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/219)) ([65dbf8b](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/65dbf8b3da2c28c28c0ddc6f4688340931d3987e))
+
 ## [2.2.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.1.1...v2.2.0) (2024-02-02)
 
 ### Features
