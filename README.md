@@ -43,6 +43,8 @@ The playground app is small demo application you can try how DDC SDK works in br
    ```
    Out of the box the playground app can connect to DDC `Devnet` and `Testnet`. To connect it to local environment, the environment [should be started](#local-environment) in a separate terminal.
 
+5. Check [examples](/examples)
+
 ## Tests
 
 Run tests

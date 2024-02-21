@@ -109,8 +109,6 @@ export const Playground = () => {
   const [extraDeposit, setExtraDeposit] = useState<number>(0);
   const [client, setClient] = useState<DdcClient>();
 
-  const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, bucketId, cnsName, name].join('/');
-  const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].baseUrl, bucketId, cid].join('/');
   const isCompleted = !!realFileCid && !!randomFileCid;
   const currentClusterId = clusterId || clusters[0]?.clusterId;
   const clusterBuckets = useMemo(
@@ -129,8 +127,10 @@ export const Playground = () => {
     [bucketId, clusterBuckets],
   );
 
-  const cereWallet = useMemo(() => new EmbedWallet({ env: 'dev', appId: 'ddc-playground' }), []);
+  const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, currentBucketId, cnsName, name].join('/');
+  const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].baseUrl, currentBucketId, cid].join('/');
 
+  const cereWallet = useMemo(() => new EmbedWallet({ env: 'dev', appId: 'ddc-playground' }), []);
   const handleSkip = useCallback(() => {
     setErrorStep(undefined);
     setStep(step + 1);
@@ -196,7 +196,6 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-      console.error(error);
     } finally {
       setInProgress(false);
     }
@@ -222,7 +221,6 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-      console.error(error);
     }
 
     setInProgress(false);
@@ -261,7 +259,6 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-      console.error(error);
     }
 
     setInProgress(false);
@@ -293,7 +290,6 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-      console.error(error);
     }
 
     setInProgress(false);
@@ -306,7 +302,6 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-      console.error(error);
     }
 
     setInProgress(false);
@@ -366,10 +361,6 @@ export const Playground = () => {
                 {!signerError && signerType === 'cere-wallet' && (
                   <>
                     <Alert severity="info">Connect Cere Wallet to continue.</Alert>
-                    <Alert severity="warning">
-                      Cere Wallet integration is not yet complete; it works, but the wallet is always pointed to Cere
-                      Network DEVNET.
-                    </Alert>
                   </>
                 )}
 

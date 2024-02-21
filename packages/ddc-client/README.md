@@ -75,6 +75,7 @@ For more information about what this package provides, see [API reference](./doc
 # Examples
 
 - [Browser playground](/playground)
+- [NodeJS examples](/examples)
 
 # License
 
