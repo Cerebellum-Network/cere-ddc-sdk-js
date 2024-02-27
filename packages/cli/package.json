@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/cli",
   "description": "DDC command line interface",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "repository": {
     "type": "git",
     "directory": "packages/cli",
