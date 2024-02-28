@@ -1,5 +1,9 @@
 import { base32 } from 'multiformats/bases/base32';
 
+export type CidContentType = 'dag-node' | 'raw-piece' | 'multipart-piece' | 'none';
+
+const cidContentTypeMap: CidContentType[] = ['none', 'dag-node', 'raw-piece', 'multipart-piece'];
+
 /**
  * The `Cid` class represents a Content Identifier (CID) in DDC.
  *
@@ -17,6 +21,10 @@ export class Cid {
    */
   get contentHash() {
     return this.toBytes().slice(-32);
+  }
+
+  get contentType() {
+    return cidContentTypeMap[this.toBytes()[1]];
   }
 
   /**

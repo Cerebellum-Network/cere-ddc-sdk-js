@@ -10,6 +10,15 @@ export type UploadDirOptions = {
   name?: string;
 };
 
+export type RootDagNodeData = {
+  isCLIDir: boolean;
+  updateTime: string;
+};
+
+export const isCLIDirData = (data: any): data is RootDagNodeData => {
+  return `isCLIDir` in data && data.isCLIDir;
+};
+
 async function uploadFileLink(client: DdcClient, bucketId: bigint, rootDir: string, filePath: string, stats: Stats) {
   const cid = await uploadFile(client, filePath, stats, {
     bucketId: bucketId.toString(),
@@ -46,7 +55,12 @@ export const uploadDir = async (client: DdcClient, path: string, options: Upload
   const linkPromises = await uploadDirLinks(client, bucketId, path);
   const fileLinks = await Promise.all(linkPromises);
 
-  const rootDagNode = new DagNode(new Date().toISOString(), fileLinks);
+  const data: RootDagNodeData = {
+    isCLIDir: true,
+    updateTime: new Date().toISOString(),
+  };
+
+  const rootDagNode = new DagNode(JSON.stringify(data), fileLinks);
   const rootDagNodeUri = await client.store(bucketId, rootDagNode, {
     name: options.name,
   });

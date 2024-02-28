@@ -357,4 +357,28 @@ export class DdcClient {
 
     throw new Error('`uri` argument is neither FileUri or DagNodeUri');
   }
+
+  /**
+   * Resolves a CNS name to a specific CID.
+   *
+   * @param bucketId - The ID of the bucket to resolve the CNS name in.
+   * @param cnsName - The CNS name to resolve.
+   *
+   * @returns A promise that resolves to the CID of the CNS name.
+   *
+   * @example
+   *
+   * ```typescript
+   * const bucketId: BucketId = 1n;
+   * const cnsName = 'my-file';
+   * const cid = await ddcClient.resolveName(bucketId, cnsName);
+   *
+   * console.log(cid);
+   * ```
+   */
+  async resolveName(bucketId: BucketId, cnsName: string) {
+    const cid = await this.ddcNode.resolveName(bucketId, cnsName).catch(() => null);
+
+    return cid && cid.toString();
+  }
 }
