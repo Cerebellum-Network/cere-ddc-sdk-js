@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.4.0...v2.5.0) (2024-02-28)
+
+### Features
+
+- **cli:** Add commands to download files and directories ([#236](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/236)) ([9634790](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/96347901c0c2d0a15c5a236a1625ab655858bdb1))
+
 ## [2.3.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.2.0...v2.3.0) (2024-02-21)
 
 ### Features
