@@ -5,7 +5,6 @@ services:
     platform: linux/amd64
     container_name: cere-chain
     image: '625402836641.dkr.ecr.us-west-2.amazonaws.com/pos-network-node:dev-latest'
-    command: bash -c "/usr/local/bin/cere --dev --alice --ws-external --rpc-external"
+    command: bash -c "/usr/local/bin/cere --dev --alice --rpc-external"
     ports:
       - '9944:9944'
-      - '9933:9933'

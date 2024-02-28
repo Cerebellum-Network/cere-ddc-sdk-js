@@ -49,7 +49,7 @@ export const startBlockchain = async (): Promise<BlockchainConfig> => {
     .withEnvironment({
       BC_CAHCHE_DIR: bcCachePath,
     })
-    .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC WS server/gi))
+    .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC server/gi))
     .up();
 
   const blockchainState: BlockchainState = !process.env.CI && chachedState ? chachedState : await setupBlockchain();
