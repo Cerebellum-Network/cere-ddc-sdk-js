@@ -3,11 +3,14 @@
 import fs from 'fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { mnemonicGenerate } from '@polkadot/util-crypto';
+
 import { upload } from './upload';
 import { createBucket } from './createBucket';
 import { deposit } from './deposit';
 import { withClient } from './createClient';
 import { account } from './account';
+import { download } from './download';
 
 yargs(hideBin(process.argv))
   .demandCommand()
@@ -15,7 +18,7 @@ yargs(hideBin(process.argv))
   .option('network', {
     alias: 'n',
     choices: ['devnet', 'testnet', 'mainnet'],
-    default: 'devnet',
+    default: 'testnet',
     describe: 'DDC network',
   })
   .option('signer', {
@@ -62,13 +65,52 @@ yargs(hideBin(process.argv))
 
       console.group(isDirectory ? 'Directory upload completed' : 'File upload completed');
       console.log('Network:', argv.network);
-      console.log('Bucket ID:', argv.bucketId);
+      console.log('Bucket ID:', BigInt(argv.bucketId));
       console.log('Path:', argv.path);
       console.log('CID:', cid);
 
       if (argv.name) {
         console.log('CNS name:', argv.name);
       }
+
+      console.groupEnd();
+    },
+  )
+  .command(
+    'download <source> [dest]',
+    'Downloads file or directory from DDC',
+    (yargs) =>
+      yargs
+        .positional('source', {
+          type: 'string',
+          demandOption: true,
+          describe: 'CID or CNS name of the file or directory to download',
+        })
+        .positional('dest', {
+          type: 'string',
+          normalize: true,
+          default: '.',
+          describe: 'Destination path to save the downloaded file or directory',
+        })
+        .option('bucketId', {
+          alias: 'b',
+          type: 'string',
+          demandOption: true,
+          describe: 'Bucket ID',
+        }),
+    async (argv) => {
+      const result = await withClient(argv, (client) => download(client, argv.source, argv.dest, argv));
+
+      console.group(result.isDirectory ? 'Directory download completed' : 'File download completed');
+      console.log('Network:', argv.network);
+      console.log('Bucket ID:', argv.bucketId);
+      console.log('CID:', result.cid);
+
+      if (result.cnsName) {
+        console.log('CNS name:', result.cnsName);
+      }
+
+      console.log('Destination:', result.dest);
 
       console.groupEnd();
     },
@@ -130,15 +172,45 @@ yargs(hideBin(process.argv))
   .command(
     'account',
     'Prints DDC account information',
-    (yargs) => yargs,
+    (yargs) =>
+      yargs
+        .option('random', {
+          alias: 'r',
+          type: 'boolean',
+          default: false,
+          describe: 'Force to generate a random account',
+        })
+        .option('signer', {
+          alias: 's',
+          type: 'string',
+          default: '',
+          defaultDescription: 'Randomly generated',
+          describe: 'Mnemonic of an account to get information about',
+        }),
     async (argv) => {
-      const acc = await withClient(argv, (client) => account(client, argv));
+      if (argv.random || !argv.signer) {
+        argv.signer = mnemonicGenerate();
+        argv.random = true;
+      }
 
-      console.group('Account information');
-      console.log('Network:', argv.network);
+      const acc = argv.random ? await account(null, argv) : await withClient(argv, (client) => account(client, argv));
+
+      console.group(argv.random ? 'New account' : 'Account information');
+
+      if (!argv.random) {
+        console.log('Network:', argv.network);
+      } else {
+        console.log('Mnemonic:', argv.signer);
+      }
+
+      console.log('Type:', argv.signerType);
       console.log('Address:', acc.address);
-      console.log('Balance:', acc.balance);
-      console.log('Deposit:', acc.deposit);
+
+      if (!argv.random) {
+        console.log('Balance:', acc.balance);
+        console.log('Deposit:', acc.deposit);
+      }
+
       console.groupEnd();
     },
   )
