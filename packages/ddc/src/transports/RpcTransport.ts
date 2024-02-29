@@ -1,12 +1,16 @@
 export type { RpcTransport } from '@protobuf-ts/runtime-rpc';
-import type { RpcOptions } from '@protobuf-ts/runtime-rpc';
 
 /**
  * The `RpcTransportOptions` type represents the options for an RPC transport.
  *
  * @group RPC Transport
  */
-export type RpcTransportOptions = Pick<RpcOptions, 'timeout'> & {
+export type RpcTransportOptions = {
+  /**
+   * An optional number indicating the timeout for the connection.
+   */
+  timeout?: number;
+
   /**
    * The URL for the gRPC server.
    */

@@ -27,9 +27,10 @@ export const HTTPS_DEFAULT_PORT = 443;
 export const AUTH_TOKEN_EXPIRATION_TIME = 30 * 24 * 60 * 60 * 1000;
 
 /**
- * Default timeout for gRPC requests, in milliseconds.
+ * Default inactivity timeout for gRPC requests, in milliseconds.
+ * This is set to 30 seconds.
  */
-export const GTRPC_REQUEST_TIMEOUT = 5000;
+export const GRPC_REQUEST_INACTIVITY_TIMEOUT = 30 * 1000;
 
 /**
  * gRPC error codes that should trigger a retry of the operation.
