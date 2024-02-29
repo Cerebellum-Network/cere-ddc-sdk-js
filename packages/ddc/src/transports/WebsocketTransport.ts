@@ -1,5 +1,6 @@
 import { grpc } from '@improbable-eng/grpc-web';
 import { IMessageType } from '@protobuf-ts/runtime';
+import { GrpcOptions } from '@protobuf-ts/grpc-transport';
 import {
   ClientStreamingCall,
   DuplexStreamingCall,
@@ -19,8 +20,10 @@ import {
 
 import { GrpcStatus } from '../grpc/status';
 import { RpcTransport, RpcTransportOptions } from './RpcTransport';
+import { TimeoutInterceptor } from './TimeoutInterceptor';
 
-export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl' | 'ssl' | 'timeout'>;
+export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl' | 'ssl' | 'timeout'> &
+  Pick<GrpcOptions, 'interceptors'>;
 
 const createHost = ({ httpUrl, ssl }: WebsocketTransportOptions) => {
   const sanitizedUrl = /^https?:\/\//i.test(httpUrl) ? httpUrl : `http://${httpUrl}`;
@@ -49,8 +52,12 @@ export class WebsocketTransport implements RpcTransport {
   private defaultOptions: RpcOptions = {};
   private host: string;
 
-  constructor(options: WebsocketTransportOptions) {
+  constructor({ timeout, interceptors = [], ...options }: WebsocketTransportOptions) {
     this.host = createHost(options);
+
+    this.defaultOptions = {
+      interceptors: timeout ? [new TimeoutInterceptor(timeout), ...interceptors] : interceptors,
+    };
   }
 
   clientStreaming<I extends object, O extends object>(
