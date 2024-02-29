@@ -35,3 +35,27 @@ Checks if an object is an instance of `MultipartPiece`.
 object is MultipartPiece
 
 `true` if the object is an instance of `MultipartPiece` or has the same properties as a `MultipartPiece`, `false` otherwise.
+
+## Properties
+
+### meta
+
+• `Readonly` **meta**: `MultipartPieceMeta`
+
+The metadata of the multipart piece.
+
+___
+
+### partHashes
+
+• `Readonly` **partHashes**: `Uint8Array`[]
+
+The hashes of the parts of the multipart piece.
+
+___
+
+### parts
+
+• `Readonly` **parts**: `string`[]
+
+The parts of the multipart piece.

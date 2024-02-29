@@ -8,7 +8,7 @@ The DDC SDK is a development kit used by developers to create applications that 
 - [@cere-ddc-sdk/blockchain](packages/blockchain/README.md) - Work directly with the Cere blockchain
 - [@cere-ddc-sdk/file-storage](packages/file-storage/README.md) - Upload large files, using chunk streaming
 - [@cere-ddc-sdk/ddc](packages/ddc/README.md) - Low level package to directly communicate with DDC nodes
-
+- [@cere-ddc-sdk/cli](packages/cli/README.md) - DDC Command Line Interface
 ## Demo
 
 The playground app is small demo application you can try how DDC SDK works in browser.
@@ -42,6 +42,8 @@ The playground app is small demo application you can try how DDC SDK works in br
    npm run playground
    ```
    Out of the box the playground app can connect to DDC `Devnet` and `Testnet`. To connect it to local environment, the environment [should be started](#local-environment) in a separate terminal.
+
+5. Check [examples](/examples)
 
 ## Tests
 

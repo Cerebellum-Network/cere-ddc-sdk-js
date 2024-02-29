@@ -12,7 +12,7 @@ export type ConfigPreset = {
  * @hidden
  */
 export const MAINNET: ConfigPreset = {
-  blockchain: 'wss://rpc.qanet.cere.network/ws',
+  blockchain: 'wss://rpc.mainnet.cere.network/ws',
 };
 
 /**

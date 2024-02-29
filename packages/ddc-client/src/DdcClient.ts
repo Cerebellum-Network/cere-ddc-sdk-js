@@ -18,7 +18,7 @@ import {
   AuthToken,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
-import { AccountId, Blockchain, BucketId, BucketParams, ClusterId } from '@cere-ddc-sdk/blockchain';
+import { AccountId, Blockchain, BucketId, BucketParams, ClusterId, Sendable } from '@cere-ddc-sdk/blockchain';
 
 import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
 
@@ -26,6 +26,10 @@ export type DdcClientConfig = LoggerOptions &
   Omit<ConfigPreset, 'blockchain'> & {
     blockchain: Blockchain | ConfigPreset['blockchain'];
   };
+
+type DepositBalanceOptions = {
+  allowExtra?: boolean;
+};
 
 /**
  * `DdcClient` is a class that provides methods to interact with the DDC.
@@ -82,6 +86,73 @@ export class DdcClient {
   }
 
   /**
+   * Retrieves the current free balance of the account.
+   *
+   * @returns A promise that resolves to the current balance of the account.
+   *
+   * @example
+   * ```typescript
+   * const balance = await ddcClient.getBalance();
+   *
+   * console.log(balance);
+   * ```
+   * */
+  async getBalance() {
+    return this.blockchain.getAccountFreeBalance(this.signer.address);
+  }
+
+  /**
+   * Deposits a specified amount of tokens to the account. The account must have enough tokens to cover the deposit.
+   *
+   * @param amount - The amount of tokens to deposit.
+   *
+   * @returns A promise that resolves to the transaction hash of the deposit.
+   *
+   * @example
+   *
+   * ```typescript
+   * const amount = 100n;
+   * const txHash = await ddcClient.depositBalance(amount);
+   *
+   * console.log(txHash);
+   * ```
+   * */
+  async depositBalance(amount: bigint, options: DepositBalanceOptions = {}) {
+    let tx: Sendable;
+    const currentDeposit =
+      options.allowExtra === false ? null : await this.blockchain.ddcCustomers.getStackingInfo(this.signer.address);
+
+    if (currentDeposit === null) {
+      this.logger.info('Depositing balance %s to %s', amount, this.signer.address);
+      tx = this.blockchain.ddcCustomers.deposit(amount);
+    } else {
+      this.logger.info('Depositing extra balance %s to %s', amount, this.signer.address);
+      tx = this.blockchain.ddcCustomers.depositExtra(amount);
+    }
+
+    return this.blockchain.send(tx, { account: this.signer });
+  }
+
+  /**
+   * Retrieves the current active deposit of the account.
+   *
+   * @returns A promise that resolves to the current active deposit of the account.
+   *
+   * @example
+   *
+   * ```typescript
+   * const deposit = await ddcClient.getDeposit();
+   *
+   * console.log(deposit);
+   * ```
+   * */
+  async getDeposit() {
+    const info = await this.blockchain.ddcCustomers.getStackingInfo(this.signer.address);
+
+    return BigInt(info?.active || 0n);
+  }
+
+  /**
    * Creates a new bucket on a specified cluster.
    *
    * @param clusterId - The ID of the cluster where the bucket will be created.
@@ -129,7 +200,7 @@ export class DdcClient {
    * @example
    *
    * ```typescript
-   * const bucketId: BucketId = '0x...';
+   * const bucketId: BucketId = 1n;
    * const bucket = await ddcClient.getBucket(bucketId);
    *
    * console.log(bucket);
@@ -193,7 +264,7 @@ export class DdcClient {
    * ```typescript
    * const subject: AccountId = '0x...';
    * const authToken = await ddcClient.grantAccess(subject, {
-   *   bucketId: '0x...',
+   *   bucketId: 1n,
    *   operations: [AuthTokenOperation.GET],
    * });
    *
@@ -221,7 +292,7 @@ export class DdcClient {
    * @example
    *
    * ```typescript
-   * const bucketId: BucketId = '0x...';
+   * const bucketId: BucketId = 1n;
    * const fileContent = ...;
    * const file: File = new File(fileContent, { size: 1000 });
    * const fileUri = await ddcClient.store(bucketId, file);
@@ -280,6 +351,34 @@ export class DdcClient {
       return this.fileStorage.read(uri.bucketId, uri.cidOrName, options as FileReadOptions);
     }
 
-    return this.ddcNode.getDagNode(uri.bucketId, uri.cidOrName, options as DagNodeGetOptions);
+    if (uri.entity === 'dag-node') {
+      return this.ddcNode.getDagNode(uri.bucketId, uri.cidOrName, options as DagNodeGetOptions);
+    }
+
+    throw new Error('`uri` argument is neither FileUri or DagNodeUri');
+  }
+
+  /**
+   * Resolves a CNS name to a specific CID.
+   *
+   * @param bucketId - The ID of the bucket to resolve the CNS name in.
+   * @param cnsName - The CNS name to resolve.
+   *
+   * @returns A promise that resolves to the CID of the CNS name.
+   *
+   * @example
+   *
+   * ```typescript
+   * const bucketId: BucketId = 1n;
+   * const cnsName = 'my-file';
+   * const cid = await ddcClient.resolveName(bucketId, cnsName);
+   *
+   * console.log(cid);
+   * ```
+   */
+  async resolveName(bucketId: BucketId, cnsName: string) {
+    const cid = await this.ddcNode.resolveName(bucketId, cnsName).catch(() => null);
+
+    return cid && cid.toString();
   }
 }

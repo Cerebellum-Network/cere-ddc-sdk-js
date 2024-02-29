@@ -1,5 +1,21 @@
 import pino, { TransportTargetOptions } from 'pino';
+import { Buffer } from 'buffer';
+
 import { LoggerConfig, Logger, LoggerOptions } from './types';
+
+/**
+ * Maps the log object using the provided function.
+ */
+const mapLog = (fn: (value: any, key: string) => any) => (log: any) => {
+  const nextLog = { ...log };
+  for (const [key, value] of Object.entries(log)) {
+    const isObject = value && typeof value === 'object' && !ArrayBuffer.isView(value);
+
+    nextLog[key] = isObject ? mapLog(fn)(value) : fn(value, key);
+  }
+
+  return nextLog;
+};
 
 export const createLogger = (defaultPrefix: string, options: LoggerOptions = {}): Logger => {
   const { logger, logOptions = {}, logLevel = 'warn' } = options;
@@ -40,5 +56,10 @@ export const createLogger = (defaultPrefix: string, options: LoggerOptions = {})
     level: logLevel,
     msgPrefix,
     transport: { targets },
+    formatters: {
+      log: mapLog((value) => {
+        return value instanceof Uint8Array ? '0x' + Buffer.from(value).toString('hex') : value;
+      }),
+    },
   });
 };

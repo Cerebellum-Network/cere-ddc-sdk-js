@@ -1,0 +1,16 @@
+{
+  "name": "@cere-ddc-sdk/node-examples",
+  "version": "2.5.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "example:1": "ts-node --esm ./1-create-bucket/index.ts",
+    "example:2": "ts-node --esm ./2-store-read-file/index.ts",
+    "example:3": "ts-node --esm ./3-upload-website/index.ts",
+    "example:4": "ts-node --esm ./4-store-read-events/index.ts"
+  },
+  "dependencies": {
+    "@cere-ddc-sdk/ddc-client": "2.5.0",
+    "ts-node": "^10.9.2"
+  }
+}

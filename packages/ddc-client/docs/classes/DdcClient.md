@@ -72,6 +72,58 @@ const bucketId: BucketId = await ddcClient.createBucket(clusterId, {
 
 ___
 
+### depositBalance
+
+▸ **depositBalance**(`amount`, `options?`): `Promise`\<`SendResult`\>
+
+Deposits a specified amount of tokens to the account. The account must have enough tokens to cover the deposit.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `amount` | `bigint` | The amount of tokens to deposit. |
+| `options` | `DepositBalanceOptions` | - |
+
+#### Returns
+
+`Promise`\<`SendResult`\>
+
+A promise that resolves to the transaction hash of the deposit.
+
+**`Example`**
+
+```typescript
+const amount = 100n;
+const txHash = await ddcClient.depositBalance(amount);
+
+console.log(txHash);
+```
+
+___
+
+### getBalance
+
+▸ **getBalance**(): `Promise`\<`bigint`\>
+
+Retrieves the current free balance of the account.
+
+#### Returns
+
+`Promise`\<`bigint`\>
+
+A promise that resolves to the current balance of the account.
+
+**`Example`**
+
+```typescript
+const balance = await ddcClient.getBalance();
+
+console.log(balance);
+```
+
+___
+
 ### getBucket
 
 ▸ **getBucket**(`bucketId`): `Promise`\<`undefined` \| `Bucket`\>
@@ -93,7 +145,7 @@ A promise that resolves to the bucket information.
 **`Example`**
 
 ```typescript
-const bucketId: BucketId = '0x...';
+const bucketId: BucketId = 1n;
 const bucket = await ddcClient.getBucket(bucketId);
 
 console.log(bucket);
@@ -123,6 +175,28 @@ console.log(buckets);
 
 ___
 
+### getDeposit
+
+▸ **getDeposit**(): `Promise`\<`bigint`\>
+
+Retrieves the current active deposit of the account.
+
+#### Returns
+
+`Promise`\<`bigint`\>
+
+A promise that resolves to the current active deposit of the account.
+
+**`Example`**
+
+```typescript
+const deposit = await ddcClient.getDeposit();
+
+console.log(deposit);
+```
+
+___
+
 ### grantAccess
 
 ▸ **grantAccess**(`subject`, `params`): `Promise`\<[`AuthToken`](AuthToken.md)\>
@@ -147,7 +221,7 @@ A new AuthToken that the subject account can use to access the bucket.
 ```typescript
 const subject: AccountId = '0x...';
 const authToken = await ddcClient.grantAccess(subject, {
-  bucketId: '0x...',
+  bucketId: 1n,
   operations: [AuthTokenOperation.GET],
 });
 
@@ -158,7 +232,7 @@ ___
 
 ### read
 
-▸ **read**(`uri`, `options?`): `Promise`\<`FileResponse`\>
+▸ **read**(`uri`, `options?`): `Promise`\<[`FileResponse`](FileResponse.md)\>
 
 Reads a file or DAG node from a specific URI.
 
@@ -171,7 +245,7 @@ Reads a file or DAG node from a specific URI.
 
 #### Returns
 
-`Promise`\<`FileResponse`\>
+`Promise`\<[`FileResponse`](FileResponse.md)\>
 
 A promise that resolves to the file or DAG node response.
 
@@ -198,7 +272,7 @@ Stores a file or DAG node in a specific bucket.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `bucketId` | `bigint` | The ID of the bucket to store the entity in. |
-| `entity` | `File` | The file or DAG node to store. |
+| `entity` | [`File`](File.md) | The file or DAG node to store. |
 | `options?` | `PieceStoreOptions` | Optional parameters for storing the entity. |
 
 #### Returns
@@ -214,7 +288,7 @@ Will throw an error if the `entity` argument is neither a File nor a DagNode.
 **`Example`**
 
 ```typescript
-const bucketId: BucketId = '0x...';
+const bucketId: BucketId = 1n;
 const fileContent = ...;
 const file: File = new File(fileContent, { size: 1000 });
 const fileUri = await ddcClient.store(bucketId, file);
@@ -234,7 +308,7 @@ Creates a new instance of the DdcClient.
 
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
-| `uriOrSigner` | `string` \| `Signer` | `undefined` | A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri). |
+| `uriOrSigner` | `string` \| [`Signer`](Signer.md) | `undefined` | A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri). |
 | `config` | `DdcClientConfig` | `DEFAULT_PRESET` | Configuration options for the DdcClient. Defaults to TESTNET. |
 
 #### Returns

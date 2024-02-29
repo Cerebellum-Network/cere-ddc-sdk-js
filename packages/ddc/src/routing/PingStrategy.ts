@@ -47,7 +47,7 @@ export abstract class PingStrategy extends NodeTypeStrategy {
         throw new Error(`HTTP ${response.status} ${response.statusText}`);
       }
     } catch (err: any) {
-      this.logger.warn({ err }, 'Node ping %s failed with error %s', record.node.httpUrl, err);
+      this.logger.debug({ err }, 'Node ping %s failed with error %s', record.node.httpUrl, err);
 
       throw err;
     }

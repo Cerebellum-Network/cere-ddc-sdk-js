@@ -21,6 +21,66 @@ const authTokenFromSharebleToken = AuthToken.from(sharebleToken);
 console.log(authTokenFromSharebleToken);
 ```
 
+## Accessors
+
+### bucketId
+
+• `get` **bucketId**(): `undefined` \| `bigint`
+
+The bucket identifier that the token grants access to.
+
+#### Returns
+
+`undefined` \| `bigint`
+
+___
+
+### canDelegate
+
+• `get` **canDelegate**(): `boolean`
+
+Whether the token can delegate access.
+
+#### Returns
+
+`boolean`
+
+___
+
+### expiresAt
+
+• `get` **expiresAt**(): `number`
+
+The expiration time of the token.
+
+#### Returns
+
+`number`
+
+___
+
+### operations
+
+• `get` **operations**(): `Operation`[]
+
+The operations that the token grants access to.
+
+#### Returns
+
+`Operation`[]
+
+___
+
+### pieceCid
+
+• `get` **pieceCid**(): `undefined` \| `string`
+
+The piece CID that the token grants access to.
+
+#### Returns
+
+`undefined` \| `string`
+
 ## Methods
 
 ### sign
@@ -33,7 +93,7 @@ Signs the authentication token using the provided signer.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `signer` | `Signer` | The instance of Signer to use for signing the token. |
+| `signer` | [`Signer`](Signer.md) | The instance of Signer to use for signing the token. |
 
 #### Returns
 

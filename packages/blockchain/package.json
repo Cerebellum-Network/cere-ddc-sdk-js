@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/blockchain",
-  "version": "2.0.1",
+  "version": "2.5.0",
   "description": "Cere Blockchain client",
   "type": "module",
   "main": "dist/index.cjs",
@@ -22,20 +22,32 @@
   },
   "scripts": {
     "build": "npm-run-all --parallel build:node build:web",
-    "build:node": "microbundle --tsconfig tsconfig.build.json --format esm,cjs --target node",
-    "build:web": "microbundle --tsconfig tsconfig.build.json --format modern --output dist/browser.js",
+    "build:node": "microbundle --tsconfig tsconfig.node.json --format esm,cjs --target node",
+    "build:web": "microbundle --tsconfig tsconfig.web.json --format modern --output dist/browser.js",
     "package": "clean-publish",
-    "clean": "rimraf dist package"
+    "clean": "rimraf dist package",
+    "docs": "typedoc"
   },
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
   "dependencies": {
-    "@polkadot/api": "9.14.2",
-    "@polkadot/api-base": "9.14.2",
-    "@polkadot/api-contract": "9.14.2",
-    "@polkadot/keyring": "^10.4.2",
-    "@polkadot/types": "9.14.2",
-    "@polkadot/util": "^10.4.2",
-    "@polkadot/util-crypto": "^10.4.2"
+    "@cere/embed-wallet-inject": "^0.16.0",
+    "@polkadot/api": "^10.11.2",
+    "@polkadot/api-base": "^10.11.2",
+    "@polkadot/api-contract": "^10.11.2",
+    "@polkadot/extension-dapp": "^0.46.6",
+    "@polkadot/extension-inject": "^0.46.6",
+    "@polkadot/keyring": "^12.6.2",
+    "@polkadot/types": "^10.11.2",
+    "@polkadot/util": "^12.6.2",
+    "@polkadot/util-crypto": "^12.6.2"
+  },
+  "peerDependencies": {
+    "@cere/embed-wallet": "^0.16.0"
+  },
+  "peerDependenciesMeta": {
+    "@cere/embed-wallet": {
+      "optional": true
+    }
   }
 }

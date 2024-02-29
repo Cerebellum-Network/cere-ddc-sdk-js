@@ -21,6 +21,46 @@ console.log(DagNode.isDagNode(node)); // true
 
   ↳ [`DagNodeResponse`](DagNodeResponse.md)
 
+## Properties
+
+### links
+
+• **links**: [`Link`](Link.md)[]
+
+The links of the node.
+
+___
+
+### tags
+
+• **tags**: [`Tag`](Tag.md)[]
+
+The tags of the node.
+
+## Accessors
+
+### data
+
+• `get` **data**(): `Buffer`
+
+The data of the node as a `Buffer`.
+
+#### Returns
+
+`Buffer`
+
+___
+
+### size
+
+• `get` **size**(): `number`
+
+The size of the node in bytes.
+
+#### Returns
+
+`number`
+
 ## Methods
 
 ### isDagNode

@@ -1,0 +1,34 @@
+{
+  "name": "@cere-ddc-sdk/cli",
+  "description": "DDC command line interface",
+  "version": "2.5.0",
+  "repository": {
+    "type": "git",
+    "directory": "packages/cli",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "main": "dist/index.js",
+  "bin": {
+    "cere-ddc": "dist/cli.js"
+  },
+  "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "microbundle -i src/index.ts -i src/cli.ts --tsconfig tsconfig.build.json --format cjs --target node",
+    "package": "clean-publish",
+    "clean": "rimraf dist package"
+  },
+  "dependencies": {
+    "@cere-ddc-sdk/ddc": "2.5.0",
+    "@cere-ddc-sdk/ddc-client": "2.5.0",
+    "@polkadot/util-crypto": "^12.6.2",
+    "@types/yargs": "^17.0.32",
+    "yargs": "^17.7.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,8 +1,18 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { LoadingButton } from '@mui/lab';
+import { EmbedWallet } from '@cere/embed-wallet';
 import FileIcon from '@mui/icons-material/InsertDriveFileOutlined';
-import { Blockchain, Cluster, Bucket, BucketId, ClusterId } from '@cere-ddc-sdk/blockchain';
+import {
+  Blockchain,
+  Cluster,
+  Bucket,
+  BucketId,
+  ClusterId,
+  Web3Signer,
+  CereWalletSigner,
+} from '@cere-ddc-sdk/blockchain';
+
 import {
   File,
   Signer,
@@ -16,6 +26,7 @@ import {
   Link,
   DagNodeUri,
 } from '@cere-ddc-sdk/ddc-client';
+
 import {
   Container,
   Stepper,
@@ -41,9 +52,11 @@ import {
   InputLabel,
   FormControl,
   Alert,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 
-import { USER_SEED } from './constants';
+import { CERE, USER_SEED } from './constants';
 import { createDataStream } from './helpers';
 
 const Dropzone = styled(Box)(({ theme }) => ({
@@ -60,7 +73,7 @@ const Dropzone = styled(Box)(({ theme }) => ({
 const bcPresets = {
   devnet: { ...DEVNET, baseUrl: 'https://storage.devnet.cere.network' },
   testnet: { ...TESTNET, baseUrl: 'https://storage.testnet.cere.network' },
-  mainnet: { ...MAINNET, baseUrl: 'https://ddc.cloud' }, // TODO: replace with real mainnet URL
+  mainnet: { ...MAINNET, baseUrl: 'https://storage.dragon.cere.network' },
   custom: {
     blockchain: process.env.BC_ENDPOINT || '',
     baseUrl: 'http://localhost:8091',
@@ -72,6 +85,9 @@ export const Playground = () => {
   const dropzone = useDropzone({
     multiple: false,
   });
+
+  const [signerType, setSignerType] = useState<'seed' | 'extension' | 'cere-wallet'>('seed');
+  const [signerError, setSignerError] = useState(false);
 
   const [signer, setSigner] = useState<Signer>();
   const [seed, setSeed] = useState(USER_SEED);
@@ -87,16 +103,23 @@ export const Playground = () => {
   const [clusters, setClusters] = useState<Cluster[]>([]);
   const [bucketId, setBucketId] = useState<BucketId | null>();
   const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [myBucketsOnly, setMyBucketsOnly] = useState(true);
+  const [balance, setBalance] = useState<string>();
+  const [deposit, setDeposit] = useState<string>();
+  const [extraDeposit, setExtraDeposit] = useState<number>(0);
   const [client, setClient] = useState<DdcClient>();
 
-  const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, bucketId, cnsName, name].join('/');
-  const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].baseUrl, bucketId, cid].join('/');
   const isCompleted = !!realFileCid && !!randomFileCid;
   const currentClusterId = clusterId || clusters[0]?.clusterId;
   const clusterBuckets = useMemo(
     () =>
-      buckets.filter(({ clusterId }) => clusterId === currentClusterId).sort((a, b) => Number(a.bucketId - b.bucketId)),
-    [buckets, currentClusterId],
+      buckets
+        .filter(
+          ({ clusterId, ownerId }) =>
+            clusterId === currentClusterId && (myBucketsOnly ? signer?.address === ownerId : true),
+        )
+        .sort((a, b) => Number(a.bucketId - b.bucketId)),
+    [buckets, currentClusterId, myBucketsOnly, signer],
   );
 
   const currentBucketId = useMemo(
@@ -104,18 +127,52 @@ export const Playground = () => {
     [bucketId, clusterBuckets],
   );
 
+  const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, currentBucketId, cnsName, name].join('/');
+  const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].baseUrl, currentBucketId, cid].join('/');
+
+  const cereWallet = useMemo(() => new EmbedWallet({ env: 'dev', appId: 'ddc-playground' }), []);
   const handleSkip = useCallback(() => {
+    setErrorStep(undefined);
     setStep(step + 1);
   }, [step]);
 
   const handleConnectWallet = useCallback(async () => {
-    setStep(1);
+    setInProgress(true);
 
-    const signer = new UriSigner(seed);
-    await signer.isReady();
+    let signer: Signer | undefined;
+
+    if (signerType === 'cere-wallet') {
+      if (cereWallet.status === 'not-ready') {
+        await cereWallet.init();
+      }
+
+      signer = new CereWalletSigner(cereWallet);
+    }
+
+    if (signerType === 'extension') {
+      signer = new Web3Signer();
+    }
+
+    if (signerType === 'seed') {
+      signer = new UriSigner(seed);
+    }
+
+    try {
+      await signer?.isReady();
+      setStep(1);
+    } catch (error) {
+      console.error(error);
+
+      setSignerError(true);
+      setErrorStep(0);
+
+      return;
+    } finally {
+      setInProgress(false);
+    }
 
     setSigner(signer);
-  }, [seed]);
+  }, [cereWallet, seed, signerType]);
 
   const handleSelectBucket = useCallback(async () => {
     if (currentBucketId) {
@@ -199,11 +256,11 @@ export const Playground = () => {
       }
 
       setRealFileCid(uri.cid);
+      setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
     }
 
-    setStep(step + 1);
     setInProgress(false);
   }, [client, currentBucketId, dropzone.acceptedFiles, step]);
 
@@ -218,18 +275,37 @@ export const Playground = () => {
       setInProgress(true);
       const blockchain = await Blockchain.connect({ wsEndpoint: preset.blockchain });
       const client = await DdcClient.create(signer!, { ...preset, blockchain, logLevel: 'debug' });
-      const [clusters, buckets] = await Promise.all([blockchain.ddcClusters.listClusters(), client.getBucketList()]);
+      const [clusters, buckets, balance, deposit] = await Promise.all([
+        blockchain.ddcClusters.listClusters(),
+        client.getBucketList(),
+        client.getBalance(),
+        client.getDeposit(),
+      ]);
 
       setClient(client);
       setClusters(clusters);
       setBuckets(buckets);
+      setBalance(blockchain.formatBalance(balance, false));
+      setDeposit(blockchain.formatBalance(deposit, false));
+      setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
     }
 
     setInProgress(false);
-    setStep(step + 1);
   }, [selectedBc, step, bcCustomUrl, signer]);
+
+  const handleDeposit = useCallback(async () => {
+    try {
+      setInProgress(true);
+      await client!.depositBalance(BigInt(extraDeposit) * CERE);
+      setStep(step + 1);
+    } catch (error) {
+      setErrorStep(step);
+    }
+
+    setInProgress(false);
+  }, [client, extraDeposit, step]);
 
   return (
     <Container maxWidth="md" sx={{ paddingY: 2 }}>
@@ -248,17 +324,55 @@ export const Playground = () => {
               )}
             </StepLabel>
             <StepContent>
-              <Stack paddingTop={1} spacing={2} alignItems="start">
-                <TextField
+              <Stack spacing={1} width={450}>
+                <ToggleButtonGroup
+                  exclusive
                   fullWidth
-                  label="Seed phrase"
-                  value={seed}
-                  onChange={(event) => setSeed(event.target.value)}
-                ></TextField>
+                  size="small"
+                  value={signerType}
+                  onChange={(event, value) => value && setSignerType(value)}
+                >
+                  <ToggleButton value="seed">Seed phrase</ToggleButton>
+                  <ToggleButton value="extension">Browser extension</ToggleButton>
+                  <ToggleButton value="cere-wallet">Cere Wallet</ToggleButton>
+                </ToggleButtonGroup>
 
-                <Button variant="contained" onClick={handleConnectWallet}>
-                  Continue
-                </Button>
+                {signerType === 'seed' && (
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={seed}
+                    onChange={(event) => setSeed(event.target.value)}
+                  ></TextField>
+                )}
+
+                {!signerError && signerType === 'extension' && (
+                  <Alert severity="info">
+                    Connect your browser extension to continue. The extension will ask you to authorize the connection.
+                  </Alert>
+                )}
+
+                {signerError && signerType === 'extension' && (
+                  <Alert severity="warning">
+                    Compatible browser extensions are not detected or the app is not authorized.
+                  </Alert>
+                )}
+
+                {!signerError && signerType === 'cere-wallet' && (
+                  <>
+                    <Alert severity="info">Connect Cere Wallet to continue.</Alert>
+                  </>
+                )}
+
+                {signerError && signerType === 'cere-wallet' && (
+                  <Alert severity="warning">Cere Wallet is not connected or the app is not authorized.</Alert>
+                )}
+              </Stack>
+
+              <Stack paddingTop={2} spacing={2} alignItems="start">
+                <LoadingButton loading={inProgress} variant="contained" onClick={handleConnectWallet}>
+                  {signerType === 'seed' ? 'Continue' : signerError ? 'Retry' : 'Connect'}
+                </LoadingButton>
               </Stack>
             </StepContent>
           </Step>
@@ -286,9 +400,7 @@ export const Playground = () => {
                   >
                     <ToggleButton value="devnet">Devnet</ToggleButton>
                     <ToggleButton value="testnet">Testnet</ToggleButton>
-                    <ToggleButton disabled value="mainnet">
-                      Mainnet
-                    </ToggleButton>
+                    <ToggleButton value="mainnet">Mainnet</ToggleButton>
                     <ToggleButton value="custom">Custom</ToggleButton>
                   </ToggleButtonGroup>
                   <TextField
@@ -311,10 +423,57 @@ export const Playground = () => {
             </StepContent>
           </Step>
 
-          <Step completed={!!currentBucketId && step > 2}>
-            <StepLabel error={errorStep === 2}>
+          <Step completed={!!currentClusterId}>
+            <StepLabel error={errorStep === 2}>Make deposit</StepLabel>
+            <StepContent>
+              <Stack spacing={2} alignItems="start">
+                <Stack spacing={0}>
+                  <Typography variant="body2">Balance: {balance}</Typography>
+                  <Typography variant="body2">Deposit: {deposit}</Typography>
+                </Stack>
+
+                {Number(deposit) > 0 ? (
+                  <Alert severity="info">
+                    You already have a deposit, so you can either add an additional deposit or skip this step
+                  </Alert>
+                ) : (
+                  <Alert severity="warning">
+                    You need to have a positive deposit in order to create buckets in future steps.
+                  </Alert>
+                )}
+
+                <TextField
+                  size="small"
+                  type="number"
+                  value={extraDeposit || ''}
+                  onChange={(event) => setExtraDeposit(+event.target.value)}
+                  label={Number(deposit) ? 'Extra deposit amount' : 'Deposit amount'}
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">CERE</InputAdornment>,
+                  }}
+                />
+
+                <Stack direction="row" spacing={1}>
+                  <LoadingButton
+                    disabled={!extraDeposit}
+                    loading={inProgress}
+                    variant="contained"
+                    onClick={handleDeposit}
+                  >
+                    Continue
+                  </LoadingButton>
+                  <Button variant="outlined" disabled={inProgress} onClick={handleSkip}>
+                    Skip
+                  </Button>
+                </Stack>
+              </Stack>
+            </StepContent>
+          </Step>
+
+          <Step completed={!!currentBucketId && step > 3}>
+            <StepLabel error={errorStep === 3}>
               Select bucket
-              {!!currentBucketId && step !== 2 && (
+              {!!currentBucketId && step > 3 && (
                 <Typography color="GrayText" variant="caption">
                   {' - '}
                   {currentBucketId.toString()}
@@ -347,43 +506,56 @@ export const Playground = () => {
                 )}
 
                 {currentClusterId && (
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Bucket</InputLabel>
-                    <Select
-                      label="Bucket"
-                      value={
-                        bucketId === null
-                          ? 'new'
-                          : bucketId || (clusterBuckets.length ? clusterBuckets[0].bucketId : 'new')
-                      }
-                      onChange={(event) =>
-                        setBucketId(event.target.value === 'new' ? null : BigInt(event.target.value))
-                      }
-                    >
-                      <MenuItem key="new" value="new">
-                        <Typography color="GrayText">Create new...</Typography>
-                      </MenuItem>
-
-                      {clusterBuckets.map(({ bucketId, ownerId }) => (
-                        <MenuItem key={bucketId.toString()} value={bucketId.toString()}>
-                          <Box
-                            display="flex"
-                            flex={1}
-                            justifyContent="space-between"
-                            alignItems="center"
-                            marginRight={1}
-                          >
-                            <Typography>{bucketId.toString()}</Typography>
-                            {ownerId === signer?.address && (
-                              <Typography variant="caption" color="GrayText">
-                                My bucket
-                              </Typography>
-                            )}
-                          </Box>
+                  <Stack spacing={1} direction="row" alignSelf="stretch">
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Bucket</InputLabel>
+                      <Select
+                        label="Bucket"
+                        value={
+                          bucketId === null
+                            ? 'new'
+                            : bucketId || (clusterBuckets.length ? clusterBuckets[0].bucketId : 'new')
+                        }
+                        onChange={(event) =>
+                          setBucketId(event.target.value === 'new' ? null : BigInt(event.target.value))
+                        }
+                      >
+                        <MenuItem key="new" value="new">
+                          <Typography color="GrayText">Create new...</Typography>
                         </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+
+                        {clusterBuckets.map(({ bucketId, ownerId }) => (
+                          <MenuItem key={bucketId.toString()} value={bucketId.toString()}>
+                            <Box
+                              display="flex"
+                              flex={1}
+                              justifyContent="space-between"
+                              alignItems="center"
+                              marginRight={1}
+                            >
+                              <Typography>{bucketId.toString()}</Typography>
+                              {ownerId === signer?.address && (
+                                <Typography variant="caption" color="GrayText">
+                                  My bucket
+                                </Typography>
+                              )}
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <FormControlLabel
+                      label="My buckets"
+                      sx={{ whiteSpace: 'nowrap' }}
+                      control={
+                        <Checkbox
+                          checked={myBucketsOnly}
+                          onChange={(event) => setMyBucketsOnly(event.target.checked)}
+                        />
+                      }
+                    />
+                  </Stack>
                 )}
 
                 <Stack direction="row" spacing={1}>
@@ -396,7 +568,7 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!randomFileCid}>
-            <StepLabel error={errorStep === 3}>
+            <StepLabel error={errorStep === 4}>
               Random file
               {randomFileCid && (
                 <Typography color="GrayText" variant="caption">
@@ -436,7 +608,7 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!realFileCid}>
-            <StepLabel error={errorStep === 4}>
+            <StepLabel error={errorStep === 5}>
               Real file
               {realFileCid && (
                 <Typography color="GrayText" variant="caption">

@@ -12,13 +12,6 @@ export { Operation as AuthTokenOperation };
  * The `AuthTokenParams` type represents the parameters for creating an `AuthToken`.
  *
  * @hidden
- * @property operations - The operations that the token grants access to.
- * @property bucketId - The bucket identifier that the token grants access to.
- * @property pieceCid - An optional piece CID as a string or a `Uint8Array`.
- * @property expiresIn - An optional expiration time in seconds.
- * @property subject - An optional `AccountId` that represents the subject of the token.
- * @property canDelegate - An optional boolean indicating if the token can be delegated.
- * @property prev - An optional previous `AuthToken` or a string that represents the previous token in the delegation chain.
  */
 export type AuthTokenParams = Omit<Payload, 'subject' | 'prev' | 'pieceCid'> & {
   pieceCid?: string | Uint8Array;
@@ -31,11 +24,6 @@ export type AuthTokenParams = Omit<Payload, 'subject' | 'prev' | 'pieceCid'> & {
  * The `AuthToken` class represents an authentication token.
  *
  * @group Authentication
- * @property canDelegate - Indicates if the token can be delegated.
- * @property bucketId - The bucket identifier that the token grants access to.
- * @property operations - The operations that the token grants access to.
- * @property pieceCid - The piece CID that the token grants access to.
- * @property expiresAt - The expiration time of the token.
  *
  * @example
  *
@@ -72,22 +60,37 @@ export class AuthToken {
     this.token = Token.create({ payload });
   }
 
+  /**
+   * Whether the token can delegate access.
+   */
   get canDelegate() {
     return this.token.payload!.canDelegate ?? false;
   }
 
+  /**
+   * The bucket identifier that the token grants access to.
+   */
   get bucketId() {
     return this.token.payload!.bucketId;
   }
 
+  /**
+   * The operations that the token grants access to.
+   */
   get operations() {
     return this.token.payload!.operations;
   }
 
+  /**
+   * The piece CID that the token grants access to.
+   */
   get pieceCid() {
     return this.token.payload!.pieceCid && new Cid(this.token.payload!.pieceCid).toString();
   }
 
+  /**
+   * The expiration time of the token.
+   */
   get expiresAt() {
     return this.token.payload!.expiresAt!;
   }
