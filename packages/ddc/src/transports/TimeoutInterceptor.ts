@@ -61,7 +61,7 @@ export class TimeoutInterceptor implements RpcInterceptor {
   constructor(readonly timeout: number) {}
 
   interceptDuplex(next: NextDuplexStreamingFn, method: MethodInfo, options: RpcOptions) {
-    const controller = new TimeoutAbortController(this.timeout);
+    const controller = new TimeoutAbortController(this.timeout).start();
     const abort = composeSignal(controller.signal, options.abort);
     const duplexCall = next(method, { ...options, abort });
 
@@ -71,7 +71,7 @@ export class TimeoutInterceptor implements RpcInterceptor {
   }
 
   interceptServerStreaming(next: NextServerStreamingFn, method: MethodInfo, input: object, options: RpcOptions) {
-    const controller = new TimeoutAbortController(this.timeout);
+    const controller = new TimeoutAbortController(this.timeout).start();
     const abort = composeSignal(controller.signal, options.abort);
     const serverStreamingCall = next(method, input, { ...options, abort });
 
