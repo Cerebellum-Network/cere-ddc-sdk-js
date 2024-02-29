@@ -1,5 +1,6 @@
 import {
   MethodInfo,
+  NextClientStreamingFn,
   NextDuplexStreamingFn,
   NextServerStreamingFn,
   NextUnaryFn,
@@ -10,12 +11,6 @@ import {
 
 import { GrpcStatus } from '../grpc/status';
 
-export class RpcTimeoutError extends RpcError {
-  constructor() {
-    super('Request timed out', GrpcStatus[GrpcStatus.DEADLINE_EXCEEDED]);
-  }
-}
-
 class TimeoutAbortController extends AbortController {
   private timeoutHandle: NodeJS.Timeout | undefined;
 
@@ -25,17 +20,22 @@ class TimeoutAbortController extends AbortController {
     this.timeout = timeout;
   }
 
-  start() {
+  stop = () => {
     if (this.timeoutHandle) {
       clearTimeout(this.timeoutHandle);
     }
+  };
 
-    this.timeoutHandle = setTimeout(() => this.abort(new RpcTimeoutError()), this.timeout);
+  start = () => {
+    this.stop();
+
+    this.timeoutHandle = setTimeout(
+      () => this.abort(new RpcError('Request timed out', GrpcStatus[GrpcStatus.CANCELLED])),
+      this.timeout,
+    );
 
     return this;
-  }
-
-  handleActivity = () => this.start();
+  };
 }
 
 const composeSignal = (sigA: AbortSignal, sigB?: AbortSignal) => {
@@ -44,9 +44,8 @@ const composeSignal = (sigA: AbortSignal, sigB?: AbortSignal) => {
   }
 
   const controller = new AbortController();
-  const combinedSignal = controller.signal;
   const abortHandler = () => {
-    if (!combinedSignal.aborted) {
+    if (!controller.signal.aborted) {
       controller.abort();
     }
   };
@@ -54,30 +53,48 @@ const composeSignal = (sigA: AbortSignal, sigB?: AbortSignal) => {
   sigA.addEventListener('abort', abortHandler);
   sigB.addEventListener('abort', abortHandler);
 
-  return combinedSignal;
+  return controller.signal;
 };
 
+/**
+ * An interceptor that adds a timeout to all RPC calls.
+ *
+ * TODO: This interceptor adds timeout to `headers` promise only for now, since the SDK cannot retry ongoing requests for now.
+ */
 export class TimeoutInterceptor implements RpcInterceptor {
   constructor(readonly timeout: number) {}
 
+  private start(options: RpcOptions) {
+    const controller = new TimeoutAbortController(this.timeout);
+
+    return [controller.start(), composeSignal(controller.signal, options.abort)] as const;
+  }
+
   interceptDuplex(next: NextDuplexStreamingFn, method: MethodInfo, options: RpcOptions) {
-    const controller = new TimeoutAbortController(this.timeout).start();
-    const abort = composeSignal(controller.signal, options.abort);
-    const duplexCall = next(method, { ...options, abort });
+    const [controller, abort] = this.start(options);
+    const call = next(method, { ...options, abort });
 
-    duplexCall.responses.onNext(controller.handleActivity);
+    call.headers.then(controller.stop, controller.stop);
 
-    return duplexCall;
+    return call;
   }
 
   interceptServerStreaming(next: NextServerStreamingFn, method: MethodInfo, input: object, options: RpcOptions) {
-    const controller = new TimeoutAbortController(this.timeout).start();
-    const abort = composeSignal(controller.signal, options.abort);
-    const serverStreamingCall = next(method, input, { ...options, abort });
+    const [controller, abort] = this.start(options);
+    const call = next(method, input, { ...options, abort });
 
-    serverStreamingCall.responses.onNext(controller.handleActivity);
+    call.headers.then(controller.stop, controller.stop);
 
-    return serverStreamingCall;
+    return call;
+  }
+
+  interceptClientStreaming(next: NextClientStreamingFn, method: MethodInfo<any, any>, options: RpcOptions) {
+    const [controller, abort] = this.start(options);
+    const call = next(method, { ...options, abort });
+
+    call.headers.then(controller.stop, controller.stop);
+
+    return call;
   }
 
   interceptUnary(next: NextUnaryFn, method: MethodInfo, input: object, { timeout, ...options }: RpcOptions) {
