@@ -1,5 +1,6 @@
 import { grpc } from '@improbable-eng/grpc-web';
 import { IMessageType } from '@protobuf-ts/runtime';
+import { GrpcOptions } from '@protobuf-ts/grpc-transport';
 import {
   ClientStreamingCall,
   DuplexStreamingCall,
@@ -19,8 +20,10 @@ import {
 
 import { GrpcStatus } from '../grpc/status';
 import { RpcTransport, RpcTransportOptions } from './RpcTransport';
+import { TimeoutInterceptor } from './TimeoutInterceptor';
 
-export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl' | 'ssl'>;
+export type WebsocketTransportOptions = Pick<RpcTransportOptions, 'httpUrl' | 'ssl' | 'timeout'> &
+  Pick<GrpcOptions, 'interceptors'>;
 
 const createHost = ({ httpUrl, ssl }: WebsocketTransportOptions) => {
   const sanitizedUrl = /^https?:\/\//i.test(httpUrl) ? httpUrl : `http://${httpUrl}`;
@@ -49,8 +52,12 @@ export class WebsocketTransport implements RpcTransport {
   private defaultOptions: RpcOptions = {};
   private host: string;
 
-  constructor(options: WebsocketTransportOptions) {
+  constructor({ timeout, interceptors = [], ...options }: WebsocketTransportOptions) {
     this.host = createHost(options);
+
+    this.defaultOptions = {
+      interceptors: timeout ? [new TimeoutInterceptor(timeout), ...interceptors] : interceptors,
+    };
   }
 
   clientStreaming<I extends object, O extends object>(
@@ -80,6 +87,21 @@ export class WebsocketTransport implements RpcTransport {
       },
     );
 
+    const emitError = (error: RpcError) => {
+      defHeader.rejectPending(error);
+      defMessage.rejectPending(error);
+      defStatus.rejectPending(error);
+      defTrailer.rejectPending(error);
+    };
+
+    if (options.abort) {
+      options.abort.addEventListener('abort', () => {
+        emitError(options.abort!.reason || new RpcError('Canceled by client', GrpcStatus[GrpcStatus.CANCELLED]));
+
+        client.close();
+      });
+    }
+
     client.onHeaders((meta) => {
       const status = getStatus(meta);
 
@@ -96,14 +118,7 @@ export class WebsocketTransport implements RpcTransport {
 
     client.onEnd((status, statusMessage, trailers) => {
       if (status !== grpc.Code.OK) {
-        const error = new RpcError(statusMessage, GrpcStatus[status]);
-
-        defHeader.rejectPending(error);
-        defMessage.rejectPending(error);
-        defStatus.rejectPending(error);
-        defTrailer.rejectPending(error);
-
-        return;
+        return emitError(new RpcError(statusMessage, GrpcStatus[status]));
       }
 
       defStatus.resolvePending({ code: GrpcStatus[status], detail: statusMessage });
@@ -152,6 +167,24 @@ export class WebsocketTransport implements RpcTransport {
       },
     );
 
+    const emitError = (error: RpcError) => {
+      defHeader.rejectPending(error);
+      defStatus.rejectPending(error);
+      defTrailer.rejectPending(error);
+
+      if (!outStream.closed) {
+        outStream.notifyError(error);
+      }
+    };
+
+    if (options.abort) {
+      options.abort.addEventListener('abort', () => {
+        emitError(options.abort!.reason || new RpcError('Canceled by client', GrpcStatus[GrpcStatus.CANCELLED]));
+
+        client.close();
+      });
+    }
+
     client.onHeaders((meta) => {
       const status = getStatus(meta);
 
@@ -168,17 +201,7 @@ export class WebsocketTransport implements RpcTransport {
 
     client.onEnd((status, statusMessage, trailers) => {
       if (status !== grpc.Code.OK) {
-        const error = new RpcError(statusMessage, GrpcStatus[status]);
-
-        defHeader.rejectPending(error);
-        defStatus.rejectPending(error);
-        defTrailer.rejectPending(error);
-
-        if (!outStream.closed) {
-          outStream.notifyError(error);
-        }
-
-        return;
+        return emitError(new RpcError(statusMessage, GrpcStatus[status]));
       }
 
       defStatus.resolvePending({ code: GrpcStatus[status], detail: statusMessage });
@@ -229,8 +252,8 @@ export class WebsocketTransport implements RpcTransport {
     const defStatus = new Deferred<RpcStatus>();
     const defTrailer = new Deferred<RpcMetadata>();
 
-    const request = new Promise<grpc.UnaryOutput<grpc.ProtobufMessage>>((onEnd) =>
-      grpc.unary(
+    const request = new Promise<grpc.UnaryOutput<grpc.ProtobufMessage>>((onEnd, reject) => {
+      const client = grpc.unary(
         {
           methodName: method.name,
           requestStream: false,
@@ -248,8 +271,16 @@ export class WebsocketTransport implements RpcTransport {
           request: new InputType(input),
           onEnd,
         },
-      ),
-    );
+      );
+
+      if (options.abort) {
+        options.abort.addEventListener('abort', () => {
+          reject(options.abort?.reason || new RpcError('Canceled by client', GrpcStatus[GrpcStatus.CANCELLED]));
+
+          client.close();
+        });
+      }
+    });
 
     request
       .then((output) => {

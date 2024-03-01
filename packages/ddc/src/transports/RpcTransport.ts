@@ -7,6 +7,11 @@ export type { RpcTransport } from '@protobuf-ts/runtime-rpc';
  */
 export type RpcTransportOptions = {
   /**
+   * An optional number indicating the timeout for the connection.
+   */
+  timeout?: number;
+
+  /**
    * The URL for the gRPC server.
    */
   grpcUrl: string;

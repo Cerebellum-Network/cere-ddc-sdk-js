@@ -2,8 +2,9 @@ import { ChannelCredentials } from '@grpc/grpc-js';
 import { GrpcTransport as NativeTransport, GrpcOptions } from '@protobuf-ts/grpc-transport';
 
 import { RpcTransport, RpcTransportOptions } from './RpcTransport';
+import { TimeoutInterceptor } from './TimeoutInterceptor';
 
-export type GrpcTransportOptions = Pick<RpcTransportOptions, 'grpcUrl'> & Pick<GrpcOptions, 'interceptors'>;
+export type GrpcTransportOptions = Pick<RpcTransportOptions, 'grpcUrl' | 'timeout'> & Pick<GrpcOptions, 'interceptors'>;
 
 const URL_PROTOCOL = 'grpc://';
 const getHost = (href: string) => {
@@ -16,9 +17,9 @@ const getHost = (href: string) => {
  * @group RPC Transport
  */
 export class GrpcTransport extends NativeTransport implements RpcTransport {
-  constructor({ grpcUrl, interceptors }: GrpcTransportOptions) {
+  constructor({ grpcUrl, interceptors = [], timeout }: GrpcTransportOptions) {
     super({
-      interceptors,
+      interceptors: timeout ? [new TimeoutInterceptor(timeout), ...interceptors] : interceptors,
       host: getHost(grpcUrl),
       channelCredentials: ChannelCredentials.createInsecure(),
     });

@@ -27,9 +27,26 @@ export const HTTPS_DEFAULT_PORT = 443;
 export const AUTH_TOKEN_EXPIRATION_TIME = 30 * 24 * 60 * 60 * 1000;
 
 /**
+ * Default inactivity timeout for gRPC requests, in milliseconds.
+ * This is set to 30 seconds.
+ */
+export const GRPC_REQUEST_INACTIVITY_TIMEOUT = 30 * 1000;
+
+/**
  * gRPC error codes that should trigger a retry of the operation.
  */
-export const RETRYABLE_GRPC_ERROR_CODES = [GrpcStatus.UNAVAILABLE];
+export const RETRYABLE_GRPC_ERROR_CODES = [
+  GrpcStatus.UNAVAILABLE,
+  GrpcStatus.DEADLINE_EXCEEDED,
+
+  /**
+   * GRPC library uses this error code when a request is cancelled using abort signals, and it does not respect `AbortSignal.reason`.
+   * Currently there is no way to cancel a request using the SDK API. So the only possible source of this errors is internal timeout logic.
+   *
+   * TODO: If we let developers to cancel requests, we should handle this error code or figure out a way to avoid re-trying.
+   */
+  GrpcStatus.CANCELLED,
+];
 
 /**
  * Maximum number of attempts to retry an operation.
