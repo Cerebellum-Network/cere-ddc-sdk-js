@@ -1,8 +1,8 @@
 import base58 from 'bs58';
-import { AccountId, Signer, decodeAddress } from '@cere-ddc-sdk/blockchain';
+import { AccountId, Signer, decodeAddress, encodeAddress } from '@cere-ddc-sdk/blockchain';
 
 import { AUTH_TOKEN_EXPIRATION_TIME } from '../constants';
-import { createSignature } from '../signature';
+import { createSignature, mapSignature } from '../signature';
 import { AuthToken as Token, Payload, Operation } from '../grpc/auth_token';
 import { Cid } from '../Cid';
 
@@ -60,6 +60,20 @@ export class AuthToken {
     this.token = Token.create({ payload });
   }
 
+  /*
+   * The subject of the token.
+   */
+  get subject() {
+    return this.token.payload?.subject && encodeAddress(this.token.payload.subject);
+  }
+
+  /**
+   * The signature of the token
+   */
+  get signature() {
+    return this.token.signature && mapSignature(this.token.signature);
+  }
+
   /**
    * Whether the token can delegate access.
    */
@@ -105,14 +119,6 @@ export class AuthToken {
     newToken.token = protoToken;
 
     return newToken;
-  }
-
-  private static maybeToken(token?: string | AuthToken) {
-    if (typeof token !== 'string') {
-      return token;
-    }
-
-    return this.fromProto(Token.fromBinary(base58.decode(token)));
   }
 
   /**
@@ -175,6 +181,30 @@ export class AuthToken {
       ...params,
       prev: subject && parent, // Set `prev` only if `subject` is provided
     });
+  }
+
+  /**
+   * This static method is used to convert a token into an AuthToken object.
+   *
+   * @param token - The input token, which can be either a string or an AuthToken object.
+   * @returns - If the input token is a string, returns an AuthToken object created from the string.
+   *            If the input token is already an AuthToken object, returns the input token as is.
+   *
+   * @example
+   *
+   * ```typescript
+   * const token: string = '...';
+   * const authToken = AuthToken.maybeToken(token);
+   *
+   * console.log(authToken);
+   * ```
+   */
+  static maybeToken(token?: string | AuthToken) {
+    if (typeof token !== 'string') {
+      return token;
+    }
+
+    return this.fromProto(Token.fromBinary(base58.decode(token)));
   }
 
   /**
