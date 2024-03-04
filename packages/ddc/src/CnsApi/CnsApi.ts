@@ -95,11 +95,11 @@ export class CnsApi {
     if (this.options.enableAcks) {
       meta.request = await createActivityRequest(
         { bucketId, size: ProtoRecord.toBinary(record).byteLength, requestType: ActivityRequestType.STORE },
-        { logger: this.logger, signer: this.options.signer },
+        { logger: this.logger, signer },
       );
     }
 
-    const signature = await createSignature(signer, createSignatureMessage(record));
+    const signature = await createSignature(signer, createSignatureMessage(record), { token });
 
     await this.api.put({ bucketId, record: { ...record, signature } }, { meta });
 
@@ -141,7 +141,7 @@ export class CnsApi {
     if (this.options.enableAcks) {
       meta.request = await createActivityRequest(
         { bucketId, requestType: ActivityRequestType.GET },
-        { logger: this.logger, signer: this.options.signer },
+        { token, logger: this.logger, signer: this.options.signer },
       );
     }
 

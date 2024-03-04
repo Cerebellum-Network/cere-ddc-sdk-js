@@ -11,7 +11,8 @@ import { DagNode, DagNodeResponse, mapDagNodeToAPI } from '../DagNode';
 import { CnsRecord, CnsRecordResponse, mapCnsRecordToAPI } from '../CnsRecord';
 import { DefaultTransport, RpcTransportOptions } from '../transports';
 import { bindErrorLogger, createLogger, Logger, LoggerOptions } from '../logger';
-import { AuthToken } from '../auth';
+import { AuthToken, createSdkToken, getSdkSigner } from '../auth';
+
 import {
   DagNodeGetOptions,
   DagNodeStoreOptions,
@@ -29,6 +30,7 @@ export type StorageNodeConfig = RpcTransportOptions &
     nodeId?: string;
     enableAcks?: boolean;
     authenticate?: boolean;
+    authToken?: AuthToken | string;
   };
 
 /**
@@ -52,12 +54,15 @@ export class StorageNode implements NodeInterface {
   private fileApi: FileApi;
   private cnsApi: CnsApi;
   private logger: Logger;
+  private rootTokenPromise?: Promise<AuthToken>;
+
   readonly mode: StorageNodeMode;
 
   constructor(
     private signer: Signer,
     config: StorageNodeConfig,
   ) {
+    const authToken = AuthToken.maybeToken(config.authToken);
     const transport = new DefaultTransport({
       ...config,
       timeout: config.timeout ?? GRPC_REQUEST_INACTIVITY_TIMEOUT,
@@ -66,6 +71,7 @@ export class StorageNode implements NodeInterface {
     this.nodeId = config.nodeId || uuid();
     this.mode = config.mode;
     this.logger = createLogger('StorageNode', config);
+    this.rootTokenPromise = authToken && Promise.resolve(authToken);
 
     const options = {
       signer,
@@ -91,10 +97,17 @@ export class StorageNode implements NodeInterface {
     ]);
   }
 
-  private async createAuthToken(bucketId: BucketId, { accessToken }: OperationAuthOptions = {}) {
-    const token = accessToken ? AuthToken.from(accessToken) : AuthToken.fullAccess({ bucketId });
+  private async getRootToken() {
+    this.rootTokenPromise ||= createSdkToken(this.signer);
 
-    return token.sign(this.signer);
+    return this.rootTokenPromise;
+  }
+
+  private async createAuthToken({ accessToken }: OperationAuthOptions = {}) {
+    const token = AuthToken.maybeToken(accessToken) || (await this.getRootToken());
+    const sdkSigner = token.subject && getSdkSigner(this.signer, token.subject);
+
+    return AuthToken.from(token).sign(sdkSigner || this.signer);
   }
 
   /**
@@ -130,7 +143,7 @@ export class StorageNode implements NodeInterface {
    */
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
     let cidBytes: Uint8Array | undefined = undefined;
-    const token = await this.createAuthToken(bucketId, options);
+    const token = await this.createAuthToken(options);
 
     this.logger.info(options, 'Storing piece into bucket %s', bucketId);
     this.logger.debug({ piece }, 'Piece');
@@ -197,7 +210,7 @@ export class StorageNode implements NodeInterface {
    * ```
    */
   async storeDagNode(bucketId: BucketId, node: DagNode, options?: DagNodeStoreOptions) {
-    const token = await this.createAuthToken(bucketId, options);
+    const token = await this.createAuthToken(options);
 
     this.logger.info(options, 'Storing DAG node into bucket %s', bucketId);
     this.logger.debug({ node }, 'DAG node');
@@ -240,7 +253,7 @@ export class StorageNode implements NodeInterface {
    * ```
    */
   async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
-    const token = await this.createAuthToken(bucketId, options);
+    const token = await this.createAuthToken(options);
 
     this.logger.info(options, 'Reading piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
     this.logger.debug({ token }, 'Auth token');
@@ -283,7 +296,7 @@ export class StorageNode implements NodeInterface {
    * ```
    */
   async getDagNode(bucketId: BucketId, cidOrName: string, options?: DagNodeGetOptions) {
-    const token = await this.createAuthToken(bucketId, options);
+    const token = await this.createAuthToken(options);
 
     this.logger.info('Getting DAG Node by CID or name "%s" from bucket %s', cidOrName, bucketId);
     this.logger.debug({ token }, 'Auth token');
@@ -324,7 +337,7 @@ export class StorageNode implements NodeInterface {
    * ```
    */
   async storeCnsRecord(bucketId: BucketId, record: CnsRecord, options?: CnsRecordStoreOptions) {
-    const token = await this.createAuthToken(bucketId, options);
+    const token = await this.createAuthToken(options);
 
     this.logger.info('Storing CNS record into bucket %s', bucketId);
     this.logger.debug({ record }, 'CNS record');
@@ -361,7 +374,7 @@ export class StorageNode implements NodeInterface {
    * ```
    */
   async getCnsRecord(bucketId: BucketId, name: string, options?: CnsRecordGetOptions) {
-    const token = await this.createAuthToken(bucketId, options);
+    const token = await this.createAuthToken(options);
 
     this.logger.info(`Getting CNS record by name "${name}" from bucket ${bucketId}`);
     this.logger.debug({ token }, 'Auth token');

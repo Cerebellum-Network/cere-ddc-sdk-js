@@ -220,7 +220,7 @@ describe('Storage Node', () => {
 
       expect(signature).toEqual({
         algorithm: signer.type,
-        signer: expect.any(Uint8Array),
+        signer: expect.any(String),
         value: expect.any(Uint8Array),
       });
     });

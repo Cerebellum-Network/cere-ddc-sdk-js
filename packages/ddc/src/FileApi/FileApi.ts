@@ -125,6 +125,7 @@ export class FileApi {
   async putRawPiece({ token, ...metadata }: PutRawPieceMetadata, content: Content) {
     const meta = createRpcMeta(token);
     const size = getContentSize(content, metadata.size);
+    const { enableAcks, signer } = this.options;
 
     this.logger.debug({ metadata, token }, 'Storing raw piece of size %d', size);
 
@@ -136,10 +137,10 @@ export class FileApi {
       throw new Error(`Raw piece size should not be greather then ${MAX_PIECE_SIZE / MB} MB`);
     }
 
-    if (this.options.enableAcks) {
+    if (enableAcks) {
       meta.request = await createActivityRequest(
         { size, bucketId: metadata.bucketId, requestType: ActivityRequestType.STORE },
-        { logger: this.logger, signer: this.options.signer },
+        { token, signer, logger: this.logger },
       );
     }
 
@@ -205,14 +206,15 @@ export class FileApi {
    * ```
    */
   async getFile({ token, ...request }: GetFileRequest) {
+    const { enableAcks, signer, authenticate = false } = this.options;
+
     this.logger.debug({ request, token }, 'Started reading data');
 
     const requestId = createRequestId();
     const meta = createRpcMeta(token);
-    const { enableAcks } = this.options;
     const validator = new FileValidator(request.cid, {
-      enable: this.options.authenticate,
       logger: this.logger,
+      enable: authenticate,
       range: request.range,
     });
 
@@ -226,7 +228,7 @@ export class FileApi {
           size: request.range && request.range.end - request.range.start + 1,
           requestType: ActivityRequestType.GET,
         },
-        { logger: this.logger, signer: this.options.signer },
+        { token, signer, logger: this.logger },
       );
     }
 
@@ -238,10 +240,7 @@ export class FileApi {
     await call.requests.send({
       body: {
         oneofKind: 'request',
-        request: {
-          ...request,
-          authenticate: this.options.authenticate ?? false,
-        },
+        request: { ...request, authenticate },
       },
     });
 
@@ -270,7 +269,7 @@ export class FileApi {
                   oneofKind: 'ack',
                   ack: await createAck(
                     { requestId, bytesStoredOrDelivered, timestamp: Date.now() },
-                    { signer: this.options.signer },
+                    { token, signer, logger: this.logger },
                   ),
                 },
               });

@@ -71,7 +71,7 @@ export class DagApi {
     if (this.options.enableAcks && node) {
       meta.request = await createActivityRequest(
         { id: cid, bucketId, size: Node.toBinary(node).byteLength, requestType: ActivityRequestType.STORE },
-        { logger: this.logger, signer: this.options.signer },
+        { token, logger: this.logger, signer: this.options.signer },
       );
     }
 
@@ -116,7 +116,7 @@ export class DagApi {
     if (this.options.enableAcks) {
       meta.request = await createActivityRequest(
         { id: request.cid, bucketId: request.bucketId, requestType: ActivityRequestType.GET },
-        { logger: this.logger, signer: this.options.signer },
+        { token, logger: this.logger, signer: this.options.signer },
       );
     }
 

@@ -5,6 +5,7 @@ import { RouterNode, RouterOperation, RoutingStrategy } from './RoutingStrategy'
 import { BlockchainStrategy, BlockchainStrategyConfig } from './BlockchainStrategy';
 import { StaticStrategy, StaticStrategyConfig } from './StaticStrategy';
 import { Logger, LoggerOptions, createLogger } from '../logger';
+import { AuthToken, createSdkToken } from '../auth';
 
 export type RouterConfig = (StaticStrategyConfig | BlockchainStrategyConfig) &
   LoggerOptions & {
@@ -30,6 +31,7 @@ export class Router {
   private strategy: RoutingStrategy;
   private signer: Signer;
   private logger: Logger;
+  private sdkTokenPromise?: Promise<AuthToken>;
 
   constructor({ signer, ...config }: RouterConfig) {
     this.logger = createLogger('Router', config);
@@ -58,6 +60,7 @@ export class Router {
   async getNode(operation: RouterOperation, bucketId: BucketId, exclude: string[] = []) {
     this.logger.info('Getting node for operation "%s" in bucket %s', operation, bucketId);
 
+    this.sdkTokenPromise ||= createSdkToken(this.signer); // Request the token only once
     await this.strategy.isReady();
 
     const allNodes = await this.strategy.getNodes(bucketId);
@@ -74,6 +77,7 @@ export class Router {
     return new StorageNode(this.signer, {
       ...node,
       logger: this.logger,
+      authToken: await this.sdkTokenPromise,
       nodeId: node.nodeId || node.grpcUrl,
     });
   }
