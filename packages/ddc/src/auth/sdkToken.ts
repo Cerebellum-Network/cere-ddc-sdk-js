@@ -2,18 +2,18 @@ import { Signer, Web3Signer, createRandomSigner } from '@cere-ddc-sdk/blockchain
 
 import { AuthToken } from './AuthToken';
 
-const signerRegestry = new WeakMap<Signer, Map<string, Signer>>();
+const signerRegistry = new WeakMap<Signer, Map<string, Signer>>();
 
 const isWeb3Signer = (signer: Signer): signer is Web3Signer => {
   return signer instanceof Web3Signer;
 };
 
 const getRegestry = (signer: Signer) => {
-  if (!signerRegestry.has(signer)) {
-    signerRegestry.set(signer, new Map());
+  if (!signerRegistry.has(signer)) {
+    signerRegistry.set(signer, new Map());
   }
 
-  return signerRegestry.get(signer)!;
+  return signerRegistry.get(signer)!;
 };
 
 const createSdkSigner = async (signer: Signer) => {
