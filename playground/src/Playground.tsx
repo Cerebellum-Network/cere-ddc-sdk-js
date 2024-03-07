@@ -231,9 +231,10 @@ export const Playground = () => {
     const [acceptedFile] = dropzone.acceptedFiles;
 
     try {
+      const dagNodeData = JSON.stringify({ createTime: Date.now() });
       const existingDagNode = await client!
         .read(new DagNodeUri(currentBucketId!, cnsName))
-        .catch(() => new DagNode(JSON.stringify({ createTime: Date.now() })));
+        .catch(() => new DagNode(dagNodeData));
 
       const file = new File(acceptedFile.stream(), { size: acceptedFile.size });
       const uri = await client!.store(currentBucketId!, file);
@@ -242,7 +243,7 @@ export const Playground = () => {
       /**
        * Create new DagNode from existing one with new file link and store it by new CID under the same CNS name.
        */
-      const dagNode = new DagNode(JSON.stringify({ ...existingDagNode.data.toJSON(), updateTime: Date.now() }), [
+      const dagNode = new DagNode(dagNodeData, [
         ...existingDagNode.links.filter((link) => link.name !== acceptedFile.name),
         fileLink,
       ]);
