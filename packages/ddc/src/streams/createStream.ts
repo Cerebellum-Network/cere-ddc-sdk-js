@@ -28,7 +28,7 @@ export type ContentStream = ReadableStream<Uint8Array> & {
   [ContentStreamSymbol]?: true;
 };
 
-const withChunkSize = (chunkSize: number) => {
+export const withChunkSize = (chunkSize: number) => {
   let buffer = Buffer.from([]);
 
   return new TransformStream<Uint8Array>({

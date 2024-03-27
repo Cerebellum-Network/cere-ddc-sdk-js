@@ -28,7 +28,7 @@ export {
  * Utilities
  */
 export * from './logger';
-export { createContentStream, isContentStream, type Content, type ContentStream } from './streams';
+export { createContentStream, withChunkSize, isContentStream, type Content, type ContentStream } from './streams';
 
 /**
  * Constants

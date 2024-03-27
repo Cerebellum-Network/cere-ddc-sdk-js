@@ -17,6 +17,7 @@ import {
   bindErrorLogger,
   NodeInterface,
   BalancedNode,
+  withChunkSize,
 } from '@cere-ddc-sdk/ddc';
 
 import { File, FileResponse } from './File';
@@ -96,21 +97,15 @@ export class FileStorage {
   }
 
   private async storeLarge(bucketId: BucketId, file: File, options?: FileStoreOptions) {
-    const pieces = Math.ceil(file.size / MAX_PIECE_SIZE);
     const parts: string[] = [];
+    const partsStream = file.body.pipeThrough<Uint8Array>(withChunkSize(MAX_PIECE_SIZE));
 
-    for (let index = 0; index < pieces; index++) {
-      const offset = index * MAX_PIECE_SIZE;
-      const piece = new Piece(file.body, {
-        multipartOffset: offset,
-        size: Math.min(file.size - offset, MAX_PIECE_SIZE),
+    for await (const part of partsStream) {
+      const cid = await this.ddcNode.storePiece(bucketId, new Piece(part), {
+        accessToken: options?.accessToken,
       });
 
-      parts.push(
-        await this.ddcNode.storePiece(bucketId, piece, {
-          accessToken: options?.accessToken,
-        }),
-      );
+      parts.push(cid);
     }
 
     return this.ddcNode.storePiece(
