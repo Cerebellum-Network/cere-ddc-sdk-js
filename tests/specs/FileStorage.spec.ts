@@ -18,6 +18,10 @@ describe('File storage', () => {
     fileStorage = await FileStorage.create(ROOT_USER_SEED, getClientConfig());
   });
 
+  afterAll(async () => {
+    await fileStorage.disconnect();
+  });
+
   describe('Small file', () => {
     let fileCid: string;
     const fileSize = 2 * MB;

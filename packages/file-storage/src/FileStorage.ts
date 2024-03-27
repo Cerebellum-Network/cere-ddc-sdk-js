@@ -41,6 +41,7 @@ export type FileStoreOptions = PieceStoreOptions;
 export class FileStorage {
   private ddcNode: NodeInterface;
   private logger: Logger;
+  private blockchain?: Blockchain;
 
   constructor(config: RouterConfig);
   constructor(router: Router, config: Config);
@@ -52,6 +53,7 @@ export class FileStorage {
       this.logger.debug(config, 'FileStorage created');
     } else {
       this.logger = createLogger('FileStorage', configOrRouter);
+      this.blockchain = 'blockchain' in configOrRouter ? configOrRouter.blockchain : undefined;
       this.ddcNode = new BalancedNode({
         logger: this.logger,
         router: new Router({ ...configOrRouter, logger: this.logger }),
@@ -86,7 +88,11 @@ export class FileStorage {
         ? await Blockchain.connect({ wsEndpoint: config.blockchain })
         : config.blockchain;
 
-    return new FileStorage(new Router({ ...config, blockchain, signer }), config);
+    return new FileStorage({ ...config, blockchain, signer });
+  }
+
+  async disconnect() {
+    await this.blockchain?.disconnect();
   }
 
   private async storeLarge(bucketId: BucketId, file: File, options?: FileStoreOptions) {
