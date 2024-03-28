@@ -48,6 +48,7 @@ export const RETRYABLE_GRPC_ERROR_CODES = [
   GrpcStatus.RESOURCE_EXHAUSTED,
   GrpcStatus.ABORTED,
   GrpcStatus.INTERNAL,
+  GrpcStatus.UNKNOWN,
 
   /**
    * GRPC library uses this error code when a request is cancelled using abort signals, and it does not respect `AbortSignal.reason`.

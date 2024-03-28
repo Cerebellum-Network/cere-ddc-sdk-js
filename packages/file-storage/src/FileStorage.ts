@@ -113,6 +113,7 @@ export class FileStorage {
       });
 
       parts.push(cid);
+      this.logger.info({ cid }, 'File part of size %s stored', part.byteLength);
     }
 
     return this.ddcNode.storePiece(bucketId, new MultipartPiece(parts, { totalSize: file.size, partSize }), options);
