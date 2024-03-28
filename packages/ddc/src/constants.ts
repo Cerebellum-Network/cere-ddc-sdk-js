@@ -20,7 +20,7 @@ export const MAX_PIECE_SIZE = 128 * MB;
 /**
  * Size of a chunk of a content stream, in bytes.
  */
-export const CONTENT_CHUNK_SIZE = 64 * KB;
+export const CONTENT_CHUNK_SIZE = 1 * MB;
 
 /**
  * Default port for HTTPS connections.

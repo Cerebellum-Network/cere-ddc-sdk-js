@@ -25,7 +25,7 @@ export type Content = Uint8Array | Iterable<Uint8Array> | AsyncIterable<Uint8Arr
  * @hidden
  */
 export type ContentStream = ReadableStream<Uint8Array> & {
-  [ContentStreamSymbol]?: true;
+  readonly [ContentStreamSymbol]?: boolean;
 };
 
 export const withChunkSize = (chunkSize: number) => {
@@ -103,8 +103,7 @@ export const createContentStream = (input: Content | ContentStream, chunkSize = 
     },
   });
 
-  const contentStream: ContentStream = stream.pipeThrough(withChunkSize(chunkSize));
-  contentStream[ContentStreamSymbol] = true;
-
-  return contentStream;
+  return Object.assign(stream.pipeThrough<Uint8Array>(withChunkSize(chunkSize)), {
+    [ContentStreamSymbol]: true,
+  });
 };
