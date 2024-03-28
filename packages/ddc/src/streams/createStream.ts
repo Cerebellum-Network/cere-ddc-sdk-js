@@ -29,22 +29,25 @@ export type ContentStream = ReadableStream<Uint8Array> & {
 };
 
 export const withChunkSize = (chunkSize: number) => {
-  let buffer = Buffer.from([]);
+  let buffer: Buffer | undefined;
+  const slice = Uint8Array.prototype.slice;
 
   return new TransformStream<Uint8Array>({
     transform(data, controller) {
-      buffer = Buffer.concat([buffer, data]);
+      buffer = buffer ? Buffer.concat([buffer, data]) : Buffer.from(data);
 
       while (buffer.byteLength >= chunkSize) {
-        controller.enqueue(buffer.slice(0, chunkSize));
-        buffer = buffer.slice(chunkSize);
+        controller.enqueue(slice.call(buffer, 0, chunkSize));
+        buffer = Buffer.from(slice.call(buffer, chunkSize));
       }
     },
 
     flush(controller) {
-      if (buffer.byteLength) {
-        controller.enqueue(buffer.slice());
+      if (buffer?.byteLength) {
+        controller.enqueue(slice.call(buffer));
       }
+
+      buffer = undefined;
     },
   });
 };
