@@ -11,8 +11,10 @@ import { deposit } from './deposit';
 import { withClient } from './createClient';
 import { account } from './account';
 import { download } from './download';
+import { decodeToken, createToken } from './token';
 
 yargs(hideBin(process.argv))
+  .wrap(null)
   .demandCommand()
   .config('config', 'Configuration file path', (path) => JSON.parse(fs.readFileSync(path, 'utf-8')))
   .option('network', {
@@ -214,4 +216,88 @@ yargs(hideBin(process.argv))
       console.groupEnd();
     },
   )
+  .command(
+    'token [token]',
+    'Generates DDC auth token',
+    (yargs) =>
+      yargs
+        .positional('token', {
+          type: 'string',
+          describe: 'Token to decode',
+        })
+        .option('operations', {
+          alias: 'o',
+          type: 'array',
+          choices: ['get', 'put', 'delete'],
+          default: ['get'],
+          describe: 'Operations allowed by the token',
+        })
+        .option('bucketId', {
+          alias: 'b',
+          type: 'string',
+          describe: 'Bucket ID to grant access to',
+        })
+        .option('pieceCid', {
+          alias: 'cid',
+          type: 'string',
+          describe: 'CID to grant access to',
+        })
+        .option('subject', {
+          alias: 'to',
+          type: 'string',
+          describe: 'The account to delegate access to',
+        })
+        .option('prevToken', {
+          alias: 'prev',
+          type: 'string',
+          describe: 'Previous token in delegation chain',
+        })
+        .option('canDelegate', {
+          type: 'boolean',
+          default: false,
+          describe: 'Whether the token can be delegated',
+        })
+        .option('expiresIn', {
+          type: 'number',
+          describe: 'Token expiration time in milliseconds',
+        })
+        .option('signer', {
+          alias: 's',
+          type: 'string',
+          default: '',
+          describe: 'Mnemonic of an account to sign the token',
+        }),
+    async (argv) => {
+      const result = argv.token ? await decodeToken(argv.token) : await createToken(argv);
+
+      console.group(argv.token ? 'Decoded auth token' : 'New auth token');
+      console.log('Operations:', result.operations);
+
+      if (result.bucketId) {
+        console.log('Bucket ID:', result.bucketId);
+      }
+
+      if (result.cid) {
+        console.log('CID:', result.cid);
+      }
+
+      if (result.subject) {
+        console.log('Subject:', result.subject);
+      }
+
+      if (result.expiresAt) {
+        console.log('Expires at:', new Date(result.expiresAt).toISOString());
+      }
+
+      console.log('Can delegate:', result.canDelegate);
+
+      if (result.signer) {
+        console.log('Signer:', result.signer);
+      }
+
+      console.log('Token:', result.token);
+      console.groupEnd();
+    },
+  )
+
   .parse();
