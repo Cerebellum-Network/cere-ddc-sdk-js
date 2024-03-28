@@ -125,6 +125,10 @@ export class Piece {
    * @returns A new `Piece` with the same content and metadata as the existing one.
    */
   static from(piece: Piece) {
+    if (isContentStream(piece.content) && piece.content.locked) {
+      throw new Error('The content stream is locked and can not be reused');
+    }
+
     return new Piece(piece.content, piece.meta as StreamPieceMeta);
   }
 }

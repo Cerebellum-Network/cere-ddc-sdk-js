@@ -10,9 +10,16 @@ import {
   UriSigner,
 } from '@cere-ddc-sdk/ddc-client';
 
-import { KB, ROOT_USER_SEED, createDataStream, getBlockchainState, getClientConfig } from '../helpers';
+import {
+  KB,
+  ROOT_USER_SEED,
+  createDataStream,
+  DataStreamOptions,
+  getBlockchainState,
+  getClientConfig,
+} from '../helpers';
 
-const createFile = (size: number) => new File(createDataStream(size), { size });
+const createFile = (size: number, options?: DataStreamOptions) => new File(createDataStream(size, options), { size });
 
 describe('Auth', () => {
   const {
@@ -41,7 +48,9 @@ describe('Auth', () => {
 
   beforeEach(async () => {
     normalFile = createFile(KB);
-    largeFile = createFile(150 * MB);
+    largeFile = createFile(150 * MB, {
+      chunkSize: 1 * MB, // Use 1 MB chunk size to make the test faster
+    });
   });
 
   describe('Auth token', () => {
