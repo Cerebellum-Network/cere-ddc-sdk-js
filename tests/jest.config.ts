@@ -7,7 +7,7 @@ const config: Config = {
   testEnvironment: 'node',
   roots: ['<rootDir>'],
   verbose: true,
-  testTimeout: 100000,
+  testTimeout: 10 * 60_000, // 10 mins (for tests with large file uploads and downloads)
 
   testMatch: ['<rootDir>/specs/**/*.spec.ts'],
   globalTeardown: './setup/globalTeardown.ts',

@@ -7,21 +7,6 @@ import { FileStorage, File } from '@cere-ddc-sdk/file-storage';
 
 import { createDataStream, getBlockchainState, getClientConfig, MB, ROOT_USER_SEED } from '../helpers';
 
-function printMemoryUsage() {
-  const formatMemoryUsage = (data: number) => `${Math.round((data / 1024 / 1024) * 100) / 100} MB`;
-
-  const memoryData = process.memoryUsage();
-
-  const memoryUsage = {
-    rss: `${formatMemoryUsage(memoryData.rss)} -> Resident Set Size - total memory allocated for the process execution`,
-    heapTotal: `${formatMemoryUsage(memoryData.heapTotal)} -> total size of the allocated heap`,
-    heapUsed: `${formatMemoryUsage(memoryData.heapUsed)} -> actual memory used during the execution`,
-    external: `${formatMemoryUsage(memoryData.external)} -> V8 external memory`,
-  };
-
-  console.log(memoryUsage);
-}
-
 describe('File storage', () => {
   const {
     bucketIds: [bucketId],
@@ -63,18 +48,16 @@ describe('File storage', () => {
   describe('Large file', () => {
     let fileCid: string;
     const fileSize = 150 * MB;
-    const fileStream = createDataStream(fileSize);
+    const fileStream = createDataStream(fileSize, {
+      chunkSize: 1 * MB, // Use 1 MB chank size to make the test faster
+    });
 
     test('Store a file', async () => {
       const file = new File(fileStream, {
         size: fileSize,
       });
 
-      printMemoryUsage();
-
       fileCid = await fileStorage.store(bucketId, file);
-
-      printMemoryUsage();
 
       expect(fileCid).toEqual(expect.any(String));
     });
