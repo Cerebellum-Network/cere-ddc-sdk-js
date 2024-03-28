@@ -45,6 +45,9 @@ export const GRPC_REQUEST_INACTIVITY_TIMEOUT = 30 * 1000;
 export const RETRYABLE_GRPC_ERROR_CODES = [
   GrpcStatus.UNAVAILABLE,
   GrpcStatus.DEADLINE_EXCEEDED,
+  GrpcStatus.RESOURCE_EXHAUSTED,
+  GrpcStatus.ABORTED,
+  GrpcStatus.INTERNAL,
 
   /**
    * GRPC library uses this error code when a request is cancelled using abort signals, and it does not respect `AbortSignal.reason`.
