@@ -18,6 +18,10 @@ describe('File storage', () => {
     fileStorage = await FileStorage.create(ROOT_USER_SEED, getClientConfig());
   });
 
+  afterAll(async () => {
+    await fileStorage.disconnect();
+  });
+
   describe('Small file', () => {
     let fileCid: string;
     const fileSize = 2 * MB;
@@ -44,7 +48,9 @@ describe('File storage', () => {
   describe('Large file', () => {
     let fileCid: string;
     const fileSize = 150 * MB;
-    const fileStream = createDataStream(fileSize);
+    const fileStream = createDataStream(fileSize, {
+      chunkSize: 1 * MB, // Use 1 MB chank size to make the test faster
+    });
 
     test('Store a file', async () => {
       const file = new File(fileStream, {

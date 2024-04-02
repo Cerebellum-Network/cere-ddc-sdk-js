@@ -4,7 +4,7 @@ import { ReadableStream } from 'stream/web';
 
 import { KB } from './constants';
 
-type DataStreamOptions = {
+export type DataStreamOptions = {
   chunkSize?: number;
   chunkDelay?: number;
 };

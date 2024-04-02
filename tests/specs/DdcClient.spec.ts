@@ -192,7 +192,6 @@ describe('DDC Client', () => {
 
     test('Get balance', async () => {
       const balance = await client.getBalance();
-      console.log('Balance:', balance);
 
       expect(balance).toEqual(expect.any(BigInt));
     });

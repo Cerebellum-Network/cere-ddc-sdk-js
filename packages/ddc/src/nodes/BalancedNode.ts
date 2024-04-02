@@ -94,7 +94,13 @@ export class BalancedNode implements NodeInterface {
   }
 
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
-    return this.withRetry(bucketId, RouterOperation.STORE_PIECE, (node) => node.storePiece(bucketId, piece, options));
+    return this.withRetry(bucketId, RouterOperation.STORE_PIECE, (node, bail, attempt) =>
+      /**
+       * Clone the piece if it is a piece and this is not the first attempt.
+       * This is done to avoid reusing the same stream multiple times.
+       */
+      node.storePiece(bucketId, Piece.isPiece(piece) && attempt > 0 ? Piece.from(piece) : piece, options),
+    );
   }
 
   async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {

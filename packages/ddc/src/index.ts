@@ -28,12 +28,19 @@ export {
  * Utilities
  */
 export * from './logger';
-export { createContentStream, isContentStream, type Content, type ContentStream } from './streams';
+export {
+  createContentStream,
+  withChunkSize,
+  isContentStream,
+  consumers as streamConsumers,
+  type Content,
+  type ContentStream,
+} from './streams';
 
 /**
  * Constants
  */
-export { KB, MB, MAX_PIECE_SIZE } from './constants';
+export { KB, MB, MAX_PIECE_SIZE, MIN_PIECE_SIZE } from './constants';
 
 /**
  * Configuration

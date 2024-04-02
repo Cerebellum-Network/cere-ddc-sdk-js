@@ -4,6 +4,13 @@ export const KB = 1024;
 export const MB = 1024 * KB;
 
 /**
+ * Minimum size of a piece of content, in bytes.
+ *
+ * @hidden
+ */
+export const MIN_PIECE_SIZE = 4 * MB;
+
+/**
  * Maximum size of a piece of content, in bytes.
  *
  * @hidden
@@ -13,7 +20,7 @@ export const MAX_PIECE_SIZE = 128 * MB;
 /**
  * Size of a chunk of a content stream, in bytes.
  */
-export const CONTENT_CHUNK_SIZE = 64 * KB;
+export const CONTENT_CHUNK_SIZE = 1 * MB;
 
 /**
  * Default port for HTTPS connections.
@@ -38,6 +45,10 @@ export const GRPC_REQUEST_INACTIVITY_TIMEOUT = 30 * 1000;
 export const RETRYABLE_GRPC_ERROR_CODES = [
   GrpcStatus.UNAVAILABLE,
   GrpcStatus.DEADLINE_EXCEEDED,
+  GrpcStatus.RESOURCE_EXHAUSTED,
+  GrpcStatus.ABORTED,
+  GrpcStatus.INTERNAL,
+  GrpcStatus.UNKNOWN,
 
   /**
    * GRPC library uses this error code when a request is cancelled using abort signals, and it does not respect `AbortSignal.reason`.
