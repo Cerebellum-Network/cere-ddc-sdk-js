@@ -20,6 +20,7 @@ import {
 
 export type BalancedNodeConfig = LoggerOptions & {
   router: Router;
+  retries?: number;
 };
 
 /**
@@ -40,10 +41,12 @@ export class BalancedNode implements NodeInterface {
 
   private router: Router;
   private logger: Logger;
+  private retries: number;
 
   constructor({ router, ...config }: BalancedNodeConfig) {
     this.router = router;
     this.logger = createLogger('BalancedNode', config);
+    this.retries = config.retries ?? RETRY_MAX_ATTEPTS;
   }
 
   /**
@@ -81,8 +84,8 @@ export class BalancedNode implements NodeInterface {
         }
       },
       {
-        retries: RETRY_MAX_ATTEPTS,
         minTimeout: 0,
+        retries: this.retries,
         ...options,
         onRetry: (err, attempt) => {
           options.onRetry?.(err, attempt);

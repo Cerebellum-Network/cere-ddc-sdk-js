@@ -2,6 +2,11 @@
 
 This example shows how to use DDC CLI
 
+- [Create DDC customer account](#create-ddc-customer-account)
+- [Create a DDC bucket](#create-a-ddc-bucket)
+- [Upload/download a file to the bucket](#uploaddownload-a-file-to-the-bucket)
+- [Share access to the private bucket](#share-access-to-the-private-bucket)
+
 ## Create DDC customer account
 
 1. Generate a new account

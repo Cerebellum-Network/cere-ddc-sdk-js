@@ -53,7 +53,7 @@ Stores a file in the DDC. Large files are stored as a collection of pieces.
 | :------ | :------ | :------ |
 | `bucketId` | `bigint` | The ID of the bucket where the file will be stored. |
 | `file` | [`File`](File.md) | The file to store. |
-| `options?` | `PieceStoreOptions` | The options for storing the file. |
+| `options` | `FileStoreOptions` | The options for storing the file. |
 
 #### Returns
 

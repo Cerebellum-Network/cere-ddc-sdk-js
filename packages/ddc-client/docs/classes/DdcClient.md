@@ -261,6 +261,37 @@ console.log(textContent);
 
 ___
 
+### resolveName
+
+▸ **resolveName**(`bucketId`, `cnsName`): `Promise`\<``null`` \| `string`\>
+
+Resolves a CNS name to a specific CID.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `bucketId` | `bigint` | The ID of the bucket to resolve the CNS name in. |
+| `cnsName` | `string` | The CNS name to resolve. |
+
+#### Returns
+
+`Promise`\<``null`` \| `string`\>
+
+A promise that resolves to the CID of the CNS name.
+
+**`Example`**
+
+```typescript
+const bucketId: BucketId = 1n;
+const cnsName = 'my-file';
+const cid = await ddcClient.resolveName(bucketId, cnsName);
+
+console.log(cid);
+```
+
+___
+
 ### store
 
 ▸ **store**(`bucketId`, `entity`, `options?`): `Promise`\<[`FileUri`](FileUri.md)\>
@@ -273,7 +304,7 @@ Stores a file or DAG node in a specific bucket.
 | :------ | :------ | :------ |
 | `bucketId` | `bigint` | The ID of the bucket to store the entity in. |
 | `entity` | [`File`](File.md) | The file or DAG node to store. |
-| `options?` | `PieceStoreOptions` | Optional parameters for storing the entity. |
+| `options?` | `FileStoreOptions` | Optional parameters for storing the entity. |
 
 #### Returns
 
@@ -321,4 +352,11 @@ A promise that resolves to a new instance of the DdcClient.
 
 ```typescript
 const ddcClient = await DdcClient.create('//Alice', DEVNET);
+```
+
+```typescript
+const ddcClient = await DdcClient.create('//Alice', {
+  blockchain: 'wss://devnet.cere.network',
+  retries: 3,
+});
 ```

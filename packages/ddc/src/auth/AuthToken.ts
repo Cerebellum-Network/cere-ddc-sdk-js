@@ -2,7 +2,7 @@ import base58 from 'bs58';
 import { AccountId, Signer, decodeAddress, encodeAddress } from '@cere-ddc-sdk/blockchain';
 
 import { AUTH_TOKEN_EXPIRATION_TIME } from '../constants';
-import { createSignature, mapSignature } from '../signature';
+import { createSignature, mapSignature, Signature } from '../signature';
 import { AuthToken as Token, Payload, Operation } from '../grpc/auth_token';
 import { Cid } from '../Cid';
 
@@ -70,7 +70,7 @@ export class AuthToken {
   /**
    * The signature of the token
    */
-  get signature() {
+  get signature(): Signature | undefined {
     return this.token.signature && mapSignature(this.token.signature);
   }
 
