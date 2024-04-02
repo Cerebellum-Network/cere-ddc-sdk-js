@@ -25,26 +25,29 @@ export type Content = Uint8Array | Iterable<Uint8Array> | AsyncIterable<Uint8Arr
  * @hidden
  */
 export type ContentStream = ReadableStream<Uint8Array> & {
-  [ContentStreamSymbol]?: true;
+  readonly [ContentStreamSymbol]?: boolean;
 };
 
-const withChunkSize = (chunkSize: number) => {
-  let buffer = Buffer.from([]);
+export const withChunkSize = (chunkSize: number) => {
+  let buffer: Buffer | undefined;
+  const slice = Uint8Array.prototype.slice;
 
   return new TransformStream<Uint8Array>({
     transform(data, controller) {
-      buffer = Buffer.concat([buffer, data]);
+      buffer = buffer ? Buffer.concat([buffer, data]) : Buffer.from(data);
 
       while (buffer.byteLength >= chunkSize) {
-        controller.enqueue(buffer.slice(0, chunkSize));
-        buffer = buffer.slice(chunkSize);
+        controller.enqueue(slice.call(buffer, 0, chunkSize));
+        buffer = Buffer.from(slice.call(buffer, chunkSize));
       }
     },
 
     flush(controller) {
-      if (buffer.byteLength) {
-        controller.enqueue(buffer.slice());
+      if (buffer?.byteLength) {
+        controller.enqueue(slice.call(buffer));
       }
+
+      buffer = undefined;
     },
   });
 };
@@ -100,8 +103,7 @@ export const createContentStream = (input: Content | ContentStream, chunkSize = 
     },
   });
 
-  const contentStream: ContentStream = stream.pipeThrough(withChunkSize(chunkSize));
-  contentStream[ContentStreamSymbol] = true;
-
-  return contentStream;
+  return Object.assign(stream.pipeThrough<Uint8Array>(withChunkSize(chunkSize)), {
+    [ContentStreamSymbol]: true,
+  });
 };

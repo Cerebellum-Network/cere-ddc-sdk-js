@@ -1,7 +1,6 @@
 import { Blockchain, BucketId } from '@cere-ddc-sdk/blockchain';
 import {
   PieceReadOptions,
-  MAX_PIECE_SIZE,
   Piece,
   MultipartPiece,
   Router,
@@ -17,9 +16,12 @@ import {
   bindErrorLogger,
   NodeInterface,
   BalancedNode,
+  withChunkSize,
+  streamConsumers,
 } from '@cere-ddc-sdk/ddc';
 
 import { File, FileResponse } from './File';
+import { DEFAULT_BUFFER_SIZE, MAX_BUFFER_SIZE, MIN_BUFFER_SIZE } from './constants';
 
 type Config = LoggerOptions;
 
@@ -29,7 +31,13 @@ export type FileStorageConfig = Config &
   };
 
 export type FileReadOptions = PieceReadOptions;
-export type FileStoreOptions = PieceStoreOptions;
+export type FileStoreOptions = PieceStoreOptions & {
+  maxBufferSize?: number;
+};
+
+type LargeFileStoreOptions = FileStoreOptions & {
+  partSize: number;
+};
 
 /**
  * Represents a storage system for files.
@@ -41,6 +49,7 @@ export type FileStoreOptions = PieceStoreOptions;
 export class FileStorage {
   private ddcNode: NodeInterface;
   private logger: Logger;
+  private blockchain?: Blockchain;
 
   constructor(config: RouterConfig);
   constructor(router: Router, config: Config);
@@ -52,6 +61,7 @@ export class FileStorage {
       this.logger.debug(config, 'FileStorage created');
     } else {
       this.logger = createLogger('FileStorage', configOrRouter);
+      this.blockchain = 'blockchain' in configOrRouter ? configOrRouter.blockchain : undefined;
       this.ddcNode = new BalancedNode({
         logger: this.logger,
         router: new Router({ ...configOrRouter, logger: this.logger }),
@@ -86,36 +96,32 @@ export class FileStorage {
         ? await Blockchain.connect({ wsEndpoint: config.blockchain })
         : config.blockchain;
 
-    return new FileStorage(new Router({ ...config, blockchain, signer }), config);
+    return new FileStorage({ ...config, blockchain, signer });
   }
 
-  private async storeLarge(bucketId: BucketId, file: File, options?: FileStoreOptions) {
-    const pieces = Math.ceil(file.size / MAX_PIECE_SIZE);
-    const parts: string[] = [];
+  async disconnect() {
+    await this.blockchain?.disconnect();
+  }
 
-    for (let index = 0; index < pieces; index++) {
-      const offset = index * MAX_PIECE_SIZE;
-      const piece = new Piece(file.body, {
-        multipartOffset: offset,
-        size: Math.min(file.size - offset, MAX_PIECE_SIZE),
+  private async storeLarge(bucketId: BucketId, file: File, { partSize, ...options }: LargeFileStoreOptions) {
+    const parts: string[] = [];
+    const partsStream = file.body.pipeThrough<Uint8Array>(withChunkSize(partSize));
+
+    for await (const part of partsStream) {
+      const cid = await this.ddcNode.storePiece(bucketId, new Piece(part), {
+        accessToken: options?.accessToken,
       });
 
-      parts.push(
-        await this.ddcNode.storePiece(bucketId, piece, {
-          accessToken: options?.accessToken,
-        }),
-      );
+      parts.push(cid);
     }
 
-    return this.ddcNode.storePiece(
-      bucketId,
-      new MultipartPiece(parts, { totalSize: file.size, partSize: MAX_PIECE_SIZE }),
-      options,
-    );
+    return this.ddcNode.storePiece(bucketId, new MultipartPiece(parts, { totalSize: file.size, partSize }), options);
   }
 
   private async storeSmall(bucketId: BucketId, file: File, options?: FileStoreOptions) {
-    return this.ddcNode.storePiece(bucketId, new Piece(file.body, { size: file.size }), options);
+    const content = new Uint8Array(await streamConsumers.arrayBuffer(file.body));
+
+    return this.ddcNode.storePiece(bucketId, new Piece(content), options);
   }
 
   /**
@@ -138,14 +144,20 @@ export class FileStorage {
    * console.log(fileCid);
    * ```
    */
-  async store(bucketId: BucketId, file: File, options?: FileStoreOptions) {
+  async store(bucketId: BucketId, file: File, options: FileStoreOptions = {}) {
     this.logger.info(options, 'Storing file into bucket %s', bucketId);
     this.logger.debug({ file }, 'File');
 
-    const isLarge = file.size > MAX_PIECE_SIZE;
-    const cid = isLarge
-      ? await this.storeLarge(bucketId, file, options)
-      : await this.storeSmall(bucketId, file, options);
+    const partSize = options?.maxBufferSize || DEFAULT_BUFFER_SIZE;
+
+    if (partSize > MAX_BUFFER_SIZE || partSize < MIN_BUFFER_SIZE) {
+      throw new Error(`Max buffer size must be between ${MIN_BUFFER_SIZE} and ${MAX_BUFFER_SIZE} bytes`);
+    }
+
+    const cid =
+      file.size > partSize
+        ? await this.storeLarge(bucketId, file, { ...options, partSize })
+        : await this.storeSmall(bucketId, file, options);
 
     this.logger.info({ cid }, 'File stored');
 
