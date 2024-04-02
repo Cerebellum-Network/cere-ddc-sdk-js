@@ -220,7 +220,7 @@ export class PieceResponse {
   /**
    * The range of the piece response.
    */
-  get range() {
+  get range(): ReadFileRange {
     return this.meta?.range;
   }
 

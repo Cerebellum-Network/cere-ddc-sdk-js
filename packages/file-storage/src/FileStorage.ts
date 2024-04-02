@@ -23,7 +23,9 @@ import {
 import { File, FileResponse } from './File';
 import { DEFAULT_BUFFER_SIZE, MAX_BUFFER_SIZE, MIN_BUFFER_SIZE } from './constants';
 
-type Config = LoggerOptions;
+type Config = LoggerOptions & {
+  retries?: number;
+};
 
 export type FileStorageConfig = Config &
   Omit<ConfigPreset, 'blockchain'> & {
@@ -51,9 +53,9 @@ export class FileStorage {
   private logger: Logger;
   private blockchain?: Blockchain;
 
-  constructor(config: RouterConfig);
+  constructor(config: RouterConfig & Config);
   constructor(router: Router, config: Config);
-  constructor(configOrRouter: RouterConfig | Router, config?: Config) {
+  constructor(configOrRouter: (RouterConfig & Config) | Router, config?: Config) {
     if (configOrRouter instanceof Router) {
       this.logger = createLogger('FileStorage', config);
       this.ddcNode = new BalancedNode({ router: configOrRouter, logger: this.logger });
@@ -64,6 +66,7 @@ export class FileStorage {
       this.blockchain = 'blockchain' in configOrRouter ? configOrRouter.blockchain : undefined;
       this.ddcNode = new BalancedNode({
         logger: this.logger,
+        retries: configOrRouter.retries,
         router: new Router({ ...configOrRouter, logger: this.logger }),
       });
 

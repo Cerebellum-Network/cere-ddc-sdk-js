@@ -8,7 +8,6 @@ import {
   ConfigPreset,
   DagNodeGetOptions,
   DEFAULT_PRESET,
-  LoggerOptions,
   Logger,
   createLogger,
   bindErrorLogger,
@@ -16,13 +15,14 @@ import {
   BalancedNode,
   AuthTokenParams,
   AuthToken,
+  BalancedNodeConfig,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
 import { AccountId, Blockchain, BucketId, BucketParams, ClusterId, Sendable } from '@cere-ddc-sdk/blockchain';
 
 import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
 
-export type DdcClientConfig = LoggerOptions &
+export type DdcClientConfig = Omit<BalancedNodeConfig, 'router'> &
   Omit<ConfigPreset, 'blockchain'> & {
     blockchain: Blockchain | ConfigPreset['blockchain'];
   };
@@ -60,6 +60,13 @@ export class DdcClient {
    * ```typescript
    * const ddcClient = await DdcClient.create('//Alice', DEVNET);
    * ```
+   *
+   * ```typescript
+   * const ddcClient = await DdcClient.create('//Alice', {
+   *   blockchain: 'wss://devnet.cere.network',
+   *   retries: 3,
+   * });
+   * ```
    */
   static async create(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
     const logger = createLogger('DdcClient', config);
@@ -73,7 +80,7 @@ export class DdcClient {
       ? new Router({ signer, nodes: config.nodes, logger })
       : new Router({ signer, blockchain, logger });
 
-    const ddcNode = new BalancedNode({ router, logger });
+    const ddcNode = new BalancedNode({ ...config, router, logger });
     const fileStorage = new FileStorage(router, { ...config, logger });
 
     logger.debug(config, 'DdcClient created');

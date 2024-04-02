@@ -81,6 +81,18 @@ The piece CID that the token grants access to.
 
 `undefined` \| `string`
 
+___
+
+### signature
+
+• `get` **signature**(): `undefined` \| `Signature`
+
+The signature of the token
+
+#### Returns
+
+`undefined` \| `Signature`
+
 ## Methods
 
 ### sign
@@ -181,4 +193,34 @@ An instance of the `AuthToken` class with full access.
 const authToken = AuthToken.fullAccess({
   bucketId: 1n,
 });
+```
+
+___
+
+### maybeToken
+
+▸ **maybeToken**(`token?`): `undefined` \| [`AuthToken`](AuthToken.md)
+
+This static method is used to convert a token into an AuthToken object.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `token?` | `string` \| [`AuthToken`](AuthToken.md) | The input token, which can be either a string or an AuthToken object. |
+
+#### Returns
+
+`undefined` \| [`AuthToken`](AuthToken.md)
+
+- If the input token is a string, returns an AuthToken object created from the string.
+           If the input token is already an AuthToken object, returns the input token as is.
+
+**`Example`**
+
+```typescript
+const token: string = '...';
+const authToken = AuthToken.maybeToken(token);
+
+console.log(authToken);
 ```

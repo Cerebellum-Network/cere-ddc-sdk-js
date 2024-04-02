@@ -74,6 +74,64 @@ Web3Signer.type
 
 ## Methods
 
+### getSigner
+
+▸ **getSigner**(): `Promise`\<`Signer`\>
+
+#### Returns
+
+`Promise`\<`Signer`\>
+
+**`Inherit Doc`**
+
+#### Inherited from
+
+[Web3Signer](Web3Signer.md).[getSigner](Web3Signer.md#getsigner)
+
+___
+
+### isReady
+
+▸ **isReady**(): `Promise`\<`boolean`\>
+
+Checks if the signer is ready.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+A promise that resolves to a boolean indicating whether the signer is ready.
+
+#### Inherited from
+
+[Web3Signer](Web3Signer.md).[isReady](Web3Signer.md#isready)
+
+___
+
+### sign
+
+▸ **sign**(`message`): `Promise`\<`Uint8Array`\>
+
+Signs data with the signer.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `message` | `string` \| `Uint8Array` | The data to sign. |
+
+#### Returns
+
+`Promise`\<`Uint8Array`\>
+
+A promise that resolves to the signature.
+
+#### Inherited from
+
+[Web3Signer](Web3Signer.md).[sign](Web3Signer.md#sign)
+
+___
+
 ### isSigner
 
 ▸ **isSigner**(`signer`): signer is Signer

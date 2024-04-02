@@ -95,6 +95,64 @@ await web3Signer.connect();
 
 ___
 
+### getSigner
+
+▸ **getSigner**(): `Promise`\<`Signer`\>
+
+#### Returns
+
+`Promise`\<`Signer`\>
+
+**`Inherit Doc`**
+
+#### Overrides
+
+Signer.getSigner
+
+___
+
+### isReady
+
+▸ **isReady**(): `Promise`\<`boolean`\>
+
+Checks if the signer is ready.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+A promise that resolves to a boolean indicating whether the signer is ready.
+
+#### Overrides
+
+[Signer](Signer.md).[isReady](Signer.md#isready)
+
+___
+
+### sign
+
+▸ **sign**(`message`): `Promise`\<`Uint8Array`\>
+
+Signs data with the signer.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `message` | `string` \| `Uint8Array` | The data to sign. |
+
+#### Returns
+
+`Promise`\<`Uint8Array`\>
+
+A promise that resolves to the signature.
+
+#### Overrides
+
+[Signer](Signer.md).[sign](Signer.md#sign)
+
+___
+
 ### isSigner
 
 ▸ **isSigner**(`signer`): signer is Signer
