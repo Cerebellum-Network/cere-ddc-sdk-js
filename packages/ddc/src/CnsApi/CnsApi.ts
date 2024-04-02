@@ -150,7 +150,11 @@ export class CnsApi {
 
       record = response.record;
     } catch (error) {
-      const isNotFound = error instanceof RpcError && error.code === GrpcStatus[GrpcStatus.NOT_FOUND];
+      /**
+       * TODO: replace error.message === 'no result' with error.code === GrpcStatus[GrpcStatus.NOT_FOUND] when the status is fixed on stroage node side
+       */
+      const isNotFound =
+        error instanceof RpcError && error.code === GrpcStatus[GrpcStatus.UNKNOWN] && error.message === 'no result'; // error.code === GrpcStatus[GrpcStatus.NOT_FOUND];
 
       if (!isNotFound) {
         throw error;
