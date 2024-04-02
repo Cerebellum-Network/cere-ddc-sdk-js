@@ -61,6 +61,11 @@ yargs(hideBin(process.argv))
           alias: 'name',
           type: 'string',
           describe: 'CNS name of the uploaded piece',
+        })
+        .option('accessToken', {
+          alias: ['t', 'token'],
+          type: 'string',
+          describe: 'Access token to upload the file',
         }),
     async (argv) => {
       const { isDirectory, cid } = await withClient(argv, (client) => upload(client, argv.path, argv));
@@ -93,6 +98,11 @@ yargs(hideBin(process.argv))
           normalize: true,
           default: '.',
           describe: 'Destination path to save the downloaded file or directory',
+        })
+        .option('accessToken', {
+          alias: ['t', 'token'],
+          type: 'string',
+          describe: 'Access token to download the file',
         })
         .option('bucketId', {
           alias: 'b',
@@ -156,7 +166,7 @@ yargs(hideBin(process.argv))
         .option('bucketAccess', {
           alias: 'access',
           choices: ['public', 'private'],
-          default: 'public',
+          default: 'private',
           describe: 'Whether the bucket is public',
         }),
     async ({ bucketAccess, ...argv }) => {

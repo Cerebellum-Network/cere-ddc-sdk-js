@@ -150,12 +150,7 @@ export class CnsApi {
 
       record = response.record;
     } catch (error) {
-      /**
-       * The error code is UNKNOWN when the record is not found.
-       *
-       * TODO: figure out a better way to detect NOT_FOUNT error. Probably change the error code on the node side to GRPC NOT_FOUND.
-       */
-      const isNotFound = error instanceof RpcError && error.code === GrpcStatus[GrpcStatus.UNKNOWN];
+      const isNotFound = error instanceof RpcError && error.code === GrpcStatus[GrpcStatus.NOT_FOUND];
 
       if (!isNotFound) {
         throw error;

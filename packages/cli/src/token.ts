@@ -47,6 +47,7 @@ export const createToken = async (options: TokenOptions) => {
     pieceCid: options.pieceCid,
     prev: options.prev,
     canDelegate: options.canDelegate,
+    subject: options.subject,
     expiresIn: options.expiresIn,
     bucketId: options.bucketId ? BigInt(options.bucketId) : undefined,
     operations: options.operations.map((op) => operationsMap[op]),

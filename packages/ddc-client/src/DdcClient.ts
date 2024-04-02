@@ -16,6 +16,7 @@ import {
   BalancedNode,
   AuthTokenParams,
   AuthToken,
+  CnsRecordGetOptions,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
 import { AccountId, Blockchain, BucketId, BucketParams, ClusterId, Sendable } from '@cere-ddc-sdk/blockchain';
@@ -376,9 +377,7 @@ export class DdcClient {
    * console.log(cid);
    * ```
    */
-  async resolveName(bucketId: BucketId, cnsName: string) {
-    const cid = await this.ddcNode.resolveName(bucketId, cnsName).catch(() => null);
-
-    return cid && cid.toString();
+  async resolveName(bucketId: BucketId, cnsName: string, options?: CnsRecordGetOptions) {
+    return this.ddcNode.resolveName(bucketId, cnsName, options);
   }
 }
