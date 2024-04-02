@@ -1,0 +1,8 @@
+{
+  "name": "@cere-ddc-sdk/cli-examples",
+  "version": "2.5.0",
+  "private": true,
+  "dependencies": {
+    "@cere-ddc-sdk/cli": "2.5.0"
+  }
+}

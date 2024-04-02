@@ -1,0 +1,9 @@
+body {
+  background-image: url('./bg.jpg');
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  background-position: center;
+  background-size: contain;
+  margin-top: 50px;
+}

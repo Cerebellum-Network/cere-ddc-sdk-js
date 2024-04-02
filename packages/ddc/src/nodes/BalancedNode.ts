@@ -15,6 +15,7 @@ import {
   PieceReadOptions,
   PieceStoreOptions,
   NodeInterface,
+  CnsRecordGetOptions,
 } from './NodeInterface';
 
 export type BalancedNodeConfig = LoggerOptions & {
@@ -126,7 +127,9 @@ export class BalancedNode implements NodeInterface {
     return this.withRetry(bucketId, RouterOperation.READ_CNS_RECORD, (node) => node.getCnsRecord(bucketId, name));
   }
 
-  async resolveName(bucketId: BucketId, cidOrName: string) {
-    return this.withRetry(bucketId, RouterOperation.READ_CNS_RECORD, (node) => node.resolveName(bucketId, cidOrName));
+  async resolveName(bucketId: BucketId, cidOrName: string, options?: CnsRecordGetOptions) {
+    return this.withRetry(bucketId, RouterOperation.READ_CNS_RECORD, (node) =>
+      node.resolveName(bucketId, cidOrName, options),
+    );
   }
 }
