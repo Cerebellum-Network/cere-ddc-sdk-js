@@ -74,7 +74,7 @@ The configuration file example
 
 # Examples
 
-- [CLI examples](/examples/cli/)
+- [CLI examples](../../examples/cli/)
 
 # License
 
