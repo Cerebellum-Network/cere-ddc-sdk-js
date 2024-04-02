@@ -4,7 +4,7 @@ export const KB = 1024;
 export const MB = 1024 * KB;
 
 /**
- * Maximum size of a piece of content, in bytes.
+ * Minimum size of a piece of content, in bytes.
  *
  * @hidden
  */
