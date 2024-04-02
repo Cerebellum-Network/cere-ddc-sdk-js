@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.5.0...v2.6.0) (2024-04-02)
+
+### Features
+
+- **cli:** Add auth token management command ([#240](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/240)) ([3fd725a](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/3fd725ae148e58d862056cea8cfafe4c87fef59e))
+- **ddc-client:** Add retries number configuration option ([#241](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/241)) ([92501fd](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/92501fdff1b95e2d9bf27c84fc266ebdad31aec8))
+- **ddc:** Use internal SDK signers to reduce signature requests to web3 wallets ([#237](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/237)) ([f0255a3](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/f0255a3b8de678ff004898e6c547926c8b193bc3))
+- Re-try piece store operation from buffered content ([#239](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/239)) ([c39dab8](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/c39dab80da108286c8ad40bfab7c458011c6d6cb))
+
+### Bug Fixes
+
+- **ddc:** Add gRPC request timeout to fallback from frozen nodes ([#223](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/223)) ([b58f36b](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/b58f36b578ca170f624373b0f9ee56c9b415da62))
+
 ## [2.5.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.4.0...v2.5.0) (2024-02-28)
 
 ### Features

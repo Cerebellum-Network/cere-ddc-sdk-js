@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/blockchain",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Cere Blockchain client",
   "type": "module",
   "main": "dist/index.cjs",

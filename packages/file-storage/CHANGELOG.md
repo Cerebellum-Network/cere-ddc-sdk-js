@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.5.0...v2.6.0) (2024-04-02)
+
+### Features
+
+- **ddc-client:** Add retries number configuration option ([#241](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/241)) ([92501fd](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/92501fdff1b95e2d9bf27c84fc266ebdad31aec8))
+- Re-try piece store operation from buffered content ([#239](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/239)) ([c39dab8](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/c39dab80da108286c8ad40bfab7c458011c6d6cb))
+
 ## [2.5.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.4.0...v2.5.0) (2024-02-28)
 
 **Note:** Version bump only for package @cere-ddc-sdk/file-storage
