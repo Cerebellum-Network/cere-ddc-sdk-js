@@ -72,6 +72,10 @@ The configuration file example
 }
 ```
 
+# Examples
+
+- [CLI examples](/examples/cli/)
+
 # License
 
 Licensed under the [Apache License](./LICENSE)

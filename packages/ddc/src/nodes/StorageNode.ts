@@ -258,7 +258,7 @@ export class StorageNode implements NodeInterface {
     this.logger.info(options, 'Reading piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
     this.logger.debug({ token }, 'Auth token');
 
-    const cid = await this.resolveName(bucketId, cidOrName);
+    const cid = await this.resolveName(bucketId, cidOrName, options);
     const contentStream = await this.fileApi.getFile({
       bucketId,
       token,
@@ -301,7 +301,7 @@ export class StorageNode implements NodeInterface {
     this.logger.info('Getting DAG Node by CID or name "%s" from bucket %s', cidOrName, bucketId);
     this.logger.debug({ token }, 'Auth token');
 
-    const cid = await this.resolveName(bucketId, cidOrName);
+    const cid = await this.resolveName(bucketId, cidOrName, options);
     const node = await this.dagApi.getNode({
       bucketId,
       token,

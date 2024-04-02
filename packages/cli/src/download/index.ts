@@ -7,12 +7,15 @@ import { downloadFile } from './downloadFile';
 
 export type DownloadOptions = {
   bucketId: string;
+  accessToken?: string;
 };
 
 export const download = async (client: DdcClient, source: string, dest: string, options: DownloadOptions) => {
   const bucketId = BigInt(options.bucketId);
   const isCid = Cid.isCid(source);
-  const cid = await client.resolveName(bucketId, source);
+  const cid = await client.resolveName(bucketId, source, {
+    accessToken: options.accessToken,
+  });
 
   if (!cid) {
     throw new Error(`Could not resolve CID for name "${source}"`);
@@ -40,6 +43,6 @@ export const download = async (client: DdcClient, source: string, dest: string, 
     isDirectory: isDag,
     cnsName: isCid ? null : source,
     dest: destPath,
-    cid,
+    cid: cid.toString(),
   };
 };
