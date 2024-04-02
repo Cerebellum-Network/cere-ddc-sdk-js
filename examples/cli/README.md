@@ -22,7 +22,7 @@ This example shows how to use DDC CLI
       "signer": "gospel fee escape timber toilet crouch artist catalog salt icon bulb ivory"
     }
     ```
-3. Topup the account with CERE tokens either by using the faucet or by sending some amount of CERE tokens from another account.
+3. Topup the account with CERE tokens either by using [the faucet](https://stats.cere.network/faucet) or by sending some amount of CERE tokens from another account.
 
     ```
     6PxrvjkVJFrQs6Tqdeov1GcJkS5rpzuM3NYGhX8KQErv49V2
