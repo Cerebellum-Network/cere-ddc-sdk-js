@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/ddc-client",
   "description": "DDC client",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "type": "module",
   "repository": {
     "type": "git",
@@ -30,7 +30,7 @@
   "dependencies": {
     "@cere-ddc-sdk/blockchain": "2.6.0",
     "@cere-ddc-sdk/ddc": "2.6.0",
-    "@cere-ddc-sdk/file-storage": "2.6.0"
+    "@cere-ddc-sdk/file-storage": "2.6.1"
   },
   "publishConfig": {
     "access": "public"
