@@ -58,7 +58,7 @@ export class FileStorage {
   constructor(configOrRouter: (RouterConfig & Config) | Router, config?: Config) {
     if (configOrRouter instanceof Router) {
       this.logger = createLogger('FileStorage', config);
-      this.ddcNode = new BalancedNode({ router: configOrRouter, logger: this.logger });
+      this.ddcNode = new BalancedNode({ ...config, router: configOrRouter, logger: this.logger });
 
       this.logger.debug(config, 'FileStorage created');
     } else {
