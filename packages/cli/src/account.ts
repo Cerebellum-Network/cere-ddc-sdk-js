@@ -18,5 +18,6 @@ export const account = async (client: DdcClient | null, { signer, signerType }: 
     balance: Number(balance / BigInt(CERE)),
     deposit: Number(deposit / BigInt(CERE)),
     address: uriSigner.address,
+    publicKey: '0x' + Buffer.from(uriSigner.publicKey).toString('hex'),
   };
 };

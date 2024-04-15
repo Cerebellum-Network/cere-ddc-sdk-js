@@ -217,6 +217,7 @@ yargs(hideBin(process.argv))
 
       console.log('Type:', argv.signerType);
       console.log('Address:', acc.address);
+      console.log('Public key:', acc.publicKey);
 
       if (!argv.random) {
         console.log('Balance:', acc.balance);
