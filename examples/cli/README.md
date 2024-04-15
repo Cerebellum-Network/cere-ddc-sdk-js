@@ -44,6 +44,7 @@ This example shows how to use DDC CLI
       Network: testnet
       Type: sr25519
       Address: 6PxrvjkVJFrQs6Tqdeov1GcJkS5rpzuM3NYGhX8KQErv49V2
+      Public key: 0x140366f3907d204001192a29c9e38243d344bae9b83726e531e46839ac461214
       Balance: 50
       Deposit: 0
     ```
@@ -110,6 +111,19 @@ This example shows how to use DDC CLI
       "bucketId": "27327" // <--
     }
     ```
+
+4. It is also possible to specify a list of DDC nodes to operate with
+    ```json
+    {
+      "nodes": [
+        {
+          "mode": "Full",
+          "grpcUrl": "grpc://128.140.103.37:9090",
+          "httpUrl": "https://storage-1.testnet.cere.network"
+        }
+      ]
+    }
+    ```  
 
   ### Upload/download a file to the bucket
 

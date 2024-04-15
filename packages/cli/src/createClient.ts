@@ -1,10 +1,18 @@
+import { StorageNodeMode } from '@cere-ddc-sdk/ddc';
 import { DdcClient, DEVNET, TESTNET, MAINNET, DdcClientConfig, UriSigner } from '@cere-ddc-sdk/ddc-client';
+
+type NodeConfig = {
+  grpcUrl: string;
+  httpUrl: string;
+  mode?: string;
+};
 
 export type CreateClientOptions = {
   signer: string;
   network: string;
   logLevel: string;
   signerType?: string;
+  nodes?: NodeConfig[];
 };
 
 const networkToPreset = {
@@ -22,6 +30,10 @@ export const createClient = (options: CreateClientOptions) => {
   return DdcClient.create(signer, {
     ...networkToPreset[network],
     logLevel: options.logLevel as DdcClientConfig['logLevel'],
+    nodes: options.nodes?.map((node) => ({
+      ...node,
+      mode: StorageNodeMode[(node.mode as keyof typeof StorageNodeMode) || 'Full'],
+    })),
   });
 };
 
