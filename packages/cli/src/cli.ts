@@ -23,6 +23,13 @@ yargs(hideBin(process.argv))
     default: 'testnet',
     describe: 'DDC network',
   })
+
+  .option('blockchainRpc', {
+    alias: ['rpc'],
+    type: 'string',
+    describe: 'Blockchain RPC URL. Owerrides the network default RPC URL',
+  })
+
   .option('signer', {
     alias: 's',
     type: 'string',
