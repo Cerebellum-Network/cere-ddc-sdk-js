@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.7.0-rc.2](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.7.0-rc.1...v2.7.0-rc.2) (2024-04-17)
+
+### Features
+
+- **cli:** Add CLI option to override default blockchain RPC URL ([#244](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/244)) ([1a8f9fd](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/1a8f9fd95e7a5805d4499d299a2214027b741b3c))
+
 ## [2.7.0-rc.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.6.1...v2.7.0-rc.1) (2024-04-15)
 
 ### Features
