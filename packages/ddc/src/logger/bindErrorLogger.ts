@@ -1,3 +1,4 @@
+import { RpcError } from '@protobuf-ts/runtime-rpc';
 import { Logger } from './types';
 
 type AnyFunction = (this: object, ...args: unknown[]) => Promise<unknown>;
@@ -11,7 +12,7 @@ export const bindErrorLogger = <T extends object, M extends keyof T>(obj: T, log
       try {
         return await original.apply(this, args);
       } catch (error) {
-        if (error instanceof Error && !loggedErrors.has(error)) {
+        if (error instanceof RpcError && !loggedErrors.has(error)) {
           loggedErrors.add(error);
           logger.error(error, 'Error in %s', original.name || 'anonymous function');
         }

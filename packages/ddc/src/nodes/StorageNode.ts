@@ -145,11 +145,11 @@ export class StorageNode implements NodeInterface {
     let cidBytes: Uint8Array | undefined = undefined;
     const token = await this.createAuthToken(options);
 
-    this.logger.info(options, 'Storing piece into bucket %s', bucketId);
-    this.logger.debug({ piece }, 'Piece');
-    this.logger.debug({ token }, 'Auth token');
+    this.logger.debug({ piece, options }, 'Store piece');
 
     if (MultipartPiece.isMultipartPiece(piece)) {
+      this.logger.info('Storing multipart piece into bucket %s', bucketId);
+
       cidBytes = await this.fileApi.putMultipartPiece({
         bucketId,
         token,
@@ -160,6 +160,8 @@ export class StorageNode implements NodeInterface {
     }
 
     if (Piece.isPiece(piece)) {
+      this.logger.info('Storing raw piece into bucket %s', bucketId);
+
       cidBytes = await this.fileApi.putRawPiece(
         {
           bucketId,
@@ -182,7 +184,7 @@ export class StorageNode implements NodeInterface {
       await this.storeCnsRecord(bucketId, new CnsRecord(cid, options.name), options);
     }
 
-    this.logger.info({ cid }, 'Stored piece into bucket %s', bucketId);
+    this.logger.info('Stored piece into bucket %s with CID %s', bucketId, cid);
 
     return cid;
   }
@@ -212,9 +214,8 @@ export class StorageNode implements NodeInterface {
   async storeDagNode(bucketId: BucketId, node: DagNode, options?: DagNodeStoreOptions) {
     const token = await this.createAuthToken(options);
 
-    this.logger.info(options, 'Storing DAG node into bucket %s', bucketId);
-    this.logger.debug({ node }, 'DAG node');
-    this.logger.debug({ token }, 'Auth token');
+    this.logger.info('Storing DAG node into bucket %s', bucketId);
+    this.logger.debug({ bucketId, node, options }, 'Store DAG node');
 
     const cidBytes = await this.dagApi.putNode({
       bucketId,
@@ -228,7 +229,7 @@ export class StorageNode implements NodeInterface {
       await this.storeCnsRecord(bucketId, new CnsRecord(cid, options.name), options);
     }
 
-    this.logger.info({ cid }, 'Stored DAG Node into bucket %s', bucketId);
+    this.logger.info('Stored DAG Node into bucket %s with CID %s', bucketId, cid);
 
     return cid;
   }
@@ -255,8 +256,8 @@ export class StorageNode implements NodeInterface {
   async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
     const token = await this.createAuthToken(options);
 
-    this.logger.info(options, 'Reading piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
-    this.logger.debug({ token }, 'Auth token');
+    this.logger.debug({ bucketId, cidOrName, options }, 'Read piece');
+    this.logger.info('Reading piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
 
     const cid = await this.resolveName(bucketId, cidOrName, options);
     const contentStream = await this.fileApi.getFile({
@@ -270,8 +271,8 @@ export class StorageNode implements NodeInterface {
       range: options?.range,
     });
 
-    this.logger.info({ cid: cid.toString() }, 'Read piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
-    this.logger.debug({ response }, 'Piece response');
+    this.logger.info('Read piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
+    this.logger.debug({ cid: cid.toString(), response }, 'Piece response');
 
     return response;
   }
@@ -311,8 +312,8 @@ export class StorageNode implements NodeInterface {
 
     const response = node && new DagNodeResponse(cid, new Uint8Array(node.data), node.links, node.tags);
 
-    this.logger.info({ cid: cid.toString() }, 'Got DAG Node by CID or name "%s" from bucket %s', cidOrName, bucketId);
-    this.logger.debug({ response }, 'DAG Node response');
+    this.logger.info('Got DAG Node by CID or name "%s" from bucket %s', cidOrName, bucketId);
+    this.logger.debug({ cid: cid.toString(), response }, 'DAG Node response');
 
     return response;
   }
@@ -339,9 +340,8 @@ export class StorageNode implements NodeInterface {
   async storeCnsRecord(bucketId: BucketId, record: CnsRecord, options?: CnsRecordStoreOptions) {
     const token = await this.createAuthToken(options);
 
+    this.logger.debug({ bucketId, record, options }, 'Store CNS record');
     this.logger.info('Storing CNS record into bucket %s', bucketId);
-    this.logger.debug({ record }, 'CNS record');
-    this.logger.debug({ token }, 'Auth token');
 
     const storredRecord = await this.cnsApi.putRecord({
       bucketId,

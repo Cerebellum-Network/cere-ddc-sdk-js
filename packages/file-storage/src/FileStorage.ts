@@ -148,8 +148,8 @@ export class FileStorage {
    * ```
    */
   async store(bucketId: BucketId, file: File, options: FileStoreOptions = {}) {
-    this.logger.info(options, 'Storing file into bucket %s', bucketId);
-    this.logger.debug({ file }, 'File');
+    this.logger.info('Storing file into bucket %s', bucketId);
+    this.logger.debug({ bucketId, file, options }, 'Store file');
 
     const partSize = options?.maxBufferSize || DEFAULT_BUFFER_SIZE;
 
@@ -162,7 +162,7 @@ export class FileStorage {
         ? await this.storeLarge(bucketId, file, { ...options, partSize })
         : await this.storeSmall(bucketId, file, options);
 
-    this.logger.info({ cid }, 'File stored');
+    this.logger.info('File stored with CID %s', cid);
 
     return cid;
   }
@@ -188,9 +188,9 @@ export class FileStorage {
    * ```
    */
   async read(bucketId: BucketId, cidOrName: string, options?: FileReadOptions) {
-    this.logger.info(options, 'Reading file from bucket %s by "%s"', bucketId, cidOrName);
+    this.logger.info('Reading file from bucket %s by "%s"', bucketId, cidOrName);
     const piece = await this.ddcNode.readPiece(bucketId, cidOrName, options);
-    this.logger.info({ cid: piece.cid }, 'File read');
+    this.logger.info('File response created with CID %s', piece.cid);
 
     return new FileResponse(piece.cid, piece.body, options);
   }

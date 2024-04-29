@@ -264,15 +264,30 @@ export class FileApi {
             bytesStoredOrDelivered += body.data.byteLength;
 
             if (enableAcks) {
-              await call.requests.send({
-                body: {
-                  oneofKind: 'ack',
-                  ack: await createAck(
-                    { requestId, bytesStoredOrDelivered, timestamp: Date.now() },
-                    { token, signer, logger: this.logger },
-                  ),
-                },
-              });
+              call.requests
+                .send({
+                  body: {
+                    oneofKind: 'ack',
+                    ack: await createAck(
+                      { requestId, bytesStoredOrDelivered, timestamp: Date.now() },
+                      { token, signer, logger: this.logger },
+                    ),
+                  },
+                })
+                .then(() => {
+                  this.logger.info(
+                    'Acknowledgment sent with request ID: %s (%d bytes)',
+                    requestId,
+                    bytesStoredOrDelivered,
+                  );
+                })
+                .catch(() => {
+                  this.logger.warn(
+                    'Failed to send acknowledgment with request ID: %s (%d bytes)',
+                    requestId,
+                    bytesStoredOrDelivered,
+                  );
+                });
             }
 
             await validator.update(body.data);
