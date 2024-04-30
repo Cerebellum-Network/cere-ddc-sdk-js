@@ -110,11 +110,14 @@ export class FileStorage {
     const parts: string[] = [];
     const partsStream = file.body.pipeThrough<Uint8Array>(withChunkSize(partSize));
 
+    let offset = 0;
     for await (const part of partsStream) {
-      const cid = await this.ddcNode.storePiece(bucketId, new Piece(part), {
+      const piece = new Piece(part, { multipartOffset: offset });
+      const cid = await this.ddcNode.storePiece(bucketId, piece, {
         accessToken: options?.accessToken,
       });
 
+      offset += part.byteLength;
       parts.push(cid);
     }
 
