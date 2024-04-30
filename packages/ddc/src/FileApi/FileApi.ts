@@ -307,6 +307,9 @@ export class FileApi {
       }
     }
 
-    return createContentStream(toDataStream.call(this));
+    /**
+     * Create content stream from Iterator using original chunk size to avoid unnecessary buffering.
+     */
+    return createContentStream(toDataStream.call(this), null);
   }
 }
