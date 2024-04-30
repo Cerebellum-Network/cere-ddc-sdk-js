@@ -17,7 +17,7 @@ import {
 import { createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes } from '../helpers';
 
 const [transportOptions] = getStorageNodes();
-const wholeSpecVariants = [
+const transportsVariants = [
   {
     name: 'Grpc Transport',
     transport: new GrpcTransport(transportOptions),
@@ -28,18 +28,12 @@ const wholeSpecVariants = [
   },
 ];
 
-const fileSpecVariants = [
-  { name: 'with ACKs', enableAcks: true, authenticate: false },
-  { name: 'without ACKs', enableAcks: false, authenticate: false },
-  { name: 'ACKs + proofs', enableAcks: true, authenticate: true },
+const apiVariants = [
+  { name: 'with proofs', authenticate: false },
+  { name: 'without proofs', authenticate: true },
 ];
 
-const dagSpecVariants = [
-  { name: 'with proofs', authenticate: true },
-  { name: 'without proofs', authenticate: false },
-];
-
-describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
+describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
   const bucketId = 1n;
   const testRunRandom = Math.round(Math.random() * 10 ** 5);
   const signer = new UriSigner(ROOT_USER_SEED);
@@ -50,7 +44,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     await token.sign(signer);
   });
 
-  describe.each(dagSpecVariants)('DAG Api ($name)', ({ authenticate }) => {
+  describe.each(apiVariants)('DAG Api ($name)', ({ authenticate }) => {
     const dagApi = new DagApi(transport, { authenticate });
     const nodeData = new Uint8Array(randomBytes(10));
 
@@ -160,8 +154,8 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     });
   });
 
-  describe.each(fileSpecVariants)('File Api ($name)', ({ enableAcks, authenticate }) => {
-    const fileApi = new FileApi(transport, { signer, enableAcks, authenticate });
+  describe.each(apiVariants)('File Api ($name)', ({ authenticate }) => {
+    const fileApi = new FileApi(transport, { signer, authenticate });
 
     const storeRawPiece = async (content: Content, meta?: PieceMeta) =>
       fileApi.putRawPiece(

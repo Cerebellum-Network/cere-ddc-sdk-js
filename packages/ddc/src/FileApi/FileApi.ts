@@ -125,7 +125,7 @@ export class FileApi {
   async putRawPiece({ token, ...metadata }: PutRawPieceMetadata, content: Content) {
     const meta = createRpcMeta(token);
     const size = getContentSize(content, metadata.size);
-    const { enableAcks, signer } = this.options;
+    const { signer } = this.options;
 
     this.logger.debug({ metadata, token }, 'Storing raw piece of size %d', size);
 
@@ -137,7 +137,7 @@ export class FileApi {
       throw new Error(`Raw piece size should not be greather then ${MAX_PIECE_SIZE / MB} MB`);
     }
 
-    if (enableAcks) {
+    if (signer) {
       meta.request = await createActivityRequest(
         { size, bucketId: metadata.bucketId, requestType: ActivityRequestType.STORE },
         { token, signer, logger: this.logger },
@@ -218,7 +218,7 @@ export class FileApi {
       range: request.range,
     });
 
-    if (enableAcks) {
+    if (signer) {
       meta.request = await createActivityRequest(
         {
           requestId,

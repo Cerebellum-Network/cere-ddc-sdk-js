@@ -30,6 +30,12 @@ const createSignatureMessage = (record: Omit<Record, 'signature'>) => {
 
 export type CnsApiOptions = LoggerOptions & {
   signer?: Signer;
+
+  /**
+   * TODO: Remove this option in the next major version.
+   *
+   * @deprecated There is no acknowledgment mechanism in the CNS API anymore.
+   * */
   enableAcks?: boolean;
 };
 
@@ -49,16 +55,13 @@ export type CnsApiOptions = LoggerOptions & {
 export class CnsApi {
   private logger: Logger;
   private api: CnsApiClient;
-  private options: CnsApiOptions;
 
-  constructor(transport: RpcTransport, options: CnsApiOptions = {}) {
+  constructor(
+    transport: RpcTransport,
+    private options: CnsApiOptions = {},
+  ) {
     this.api = new CnsApiClient(transport);
     this.logger = createLogger('CnsApi', options);
-
-    this.options = {
-      ...options,
-      enableAcks: options.enableAcks ?? !!options.signer, // ACKs are enabled by default if signer is provided
-    };
   }
 
   /**
@@ -92,14 +95,12 @@ export class CnsApi {
       throw new Error('Unnable to store CNS record. Signer required!');
     }
 
-    if (this.options.enableAcks) {
-      meta.request = await createActivityRequest(
-        { bucketId, size: ProtoRecord.toBinary(record).byteLength, requestType: ActivityRequestType.STORE },
-        { logger: this.logger, signer },
-      );
-    }
-
     const signature = await createSignature(signer, createSignatureMessage(record), { token });
+
+    meta.request = await createActivityRequest(
+      { bucketId, size: ProtoRecord.toBinary(record).byteLength, requestType: ActivityRequestType.STORE },
+      { logger: this.logger, signer },
+    );
 
     await this.api.put({ bucketId, record: { ...record, signature } }, { meta });
 
@@ -138,7 +139,7 @@ export class CnsApi {
     let record: ProtoRecord | undefined;
     const meta = createRpcMeta(token);
 
-    if (this.options.enableAcks) {
+    if (this.options.signer) {
       meta.request = await createActivityRequest(
         { bucketId, requestType: ActivityRequestType.GET },
         { token, logger: this.logger, signer: this.options.signer },

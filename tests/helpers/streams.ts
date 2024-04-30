@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { arrayBuffer } from 'stream/consumers';
 import { ReadableStream } from 'stream/web';
 
-import { KB } from './constants';
+import { MB } from './constants';
 
 export type DataStreamOptions = {
   chunkSize?: number;
@@ -10,7 +10,7 @@ export type DataStreamOptions = {
 };
 
 export const createDataStream = (contentSize: number, options?: DataStreamOptions) => {
-  const chunkSize = options?.chunkSize || 64 * KB;
+  const chunkSize = options?.chunkSize || MB;
   const chunkDelay = options?.chunkDelay || 0;
 
   let remainingDataSize = contentSize;
