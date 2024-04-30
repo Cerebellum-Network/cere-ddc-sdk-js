@@ -61,6 +61,7 @@ export const createLogger = (defaultPrefix: string, options: LoggerOptions = {})
             colorizeObjects: true,
             levelFirst: true,
             ignore: 'hostname,pid',
+            sync: true,
           },
   }));
 
