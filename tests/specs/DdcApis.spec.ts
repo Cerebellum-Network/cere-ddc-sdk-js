@@ -15,7 +15,15 @@ import {
   AuthTokenOperation,
 } from '@cere-ddc-sdk/ddc';
 
-import { createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes } from '../helpers';
+import {
+  createDataStream,
+  streamToU8a,
+  MB,
+  DDC_BLOCK_SIZE,
+  ROOT_USER_SEED,
+  getStorageNodes,
+  getClientConfig,
+} from '../helpers';
 
 const [transportOptions] = getStorageNodes();
 const transportsVariants = [
@@ -35,6 +43,7 @@ const apiVariants = [
 ];
 
 describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
+  const { logLevel } = getClientConfig();
   const bucketId = 1n;
   const testRunRandom = Math.round(Math.random() * 10 ** 5);
   const signer = new UriSigner(ROOT_USER_SEED);
@@ -46,7 +55,7 @@ describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
   });
 
   describe.each(apiVariants)('DAG Api ($name)', ({ authenticate }) => {
-    const dagApi = new DagApi(transport, { authenticate });
+    const dagApi = new DagApi(transport, { authenticate, logLevel });
     const nodeData = new Uint8Array(randomBytes(10));
 
     let nodeCid: Uint8Array;
@@ -124,7 +133,7 @@ describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
   });
 
   describe('Cns Api', () => {
-    const cnsApi = new CnsApi(transport, { signer });
+    const cnsApi = new CnsApi(transport, { signer, logLevel });
     const testCid = new Cid('baebb4ifbvlaklsqk4ex2n2xfaghhrkd3bbqg53d2du4sdgsz7uixt25ycu').toBytes();
     const alias = `dir/file-name-${testRunRandom}`;
 
@@ -156,7 +165,7 @@ describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
   });
 
   describe.each(apiVariants)('File Api ($name)', ({ authenticate }) => {
-    const fileApi = new FileApi(transport, { signer, authenticate });
+    const fileApi = new FileApi(transport, { signer, authenticate, logLevel });
 
     const storeRawPiece = async (content: Content, meta?: PieceMeta) =>
       fileApi.putRawPiece(
@@ -320,7 +329,12 @@ describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
       test('Acknowledgments quota', async () => {
         expect(multipartPieceCid).toBeDefined();
 
-        const unfairFileApi = new FileApi(transport, { signer: createRandomSigner(), enableAcks: false });
+        const unfairFileApi = new FileApi(transport, {
+          signer: createRandomSigner(),
+          enableAcks: false,
+          logLevel,
+        });
+
         const contentStream = await unfairFileApi.getFile({
           bucketId,
           token,
