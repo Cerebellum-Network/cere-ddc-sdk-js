@@ -45,7 +45,17 @@ export class DdcClient {
     private readonly signer: Signer,
     private readonly logger: Logger,
   ) {
-    bindErrorLogger(this, this.logger, ['createBucket', 'getBucket', 'getBucketList', 'store', 'read']);
+    bindErrorLogger(this, this.logger, [
+      'getBalance',
+      'depositBalance',
+      'getDeposit',
+      'createBucket',
+      'getBucket',
+      'getBucketList',
+      'store',
+      'read',
+      'resolveName',
+    ]);
   }
 
   /**

@@ -1,4 +1,5 @@
 import { randomBytes } from 'crypto';
+import { createRandomSigner } from '@cere-ddc-sdk/blockchain';
 import {
   Content,
   WebsocketTransport,
@@ -246,14 +247,13 @@ describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
     describe('Multipart piece', () => {
       let multipartPieceCid: Uint8Array;
       let rawPieceCids: Uint8Array[];
-      const partSize = 4 * MB;
+      const partSize = 128 * MB;
+      const totalSize = partSize * 2 + MB;
       const rawPieceContents = [
         createDataStream(partSize, { chunkSize: MB }),
         createDataStream(partSize, { chunkSize: MB }),
-        createDataStream(partSize, { chunkSize: MB }),
+        createDataStream(MB, { chunkSize: MB }),
       ];
-
-      const totalSize = partSize * rawPieceContents.length;
 
       beforeAll(async () => {
         rawPieceCids = await Promise.all(
@@ -315,6 +315,19 @@ describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
         const content = await streamToU8a(contentStream);
 
         expect(content.byteLength).toEqual(rangeSize);
+      });
+
+      test('Acknowledgments quota', async () => {
+        expect(multipartPieceCid).toBeDefined();
+
+        const unfairFileApi = new FileApi(transport, { signer: createRandomSigner(), enableAcks: false });
+        const contentStream = await unfairFileApi.getFile({
+          bucketId,
+          token,
+          cid: multipartPieceCid,
+        });
+
+        await expect(streamToU8a(contentStream)).rejects.toThrow();
       });
     });
   });
