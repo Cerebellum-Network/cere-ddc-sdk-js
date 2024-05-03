@@ -75,7 +75,7 @@ const bcPresets = {
   testnet: { ...TESTNET, baseUrl: 'https://storage.testnet.cere.network' },
   mainnet: { ...MAINNET, baseUrl: 'https://storage.dragon.cere.network' },
   custom: {
-    blockchain: process.env.BC_ENDPOINT || '',
+    blockchain: __BC_ENDPOINT__ || '',
     baseUrl: 'http://localhost:8091',
   },
 };

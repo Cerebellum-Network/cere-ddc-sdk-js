@@ -31,7 +31,7 @@ export default defineConfig(({ command }) => {
     resolve,
 
     define: {
-      'process.env.BC_ENDPOINT': JSON.stringify('ws://localhost:9944'),
+      __BC_ENDPOINT__: JSON.stringify('ws://localhost:9944'),
     },
   };
 });
