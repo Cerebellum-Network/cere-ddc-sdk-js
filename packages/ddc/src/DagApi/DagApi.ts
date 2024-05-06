@@ -15,6 +15,11 @@ type GetRequest = ProtoGetRequest & AuthParams;
 export type DagApiOptions = LoggerOptions & {
   signer?: Signer;
   authenticate?: boolean;
+  /**
+   * TODO: Remove this option in the next major version.
+   *
+   * @deprecated There is no acknowledgment mechanism in the DAG API anymore.
+   */
   enableAcks?: boolean;
 };
 
@@ -42,7 +47,6 @@ export class DagApi {
 
     this.options = {
       ...options,
-      enableAcks: options.enableAcks ?? !!options.signer, // ACKs are enabled by default if signer is provided
       authenticate: options.authenticate ?? false,
     };
   }
@@ -68,7 +72,7 @@ export class DagApi {
 
     this.logger.debug({ token, bucketId, node, cid }, 'Storing DAG Node');
 
-    if (this.options.enableAcks && node) {
+    if (this.options.signer && node) {
       meta.request = await createActivityRequest(
         { id: cid, bucketId, size: Node.toBinary(node).byteLength, requestType: ActivityRequestType.STORE },
         { token, logger: this.logger, signer: this.options.signer },
@@ -113,7 +117,7 @@ export class DagApi {
       logger: this.logger,
     });
 
-    if (this.options.enableAcks) {
+    if (this.options.signer) {
       meta.request = await createActivityRequest(
         { id: request.cid, bucketId: request.bucketId, requestType: ActivityRequestType.GET },
         { token, logger: this.logger, signer: this.options.signer },

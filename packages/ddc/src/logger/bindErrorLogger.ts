@@ -10,8 +10,10 @@ export const bindErrorLogger = <T extends object, M extends keyof T>(obj: T, log
     const patched = async function (this: object, ...args: unknown[]) {
       try {
         return await original.apply(this, args);
-      } catch (error) {
-        if (error instanceof Error && !loggedErrors.has(error)) {
+      } catch (err) {
+        const error = err as Error;
+
+        if (!loggedErrors.has(error)) {
           loggedErrors.add(error);
           logger.error(error, 'Error in %s', original.name || 'anonymous function');
         }

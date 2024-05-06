@@ -86,7 +86,10 @@ export const isContentStream = (input: unknown): input is ContentStream => {
   return !!input && typeof input === 'object' && ContentStreamSymbol in input;
 };
 
-export const createContentStream = (input: Content | ContentStream, chunkSize = CONTENT_CHUNK_SIZE): ContentStream => {
+export const createContentStream = (
+  input: Content | ContentStream,
+  chunkSize: number | null = CONTENT_CHUNK_SIZE,
+): ContentStream => {
   const asyncIterator = toIterable(input instanceof Uint8Array ? [input] : input);
 
   const stream = new ReadableStream({
@@ -103,7 +106,7 @@ export const createContentStream = (input: Content | ContentStream, chunkSize = 
     },
   });
 
-  return Object.assign(stream.pipeThrough<Uint8Array>(withChunkSize(chunkSize)), {
+  return Object.assign(chunkSize ? stream.pipeThrough<Uint8Array>(withChunkSize(chunkSize)) : stream, {
     [ContentStreamSymbol]: true,
   });
 };

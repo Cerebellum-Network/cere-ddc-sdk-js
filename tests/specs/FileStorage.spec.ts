@@ -47,7 +47,7 @@ describe('File storage', () => {
 
   describe('Large file', () => {
     let fileCid: string;
-    const fileSize = 150 * MB;
+    const fileSize = 500 * MB;
     const fileStream = createDataStream(fileSize, {
       chunkSize: 1 * MB, // Use 1 MB chank size to make the test faster
     });

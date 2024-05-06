@@ -125,7 +125,7 @@ export class FileApi {
   async putRawPiece({ token, ...metadata }: PutRawPieceMetadata, content: Content) {
     const meta = createRpcMeta(token);
     const size = getContentSize(content, metadata.size);
-    const { enableAcks, signer } = this.options;
+    const { signer } = this.options;
 
     this.logger.debug({ metadata, token }, 'Storing raw piece of size %d', size);
 
@@ -137,7 +137,7 @@ export class FileApi {
       throw new Error(`Raw piece size should not be greather then ${MAX_PIECE_SIZE / MB} MB`);
     }
 
-    if (enableAcks) {
+    if (signer) {
       meta.request = await createActivityRequest(
         { size, bucketId: metadata.bucketId, requestType: ActivityRequestType.STORE },
         { token, signer, logger: this.logger },
@@ -218,7 +218,7 @@ export class FileApi {
       range: request.range,
     });
 
-    if (enableAcks) {
+    if (signer) {
       meta.request = await createActivityRequest(
         {
           requestId,
@@ -264,15 +264,30 @@ export class FileApi {
             bytesStoredOrDelivered += body.data.byteLength;
 
             if (enableAcks) {
-              await call.requests.send({
-                body: {
-                  oneofKind: 'ack',
-                  ack: await createAck(
-                    { requestId, bytesStoredOrDelivered, timestamp: Date.now() },
-                    { token, signer, logger: this.logger },
-                  ),
-                },
-              });
+              call.requests
+                .send({
+                  body: {
+                    oneofKind: 'ack',
+                    ack: await createAck(
+                      { requestId, bytesStoredOrDelivered, timestamp: Date.now() },
+                      { token, signer, logger: this.logger },
+                    ),
+                  },
+                })
+                .then(() => {
+                  this.logger.info(
+                    'Acknowledgment sent with request ID: %s (%d bytes)',
+                    requestId,
+                    bytesStoredOrDelivered,
+                  );
+                })
+                .catch(() => {
+                  this.logger.warn(
+                    'Failed to send acknowledgment with request ID: %s (%d bytes)',
+                    requestId,
+                    bytesStoredOrDelivered,
+                  );
+                });
             }
 
             await validator.update(body.data);
@@ -292,6 +307,9 @@ export class FileApi {
       }
     }
 
-    return createContentStream(toDataStream.call(this));
+    /**
+     * Create content stream from Iterator using original chunk size to avoid unnecessary buffering.
+     */
+    return createContentStream(toDataStream.call(this), null);
   }
 }

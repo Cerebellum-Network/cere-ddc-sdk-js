@@ -7,29 +7,30 @@
     "start": "vite --open",
     "build": "tsc && vite build",
     "playground": "npm run start",
+    "preview": "vite preview --open",
     "clean": "rimraf dist"
   },
   "dependencies": {
     "@cere-ddc-sdk/blockchain": "2.7.0-rc.2",
     "@cere-ddc-sdk/ddc-client": "2.7.0-rc.2",
-    "@cere/embed-wallet": "^0.16.0",
-    "@emotion/react": "^11.11.3",
-    "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.15.2",
-    "@mui/lab": "^5.0.0-alpha.158",
-    "@mui/material": "^5.15.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "@cere/embed-wallet": "^0.17.0",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.16",
+    "@mui/lab": "^5.0.0-alpha.170",
+    "@mui/material": "^5.15.16",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.3",
-    "vite-tsconfig-paths": "^4.2.2"
+    "vite-tsconfig-paths": "^4.3.2"
   },
   "devDependencies": {
-    "@types/react": "^18.2.45",
-    "@types/react-dom": "^18.2.18",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.5",
-    "vite": "^5.0.10",
-    "vite-plugin-node-polyfills": "^0.19.0"
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "vite": "^5.2.11",
+    "vite-plugin-node-polyfills": "^0.21.0"
   }
 }

@@ -45,7 +45,17 @@ export class DdcClient {
     private readonly signer: Signer,
     private readonly logger: Logger,
   ) {
-    bindErrorLogger(this, this.logger, ['createBucket', 'getBucket', 'getBucketList', 'store', 'read']);
+    bindErrorLogger(this, this.logger, [
+      'getBalance',
+      'depositBalance',
+      'getDeposit',
+      'createBucket',
+      'getBucket',
+      'getBucketList',
+      'store',
+      'read',
+      'resolveName',
+    ]);
   }
 
   /**
@@ -179,7 +189,7 @@ export class DdcClient {
    * ```
    */
   async createBucket(clusterId: ClusterId, params: Partial<BucketParams> = {}) {
-    this.logger.info(params, 'Creating bucket on cluster %s', clusterId);
+    this.logger.info('Creating bucket on cluster %s', clusterId);
 
     const defaultParams: BucketParams = {
       isPublic: false,
@@ -191,9 +201,7 @@ export class DdcClient {
     );
 
     const [bucketId] = this.blockchain.ddcCustomers.extractCreatedBucketIds(response.events);
-
-    this.logger.debug({ response }, 'Blockchain response');
-    this.logger.info(`Bucket ${bucketId} created on cluster ${clusterId}`);
+    this.logger.info('Bucket %s created in cluster %s in TX: %s', bucketId, clusterId, response.txHash);
 
     return bucketId;
   }
@@ -240,7 +248,6 @@ export class DdcClient {
     const list = await this.blockchain.ddcCustomers.listBuckets();
 
     this.logger.info('Got bucket list of lenght %s', list.length);
-    this.logger.debug({ list }, 'Bucket list');
 
     return list;
   }

@@ -3,6 +3,17 @@ import { Buffer } from 'buffer';
 
 import { LoggerConfig, Logger, LoggerOptions } from './types';
 
+const truncateHex = function (input: string, maxLength = 100, separator = '...') {
+  if (input.length <= maxLength) return input;
+
+  const separatorLength = separator.length,
+    charsToShow = maxLength - separatorLength,
+    frontChars = Math.ceil(charsToShow / 2),
+    backChars = Math.floor(charsToShow / 2);
+
+  return input.substring(0, frontChars) + separator + input.substring(input.length - backChars);
+};
+
 /**
  * Maps the log object using the provided function.
  */
@@ -10,8 +21,9 @@ const mapLog = (fn: (value: any, key: string) => any) => (log: any) => {
   const nextLog = { ...log };
   for (const [key, value] of Object.entries(log)) {
     const isObject = value && typeof value === 'object' && !ArrayBuffer.isView(value);
+    const isError = value instanceof Error;
 
-    nextLog[key] = isObject ? mapLog(fn)(value) : fn(value, key);
+    nextLog[key] = isObject && !isError ? mapLog(fn)(value) : fn(value, key);
   }
 
   return nextLog;
@@ -49,6 +61,7 @@ export const createLogger = (defaultPrefix: string, options: LoggerOptions = {})
             colorizeObjects: true,
             levelFirst: true,
             ignore: 'hostname,pid',
+            sync: true,
           },
   }));
 
@@ -56,9 +69,15 @@ export const createLogger = (defaultPrefix: string, options: LoggerOptions = {})
     level: logLevel,
     msgPrefix,
     transport: { targets },
+    depthLimit: 3,
+    edgeLimit: 10,
     formatters: {
       log: mapLog((value) => {
-        return value instanceof Uint8Array ? '0x' + Buffer.from(value).toString('hex') : value;
+        if (value instanceof Uint8Array) {
+          return '0x' + truncateHex(Buffer.from(value).toString('hex'));
+        }
+
+        return value;
       }),
     },
   });

@@ -63,20 +63,30 @@ export class BalancedNode implements NodeInterface {
     body: (node: NodeInterface, bail: (e: Error) => void, attempt: number) => Promise<T>,
     options: RetryOptions = {},
   ) {
+    let lastError: RpcError | undefined;
     const exclude: string[] = [];
 
     return retry(
       async (bail, attempt) => {
-        try {
-          const node = await this.router.getNode(operation, bucketId, exclude);
-          exclude.push(node.nodeId);
+        let node: NodeInterface;
 
+        try {
+          node = await this.router.getNode(operation, bucketId, exclude);
+
+          exclude.push(node.nodeId);
+        } catch (error) {
+          return bail(lastError || (error as Error));
+        }
+
+        try {
           return await body(node, bail, attempt);
         } catch (error) {
           if (
             error instanceof RpcError &&
             RETRYABLE_GRPC_ERROR_CODES.map((status) => GrpcStatus[status]).includes(error.code)
           ) {
+            lastError = error;
+
             throw error;
           }
 

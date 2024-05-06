@@ -1,4 +1,5 @@
 import { randomBytes } from 'crypto';
+import { createRandomSigner } from '@cere-ddc-sdk/blockchain';
 import {
   Content,
   WebsocketTransport,
@@ -14,10 +15,18 @@ import {
   AuthTokenOperation,
 } from '@cere-ddc-sdk/ddc';
 
-import { createDataStream, streamToU8a, MB, DDC_BLOCK_SIZE, ROOT_USER_SEED, getStorageNodes } from '../helpers';
+import {
+  createDataStream,
+  streamToU8a,
+  MB,
+  DDC_BLOCK_SIZE,
+  ROOT_USER_SEED,
+  getStorageNodes,
+  getClientConfig,
+} from '../helpers';
 
 const [transportOptions] = getStorageNodes();
-const wholeSpecVariants = [
+const transportsVariants = [
   {
     name: 'Grpc Transport',
     transport: new GrpcTransport(transportOptions),
@@ -28,18 +37,13 @@ const wholeSpecVariants = [
   },
 ];
 
-const fileSpecVariants = [
-  { name: 'with ACKs', enableAcks: true, authenticate: false },
-  { name: 'without ACKs', enableAcks: false, authenticate: false },
-  { name: 'ACKs + proofs', enableAcks: true, authenticate: true },
+const apiVariants = [
+  { name: 'with proofs', authenticate: false },
+  { name: 'without proofs', authenticate: true },
 ];
 
-const dagSpecVariants = [
-  { name: 'with proofs', authenticate: true },
-  { name: 'without proofs', authenticate: false },
-];
-
-describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
+describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
+  const { logLevel } = getClientConfig();
   const bucketId = 1n;
   const testRunRandom = Math.round(Math.random() * 10 ** 5);
   const signer = new UriSigner(ROOT_USER_SEED);
@@ -50,8 +54,8 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     await token.sign(signer);
   });
 
-  describe.each(dagSpecVariants)('DAG Api ($name)', ({ authenticate }) => {
-    const dagApi = new DagApi(transport, { authenticate });
+  describe.each(apiVariants)('DAG Api ($name)', ({ authenticate }) => {
+    const dagApi = new DagApi(transport, { authenticate, logLevel });
     const nodeData = new Uint8Array(randomBytes(10));
 
     let nodeCid: Uint8Array;
@@ -129,7 +133,7 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
   });
 
   describe('Cns Api', () => {
-    const cnsApi = new CnsApi(transport, { signer });
+    const cnsApi = new CnsApi(transport, { signer, logLevel });
     const testCid = new Cid('baebb4ifbvlaklsqk4ex2n2xfaghhrkd3bbqg53d2du4sdgsz7uixt25ycu').toBytes();
     const alias = `dir/file-name-${testRunRandom}`;
 
@@ -160,8 +164,8 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     });
   });
 
-  describe.each(fileSpecVariants)('File Api ($name)', ({ enableAcks, authenticate }) => {
-    const fileApi = new FileApi(transport, { signer, enableAcks, authenticate });
+  describe.each(apiVariants)('File Api ($name)', ({ authenticate }) => {
+    const fileApi = new FileApi(transport, { signer, authenticate, logLevel });
 
     const storeRawPiece = async (content: Content, meta?: PieceMeta) =>
       fileApi.putRawPiece(
@@ -252,14 +256,13 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
     describe('Multipart piece', () => {
       let multipartPieceCid: Uint8Array;
       let rawPieceCids: Uint8Array[];
-      const partSize = 4 * MB;
+      const partSize = 128 * MB;
+      const totalSize = partSize * 2 + MB;
       const rawPieceContents = [
         createDataStream(partSize, { chunkSize: MB }),
         createDataStream(partSize, { chunkSize: MB }),
-        createDataStream(partSize, { chunkSize: MB }),
+        createDataStream(MB, { chunkSize: MB }),
       ];
-
-      const totalSize = partSize * rawPieceContents.length;
 
       beforeAll(async () => {
         rawPieceCids = await Promise.all(
@@ -321,6 +324,24 @@ describe.each(wholeSpecVariants)('DDC APIs ($name)', ({ transport }) => {
         const content = await streamToU8a(contentStream);
 
         expect(content.byteLength).toEqual(rangeSize);
+      });
+
+      test('Acknowledgments quota', async () => {
+        expect(multipartPieceCid).toBeDefined();
+
+        const unfairFileApi = new FileApi(transport, {
+          signer: createRandomSigner(),
+          enableAcks: false,
+          logLevel,
+        });
+
+        const contentStream = await unfairFileApi.getFile({
+          bucketId,
+          token,
+          cid: multipartPieceCid,
+        });
+
+        await expect(streamToU8a(contentStream)).rejects.toThrow();
       });
     });
   });

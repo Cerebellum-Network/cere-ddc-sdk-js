@@ -72,7 +72,8 @@ export class Router {
       throw new Error('No nodes available to handle the operation');
     }
 
-    this.logger.info(node, `Selected node for operation "%s" in bucket %s`, operation, bucketId);
+    this.logger.info(`Selected node for operation "%s" in bucket %s: %s`, operation, bucketId, node.httpUrl);
+    this.logger.debug({ bucketId, node }, 'Selected node');
 
     return new StorageNode(this.signer, {
       ...node,
