@@ -3,15 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { LoadingButton } from '@mui/lab';
 import { EmbedWallet } from '@cere/embed-wallet';
 import FileIcon from '@mui/icons-material/InsertDriveFileOutlined';
-import {
-  Blockchain,
-  Cluster,
-  Bucket,
-  BucketId,
-  ClusterId,
-  Web3Signer,
-  CereWalletSigner,
-} from '@cere-ddc-sdk/blockchain';
+import { Blockchain, Cluster, BucketId, ClusterId, Web3Signer, CereWalletSigner } from '@cere-ddc-sdk/blockchain';
 
 import {
   File,
@@ -101,9 +93,8 @@ export const Playground = () => {
   const [bcCustomUrl, setBcCustomUrl] = useState(bcPresets.custom.blockchain);
   const [clusterId, setClusterId] = useState<string>();
   const [clusters, setClusters] = useState<Cluster[]>([]);
-  const [bucketId, setBucketId] = useState<BucketId | null>();
-  const [buckets, setBuckets] = useState<Bucket[]>([]);
-  const [myBucketsOnly, setMyBucketsOnly] = useState(true);
+  const [bucketId, setBucketId] = useState<BucketId | undefined>();
+  const [isNewBucket, setIsNewBucket] = useState(false);
   const [balance, setBalance] = useState<string>();
   const [deposit, setDeposit] = useState<string>();
   const [extraDeposit, setExtraDeposit] = useState<number>(0);
@@ -111,24 +102,9 @@ export const Playground = () => {
 
   const isCompleted = !!realFileCid && !!randomFileCid;
   const currentClusterId = clusterId || clusters[0]?.clusterId;
-  const clusterBuckets = useMemo(
-    () =>
-      buckets
-        .filter(
-          ({ clusterId, ownerId }) =>
-            clusterId === currentClusterId && (myBucketsOnly ? signer?.address === ownerId : true),
-        )
-        .sort((a, b) => Number(a.bucketId - b.bucketId)),
-    [buckets, currentClusterId, myBucketsOnly, signer],
-  );
 
-  const currentBucketId = useMemo(
-    () => (bucketId === null ? null : bucketId || (clusterBuckets.length ? clusterBuckets[0].bucketId : undefined)),
-    [bucketId, clusterBuckets],
-  );
-
-  const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, currentBucketId, cnsName, name].join('/');
-  const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].baseUrl, currentBucketId, cid].join('/');
+  const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, bucketId, cnsName, name].join('/');
+  const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].baseUrl, bucketId, cid].join('/');
 
   const cereWallet = useMemo(() => new EmbedWallet({ env: 'dev', appId: 'ddc-playground' }), []);
   const handleSkip = useCallback(() => {
@@ -175,13 +151,7 @@ export const Playground = () => {
   }, [cereWallet, seed, signerType]);
 
   const handleSelectBucket = useCallback(async () => {
-    if (currentBucketId) {
-      return setStep(step + 1);
-    }
-
-    if (!currentClusterId) {
-      setBucketId(1n);
-
+    if (bucketId && !isNewBucket) {
       return setStep(step + 1);
     }
 
@@ -191,7 +161,6 @@ export const Playground = () => {
         isPublic: true,
       });
 
-      setBuckets(await client!.getBucketList());
       setBucketId(newBucketId);
       setStep(step + 1);
     } catch (error) {
@@ -199,7 +168,7 @@ export const Playground = () => {
     } finally {
       setInProgress(false);
     }
-  }, [currentBucketId, client, currentClusterId, step]);
+  }, [bucketId, client, currentClusterId, isNewBucket, step]);
 
   const handleRandomFileUpload = useCallback(async () => {
     setInProgress(true);
@@ -209,7 +178,7 @@ export const Playground = () => {
     const file = new File(stream, { size });
 
     try {
-      const uri = await client!.store(currentBucketId!, file);
+      const uri = await client!.store(bucketId!, file);
       const fileResponse = await client!.read(uri);
       const contentBuffer = await fileResponse.arrayBuffer();
 
@@ -224,7 +193,7 @@ export const Playground = () => {
     }
 
     setInProgress(false);
-  }, [client, currentBucketId, randomFileSize, step]);
+  }, [client, bucketId, randomFileSize, step]);
 
   const handleRealFileUpload = useCallback(async () => {
     setInProgress(true);
@@ -233,11 +202,11 @@ export const Playground = () => {
     try {
       const dagNodeData = JSON.stringify({ createTime: Date.now() });
       const existingDagNode = await client!
-        .read(new DagNodeUri(currentBucketId!, cnsName))
+        .read(new DagNodeUri(bucketId!, cnsName))
         .catch(() => new DagNode(dagNodeData));
 
       const file = new File(acceptedFile.stream(), { size: acceptedFile.size });
-      const uri = await client!.store(currentBucketId!, file);
+      const uri = await client!.store(bucketId!, file);
       const fileLink = new Link(uri.cid, acceptedFile.size, acceptedFile.name);
 
       /**
@@ -248,7 +217,7 @@ export const Playground = () => {
         fileLink,
       ]);
 
-      await client!.store(currentBucketId!, dagNode, { name: cnsName });
+      await client!.store(bucketId!, dagNode, { name: cnsName });
       const fileResponse = await client!.read(uri);
       const contentBuffer = await fileResponse.arrayBuffer();
 
@@ -263,7 +232,7 @@ export const Playground = () => {
     }
 
     setInProgress(false);
-  }, [client, currentBucketId, dropzone.acceptedFiles, step]);
+  }, [client, bucketId, dropzone.acceptedFiles, step]);
 
   const handleInitClient = useCallback(async () => {
     const preset = bcPresets[selectedBc];
@@ -276,16 +245,14 @@ export const Playground = () => {
       setInProgress(true);
       const blockchain = await Blockchain.connect({ wsEndpoint: preset.blockchain });
       const client = await DdcClient.create(signer!, { ...preset, blockchain, logLevel: 'debug' });
-      const [clusters, buckets, balance, deposit] = await Promise.all([
+      const [clusters, balance, deposit] = await Promise.all([
         blockchain.ddcClusters.listClusters(),
-        client.getBucketList(),
         client.getBalance(),
         client.getDeposit(),
       ]);
 
       setClient(client);
       setClusters(clusters);
-      setBuckets(buckets);
       setBalance(blockchain.formatBalance(balance, false));
       setDeposit(blockchain.formatBalance(deposit, false));
       setStep(step + 1);
@@ -471,13 +438,13 @@ export const Playground = () => {
             </StepContent>
           </Step>
 
-          <Step completed={!!currentBucketId && step > 3}>
+          <Step completed={!!bucketId && step > 3}>
             <StepLabel error={errorStep === 3}>
               Select bucket
-              {!!currentBucketId && step > 3 && (
+              {!!bucketId && step > 3 && (
                 <Typography color="GrayText" variant="caption">
                   {' - '}
-                  {currentBucketId.toString()}
+                  {bucketId.toString()}
                 </Typography>
               )}
             </StepLabel>
@@ -508,59 +475,32 @@ export const Playground = () => {
 
                 {currentClusterId && (
                   <Stack spacing={1} direction="row" alignSelf="stretch">
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Bucket</InputLabel>
-                      <Select
-                        label="Bucket"
-                        value={
-                          bucketId === null
-                            ? 'new'
-                            : bucketId || (clusterBuckets.length ? clusterBuckets[0].bucketId : 'new')
-                        }
-                        onChange={(event) =>
-                          setBucketId(event.target.value === 'new' ? null : BigInt(event.target.value))
-                        }
-                      >
-                        <MenuItem key="new" value="new">
-                          <Typography color="GrayText">Create new...</Typography>
-                        </MenuItem>
-
-                        {clusterBuckets.map(({ bucketId, ownerId }) => (
-                          <MenuItem key={bucketId.toString()} value={bucketId.toString()}>
-                            <Box
-                              display="flex"
-                              flex={1}
-                              justifyContent="space-between"
-                              alignItems="center"
-                              marginRight={1}
-                            >
-                              <Typography>{bucketId.toString()}</Typography>
-                              {ownerId === signer?.address && (
-                                <Typography variant="caption" color="GrayText">
-                                  My bucket
-                                </Typography>
-                              )}
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                    <TextField
+                      label="Bucket ID"
+                      size="small"
+                      type="number"
+                      disabled={isNewBucket}
+                      value={isNewBucket ? '' : bucketId?.toString() || ''}
+                      onChange={(event) => setBucketId(event.target.value ? BigInt(event.target.value) : undefined)}
+                    />
 
                     <FormControlLabel
-                      label="My buckets"
+                      label="Create new"
                       sx={{ whiteSpace: 'nowrap' }}
                       control={
-                        <Checkbox
-                          checked={myBucketsOnly}
-                          onChange={(event) => setMyBucketsOnly(event.target.checked)}
-                        />
+                        <Checkbox checked={isNewBucket} onChange={(event) => setIsNewBucket(event.target.checked)} />
                       }
                     />
                   </Stack>
                 )}
 
                 <Stack direction="row" spacing={1}>
-                  <LoadingButton loading={inProgress} variant="contained" onClick={handleSelectBucket}>
+                  <LoadingButton
+                    loading={inProgress}
+                    disabled={!bucketId && !isNewBucket}
+                    variant="contained"
+                    onClick={handleSelectBucket}
+                  >
                     Continue
                   </LoadingButton>
                 </Stack>
