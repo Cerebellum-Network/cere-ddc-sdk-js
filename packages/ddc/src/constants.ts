@@ -21,7 +21,7 @@ export const MAX_PIECE_SIZE = 128 * MB;
  * Size of a chunk of a content stream, in bytes.
  * 4 MB (recomended gRPC message size) minus 100 KB reserved for the message structure.
  */
-export const CONTENT_CHUNK_SIZE = 4 * MB - 100 * KB;
+export const CONTENT_CHUNK_SIZE = 4 * MB - 16 * KB;
 
 /**
  * Default port for HTTPS connections.
