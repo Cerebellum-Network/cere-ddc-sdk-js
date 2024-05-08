@@ -43,59 +43,64 @@ export const DEFAULT_PRESET = TESTNET;
  * @deprecated Use `DEVNET` instead
  * @ignore
  */
+
 export const DEVNET_STATIC: ConfigPreset = {
   blockchain: 'wss://archive.devnet.cere.network/ws',
   nodes: [
     {
-      mode: StorageNodeMode.Full,
-      grpcUrl: 'grpc://38.242.236.247:9090',
+      ssl: true,
       httpUrl: 'https://storage-1.devnet.cere.network',
-      ssl: true,
-    },
-
-    {
+      grpcUrl: 'grpc://178.251.228.236:9090',
       mode: StorageNodeMode.Full,
-      grpcUrl: 'grpc://38.242.236.247:9091',
+    },
+    {
+      ssl: true,
       httpUrl: 'https://storage-2.devnet.cere.network',
+      grpcUrl: 'grpc://95.217.8.119:9090',
+      mode: StorageNodeMode.Storage,
     },
-
     {
-      mode: StorageNodeMode.Full,
-      grpcUrl: 'grpc://158.220.87.61:9090',
+      ssl: true,
       httpUrl: 'https://storage-3.devnet.cere.network',
-      ssl: true,
-    },
-
-    {
+      grpcUrl: 'grpc://178.251.228.42:9090',
       mode: StorageNodeMode.Full,
-      grpcUrl: 'grpc://158.220.87.61:9091',
+    },
+    {
+      ssl: true,
       httpUrl: 'https://storage-4.devnet.cere.network',
+      grpcUrl: 'grpc://37.27.30.47:9090',
+      mode: StorageNodeMode.Storage,
     },
-
     {
-      mode: StorageNodeMode.Full,
-      grpcUrl: 'grpc://89.117.79.111:9090',
+      ssl: true,
       httpUrl: 'https://storage-5.devnet.cere.network',
-      ssl: true,
-    },
-
-    {
+      grpcUrl: 'grpc://178.251.228.49:9090',
       mode: StorageNodeMode.Full,
-      grpcUrl: 'grpc://89.117.79.111:9091',
+    },
+    {
+      ssl: true,
       httpUrl: 'https://storage-6.devnet.cere.network',
+      grpcUrl: 'grpc://159.69.207.65:9090',
+      mode: StorageNodeMode.Storage,
     },
-
     {
-      mode: StorageNodeMode.Full,
-      grpcUrl: 'grpc://154.53.57.124:9090',
-      httpUrl: 'https://storage-7.devnet.cere.network',
       ssl: true,
+      httpUrl: 'https://storage-7.devnet.cere.network',
+      grpcUrl: 'grpc://178.251.228.165:9090',
+      mode: StorageNodeMode.Full,
+    },
+    {
+      ssl: true,
+      httpUrl: 'https://storage-8.devnet.cere.network',
+      grpcUrl: 'grpc://49.13.211.157:9090',
+      mode: StorageNodeMode.Storage,
     },
 
     {
-      mode: StorageNodeMode.Full,
-      grpcUrl: 'grpc://154.53.57.124:9091',
-      httpUrl: 'https://storage-8.devnet.cere.network',
+      ssl: true,
+      httpUrl: 'https://cdn-1.devnet.cere.network',
+      grpcUrl: 'grpc://178.251.228.44:9090',
+      mode: StorageNodeMode.Cache,
     },
   ],
 };
