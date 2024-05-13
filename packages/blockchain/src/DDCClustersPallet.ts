@@ -179,7 +179,7 @@ export class DDCClustersPallet {
    * await blockchain.send(tx, { account });
    * ```
    */
-  setClusterParams(clusterId: ClusterId, clusterProps: ClusterProps) {
+  setClusterParams(clusterId: ClusterId, clusterProps: Partial<ClusterProps>) {
     return this.apiPromise.tx.ddcClusters.setClusterParams(clusterId, clusterProps) as Sendable;
   }
 
