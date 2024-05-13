@@ -3,6 +3,9 @@ import { HexString } from '@polkadot/util/types';
 export type ClusterId = /*H160;*/ HexString;
 export type ClusterProps = /*PalletDdcClustersClusterClusterProps;*/ {
   readonly nodeProviderAuthContract?: AccountId | null;
+  readonly erasureCodingRequired: number;
+  readonly erasureCodingTotal: number;
+  readonly replicationTotal: number;
 };
 export type Cluster = /*PalletDdcClustersCluster;*/ {
   readonly clusterId: ClusterId;
