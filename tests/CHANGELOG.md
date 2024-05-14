@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.8.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.7.0...v2.8.0) (2024-05-14)
+
+### Features
+
+- **blockchain:** Add support for new cluster properties ([#247](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/247)) ([59908fb](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/59908fbfdc8899eb1faa7cc0fd2d2860226ea844))
+
 ## [2.7.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.7.0-rc.2...v2.7.0) (2024-05-06)
 
 ### Features
