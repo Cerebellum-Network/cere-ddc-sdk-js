@@ -122,14 +122,21 @@ export class DDCClustersPallet {
     clusterId: ClusterId,
     clusterManagerId: AccountId,
     clusterReserveId: AccountId,
-    clusterProps: ClusterProps,
+    clusterProps: Partial<ClusterProps>,
     clusterGovernmentParams: ClusterGovernmentParams,
   ) {
+    const clusterPropsDefaults: ClusterProps = {
+      nodeProviderAuthContract: null,
+      erasureCodingRequired: 16,
+      erasureCodingTotal: 48,
+      replicationTotal: 20,
+    };
+
     return this.apiPromise.tx.ddcClusters.createCluster(
       clusterId,
       clusterManagerId,
       clusterReserveId,
-      clusterProps,
+      { ...clusterPropsDefaults, ...clusterProps },
       clusterGovernmentParams,
     ) as Sendable;
   }
@@ -172,7 +179,7 @@ export class DDCClustersPallet {
    * await blockchain.send(tx, { account });
    * ```
    */
-  setClusterParams(clusterId: ClusterId, clusterProps: ClusterProps) {
+  setClusterParams(clusterId: ClusterId, clusterProps: Partial<ClusterProps>) {
     return this.apiPromise.tx.ddcClusters.setClusterParams(clusterId, clusterProps) as Sendable;
   }
 

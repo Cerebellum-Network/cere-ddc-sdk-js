@@ -1,4 +1,4 @@
-import { Blockchain, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, ClusterProps, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 import { cryptoWaitReady, randomAsHex } from '@polkadot/util-crypto';
 import { ApiPromise } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
@@ -112,8 +112,11 @@ describe('Blockchain', () => {
       unitPerGetRequest: 0n,
     };
 
-    const clusterProps = {
+    const clusterProps: ClusterProps = {
       nodeProviderAuthContract: null,
+      erasureCodingRequired: 4,
+      erasureCodingTotal: 6,
+      replicationTotal: 3,
     };
 
     await blockchain.send(
@@ -145,8 +148,11 @@ describe('Blockchain', () => {
   });
 
   test('Should set cluster props', async () => {
-    const clusterProps = {
+    const clusterProps: ClusterProps = {
       nodeProviderAuthContract: null,
+      erasureCodingRequired: 4,
+      erasureCodingTotal: 6,
+      replicationTotal: 3,
     };
 
     await blockchain.send(blockchain.ddcClusters.setClusterParams(clusterId, clusterProps), { account: rootAccount });
