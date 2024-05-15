@@ -42,7 +42,9 @@ export class KeyringSigner extends Signer {
       throw new Error('Key pair is not ready!');
     }
 
-    this.pair.unlock(passphrase);
+    if (this.pair.isLocked) {
+      this.pair.unlock(passphrase);
+    }
   }
 
   protected createPair() {
