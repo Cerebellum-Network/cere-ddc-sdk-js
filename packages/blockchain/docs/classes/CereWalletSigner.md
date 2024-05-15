@@ -132,6 +132,28 @@ A promise that resolves to the signature.
 
 ___
 
+### unlock
+
+▸ **unlock**(`passphrase?`): `Promise`\<`void`\>
+
+Unlocks the signer with a passphrase.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `passphrase?` | `string` | The passphrase to unlock the signer. |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Inherited from
+
+[Web3Signer](Web3Signer.md).[unlock](Web3Signer.md#unlock)
+
+___
+
 ### isSigner
 
 ▸ **isSigner**(`signer`): signer is Signer

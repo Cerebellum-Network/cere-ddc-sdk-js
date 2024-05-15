@@ -263,7 +263,7 @@ ___
 
 ### resolveName
 
-▸ **resolveName**(`bucketId`, `cnsName`): `Promise`\<``null`` \| `string`\>
+▸ **resolveName**(`bucketId`, `cnsName`, `options?`): `Promise`\<`Cid`\>
 
 Resolves a CNS name to a specific CID.
 
@@ -273,10 +273,11 @@ Resolves a CNS name to a specific CID.
 | :------ | :------ | :------ |
 | `bucketId` | `bigint` | The ID of the bucket to resolve the CNS name in. |
 | `cnsName` | `string` | The CNS name to resolve. |
+| `options?` | `CnsRecordGetOptions` | - |
 
 #### Returns
 
-`Promise`\<``null`` \| `string`\>
+`Promise`\<`Cid`\>
 
 A promise that resolves to the CID of the CNS name.
 

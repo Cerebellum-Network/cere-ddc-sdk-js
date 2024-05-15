@@ -27,5 +27,7 @@
 
 ## Signers
 
+- [JsonSigner](classes/JsonSigner.md)
+- [KeyringSigner](classes/KeyringSigner.md)
 - [Signer](classes/Signer.md)
 - [UriSigner](classes/UriSigner.md)

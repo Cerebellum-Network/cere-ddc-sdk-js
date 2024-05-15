@@ -20,7 +20,7 @@ console.log(isReady);
 
 - **`Signer`**
 
-  ↳ [`UriSigner`](UriSigner.md)
+  ↳ [`KeyringSigner`](KeyringSigner.md)
 
 ## Methods
 
@@ -58,6 +58,24 @@ A promise that resolves to the signature.
 
 ___
 
+### unlock
+
+▸ **unlock**(`passphrase?`): `Promise`\<`void`\>
+
+Unlocks the signer with a passphrase.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `passphrase?` | `string` | The passphrase to unlock the signer. |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+___
+
 ### isSigner
 
 ▸ **isSigner**(`signer`): signer is Signer
@@ -83,6 +101,14 @@ A boolean indicating whether the object is a signer.
 • `Readonly` `Abstract` **address**: `string`
 
 The address of the signer.
+
+___
+
+### isLocked
+
+• `Readonly` `Abstract` **isLocked**: `boolean`
+
+A boolean indicating whether the signer is locked.
 
 ___
 
