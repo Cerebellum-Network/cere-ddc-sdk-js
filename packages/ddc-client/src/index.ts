@@ -9,6 +9,8 @@ export {
   Link,
   DagNodeResponse,
   UriSigner,
+  JsonSigner,
+  KeyringSigner,
   TESTNET,
   DEVNET,
   MAINNET,
