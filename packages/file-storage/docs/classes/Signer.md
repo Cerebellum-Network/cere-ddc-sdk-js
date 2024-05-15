@@ -16,12 +16,6 @@ const isReady = await mySigner.isReady();
 console.log(isReady);
 ```
 
-## Hierarchy
-
-- **`Signer`**
-
-  ↳ [`UriSigner`](UriSigner.md)
-
 ## Properties
 
 ### address
@@ -29,6 +23,14 @@ console.log(isReady);
 • `Readonly` `Abstract` **address**: `string`
 
 The address of the signer.
+
+___
+
+### isLocked
+
+• `Readonly` `Abstract` **isLocked**: `boolean`
+
+A boolean indicating whether the signer is locked.
 
 ___
 
@@ -79,6 +81,24 @@ Signs data with the signer.
 `Promise`\<`Uint8Array`\>
 
 A promise that resolves to the signature.
+
+___
+
+### unlock
+
+▸ **unlock**(`passphrase?`): `Promise`\<`void`\>
+
+Unlocks the signer with a passphrase.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `passphrase?` | `string` | The passphrase to unlock the signer. |
+
+#### Returns
+
+`Promise`\<`void`\>
 
 ___
 

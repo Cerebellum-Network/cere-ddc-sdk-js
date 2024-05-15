@@ -1,14 +1,15 @@
-[@cere-ddc-sdk/blockchain](../README.md) / UriSigner
+[@cere-ddc-sdk/ddc](../README.md) / JsonSigner
 
-# Class: UriSigner
+# Class: JsonSigner
 
-Signer that uses a Substrate URI to create a keypair.
+Signer that uses a JSON object to create a keypair.
 
 **`Example`**
 
 ```typescript
-const uriSigner = new UriSigner('//Alice', );
-const signature = await uriSigner.sign('data');
+const accountDataJson = {}; // Exported from Cere Wallet or other wallets
+const jsonSigner = new JsonSigner(accountDataJson, { passphrase: '1234' });
+const signature = await jsonSigner.sign('data');
 
 console.log(signature);
 ```
@@ -17,7 +18,7 @@ console.log(signature);
 
 - [`KeyringSigner`](KeyringSigner.md)
 
-  ↳ **`UriSigner`**
+  ↳ **`JsonSigner`**
 
 ## Methods
 

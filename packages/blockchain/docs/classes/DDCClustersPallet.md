@@ -90,7 +90,7 @@ Creates a new cluster.
 | `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
 | `clusterManagerId` | `string` | The ID of the cluster manager. |
 | `clusterReserveId` | `string` | The ID of the cluster reserve. |
-| `clusterProps` | `ClusterProps` | The properties of the cluster. |
+| `clusterProps` | `Partial`\<`ClusterProps`\> | The properties of the cluster. |
 | `clusterGovernmentParams` | `ClusterGovernmentParams` | The government parameters of the cluster. |
 
 #### Returns
@@ -273,7 +273,7 @@ Sets the properties of a cluster.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `clusterProps` | `ClusterProps` | The properties of the cluster. |
+| `clusterProps` | `Partial`\<`ClusterProps`\> | The properties of the cluster. |
 
 #### Returns
 

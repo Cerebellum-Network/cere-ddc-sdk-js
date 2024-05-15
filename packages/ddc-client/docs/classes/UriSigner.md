@@ -15,7 +15,7 @@ console.log(signature);
 
 ## Hierarchy
 
-- [`Signer`](Signer.md)
+- [`KeyringSigner`](KeyringSigner.md)
 
   ↳ **`UriSigner`**
 
@@ -41,4 +41,4 @@ A boolean indicating whether the object is a signer.
 
 #### Inherited from
 
-[Signer](Signer.md).[isSigner](Signer.md#issigner)
+[KeyringSigner](KeyringSigner.md).[isSigner](KeyringSigner.md#issigner)

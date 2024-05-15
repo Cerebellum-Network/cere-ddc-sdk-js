@@ -16,6 +16,8 @@
 ## Signers
 
 - [CereWalletSigner](classes/CereWalletSigner.md)
+- [JsonSigner](classes/JsonSigner.md)
+- [KeyringSigner](classes/KeyringSigner.md)
 - [Signer](classes/Signer.md)
 - [UriSigner](classes/UriSigner.md)
 - [Web3Signer](classes/Web3Signer.md)
