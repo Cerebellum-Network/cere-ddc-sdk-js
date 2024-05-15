@@ -47,7 +47,7 @@ export const createClient = async (options: CreateClientOptions) => {
   /**
    * Unlock the signer with the passphrase
    *
-   * TODO: Implement passfrase prompt in case it's not provided
+   * TODO: Implement passprase prompt in case it's not provided
    */
   await signer.unlock(options.signerPassphrase);
 
