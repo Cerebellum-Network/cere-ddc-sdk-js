@@ -52,6 +52,10 @@ export class Web3Signer extends Signer {
     this.extensions = extensions;
   }
 
+  get isLocked() {
+    return false;
+  }
+
   /**
    * @inheritdoc
    */

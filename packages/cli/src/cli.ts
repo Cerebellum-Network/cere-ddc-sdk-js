@@ -34,12 +34,18 @@ yargs(hideBin(process.argv))
     alias: 's',
     type: 'string',
     demandOption: true,
-    describe: 'Mnemonic of the actor wallet',
+    describe: 'Mnemonic or a backup file path of the actor wallet',
   })
   .option('signerType', {
     choices: ['sr25519', 'ed25519'],
     default: 'sr25519',
     describe: 'Type of the actor wallet signer',
+  })
+  .option('signerPassphrase', {
+    alias: 'p',
+    string: true,
+    default: '',
+    describe: 'Passphrase to unlock the actor wallet signer',
   })
   .option('logLevel', {
     alias: 'log',
@@ -204,7 +210,7 @@ yargs(hideBin(process.argv))
           type: 'string',
           default: '',
           defaultDescription: 'Randomly generated',
-          describe: 'Mnemonic of an account to get information about',
+          describe: 'Mnemonic or a backup file path of an account to get information about',
         }),
     async (argv) => {
       if (argv.random || !argv.signer) {
@@ -222,7 +228,7 @@ yargs(hideBin(process.argv))
         console.log('Mnemonic:', argv.signer);
       }
 
-      console.log('Type:', argv.signerType);
+      console.log('Type:', acc.type);
       console.log('Address:', acc.address);
       console.log('Public key:', acc.publicKey);
 

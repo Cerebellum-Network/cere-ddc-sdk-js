@@ -18,6 +18,8 @@ export { CnsRecord, CnsRecordResponse } from './CnsRecord';
 export { AuthToken, AuthTokenOperation, type AuthTokenParams } from './auth';
 export {
   UriSigner,
+  JsonSigner,
+  KeyringSigner,
   StorageNodeMode,
   type Signer,
   type SignerType,

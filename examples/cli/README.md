@@ -21,12 +21,15 @@ This example shows how to use DDC CLI
       Type: sr25519
       Address: 6PxrvjkVJFrQs6Tqdeov1GcJkS5rpzuM3NYGhX8KQErv49V2
     ```
+
 2. Create a configuration (eg. `ddc.config.json`) file with the following content
+
     ```json
     {
       "signer": "gospel fee escape timber toilet crouch artist catalog salt icon bulb ivory"
     }
     ```
+
 3. Topup the account with CERE tokens either by using [the faucet](https://stats.cere.network/faucet) or by sending some amount of CERE tokens from another account.
 
     ```
@@ -78,6 +81,36 @@ This example shows how to use DDC CLI
     ```
     > Now we have some balance to pay transactions fee and deposit to pay for DDC operations
 
+### Use account restored from JSON backup
+
+1. Export your wallet account from Cere Wallet or other wallet (eg. PolkadotJs extension). In this example we will use this backup:
+
+   [6PxrvjkVJFrQs6Tqdeov1GcJkS5rpzuM3NYGhX8KQErv49V2.json](./6PxrvjkVJFrQs6Tqdeov1GcJkS5rpzuM3NYGhX8KQErv49V2.json)
+
+2. Check the account balance using the JSON backup file
+
+    ```bash
+    npx cere-ddc account --signer ./6PxrvjkVJFrQs6Tqdeov1GcJkS5rpzuM3NYGhX8KQErv49V2.json --signer-passphrase=123456
+    ```
+    Output
+    ```
+    Account information
+      Network: testnet
+      Type: sr25519
+      Address: 6PxrvjkVJFrQs6Tqdeov1GcJkS5rpzuM3NYGhX8KQErv49V2
+      Balance: 29
+      Deposit: 20
+    ```
+
+3. The backup file path can be used in the config file instead of the seed phrase
+
+    ```json
+    {
+      "signer": "./6PxrvjkVJFrQs6Tqdeov1GcJkS5rpzuM3NYGhX8KQErv49V2.json",
+      "signerPassphrase": "123456"
+    }
+    ```
+
 ### Create a DDC bucket
 
 1. Add `clusterId` to the configuration file (`ddc.config.json`)
@@ -85,7 +118,7 @@ This example shows how to use DDC CLI
     ```json
     {
       "signer": "gospel fee escape timber toilet crouch artist catalog salt icon bulb ivory",
-      "clusterId": "0x825c4b2352850de9986d9d28568db6f0c023a1e3" // <--
+      "clusterId": "0x825c4b2352850de9986d9d28568db6f0c023a1e3"
     }
     ```
 
@@ -108,7 +141,7 @@ This example shows how to use DDC CLI
     {
       "signer": "gospel fee escape timber toilet crouch artist catalog salt icon bulb ivory",
       "clusterId": "0x825c4b2352850de9986d9d28568db6f0c023a1e3",
-      "bucketId": "27327" // <--
+      "bucketId": "27327"
     }
     ```
 

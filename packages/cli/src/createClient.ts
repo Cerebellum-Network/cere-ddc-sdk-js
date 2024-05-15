@@ -1,5 +1,7 @@
+import { readFile } from 'fs/promises';
+
 import { StorageNodeMode } from '@cere-ddc-sdk/ddc';
-import { DdcClient, DEVNET, TESTNET, MAINNET, DdcClientConfig, UriSigner } from '@cere-ddc-sdk/ddc-client';
+import { DdcClient, DEVNET, TESTNET, MAINNET, DdcClientConfig, UriSigner, JsonSigner } from '@cere-ddc-sdk/ddc-client';
 
 type NodeConfig = {
   grpcUrl: string;
@@ -11,6 +13,7 @@ export type CreateClientOptions = {
   signer: string;
   network: string;
   logLevel: string;
+  signerPassphrase: string;
   signerType?: string;
   blockchainRpc?: string;
   nodes?: NodeConfig[];
@@ -22,14 +25,31 @@ const networkToPreset = {
   mainnet: MAINNET,
 };
 
-export const createClient = (options: CreateClientOptions) => {
+export const createSigner = async (signer: string, signerType?: string) => {
+  if (!signer.endsWith('.json')) {
+    return new UriSigner(signer, {
+      type: signerType === 'ed25519' ? 'ed25519' : 'sr25519',
+    });
+  }
+
+  const content = await readFile(signer);
+  const account = JSON.parse(content.toString());
+
+  return new JsonSigner(account);
+};
+
+export const createClient = async (options: CreateClientOptions) => {
   const network = options.network as keyof typeof networkToPreset;
   const preset = networkToPreset[network];
   const blockchain = options.blockchainRpc || preset.blockchain;
+  const signer = await createSigner(options.signer, options.signerType);
 
-  const signer = new UriSigner(options.signer, {
-    type: options.signerType === 'ed25519' ? 'ed25519' : 'sr25519',
-  });
+  /**
+   * Unlock the signer with the passphrase
+   *
+   * TODO: Implement passprase prompt in case it's not provided
+   */
+  await signer.unlock(options.signerPassphrase);
 
   return DdcClient.create(signer, {
     ...preset,

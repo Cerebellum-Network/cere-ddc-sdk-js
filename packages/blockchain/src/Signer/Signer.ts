@@ -36,6 +36,11 @@ export abstract class Signer {
   abstract readonly publicKey: Uint8Array;
 
   /**
+   * A boolean indicating whether the signer is locked.
+   */
+  abstract readonly isLocked: boolean;
+
+  /**
    * Gets blockchain the signer.
    *
    * @internal
@@ -45,9 +50,17 @@ export abstract class Signer {
 
   /**
    * Checks if the signer is ready.
+   *
    * @returns A promise that resolves to a boolean indicating whether the signer is ready.
    */
   abstract isReady(): Promise<boolean>;
+
+  /**
+   * Unlocks the signer with a passphrase.
+   *
+   * @param passphrase - The passphrase to unlock the signer.
+   */
+  async unlock(passphrase?: string) {}
 
   /**
    * Signs data with the signer.
