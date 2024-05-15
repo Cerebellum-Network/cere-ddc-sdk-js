@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.9.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.8.0...v2.9.0) (2024-05-15)
+
+### Features
+
+- Add support of signers created from a JSON backup file ([#248](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/248)) ([984ffb7](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/984ffb70ffa4aac8e576e5a8cc9c1f5daaed46d3))
+
 ## [2.8.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.7.0...v2.8.0) (2024-05-14)
 
 **Note:** Version bump only for package @cere-ddc-sdk/cli-examples
