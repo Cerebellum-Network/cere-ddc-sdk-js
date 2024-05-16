@@ -55,7 +55,7 @@ describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
   });
 
   describe.each(apiVariants)('DAG Api ($name)', ({ authenticate }) => {
-    const dagApi = new DagApi(transport, { authenticate, logLevel });
+    const dagApi = new DagApi(transport, { signer, authenticate, logLevel });
     const nodeData = new Uint8Array(randomBytes(10));
 
     let nodeCid: Uint8Array;

@@ -82,15 +82,23 @@ export class FileApi {
    * ```
    */
   async putMultipartPiece({ token, ...request }: PutMultiPartPieceRequest) {
+    const { signer } = this.options;
+    const meta = createRpcMeta(token);
     const partSize = ceilToPowerOf2(request.partSize);
     this.logger.debug({ ...request, partSize, token }, 'Storing multipart piece');
 
-    const { response } = await this.api.putMultipartPiece(
-      { ...request, partSize },
-      {
-        meta: createRpcMeta(token),
-      },
-    );
+    if (signer) {
+      meta.request = await createActivityRequest(
+        {
+          bucketId: request.bucketId,
+          size: ProtoPutMultiPartPieceRequest.toBinary(request).byteLength,
+          requestType: ActivityRequestType.STORE,
+        },
+        { token, signer, logger: this.logger },
+      );
+    }
+
+    const { response } = await this.api.putMultipartPiece({ ...request, partSize }, { meta });
 
     this.logger.debug({ response }, 'Multipart piece stored');
 
