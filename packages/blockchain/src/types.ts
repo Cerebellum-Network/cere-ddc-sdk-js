@@ -7,12 +7,22 @@ export type ClusterProps = /*PalletDdcClustersClusterClusterProps;*/ {
   readonly erasureCodingTotal: number;
   readonly replicationTotal: number;
 };
+
+export enum ClusterStatus {
+  Unbonded = 'Unbonded',
+  Bonded = 'Bonded',
+  Activated = 'Activated',
+  Unbonding = 'Unbonding',
+}
+
 export type Cluster = /*PalletDdcClustersCluster;*/ {
   readonly clusterId: ClusterId;
   readonly managerId: AccountId;
   readonly reserveId: AccountId;
   readonly props: ClusterProps;
+  readonly status: ClusterStatus;
 };
+
 export type PartsBerBillion = /*PerBill*/ number;
 export type BlockInterval = number;
 export type ClusterGovernmentParams = /*PalletDdcClustersClusterClusterGovParams;*/ {

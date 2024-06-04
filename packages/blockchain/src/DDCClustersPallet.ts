@@ -86,7 +86,8 @@ export class DDCClustersPallet {
     const result = await this.apiPromise.query.ddcClusters.clustersNodes(clusterId, {
       StoragePubKey: storageNodePublicKey,
     });
-    return result.toJSON() as boolean;
+
+    return !result.isEmpty;
   }
 
   /**
