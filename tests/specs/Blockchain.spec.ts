@@ -1,4 +1,4 @@
-import { Blockchain, ClusterProps, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, ClusterNodeKind, ClusterProps, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 import { cryptoWaitReady, randomAsHex } from '@polkadot/util-crypto';
 import { ApiPromise } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
@@ -121,13 +121,7 @@ describe('Blockchain', () => {
 
     await blockchain.send(
       blockchain.sudo(
-        blockchain.ddcClusters.createCluster(
-          clusterId,
-          rootAccount.address,
-          rootAccount.address,
-          clusterProps,
-          clusterGovernmentParams,
-        ),
+        blockchain.ddcClusters.createCluster(clusterId, rootAccount.address, clusterProps, clusterGovernmentParams),
       ),
       { account: rootAccount },
     );
@@ -165,9 +159,12 @@ describe('Blockchain', () => {
 
   test('Should fail to add a Storage Node to a cluster when not staked', async () => {
     await expect(() =>
-      blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key), {
-        account: rootAccount,
-      }),
+      blockchain.send(
+        blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key, ClusterNodeKind.Genesis),
+        {
+          account: rootAccount,
+        },
+      ),
     ).rejects.toThrow('ddcClusters.NodeHasNoActivatedStake:');
   });
 
@@ -230,9 +227,12 @@ describe('Blockchain', () => {
   });
 
   test('Should add storage node to cluster', async () => {
-    await blockchain.send(blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key), {
-      account: rootAccount,
-    });
+    await blockchain.send(
+      blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNode1Key, ClusterNodeKind.Genesis),
+      {
+        account: rootAccount,
+      },
+    );
 
     const hasNode = await blockchain.ddcClusters.clusterHasStorageNode(clusterId, storageNode1Key);
     expect(hasNode).toBe(true);

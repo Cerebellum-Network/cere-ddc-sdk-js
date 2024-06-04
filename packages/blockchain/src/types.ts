@@ -19,9 +19,6 @@ export type ClusterGovernmentParams = /*PalletDdcClustersClusterClusterGovParams
   readonly treasuryShare: PartsBerBillion;
   readonly validatorsShare: PartsBerBillion;
   readonly clusterReserveShare: PartsBerBillion;
-  readonly cdnBondSize: Amount;
-  readonly cdnChillDelay: BlockInterval;
-  readonly cdnUnbondingDelay: BlockInterval;
   readonly storageBondSize: Amount;
   readonly storageChillDelay: BlockInterval;
   readonly storageUnbondingDelay: BlockInterval;
@@ -88,3 +85,8 @@ export type StakingLedger = {
   chilling: BlockNumber | undefined | null;
   unlocking: any[];
 };
+
+export enum ClusterNodeKind {
+  Genesis = 'Genesis',
+  External = 'External',
+}

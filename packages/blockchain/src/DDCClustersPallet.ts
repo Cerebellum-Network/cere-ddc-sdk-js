@@ -1,10 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
 import { Sendable } from './Blockchain';
-import type {
+import {
   AccountId,
   Cluster,
   ClusterGovernmentParams,
   ClusterId,
+  ClusterNodeKind,
   ClusterProps,
   StorageNodePublicKey,
 } from './types';
@@ -102,14 +103,12 @@ export class DDCClustersPallet {
    *
    * ```typescript
    * const clusterId = '0x...';
-   * const clusterManagerId = '0x...';
    * const clusterReserveId = '0x...';
    * const clusterProps = { ... };
    * const clusterGovernmentParams = { ... };
    *
    * const tx = blockchain.ddcClustersPallet.createCluster(
    *   clusterId,
-   *   clusterManagerId,
    *   clusterReserveId,
    *   clusterProps,
    *   clusterGovernmentParams
@@ -120,7 +119,6 @@ export class DDCClustersPallet {
    */
   createCluster(
     clusterId: ClusterId,
-    clusterManagerId: AccountId,
     clusterReserveId: AccountId,
     clusterProps: Partial<ClusterProps>,
     clusterGovernmentParams: ClusterGovernmentParams,
@@ -134,7 +132,6 @@ export class DDCClustersPallet {
 
     return this.apiPromise.tx.ddcClusters.createCluster(
       clusterId,
-      clusterManagerId,
       clusterReserveId,
       { ...clusterPropsDefaults, ...clusterProps },
       clusterGovernmentParams,
@@ -196,13 +193,17 @@ export class DDCClustersPallet {
    * const clusterId = '0x...';
    * const storageNodePublicKey = '0x...';
    *
-   * const tx = blockchain.ddcClustersPallet.addStorageNodeToCluster(clusterId, storageNodePublicKey);
+   * const tx = blockchain.ddcClustersPallet.addStorageNodeToCluster(clusterId, storageNodePublicKey, ClusterNodeKind.Genesis);
    *
    * await blockchain.send(tx, { account });
    * ```
    */
-  addStorageNodeToCluster(clusterId: ClusterId, storageNodePublicKey: StorageNodePublicKey) {
-    return this.apiPromise.tx.ddcClusters.addNode(clusterId, { StoragePubKey: storageNodePublicKey }) as Sendable;
+  addStorageNodeToCluster(clusterId: ClusterId, storageNodePublicKey: StorageNodePublicKey, nodeKind: ClusterNodeKind) {
+    return this.apiPromise.tx.ddcClusters.addNode(
+      clusterId,
+      { StoragePubKey: storageNodePublicKey },
+      nodeKind,
+    ) as Sendable;
   }
 
   /**

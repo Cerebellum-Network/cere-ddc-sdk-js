@@ -15,7 +15,7 @@ import {
   getHostIP,
   getStorageNodes,
 } from '../../helpers';
-import { Blockchain, ClusterId } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, ClusterId, ClusterNodeKind } from '@cere-ddc-sdk/blockchain';
 
 export type BlockchainConfig = BlockchainState & {
   apiUrl: string;
@@ -102,12 +102,11 @@ export const setupBlockchain = async () => {
 
   const blockchain = await Blockchain.connect({ apiPromise });
 
-  console.time('Create cluster');
-  await blockchain.send(
-    blockchain.sudo(
+  console.time('Create and bond cluster');
+  await blockchain.batchAllSend(
+    [
       blockchain.ddcClusters.createCluster(
         clusterId,
-        clusterManagerAccount.address,
         clusterManagerAccount.address,
         {
           nodeProviderAuthContract: null,
@@ -116,9 +115,6 @@ export const setupBlockchain = async () => {
           treasuryShare: 100000000,
           validatorsShare: 100000000,
           clusterReserveShare: 100000000,
-          cdnBondSize: bondAmount,
-          cdnChillDelay: 20,
-          cdnUnbondingDelay: 20,
           storageBondSize: bondAmount,
           storageChillDelay: 20,
           storageUnbondingDelay: 20,
@@ -128,10 +124,11 @@ export const setupBlockchain = async () => {
           unitPerGetRequest: 0n,
         },
       ),
-    ),
+      blockchain.ddcStaking.bondCluster(clusterId),
+    ],
     { account: clusterManagerAccount },
   );
-  console.timeEnd('Create cluster');
+  console.timeEnd('Create and bond cluster');
 
   console.time('Create and bond nodes');
   await Promise.all(
@@ -157,7 +154,7 @@ export const setupBlockchain = async () => {
   console.time('Add nodes to cluster');
   await blockchain.batchAllSend(
     storageNodeAccounts.map((storageNodeAccount) =>
-      blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNodeAccount.address),
+      blockchain.ddcClusters.addStorageNodeToCluster(clusterId, storageNodeAccount.address, ClusterNodeKind.Genesis),
     ),
     { account: clusterManagerAccount },
   );
