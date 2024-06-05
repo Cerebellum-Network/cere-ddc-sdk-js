@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.9.2](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.9.1...v2.9.2) (2024-06-05)
+
+### Miscellaneous Chores
+
+- **blockchain:** Cere Wallet SDK dependency update ([bf14eba](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/bf14eba38e4176f39a8cfde3b1704f643b2d82be))
+
 ## [2.9.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.9.0...v2.9.1) (2024-05-16)
 
 ### Bug Fixes
