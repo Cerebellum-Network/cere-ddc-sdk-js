@@ -8,6 +8,7 @@
 
 ## Pallets
 
+- [DDCClusterGovPallet](classes/DDCClusterGovPallet.md)
 - [DDCClustersPallet](classes/DDCClustersPallet.md)
 - [DDCCustomersPallet](classes/DDCCustomersPallet.md)
 - [DDCNodesPallet](classes/DDCNodesPallet.md)
@@ -21,3 +22,13 @@
 - [Signer](classes/Signer.md)
 - [UriSigner](classes/UriSigner.md)
 - [Web3Signer](classes/Web3Signer.md)
+
+## Type Aliases
+
+### ClusterGovernmentParams
+
+Ƭ **ClusterGovernmentParams**: `ClusterProtocolParams`
+
+**`Deprecated`**
+
+Use ClusterProtocolParams instead.

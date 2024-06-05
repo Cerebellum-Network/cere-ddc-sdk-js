@@ -272,6 +272,14 @@ const blockchain = await Blockchain.connect({ wsEndpoint: 'wss://rpc.testnet.cer
 
 ## Pallets
 
+### ddcClusterGov
+
+• `Readonly` **ddcClusterGov**: [`DDCClusterGovPallet`](DDCClusterGovPallet.md)
+
+The DDC Cluster government pallet.
+
+___
+
 ### ddcClusters
 
 • `Readonly` **ddcClusters**: [`DDCClustersPallet`](DDCClustersPallet.md)

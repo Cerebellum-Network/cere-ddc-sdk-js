@@ -16,7 +16,7 @@ console.log(clusters);
 
 ### addStorageNodeToCluster
 
-▸ **addStorageNodeToCluster**(`clusterId`, `storageNodePublicKey`): `Sendable`
+▸ **addStorageNodeToCluster**(`clusterId`, `storageNodePublicKey`, `nodeKind`): `Sendable`
 
 Adds a storage node to a cluster.
 
@@ -26,6 +26,7 @@ Adds a storage node to a cluster.
 | :------ | :------ | :------ |
 | `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
 | `storageNodePublicKey` | `string` | The public key of the storage node. |
+| `nodeKind` | `ClusterNodeKind` | - |
 
 #### Returns
 
@@ -39,7 +40,7 @@ An extrinsic to add the storage node to the cluster.
 const clusterId = '0x...';
 const storageNodePublicKey = '0x...';
 
-const tx = blockchain.ddcClustersPallet.addStorageNodeToCluster(clusterId, storageNodePublicKey);
+const tx = blockchain.ddcClustersPallet.addStorageNodeToCluster(clusterId, storageNodePublicKey, ClusterNodeKind.Genesis);
 
 await blockchain.send(tx, { account });
 ```
@@ -79,7 +80,7 @@ ___
 
 ### createCluster
 
-▸ **createCluster**(`clusterId`, `clusterManagerId`, `clusterReserveId`, `clusterProps`, `clusterGovernmentParams`): `Sendable`
+▸ **createCluster**(`clusterId`, `clusterReserveId`, `clusterProps`, `clusterGovernmentParams`): `Sendable`
 
 Creates a new cluster.
 
@@ -88,10 +89,9 @@ Creates a new cluster.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `clusterManagerId` | `string` | The ID of the cluster manager. |
 | `clusterReserveId` | `string` | The ID of the cluster reserve. |
 | `clusterProps` | `Partial`\<`ClusterProps`\> | The properties of the cluster. |
-| `clusterGovernmentParams` | `ClusterGovernmentParams` | The government parameters of the cluster. |
+| `clusterGovernmentParams` | `ClusterProtocolParams` | The government parameters of the cluster. |
 
 #### Returns
 
@@ -103,14 +103,12 @@ An extrinsic to create the cluster.
 
 ```typescript
 const clusterId = '0x...';
-const clusterManagerId = '0x...';
 const clusterReserveId = '0x...';
 const clusterProps = { ... };
 const clusterGovernmentParams = { ... };
 
 const tx = blockchain.ddcClustersPallet.createCluster(
   clusterId,
-  clusterManagerId,
   clusterReserveId,
   clusterProps,
   clusterGovernmentParams
@@ -181,7 +179,7 @@ ___
 
 ### getClusterGovernmentParams
 
-▸ **getClusterGovernmentParams**(`clusterId`): `Promise`\<`undefined` \| `ClusterGovernmentParams`\>
+▸ **getClusterGovernmentParams**(`clusterId`): `Promise`\<`undefined` \| `ClusterProtocolParams`\>
 
 Gets the government parameters of a cluster.
 
@@ -193,7 +191,7 @@ Gets the government parameters of a cluster.
 
 #### Returns
 
-`Promise`\<`undefined` \| `ClusterGovernmentParams`\>
+`Promise`\<`undefined` \| `ClusterProtocolParams`\>
 
 A promise that resolves to the government parameters of the cluster.
 

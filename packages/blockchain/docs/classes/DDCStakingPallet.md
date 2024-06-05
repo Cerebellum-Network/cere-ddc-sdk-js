@@ -15,6 +15,35 @@ console.log(stashAccountId);
 
 ## Methods
 
+### bondCluster
+
+▸ **bondCluster**(`clusterId`): `Sendable`
+
+Bonds the cluster.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `clusterId` | \`0x$\{string}\` | The cluster ID to bond |
+
+#### Returns
+
+`Sendable`
+
+An extrinsic to bond the cluster.
+
+**`Example`**
+
+```typescript
+const clusterId = '0x...';
+const tx = blockchain.ddcStaking.bondCluster(clusterId);
+
+await blockchain.send(tx, { account });
+```
+
+___
+
 ### bondStorageNode
 
 ▸ **bondStorageNode**(`controller`, `storageNodePublicKey`, `bondAmount`): `Sendable`
@@ -454,6 +483,35 @@ await blockchain.send(tx, { account });
 
 ___
 
+### unbondCluster
+
+▸ **unbondCluster**(`clusterId`): `Sendable`
+
+Unbonds the cluster.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `clusterId` | \`0x$\{string}\` | The cluster ID to bond |
+
+#### Returns
+
+`Sendable`
+
+An extrinsic to unbond the cluster.
+
+**`Example`**
+
+```typescript
+const clusterId = '0x...';
+const tx = blockchain.ddcStaking.unbondCluster(clusterId);
+
+await blockchain.send(tx, { account });
+```
+
+___
+
 ### withdrawUnbonded
 
 ▸ **withdrawUnbonded**(): `Sendable`
@@ -470,6 +528,35 @@ An extrinsic to withdraw unbonded funds.
 
 ```typescript
 const tx = blockchain.ddcStaking.withdrawUnbonded();
+
+await blockchain.send(tx, { account });
+```
+
+___
+
+### withdrawUnbondedCluster
+
+▸ **withdrawUnbondedCluster**(`clusterId`): `Sendable`
+
+Withdraws unbonded cluster funds.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `clusterId` | \`0x$\{string}\` | The cluster ID to withdraw |
+
+#### Returns
+
+`Sendable`
+
+An extrinsic to withdraw the cluster funds.
+
+**`Example`**
+
+```typescript
+const clusterId = '0x...';
+const tx = blockchain.ddcStaking.withdrawUnbondedCluster(clusterId);
 
 await blockchain.send(tx, { account });
 ```
