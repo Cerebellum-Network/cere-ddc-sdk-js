@@ -1,7 +1,7 @@
 import { HexString } from '@polkadot/util/types';
 
-export type ClusterId = /*H160;*/ HexString;
-export type ClusterProps = /*PalletDdcClustersClusterClusterProps;*/ {
+export type ClusterId = HexString;
+export type ClusterProps = {
   readonly nodeProviderAuthContract?: AccountId | null;
   readonly erasureCodingRequired: number;
   readonly erasureCodingTotal: number;
@@ -15,7 +15,7 @@ export enum ClusterStatus {
   Unbonding = 'Unbonding',
 }
 
-export type Cluster = /*PalletDdcClustersCluster;*/ {
+export type Cluster = {
   readonly clusterId: ClusterId;
   readonly managerId: AccountId;
   readonly reserveId: AccountId;
@@ -23,9 +23,9 @@ export type Cluster = /*PalletDdcClustersCluster;*/ {
   readonly status: ClusterStatus;
 };
 
-export type PartsBerBillion = /*PerBill*/ number;
+export type PartsBerBillion = number;
 export type BlockInterval = number;
-export type ClusterGovernmentParams = /*PalletDdcClustersClusterClusterGovParams;*/ {
+export type ClusterProtocolParams = {
   readonly treasuryShare: PartsBerBillion;
   readonly validatorsShare: PartsBerBillion;
   readonly clusterReserveShare: PartsBerBillion;
@@ -38,12 +38,24 @@ export type ClusterGovernmentParams = /*PalletDdcClustersClusterClusterGovParams
   readonly unitPerGetRequest: Amount;
 };
 
-export type BucketId = /*u64;*/ bigint;
-export type BucketParams = /*PalletDdcCustomersBucketParams;*/ {
+/**
+ * @deprecated Use ClusterProtocolParams instead.
+ */
+export type ClusterGovernmentParams = ClusterProtocolParams;
+
+export enum ClusterMember {
+  ClusterManager = 'ClusterManager',
+  NodeProvider = 'NodeProvider',
+}
+
+export type ReferendumIndex = number;
+
+export type BucketId = bigint;
+export type BucketParams = {
   isPublic: boolean;
 };
 
-export type Bucket = /*PalletDdcCustomersBucket;*/ {
+export type Bucket = {
   readonly bucketId: BucketId;
   readonly ownerId: AccountId;
   readonly clusterId: ClusterId;
@@ -51,8 +63,8 @@ export type Bucket = /*PalletDdcCustomersBucket;*/ {
   readonly isRemoved: boolean;
 };
 
-export type AccountId = /*AccountId32;*/ string;
-export type StakingInfo = /*PalletDdcCustomersAccountsLedger;*/ {
+export type AccountId = string;
+export type StakingInfo = {
   readonly owner: AccountId;
   readonly total: bigint;
   readonly active: bigint;
