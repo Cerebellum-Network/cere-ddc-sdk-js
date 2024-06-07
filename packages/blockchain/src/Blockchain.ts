@@ -10,7 +10,7 @@ import { DDCNodesPallet } from './DDCNodesPallet';
 import { DDCClustersPallet } from './DDCClustersPallet';
 import { DDCStakingPallet } from './DDCStakingPallet';
 import { DDCCustomersPallet } from './DDCCustomersPallet';
-import { DDCClusterGovPallet } from './DDCClusterGovPallet';
+import { DDCClustersGovPallet } from './DDCClustersGovPallet';
 
 export type SendOptions = Pick<Partial<SignerOptions>, 'nonce' | 'signer'> & {
   account: AddressOrPair | Signer;
@@ -74,7 +74,7 @@ export class Blockchain {
    *
    * @category Pallets
    */
-  public readonly ddcClusterGov: DDCClusterGovPallet;
+  public readonly ddcClustersGov: DDCClustersGovPallet;
 
   constructor(options: BlockchainConnectOptions) {
     this.apiPromise =
@@ -88,7 +88,7 @@ export class Blockchain {
     this.ddcClusters = new DDCClustersPallet(this.apiPromise);
     this.ddcStaking = new DDCStakingPallet(this.apiPromise);
     this.ddcCustomers = new DDCCustomersPallet(this.apiPromise);
-    this.ddcClusterGov = new DDCClusterGovPallet(this.apiPromise);
+    this.ddcClustersGov = new DDCClustersGovPallet(this.apiPromise);
   }
 
   /**

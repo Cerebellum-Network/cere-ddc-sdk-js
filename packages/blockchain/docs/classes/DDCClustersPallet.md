@@ -80,7 +80,7 @@ ___
 
 ### createCluster
 
-▸ **createCluster**(`clusterId`, `clusterReserveId`, `clusterProps`, `clusterGovernmentParams`): `Sendable`
+▸ **createCluster**(`clusterId`, `clusterReserveId`, `clusterParams`, `clusterGovernmentParams`): `Sendable`
 
 Creates a new cluster.
 
@@ -90,7 +90,7 @@ Creates a new cluster.
 | :------ | :------ | :------ |
 | `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
 | `clusterReserveId` | `string` | The ID of the cluster reserve. |
-| `clusterProps` | `Partial`\<`ClusterProps`\> | The properties of the cluster. |
+| `clusterParams` | `Partial`\<`ClusterParams`\> | The properties of the cluster. |
 | `clusterGovernmentParams` | `ClusterProtocolParams` | The government parameters of the cluster. |
 
 #### Returns
@@ -104,13 +104,13 @@ An extrinsic to create the cluster.
 ```typescript
 const clusterId = '0x...';
 const clusterReserveId = '0x...';
-const clusterProps = { ... };
+const clusterParams = { ... };
 const clusterGovernmentParams = { ... };
 
 const tx = blockchain.ddcClustersPallet.createCluster(
   clusterId,
   clusterReserveId,
-  clusterProps,
+  clusterParams,
   clusterGovernmentParams
 );
 
@@ -262,7 +262,7 @@ ___
 
 ### setClusterParams
 
-▸ **setClusterParams**(`clusterId`, `clusterProps`): `Sendable`
+▸ **setClusterParams**(`clusterId`, `clusterParams`): `Sendable`
 
 Sets the properties of a cluster.
 
@@ -271,7 +271,7 @@ Sets the properties of a cluster.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `clusterProps` | `Partial`\<`ClusterProps`\> | The properties of the cluster. |
+| `clusterParams` | `Partial`\<`ClusterParams`\> | The properties of the cluster. |
 
 #### Returns
 
@@ -283,9 +283,9 @@ An extrinsic to set the cluster properties.
 
 ```typescript
 const clusterId = '0x...';
-const clusterProps = { ... };
+const clusterParams = { ... };
 
-const tx = blockchain.ddcClustersPallet.setClusterParams(clusterId, clusterProps);
+const tx = blockchain.ddcClustersPallet.setClusterParams(clusterId, clusterParams);
 
 await blockchain.send(tx, { account });
 ```

@@ -8,7 +8,7 @@
 
 ## Pallets
 
-- [DDCClusterGovPallet](classes/DDCClusterGovPallet.md)
+- [DDCClustersGovPallet](classes/DDCClustersGovPallet.md)
 - [DDCClustersPallet](classes/DDCClustersPallet.md)
 - [DDCCustomersPallet](classes/DDCCustomersPallet.md)
 - [DDCNodesPallet](classes/DDCNodesPallet.md)
@@ -32,3 +32,13 @@
 **`Deprecated`**
 
 Use ClusterProtocolParams instead.
+
+___
+
+### ClusterProps
+
+Ƭ **ClusterProps**: `ClusterParams`
+
+**`Deprecated`**
+
+Use ClusterParams instead.

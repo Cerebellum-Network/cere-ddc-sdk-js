@@ -18,7 +18,7 @@ import { ClusterId, ClusterMember, ClusterProtocolParams, NodePublicKey, Referen
  * await blockchain.send(tx, { account });
  * ```
  */
-export class DDCClusterGovPallet {
+export class DDCClustersGovPallet {
   constructor(private apiPromise: ApiPromise) {}
 
   /**
@@ -40,7 +40,7 @@ export class DDCClusterGovPallet {
    * @param clusterId - The ID of the cluster.
    * @param protocolParams - The new protocol parameters.
    * @param member - The member who is creating the proposal.
-   * @param podePublicKey - The public key of the node provider. Needed in case the member is ClusterMember.NodeProvider.
+   * @param nodePublicKey - The public key of the node provider. Needed in case the member is ClusterMember.NodeProvider.
    *
    * @returns An extrinsic to propose the update of the cluster protocol.
    *
@@ -75,7 +75,7 @@ export class DDCClusterGovPallet {
    * @param clusterId - The ID of the cluster.
    * @param approve - Whether to approve the proposal.
    * @param member - The member who is voting.
-   * @param podePublicKey - The public key of the node provider. Needed in case the member is ClusterMember.NodeProvider.
+   * @param nodePublicKey - The public key of the node provider. Needed in case the member is ClusterMember.NodeProvider.
    *
    * @returns An extrinsic to vote on the proposal.
    *
@@ -91,11 +91,11 @@ export class DDCClusterGovPallet {
    * await blockchain.send(tx, { account });
    * ```
    */
-  voteProposal(clusterId: ClusterId, approve: boolean, member: ClusterMember, podePublicKey?: NodePublicKey) {
+  voteProposal(clusterId: ClusterId, approve: boolean, member: ClusterMember, nodePublicKey?: NodePublicKey) {
     return this.apiPromise.tx.ddcClusterGov.voteProposal(
       clusterId,
       approve,
-      this.createClusterMember(member, podePublicKey),
+      this.createClusterMember(member, nodePublicKey),
     ) as Sendable;
   }
 
@@ -104,7 +104,7 @@ export class DDCClusterGovPallet {
    *
    * @param clusterId - The ID of the cluster.
    * @param member - The member who is retracting the proposal.
-   * @param podePublicKey - The public key of the node provider. Needed in case the member is ClusterMember.NodeProvider.
+   * @param nodePublicKey - The public key of the node provider. Needed in case the member is ClusterMember.NodeProvider.
    * @returns An extrinsic to retract the proposal.
    *
    * @example
@@ -118,10 +118,10 @@ export class DDCClusterGovPallet {
    * await blockchain.send(tx, { account });
    * ```
    */
-  closeProposal(clusterId: ClusterId, member: ClusterMember, podePublicKey?: NodePublicKey) {
+  closeProposal(clusterId: ClusterId, member: ClusterMember, nodePublicKey?: NodePublicKey) {
     return this.apiPromise.tx.ddcClusterGov.closeProposal(
       clusterId,
-      this.createClusterMember(member, podePublicKey),
+      this.createClusterMember(member, nodePublicKey),
     ) as Sendable;
   }
 

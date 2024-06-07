@@ -1,6 +1,6 @@
-[@cere-ddc-sdk/blockchain](../README.md) / DDCClusterGovPallet
+[@cere-ddc-sdk/blockchain](../README.md) / DDCClustersGovPallet
 
-# Class: DDCClusterGovPallet
+# Class: DDCClustersGovPallet
 
 This class provides methods to interact with the DDC Cluster Goverment pallet on the blockchain.
 
@@ -20,7 +20,7 @@ await blockchain.send(tx, { account });
 
 ### closeProposal
 
-▸ **closeProposal**(`clusterId`, `member`, `podePublicKey?`): `Sendable`
+▸ **closeProposal**(`clusterId`, `member`, `nodePublicKey?`): `Sendable`
 
 This method allows to retract a local proposal within a cluster. Only the proposal's author can submit it.
 
@@ -30,7 +30,7 @@ This method allows to retract a local proposal within a cluster. Only the propos
 | :------ | :------ | :------ |
 | `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
 | `member` | `ClusterMember` | The member who is retracting the proposal. |
-| `podePublicKey?` | `string` | The public key of the node provider. Needed in case the member is ClusterMember.NodeProvider. |
+| `nodePublicKey?` | `string` | The public key of the node provider. Needed in case the member is ClusterMember.NodeProvider. |
 
 #### Returns
 
@@ -87,7 +87,7 @@ Any cluster member has the ability to create this type of proposal.
 | `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
 | `protocolParams` | `ClusterProtocolParams` | The new protocol parameters. |
 | `member` | `ClusterMember` | The member who is creating the proposal. |
-| `nodePublicKey?` | `string` | - |
+| `nodePublicKey?` | `string` | The public key of the node provider. Needed in case the member is ClusterMember.NodeProvider. |
 
 #### Returns
 
@@ -172,7 +172,7 @@ ___
 
 ### voteProposal
 
-▸ **voteProposal**(`clusterId`, `approve`, `member`, `podePublicKey?`): `Sendable`
+▸ **voteProposal**(`clusterId`, `approve`, `member`, `nodePublicKey?`): `Sendable`
 
 Votes for a local proposal within a cluster. Only cluster members, such as the cluster manager and node providers, are permitted to vote.
 
@@ -183,7 +183,7 @@ Votes for a local proposal within a cluster. Only cluster members, such as the c
 | `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
 | `approve` | `boolean` | Whether to approve the proposal. |
 | `member` | `ClusterMember` | The member who is voting. |
-| `podePublicKey?` | `string` | The public key of the node provider. Needed in case the member is ClusterMember.NodeProvider. |
+| `nodePublicKey?` | `string` | The public key of the node provider. Needed in case the member is ClusterMember.NodeProvider. |
 
 #### Returns
 

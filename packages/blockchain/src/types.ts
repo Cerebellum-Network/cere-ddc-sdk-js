@@ -1,12 +1,17 @@
 import { HexString } from '@polkadot/util/types';
 
 export type ClusterId = HexString;
-export type ClusterProps = {
+export type ClusterParams = {
   readonly nodeProviderAuthContract?: AccountId | null;
   readonly erasureCodingRequired: number;
   readonly erasureCodingTotal: number;
   readonly replicationTotal: number;
 };
+
+/**
+ * @deprecated Use ClusterParams instead.
+ */
+export type ClusterProps = ClusterParams;
 
 export enum ClusterStatus {
   Unbonded = 'Unbonded',
@@ -19,7 +24,7 @@ export type Cluster = {
   readonly clusterId: ClusterId;
   readonly managerId: AccountId;
   readonly reserveId: AccountId;
-  readonly props: ClusterProps;
+  readonly props: ClusterParams;
   readonly status: ClusterStatus;
 };
 

@@ -3,10 +3,10 @@ import { Sendable } from './Blockchain';
 import {
   AccountId,
   Cluster,
-  ClusterGovernmentParams,
+  ClusterProtocolParams,
   ClusterId,
   ClusterNodeKind,
-  ClusterProps,
+  ClusterParams,
   StorageNodePublicKey,
 } from './types';
 
@@ -96,7 +96,7 @@ export class DDCClustersPallet {
    * @param clusterId - The ID of the cluster.
    * @param clusterManagerId - The ID of the cluster manager.
    * @param clusterReserveId - The ID of the cluster reserve.
-   * @param clusterProps - The properties of the cluster.
+   * @param clusterParams - The properties of the cluster.
    * @param clusterGovernmentParams - The government parameters of the cluster.
    * @returns An extrinsic to create the cluster.
    *
@@ -105,13 +105,13 @@ export class DDCClustersPallet {
    * ```typescript
    * const clusterId = '0x...';
    * const clusterReserveId = '0x...';
-   * const clusterProps = { ... };
+   * const clusterParams = { ... };
    * const clusterGovernmentParams = { ... };
    *
    * const tx = blockchain.ddcClustersPallet.createCluster(
    *   clusterId,
    *   clusterReserveId,
-   *   clusterProps,
+   *   clusterParams,
    *   clusterGovernmentParams
    * );
    *
@@ -121,10 +121,10 @@ export class DDCClustersPallet {
   createCluster(
     clusterId: ClusterId,
     clusterReserveId: AccountId,
-    clusterProps: Partial<ClusterProps>,
-    clusterGovernmentParams: ClusterGovernmentParams,
+    clusterParams: Partial<ClusterParams>,
+    clusterGovernmentParams: ClusterProtocolParams,
   ) {
-    const clusterPropsDefaults: ClusterProps = {
+    const clusterParamsDefaults: ClusterParams = {
       nodeProviderAuthContract: null,
       erasureCodingRequired: 16,
       erasureCodingTotal: 48,
@@ -134,7 +134,7 @@ export class DDCClustersPallet {
     return this.apiPromise.tx.ddcClusters.createCluster(
       clusterId,
       clusterReserveId,
-      { ...clusterPropsDefaults, ...clusterProps },
+      { ...clusterParamsDefaults, ...clusterParams },
       clusterGovernmentParams,
     ) as Sendable;
   }
@@ -163,22 +163,22 @@ export class DDCClustersPallet {
    * Sets the properties of a cluster.
    *
    * @param clusterId - The ID of the cluster.
-   * @param clusterProps - The properties of the cluster.
+   * @param clusterParams - The properties of the cluster.
    * @returns An extrinsic to set the cluster properties.
    *
    * @example
    *
    * ```typescript
    * const clusterId = '0x...';
-   * const clusterProps = { ... };
+   * const clusterParams = { ... };
    *
-   * const tx = blockchain.ddcClustersPallet.setClusterParams(clusterId, clusterProps);
+   * const tx = blockchain.ddcClustersPallet.setClusterParams(clusterId, clusterParams);
    *
    * await blockchain.send(tx, { account });
    * ```
    */
-  setClusterParams(clusterId: ClusterId, clusterProps: Partial<ClusterProps>) {
-    return this.apiPromise.tx.ddcClusters.setClusterParams(clusterId, clusterProps) as Sendable;
+  setClusterParams(clusterId: ClusterId, clusterParams: Partial<ClusterParams>) {
+    return this.apiPromise.tx.ddcClusters.setClusterParams(clusterId, clusterParams) as Sendable;
   }
 
   /**
@@ -246,6 +246,6 @@ export class DDCClustersPallet {
    */
   async getClusterGovernmentParams(clusterId: ClusterId) {
     const result = await this.apiPromise.query.ddcClusters.clustersGovParams(clusterId);
-    return result.toJSON() as unknown as ClusterGovernmentParams | undefined;
+    return result.toJSON() as unknown as ClusterProtocolParams | undefined;
   }
 }
