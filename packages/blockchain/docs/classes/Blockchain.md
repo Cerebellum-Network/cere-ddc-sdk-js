@@ -280,6 +280,14 @@ The DDC Clusters pallet.
 
 ___
 
+### ddcClustersGov
+
+• `Readonly` **ddcClustersGov**: [`DDCClustersGovPallet`](DDCClustersGovPallet.md)
+
+The DDC Cluster government pallet.
+
+___
+
 ### ddcCustomers
 
 • `Readonly` **ddcCustomers**: [`DDCCustomersPallet`](DDCCustomersPallet.md)

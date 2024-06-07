@@ -352,4 +352,61 @@ export class DDCStakingPallet {
 
     return result.toJSON() as unknown as { storagePubKey: StorageNodePublicKey } | undefined;
   }
+
+  /**
+   * Bonds the cluster.
+   *
+   * @param clusterId - The cluster ID to bond
+   * @returns An extrinsic to bond the cluster.
+   *
+   * @example
+   *
+   * ```typescript
+   * const clusterId = '0x...';
+   * const tx = blockchain.ddcStaking.bondCluster(clusterId);
+   *
+   * await blockchain.send(tx, { account });
+   * ```
+   */
+  bondCluster(clusterId: ClusterId) {
+    return this.apiPromise.tx.ddcStaking.bondCluster(clusterId) as Sendable;
+  }
+
+  /**
+   * Unbonds the cluster.
+   *
+   * @param clusterId - The cluster ID to bond
+   * @returns An extrinsic to unbond the cluster.
+   *
+   * @example
+   *
+   * ```typescript
+   * const clusterId = '0x...';
+   * const tx = blockchain.ddcStaking.unbondCluster(clusterId);
+   *
+   * await blockchain.send(tx, { account });
+   * ```
+   */
+  unbondCluster(clusterId: ClusterId) {
+    return this.apiPromise.tx.ddcStaking.unbondCluster(clusterId) as Sendable;
+  }
+
+  /**
+   * Withdraws unbonded cluster funds.
+   *
+   * @param clusterId - The cluster ID to withdraw
+   * @returns An extrinsic to withdraw the cluster funds.
+   *
+   * @example
+   *
+   * ```typescript
+   * const clusterId = '0x...';
+   * const tx = blockchain.ddcStaking.withdrawUnbondedCluster(clusterId);
+   *
+   * await blockchain.send(tx, { account });
+   * ```
+   */
+  withdrawUnbondedCluster(clusterId: ClusterId) {
+    return this.apiPromise.tx.ddcStaking.withdrawUnbondedCluster(clusterId) as Sendable;
+  }
 }
