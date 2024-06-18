@@ -55,10 +55,10 @@ export abstract class NodeTypeStrategy extends BaseStrategy {
     const operationNodes = nodes.filter(({ mode }) => opertaionPriorityMap[mode] !== undefined);
 
     return operationNodes.sort((a, b) => {
-      const aPriority = a.priority || opertaionPriorityMap[a.mode] || 0;
-      const bPriority = a.priority || opertaionPriorityMap[b.mode] || 0;
+      const aPriority = a.priority ?? opertaionPriorityMap[a.mode] ?? 0;
+      const bPriority = b.priority ?? opertaionPriorityMap[b.mode] ?? 0;
 
-      return aPriority - bPriority;
+      return bPriority - aPriority;
     });
   }
 
