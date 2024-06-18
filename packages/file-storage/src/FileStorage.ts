@@ -18,14 +18,13 @@ import {
   BalancedNode,
   withChunkSize,
   streamConsumers,
+  BalancedNodeConfig,
 } from '@cere-ddc-sdk/ddc';
 
 import { File, FileResponse } from './File';
 import { DEFAULT_BUFFER_SIZE, MAX_BUFFER_SIZE, MIN_BUFFER_SIZE } from './constants';
 
-type Config = LoggerOptions & {
-  retries?: number;
-};
+type Config = LoggerOptions & Pick<BalancedNodeConfig, 'retries'>;
 
 export type FileStorageConfig = Config &
   Omit<ConfigPreset, 'blockchain'> & {

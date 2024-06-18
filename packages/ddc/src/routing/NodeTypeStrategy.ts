@@ -6,6 +6,10 @@ import { BaseStrategy } from './BaseStrategy.web';
 type ModePriorityMap = Partial<Record<Mode, number>>;
 type OperationPriorityMap = Record<Operation, ModePriorityMap>;
 
+/**
+ * The `priorityMap` defines the priority of the operation for each mode.
+ * The lower the number, the higher the priority.
+ */
 const priorityMap: OperationPriorityMap = {
   [Operation.READ_DAG_NODE]: {
     [Mode.Full]: 1,
@@ -58,7 +62,7 @@ export abstract class NodeTypeStrategy extends BaseStrategy {
       const aPriority = a.priority ?? opertaionPriorityMap[a.mode] ?? 0;
       const bPriority = b.priority ?? opertaionPriorityMap[b.mode] ?? 0;
 
-      return bPriority - aPriority;
+      return aPriority - bPriority;
     });
   }
 
