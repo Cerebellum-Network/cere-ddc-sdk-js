@@ -18,9 +18,22 @@ import {
   CnsRecordGetOptions,
 } from './NodeInterface';
 
+/**
+ * The timeouts bettween retries are exponential, starting at `minTimeout` and increasing each time until `maxTimeout`.
+ *
+ * The formuka for the timeout between retries is:
+ *
+ * ```typescript
+ * const timeout = Math.min(random * minTimeout * Math.pow(factor, attempt), maxTimeout);
+ * ```
+ */
+export type OpperationRetryOptions = Omit<RetryOptions, 'retries'> & {
+  attempts?: number;
+};
+
 export type BalancedNodeConfig = LoggerOptions & {
   router: Router;
-  retries?: number;
+  retries?: number | OpperationRetryOptions;
 };
 
 /**
@@ -41,12 +54,24 @@ export class BalancedNode implements NodeInterface {
 
   private router: Router;
   private logger: Logger;
-  private retries: number;
+
+  private retryOptions: RetryOptions = {
+    minTimeout: 50, // Starting timeout from which to increase exponentially
+    factor: 2, // Exponential backoff
+    retries: RETRY_MAX_ATTEPTS,
+  };
 
   constructor({ router, ...config }: BalancedNodeConfig) {
     this.router = router;
     this.logger = createLogger('BalancedNode', config);
-    this.retries = config.retries ?? RETRY_MAX_ATTEPTS;
+
+    if (typeof config.retries === 'number') {
+      this.retryOptions.retries = config.retries;
+    } else if (config.retries) {
+      const { attempts = RETRY_MAX_ATTEPTS, ...retryOptions } = config.retries;
+
+      this.retryOptions = { ...this.retryOptions, ...retryOptions, retries: attempts };
+    }
   }
 
   /**
@@ -61,21 +86,31 @@ export class BalancedNode implements NodeInterface {
     bucketId: BucketId,
     operation: RouterOperation,
     body: (node: NodeInterface, bail: (e: Error) => void, attempt: number) => Promise<T>,
-    options: RetryOptions = {},
   ) {
     let lastError: RpcError | undefined;
-    const exclude: string[] = [];
+    const exclude: NodeInterface[] = [];
 
     return retry(
       async (bail, attempt) => {
-        let node: NodeInterface;
+        let node: NodeInterface | undefined;
 
         try {
-          node = await this.router.getNode(operation, bucketId, exclude);
+          node = await this.router.getNode(
+            operation,
+            bucketId,
+            exclude.map((node) => node.nodeId),
+          );
 
-          exclude.push(node.nodeId);
+          exclude.unshift(node);
         } catch (error) {
-          return bail(lastError || (error as Error));
+          /**
+           * In case we fail to get a node, we retry with previous nodes that failed until the max attempts.
+           */
+          node = exclude.pop() || node;
+        }
+
+        if (!node) {
+          throw lastError ?? new Error('No nodes available to handle the operation');
         }
 
         try {
@@ -94,11 +129,9 @@ export class BalancedNode implements NodeInterface {
         }
       },
       {
-        minTimeout: 0,
-        retries: this.retries,
-        ...options,
+        ...this.retryOptions,
         onRetry: (err, attempt) => {
-          options.onRetry?.(err, attempt);
+          this.retryOptions.onRetry?.(err, attempt);
 
           this.logger.warn({ err, attempt }, 'Retrying operation');
         },

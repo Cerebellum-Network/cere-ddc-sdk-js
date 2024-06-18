@@ -77,12 +77,16 @@ export abstract class PingStrategy extends NodeTypeStrategy {
   }
 
   async marshalNodes(operation: RouterOperation, allNodes: RouterNode[]): Promise<RouterNode[]> {
+    const allNodesShuffled = shuffle([...allNodes]);
     const pingedNodes = await super.marshalNodes(operation, this.getPingedNodes());
-    const allOperationNodes = await super.marshalNodes(operation, allNodes);
+    const allOperationNodes = await super.marshalNodes(operation, allNodesShuffled);
     const notPingedNodes = allOperationNodes.filter((node) => !this.nodesMap.has(node.httpUrl));
-    const toPingSync = notPingedNodes.splice(0, Math.max(0, PING_THRESHOLD - pingedNodes.length));
-    const toPingAsync = notPingedNodes.splice(0, PING_THRESHOLD_INC);
-    const syncPings = [...this.getPingedNodes(), ...toPingSync].map((node) => this.enqueuePing(node));
+    const toPingSync = notPingedNodes.slice(0, Math.max(0, PING_THRESHOLD - pingedNodes.length));
+    const toPingAsync = notPingedNodes.slice(0, PING_THRESHOLD_INC);
+    const syncPings = [
+      ...pingedNodes, // Include already pinged nodes to make sure they are settled
+      ...toPingSync,
+    ].map((node) => this.enqueuePing(node));
 
     /**
      * Wait for all sync pings to complete
@@ -95,22 +99,20 @@ export abstract class PingStrategy extends NodeTypeStrategy {
     setTimeout(() => toPingAsync.forEach((node) => this.enqueuePing(node)), PING_BACKGROUND_DELAY);
 
     /**
-     * Shuffle nodes and sort by latency levels
+     * Sort opperation nodes by latency
      */
-    const latencySortedNodes = shuffle(allOperationNodes).sort((a, b) => {
-      const pingA = this.nodesMap.get(a.httpUrl);
-      const pingB = this.nodesMap.get(b.httpUrl);
+    return allOperationNodes.sort((a, b) => {
+      const latencyA = this.nodesMap.get(a.httpUrl)?.latency;
+      const latencyB = this.nodesMap.get(b.httpUrl)?.latency;
 
       /**
        * Group latency by PING_LATENCY_GROUP ms levels to avaoid sorting by small differences.
        * Keep nodes without ping at the end for fallback scenarios when all pings fail.
        */
-      const levelA = pingA ? Math.ceil(pingA.latency! / PING_LATENCY_GROUP) : Infinity;
-      const levelB = pingB ? Math.ceil(pingB.latency! / PING_LATENCY_GROUP) : Infinity;
+      const levelA = latencyA ? Math.ceil(latencyA / PING_LATENCY_GROUP) : Infinity;
+      const levelB = latencyB ? Math.ceil(latencyB / PING_LATENCY_GROUP) : Infinity;
 
       return levelA - levelB;
     });
-
-    return super.marshalNodes(operation, latencySortedNodes);
   }
 }
