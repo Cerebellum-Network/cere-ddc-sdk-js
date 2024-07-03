@@ -9,6 +9,7 @@ export type UploadDirOptions = {
   bucketId: string;
   name?: string;
   accessToken?: string;
+  correlationId?: string;
 };
 
 export type RootDagNodeData = {
@@ -26,10 +27,11 @@ async function uploadFileLink(
   rootDir: string,
   filePath: string,
   stats: Stats,
-  { accessToken }: UploadDirOptions,
+  { accessToken, correlationId }: UploadDirOptions,
 ) {
   const cid = await uploadFile(client, filePath, stats, {
     accessToken,
+    correlationId,
     bucketId: bucketId.toString(),
   });
 
@@ -78,6 +80,7 @@ export const uploadDir = async (client: DdcClient, path: string, options: Upload
   const rootDagNode = new DagNode(JSON.stringify(data), fileLinks);
   const rootDagNodeUri = await client.store(bucketId, rootDagNode, {
     name: options.name,
+    correlationId: options.correlationId,
     accessToken: options.accessToken,
   });
 
