@@ -51,6 +51,7 @@ export type BalancedNodeConfig = LoggerOptions & {
  */
 export class BalancedNode implements NodeInterface {
   readonly nodeId = 'BalancedNode';
+  readonly displayName = 'BalancedNode';
 
   private router: Router;
   private logger: Logger;
@@ -107,6 +108,15 @@ export class BalancedNode implements NodeInterface {
            * In case we fail to get a node, we retry with previous nodes that failed until the max attempts.
            */
           node = exclude.pop() || node;
+
+          if (node) {
+            this.logger.info(
+              `Reusing previous node for operation "%s" in bucket %s: %s`,
+              operation,
+              bucketId,
+              node.displayName,
+            );
+          }
         }
 
         if (!node) {

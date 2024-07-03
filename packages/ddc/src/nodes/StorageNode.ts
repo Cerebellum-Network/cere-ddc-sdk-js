@@ -49,6 +49,7 @@ export type StorageNodeConfig = RpcTransportOptions &
  */
 export class StorageNode implements NodeInterface {
   readonly nodeId: string;
+  readonly displayName: string;
 
   private dagApi: DagApi;
   private fileApi: FileApi;
@@ -60,7 +61,7 @@ export class StorageNode implements NodeInterface {
 
   constructor(
     private signer: Signer,
-    config: StorageNodeConfig,
+    readonly config: StorageNodeConfig,
   ) {
     const authToken = AuthToken.maybeToken(config.authToken);
     const transport = new DefaultTransport({
@@ -72,6 +73,11 @@ export class StorageNode implements NodeInterface {
     this.mode = config.mode;
     this.logger = createLogger('StorageNode', config);
     this.rootTokenPromise = authToken && Promise.resolve(authToken);
+
+    /**
+     * Use the HTTP URL as the display name.
+     */
+    this.displayName = config.httpUrl;
 
     const options = {
       signer,
@@ -153,6 +159,7 @@ export class StorageNode implements NodeInterface {
       cidBytes = await this.fileApi.putMultipartPiece({
         bucketId,
         token,
+        correlationId: options?.correlationId,
         partHashes: piece.partHashes,
         partSize: piece.meta.partSize,
         totalSize: piece.meta.totalSize,
@@ -166,6 +173,7 @@ export class StorageNode implements NodeInterface {
         {
           bucketId,
           token,
+          correlationId: options?.correlationId,
           isMultipart: piece.isPart,
           offset: piece.offset,
           size: piece.size,
@@ -220,6 +228,7 @@ export class StorageNode implements NodeInterface {
     const cidBytes = await this.dagApi.putNode({
       bucketId,
       token,
+      correlationId: options?.correlationId,
       node: mapDagNodeToAPI(node),
     });
 
@@ -263,6 +272,7 @@ export class StorageNode implements NodeInterface {
     const contentStream = await this.fileApi.getFile({
       bucketId,
       token,
+      correlationId: options?.correlationId,
       cid: cid.toBytes(),
       range: options?.range,
     });
@@ -306,6 +316,7 @@ export class StorageNode implements NodeInterface {
     const node = await this.dagApi.getNode({
       bucketId,
       token,
+      correlationId: options?.correlationId,
       cid: cid.toBytes(),
       path: options?.path,
     });
@@ -346,6 +357,7 @@ export class StorageNode implements NodeInterface {
     const storredRecord = await this.cnsApi.putRecord({
       bucketId,
       token,
+      correlationId: options?.correlationId,
       record: mapCnsRecordToAPI(record),
     });
 
@@ -379,7 +391,7 @@ export class StorageNode implements NodeInterface {
     this.logger.info(`Getting CNS record by name "${name}" from bucket ${bucketId}`);
     this.logger.debug({ token }, 'Auth token');
 
-    const record = await this.cnsApi.getRecord({ bucketId, name, token });
+    const record = await this.cnsApi.getRecord({ bucketId, name, token, correlationId: options?.correlationId });
 
     this.logger.info('Got CNS record by name "%s" from bucket %s', name, bucketId);
     this.logger.debug({ record }, 'CNS record');

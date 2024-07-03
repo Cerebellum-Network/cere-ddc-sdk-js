@@ -1,4 +1,5 @@
 import { arrayBuffer } from 'stream/consumers';
+import { DdcClient, File, FileUri, DagNode, DagNodeUri } from '@cere-ddc-sdk/ddc-client';
 import {
   ActivityRequest,
   AuthToken,
@@ -8,58 +9,76 @@ import {
   DagApi,
   FileApi,
   GrpcTransport,
+  StorageNodeConfig,
   UriSigner,
 } from '@cere-ddc-sdk/ddc';
 
-import { createDataStream, MB, ROOT_USER_SEED, DDC_BLOCK_SIZE, getStorageNodes } from '../helpers';
+import { createDataStream, MB, ROOT_USER_SEED, DDC_BLOCK_SIZE, getStorageNodes, getClientConfig } from '../helpers';
+
+const correlationVariants = [
+  { name: 'with provided ID', correlationId: 'test-correlation-id' },
+  { name: 'with default value' },
+];
 
 describe('Activity Capture', () => {
+  let client: DdcClient;
+
   const bucketId = 1n;
   const [node] = getStorageNodes();
   const signer = new UriSigner(ROOT_USER_SEED);
   const token = new AuthToken({ bucketId, operations: [AuthTokenOperation.PUT, AuthTokenOperation.GET] });
 
-  let activityRequestHeader: string | undefined;
+  let grpcRequests: { method: string; service: string; meta: any }[] = [];
   let duplexSendSpy: jest.SpyInstance;
 
-  const transport = new GrpcTransport({
-    ...node,
-    interceptors: [
-      {
-        interceptUnary(next, method, input, options) {
-          activityRequestHeader = options.meta?.request as string;
+  const interceptors: StorageNodeConfig['interceptors'] = [
+    {
+      interceptUnary(next, method, input, options) {
+        grpcRequests.push({ service: method.service.typeName, method: method.name, meta: options.meta });
 
-          return next(method, input, options);
-        },
-
-        interceptClientStreaming: (next, method, options) => {
-          activityRequestHeader = options.meta?.request as string;
-
-          return next(method, options);
-        },
-
-        interceptDuplex: (next, method, options) => {
-          const call = next(method, options);
-
-          activityRequestHeader = options.meta?.request as string;
-          duplexSendSpy = jest.spyOn(call.requests, 'send');
-
-          return call;
-        },
+        return next(method, input, options);
       },
-    ],
-  });
 
-  const getActivityRequest = () => {
-    return activityRequestHeader ? ActivityRequest.fromBinary(Buffer.from(activityRequestHeader, 'base64')) : undefined;
-  };
+      interceptClientStreaming: (next, method, options) => {
+        grpcRequests.push({ service: method.service.typeName, method: method.name, meta: options.meta });
+
+        return next(method, options);
+      },
+
+      interceptDuplex: (next, method, options) => {
+        const call = next(method, options);
+
+        grpcRequests.push({ service: method.service.typeName, method: method.name, meta: options.meta });
+        duplexSendSpy = jest.spyOn(call.requests, 'send');
+
+        return call;
+      },
+    },
+  ];
+
+  const transport = new GrpcTransport({ ...node, interceptors });
+
+  const getRequests = () => grpcRequests;
+  const getActivityRequests = () =>
+    getRequests()
+      .map(({ meta }) => meta.request && ActivityRequest.fromBinary(Buffer.from(meta.request, 'base64')))
+      .filter(Boolean);
 
   beforeAll(async () => {
     await token.sign(signer);
+
+    client = await DdcClient.create(ROOT_USER_SEED, {
+      ...getClientConfig(),
+      nodes: getStorageNodes(undefined, { interceptors }),
+    });
+  });
+
+  afterAll(async () => {
+    await client.disconnect();
   });
 
   beforeEach(() => {
-    activityRequestHeader = undefined;
+    grpcRequests = [];
   });
 
   describe('FileApi', () => {
@@ -72,7 +91,9 @@ describe('Activity Capture', () => {
     test('Store file', async () => {
       fileCid = await fileApi.putRawPiece({ token, bucketId, isMultipart: false, size: fileSize }, fileStream);
 
-      expect(getActivityRequest()).toEqual({
+      const [activityRequest] = getActivityRequests();
+
+      expect(activityRequest).toEqual({
         bucketId,
         contentType: 0, // ContentType.PIECE
         requestType: 0, // RequestType.STORE
@@ -89,7 +110,7 @@ describe('Activity Capture', () => {
       expect(fileCid).toBeDefined();
 
       const stream = await fileApi.getFile({ token, bucketId, cid: fileCid });
-      const activityRequest = getActivityRequest();
+      const [activityRequest] = getActivityRequests();
 
       await arrayBuffer(stream); // Read full stream
 
@@ -128,7 +149,7 @@ describe('Activity Capture', () => {
         range: { start: DDC_BLOCK_SIZE, end: 3 * DDC_BLOCK_SIZE - 1 },
       });
 
-      const activityRequest = getActivityRequest();
+      const [activityRequest] = getActivityRequests();
 
       await arrayBuffer(stream); // Read full stream
 
@@ -170,7 +191,7 @@ describe('Activity Capture', () => {
         node: { data: new Uint8Array([1, 2, 3]), links: [], tags: [] },
       });
 
-      const activityRequest = getActivityRequest();
+      const [activityRequest] = getActivityRequests();
 
       expect(activityRequest).toEqual({
         bucketId,
@@ -191,8 +212,9 @@ describe('Activity Capture', () => {
       expect(nodeCid).toBeDefined();
 
       await dagApi.getNode({ cid: nodeCid, token, bucketId });
+      const [activityRequest] = getActivityRequests();
 
-      expect(getActivityRequest()).toEqual({
+      expect(activityRequest).toEqual({
         bucketId,
         contentType: 0, // ContentType.PIECE
         requestType: 1, // RequestType.GET
@@ -213,7 +235,7 @@ describe('Activity Capture', () => {
 
     test('Store CNS Record', async () => {
       await cnsApi.putRecord({ token, bucketId, record });
-      const activityRequest = getActivityRequest();
+      const [activityRequest] = getActivityRequests();
 
       expect(activityRequest).toEqual({
         bucketId,
@@ -232,8 +254,9 @@ describe('Activity Capture', () => {
 
     test('Read CNS Record', async () => {
       await cnsApi.getRecord({ token, bucketId, name: record.name });
+      const [activityRequest] = getActivityRequests();
 
-      expect(getActivityRequest()).toEqual({
+      expect(activityRequest).toEqual({
         bucketId,
         contentType: 0, // ContentType.PIECE
         requestType: 1, // RequestType.GET
@@ -243,6 +266,81 @@ describe('Activity Capture', () => {
         signature: expect.any(Object),
         timestamp: expect.any(Number),
         requestId: expect.any(String),
+      });
+    });
+  });
+
+  describe.each(correlationVariants)('Requests correlation ($name)', ({ correlationId }) => {
+    let dagNodeUri: DagNodeUri;
+
+    const fileName = 'test/tiny-file';
+    const fileData = new TextEncoder().encode('Tiny file');
+
+    test('Upload file with CNS name', async () => {
+      await client.store(bucketId, new File(fileData), { name: fileName, correlationId });
+
+      expect(getRequests()).toEqual([
+        {
+          service: 'file.FileApi',
+          method: 'putRawPiece',
+          meta: expect.objectContaining({
+            CorrelationID: correlationId || expect.any(String),
+          }),
+        },
+        {
+          service: 'cns.CnsApi',
+          method: 'Put',
+          meta: expect.objectContaining({
+            CorrelationID: correlationId || expect.any(String),
+          }),
+        },
+      ]);
+    });
+
+    test('Download file by CNS name', async () => {
+      await client.read(new FileUri(bucketId, fileName), { correlationId });
+
+      expect(getRequests()).toEqual([
+        {
+          service: 'cns.CnsApi',
+          method: 'Get',
+          meta: expect.objectContaining({
+            CorrelationID: correlationId || expect.any(String),
+          }),
+        },
+        {
+          service: 'file.FileApi',
+          method: 'getFile',
+          meta: expect.objectContaining({
+            CorrelationID: correlationId || expect.any(String),
+          }),
+        },
+      ]);
+    });
+
+    test('Store DAG Node', async () => {
+      dagNodeUri = await client.store(bucketId, new DagNode('DAG Node data', [], []), { correlationId });
+
+      expect(getRequests()).toContainEqual({
+        service: 'dag.DagApi',
+        method: 'Put',
+        meta: expect.objectContaining({
+          CorrelationID: correlationId || expect.any(String),
+        }),
+      });
+    });
+
+    test('Read DAG Node', async () => {
+      expect(dagNodeUri).toBeDefined();
+
+      await client.read(dagNodeUri, { correlationId });
+
+      expect(getRequests()).toContainEqual({
+        service: 'dag.DagApi',
+        method: 'Get',
+        meta: expect.objectContaining({
+          CorrelationID: correlationId || expect.any(String),
+        }),
       });
     });
   });

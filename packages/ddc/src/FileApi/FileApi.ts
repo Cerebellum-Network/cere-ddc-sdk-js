@@ -5,21 +5,28 @@ import { FileValidator } from '../validators';
 import { RpcTransport } from '../transports';
 import { Content, createContentStream, getContentSize, isContentStream } from '../streams';
 import { createLogger, Logger, LoggerOptions } from '../logger';
-import { createRpcMeta, AuthToken } from '../auth';
+import { createRpcMeta as createAuthRpcMeta, AuthMetaParams } from '../auth';
 import {
   PutMultiPartPieceRequest as ProtoPutMultiPartPieceRequest,
   GetFileRequest_Request,
   PutRawPieceRequest_Metadata,
 } from '../grpc/file_api';
 import { FileApiClient } from '../grpc/file_api.client';
-import { ActivityRequestType, createAck, createActivityRequest, createRequestId } from '../activity';
+import {
+  ActivityRequestType,
+  createAck,
+  createActivityRequest,
+  createRequestId,
+  CorrelationMetaParams,
+  createRpcMeta as createCorrelationRpcMeta,
+} from '../activity';
 
-type AuthParams = { token?: AuthToken };
 export type ReadFileRange = GetFileRequest_Request['range'];
-export type GetFileRequest = Omit<GetFileRequest_Request, 'authenticate'> & AuthParams;
-export type PutMultiPartPieceRequest = ProtoPutMultiPartPieceRequest & AuthParams;
+export type GetFileRequest = Omit<GetFileRequest_Request, 'authenticate'> & AuthMetaParams & CorrelationMetaParams;
+export type PutMultiPartPieceRequest = ProtoPutMultiPartPieceRequest & AuthMetaParams & CorrelationMetaParams;
 export type PutRawPieceMetadata = Omit<PutRawPieceRequest_Metadata, 'size'> &
-  AuthParams & {
+  AuthMetaParams &
+  CorrelationMetaParams & {
     size?: number;
   };
 
@@ -81,9 +88,9 @@ export class FileApi {
    * console.log(cid);
    * ```
    */
-  async putMultipartPiece({ token, ...request }: PutMultiPartPieceRequest) {
+  async putMultipartPiece({ token, correlationId, ...request }: PutMultiPartPieceRequest) {
     const { signer } = this.options;
-    const meta = createRpcMeta(token);
+    const meta = createCorrelationRpcMeta(correlationId, createAuthRpcMeta(token));
     const partSize = ceilToPowerOf2(request.partSize);
     this.logger.debug({ ...request, partSize, token }, 'Storing multipart piece');
 
@@ -130,8 +137,8 @@ export class FileApi {
    * console.log(cid);
    * ```
    */
-  async putRawPiece({ token, ...metadata }: PutRawPieceMetadata, content: Content) {
-    const meta = createRpcMeta(token);
+  async putRawPiece({ token, correlationId, ...metadata }: PutRawPieceMetadata, content: Content) {
+    const meta = createCorrelationRpcMeta(correlationId, createAuthRpcMeta(token));
     const size = getContentSize(content, metadata.size);
     const { signer } = this.options;
 
@@ -213,13 +220,13 @@ export class FileApi {
    * }
    * ```
    */
-  async getFile({ token, ...request }: GetFileRequest) {
+  async getFile({ token, correlationId, ...request }: GetFileRequest) {
     const { enableAcks, signer, authenticate = false } = this.options;
 
     this.logger.debug({ request, token }, 'Started reading data');
 
     const requestId = createRequestId();
-    const meta = createRpcMeta(token);
+    const meta = createCorrelationRpcMeta(correlationId, createAuthRpcMeta(token));
     const validator = new FileValidator(request.cid, {
       logger: this.logger,
       enable: authenticate,
