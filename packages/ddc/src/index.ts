@@ -16,10 +16,12 @@ export * from './Piece';
 export { DagNode, DagNodeResponse, Link, Tag } from './DagNode';
 export { CnsRecord, CnsRecordResponse } from './CnsRecord';
 export { AuthToken, AuthTokenOperation, type AuthTokenParams } from './auth';
+export { createCorrelationId } from './activity';
 export {
   UriSigner,
   JsonSigner,
   KeyringSigner,
+  CereWalletSigner,
   StorageNodeMode,
   type Signer,
   type SignerType,

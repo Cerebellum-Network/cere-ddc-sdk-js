@@ -74,7 +74,7 @@ export class DagApi {
   async putNode({ token, bucketId, node, cid, correlationId }: PutRequest) {
     const meta = createCorrelationRpcMeta(correlationId, createAuthRpcMeta(token));
 
-    this.logger.debug({ token, bucketId, node, cid }, 'Storing DAG Node');
+    this.logger.debug({ token, correlationId, bucketId, node, cid }, 'Storing DAG Node');
 
     if (this.options.signer && node) {
       meta.request = await createActivityRequest(
@@ -85,7 +85,7 @@ export class DagApi {
 
     const { response } = await this.api.put({ bucketId, node, cid }, { meta });
 
-    this.logger.debug({ cid }, 'DAG Node stored');
+    this.logger.debug({ cid, correlationId }, 'DAG Node stored');
 
     return new Uint8Array(response.cid);
   }
@@ -108,7 +108,7 @@ export class DagApi {
    * ```
    */
   async getNode({ token, correlationId, ...request }: GetRequest): Promise<Node | undefined> {
-    this.logger.debug({ ...request, token }, 'Retrieving DAG Node');
+    this.logger.debug({ ...request, token, correlationId }, 'Retrieving DAG Node');
 
     /**
      * In case a sub-node requested using root CID + path - we don't have the target node CID, so we can't authenticate it.
@@ -136,7 +136,7 @@ export class DagApi {
 
     await validator.validate();
 
-    this.logger.debug({ node: response.node }, 'DAG Node retrieved');
+    this.logger.debug({ node: response.node, correlationId }, 'DAG Node retrieved');
 
     return (
       response.node && {

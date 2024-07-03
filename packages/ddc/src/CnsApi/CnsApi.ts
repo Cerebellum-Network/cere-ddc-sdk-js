@@ -91,7 +91,7 @@ export class CnsApi {
    * ```
    */
   async putRecord({ token, bucketId, record, correlationId }: PutRequest): Promise<Record> {
-    this.logger.debug({ bucketId, record, token }, 'Storing CNS record');
+    this.logger.debug({ bucketId, record, token, correlationId }, 'Storing CNS record');
 
     const meta = createCorrelationRpcMeta(correlationId, createAuthRpcMeta(token));
     const { signer } = this.options;
@@ -109,7 +109,7 @@ export class CnsApi {
 
     await this.api.put({ bucketId, record: { ...record, signature } }, { meta });
 
-    this.logger.debug({ ...record }, 'CNS record stored');
+    this.logger.debug({ record, correlationId }, 'CNS record stored');
 
     return {
       ...record,
@@ -139,7 +139,7 @@ export class CnsApi {
    * ```
    */
   async getRecord({ token, name, bucketId, correlationId }: GetRequest): Promise<Record | undefined> {
-    this.logger.debug({ name, bucketId, token }, 'Retrieving CNS record');
+    this.logger.debug({ name, bucketId, token, correlationId }, 'Retrieving CNS record');
 
     let record: ProtoRecord | undefined;
     const meta = createCorrelationRpcMeta(correlationId, createAuthRpcMeta(token));
@@ -168,12 +168,12 @@ export class CnsApi {
     }
 
     if (!record?.signature) {
-      this.logger.debug({ name, bucketId }, 'CNS record not found');
+      this.logger.debug({ name, bucketId, correlationId }, 'CNS record not found');
 
       return undefined;
     }
 
-    this.logger.debug({ ...record }, 'CNS record retrieved');
+    this.logger.debug({ record, correlationId }, 'CNS record retrieved');
 
     return {
       ...record,

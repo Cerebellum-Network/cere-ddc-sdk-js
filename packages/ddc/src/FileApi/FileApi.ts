@@ -92,7 +92,7 @@ export class FileApi {
     const { signer } = this.options;
     const meta = createCorrelationRpcMeta(correlationId, createAuthRpcMeta(token));
     const partSize = ceilToPowerOf2(request.partSize);
-    this.logger.debug({ ...request, partSize, token }, 'Storing multipart piece');
+    this.logger.debug({ ...request, partSize, token, correlationId }, 'Storing multipart piece');
 
     if (signer) {
       meta.request = await createActivityRequest(
@@ -107,7 +107,7 @@ export class FileApi {
 
     const { response } = await this.api.putMultipartPiece({ ...request, partSize }, { meta });
 
-    this.logger.debug({ response }, 'Multipart piece stored');
+    this.logger.debug({ response, correlationId }, 'Multipart piece stored');
 
     return new Uint8Array(response.cid);
   }
@@ -142,7 +142,7 @@ export class FileApi {
     const size = getContentSize(content, metadata.size);
     const { signer } = this.options;
 
-    this.logger.debug({ metadata, token }, 'Storing raw piece of size %d', size);
+    this.logger.debug({ metadata, token, correlationId }, 'Storing raw piece of size %d', size);
 
     if (!size) {
       throw new Error('Cannot determine the raw piece size');
@@ -172,7 +172,7 @@ export class FileApi {
      * Wait for responce headers before start streaming piece content.
      */
     const headers = await call.headers;
-    this.logger.debug({ headers }, 'Server responded with headers');
+    this.logger.debug({ headers, correlationId }, 'Server responded with headers');
 
     let bytesSent = 0;
     const contentStream = isContentStream(content) ? content : createContentStream(content);
@@ -196,7 +196,7 @@ export class FileApi {
 
     await call.requests.complete();
     const { cid } = await call.response;
-    this.logger.debug({ cid }, 'Raw piece stored');
+    this.logger.debug({ cid, correlationId }, 'Raw piece stored');
 
     return new Uint8Array(cid);
   }
@@ -223,7 +223,7 @@ export class FileApi {
   async getFile({ token, correlationId, ...request }: GetFileRequest) {
     const { enableAcks, signer, authenticate = false } = this.options;
 
-    this.logger.debug({ request, token }, 'Started reading data');
+    this.logger.debug({ request, token, correlationId }, 'Started reading data');
 
     const requestId = createRequestId();
     const meta = createCorrelationRpcMeta(correlationId, createAuthRpcMeta(token));
@@ -263,7 +263,7 @@ export class FileApi {
      * Wait for responce headers to be received.
      */
     const headers = await call.headers;
-    this.logger.debug({ headers }, 'Server responded with headers');
+    this.logger.debug({ headers, correlationId }, 'Server responded with headers');
 
     /**
      * Create data stream from responce messages.
