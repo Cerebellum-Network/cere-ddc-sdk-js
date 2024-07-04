@@ -12,6 +12,10 @@ type NamingOptions = {
   name?: string;
 };
 
+type ActivityOptions = {
+  correlationId?: string;
+};
+
 /**
  * The `OperationAuthOptions` type defines the authentication options for a DDC operation.
  *
@@ -30,12 +34,13 @@ export type OperationAuthOptions = {
  * @hidden
  * @extends OperationAuthOptions
  */
-export type PieceReadOptions = OperationAuthOptions & {
-  /**
-   * An optional range to read from the piece.
-   */
-  range?: ReadFileRange;
-};
+export type PieceReadOptions = ActivityOptions &
+  OperationAuthOptions & {
+    /**
+     * An optional range to read from the piece.
+     */
+    range?: ReadFileRange;
+  };
 
 /**
  * The `DagNodeGetOptions` type defines the options for retrieving a DAG node.
@@ -43,12 +48,13 @@ export type PieceReadOptions = OperationAuthOptions & {
  * @hidden
  * @extends OperationAuthOptions
  */
-export type DagNodeGetOptions = OperationAuthOptions & {
-  /**
-   * An optional path to retrieve from the DAG node.
-   */
-  path?: string;
-};
+export type DagNodeGetOptions = ActivityOptions &
+  OperationAuthOptions & {
+    /**
+     * An optional path to retrieve from the DAG node.
+     */
+    path?: string;
+  };
 
 /**
  * The `CnsRecordGetOptions` type defines the options for retrieving a CNS record.
@@ -56,12 +62,13 @@ export type DagNodeGetOptions = OperationAuthOptions & {
  * @hidden
  * @extends OperationAuthOptions
  */
-export type CnsRecordGetOptions = OperationAuthOptions & {
-  /**
-   * An optional path to retrieve from the CNS record.
-   */
-  path?: string;
-};
+export type CnsRecordGetOptions = ActivityOptions &
+  OperationAuthOptions & {
+    /**
+     * An optional path to retrieve from the CNS record.
+     */
+    path?: string;
+  };
 
 /**
  * The `PieceStoreOptions` type defines the options for storing a piece.
@@ -70,7 +77,7 @@ export type CnsRecordGetOptions = OperationAuthOptions & {
  * @extends NamingOptions
  * @extends OperationAuthOptions
  */
-export type PieceStoreOptions = NamingOptions & OperationAuthOptions;
+export type PieceStoreOptions = ActivityOptions & NamingOptions & OperationAuthOptions;
 
 /**
  * The `DagNodeStoreOptions` type defines the options for storing a DAG node.
@@ -79,7 +86,7 @@ export type PieceStoreOptions = NamingOptions & OperationAuthOptions;
  * @extends NamingOptions
  * @extends OperationAuthOptions
  */
-export type DagNodeStoreOptions = NamingOptions & OperationAuthOptions;
+export type DagNodeStoreOptions = ActivityOptions & NamingOptions & OperationAuthOptions;
 
 /**
  * The `CnsRecordStoreOptions` type defines the options for storing a CNS record.
@@ -87,7 +94,7 @@ export type DagNodeStoreOptions = NamingOptions & OperationAuthOptions;
  * @hidden
  * @extends OperationAuthOptions
  */
-export type CnsRecordStoreOptions = OperationAuthOptions;
+export type CnsRecordStoreOptions = ActivityOptions & OperationAuthOptions;
 
 /**
  * The `NodeInterface` interface defines the methods to interact with DDC storage nodes.
@@ -99,6 +106,11 @@ export interface NodeInterface {
    * The identifier of the node.
    */
   readonly nodeId: string;
+
+  /**
+   * The display name of the node.
+   */
+  readonly displayName: string;
 
   /**
    * Stores a piece in a specific bucket.

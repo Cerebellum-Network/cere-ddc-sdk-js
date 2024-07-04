@@ -7,12 +7,13 @@ type NodeConfig = StorageNodeConfig & {
   mnemonic: string;
 };
 
-export const getStorageNodes = (host = 'localhost'): NodeConfig[] => [
+export const getStorageNodes = (host = 'localhost', options: Partial<StorageNodeConfig> = {}): NodeConfig[] => [
   {
     mode: StorageNodeMode.Storage,
     grpcUrl: `grpc://${host}:9091`,
     httpUrl: `http://${host}:8091`,
     mnemonic: 'whip clump surface eternal summer acoustic broom duty magic extend virtual fly',
+    ...options,
   },
 
   {
@@ -27,6 +28,7 @@ export const getStorageNodes = (host = 'localhost'): NodeConfig[] => [
     grpcUrl: `grpc://${host}:9093`,
     httpUrl: `http://${host}:8093`,
     mnemonic: 'rule output true detect matrix wife raven wreck primary mansion spike coral',
+    ...options,
   },
 
   {
@@ -34,6 +36,7 @@ export const getStorageNodes = (host = 'localhost'): NodeConfig[] => [
     grpcUrl: `grpc://${host}:9094`,
     httpUrl: `http://${host}:8094`,
     mnemonic: 'paper salon seed crystal gun envelope wolf twice pistol episode guitar borrow',
+    ...options,
   },
 
   {
@@ -41,6 +44,7 @@ export const getStorageNodes = (host = 'localhost'): NodeConfig[] => [
     grpcUrl: `grpc://${host}:9095`,
     httpUrl: `http://${host}:8095`,
     mnemonic: 'spike sun exchange lava weekend october sock wait attend garden carbon promote',
+    ...options,
   },
 ];
 

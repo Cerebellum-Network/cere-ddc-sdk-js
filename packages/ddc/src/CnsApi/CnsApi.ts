@@ -2,25 +2,30 @@ import { RpcError } from '@protobuf-ts/runtime-rpc';
 import type { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { RpcTransport } from '../transports';
-import { createRpcMeta, AuthToken } from '../auth';
+import { createRpcMeta as createAuthRpcMeta, AuthMetaParams } from '../auth';
 import { Logger, LoggerOptions, createLogger } from '../logger';
 import { GrpcStatus } from '../grpc/status';
 import { createSignature, mapSignature, Signature } from '../signature';
 import { CnsApiClient } from '../grpc/cns_api.client';
 import { GetRequest as ProtoGetRequest, PutRequest as ProtoPutRequest, Record as ProtoRecord } from '../grpc/cns_api';
-import { ActivityRequestType, createActivityRequest } from '../activity';
+import {
+  ActivityRequestType,
+  createActivityRequest,
+  CorrelationMetaParams,
+  createRpcMeta as createCorrelationRpcMeta,
+} from '../activity';
 
-type AuthParams = { token?: AuthToken };
 export type Record = Omit<ProtoRecord, 'signature'> & {
   signature: Signature;
 };
 
 type PutRequest = Omit<ProtoPutRequest, 'record'> &
-  AuthParams & {
+  CorrelationMetaParams &
+  AuthMetaParams & {
     record: Omit<Record, 'signature'>;
   };
 
-type GetRequest = ProtoGetRequest & AuthParams;
+type GetRequest = CorrelationMetaParams & ProtoGetRequest & AuthMetaParams;
 
 const createSignatureMessage = (record: Omit<Record, 'signature'>) => {
   const message = ProtoRecord.create(record);
@@ -85,10 +90,10 @@ export class CnsApi {
    * console.log(record); //
    * ```
    */
-  async putRecord({ token, bucketId, record }: PutRequest): Promise<Record> {
-    this.logger.debug({ bucketId, record, token }, 'Storing CNS record');
+  async putRecord({ token, bucketId, record, correlationId }: PutRequest): Promise<Record> {
+    this.logger.debug({ bucketId, record, token, correlationId }, 'Storing CNS record');
 
-    const meta = createRpcMeta(token);
+    const meta = createCorrelationRpcMeta(correlationId, createAuthRpcMeta(token));
     const { signer } = this.options;
 
     if (!signer) {
@@ -104,7 +109,7 @@ export class CnsApi {
 
     await this.api.put({ bucketId, record: { ...record, signature } }, { meta });
 
-    this.logger.debug({ ...record }, 'CNS record stored');
+    this.logger.debug({ record, correlationId }, 'CNS record stored');
 
     return {
       ...record,
@@ -133,11 +138,11 @@ export class CnsApi {
    * console.log(record);
    * ```
    */
-  async getRecord({ token, name, bucketId }: GetRequest): Promise<Record | undefined> {
-    this.logger.debug({ name, bucketId, token }, 'Retrieving CNS record');
+  async getRecord({ token, name, bucketId, correlationId }: GetRequest): Promise<Record | undefined> {
+    this.logger.debug({ name, bucketId, token, correlationId }, 'Retrieving CNS record');
 
     let record: ProtoRecord | undefined;
-    const meta = createRpcMeta(token);
+    const meta = createCorrelationRpcMeta(correlationId, createAuthRpcMeta(token));
 
     if (this.options.signer) {
       meta.request = await createActivityRequest(
@@ -163,12 +168,12 @@ export class CnsApi {
     }
 
     if (!record?.signature) {
-      this.logger.debug({ name, bucketId }, 'CNS record not found');
+      this.logger.debug({ name, bucketId, correlationId }, 'CNS record not found');
 
       return undefined;
     }
 
-    this.logger.debug({ ...record }, 'CNS record retrieved');
+    this.logger.debug({ record, correlationId }, 'CNS record retrieved');
 
     return {
       ...record,

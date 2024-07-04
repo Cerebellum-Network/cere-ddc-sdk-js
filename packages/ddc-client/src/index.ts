@@ -2,6 +2,7 @@ export * from './DdcClient';
 export * from './DdcUri';
 
 export {
+  createCorrelationId,
   KB,
   MB,
   DagNode,
@@ -11,6 +12,7 @@ export {
   UriSigner,
   JsonSigner,
   KeyringSigner,
+  CereWalletSigner,
   TESTNET,
   DEVNET,
   MAINNET,

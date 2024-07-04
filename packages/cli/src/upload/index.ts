@@ -7,6 +7,7 @@ import { DdcClient } from '@cere-ddc-sdk/ddc-client';
 export type UploadOptions = {
   bucketId: string;
   name?: string;
+  correlationId?: string;
 };
 
 export const upload = async (client: DdcClient, path: string, options: UploadOptions) => {

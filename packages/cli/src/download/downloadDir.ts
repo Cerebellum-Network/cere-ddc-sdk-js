@@ -8,16 +8,17 @@ import { isCLIDirData } from '../upload/uploadDir';
 export type DownloadDirOptions = {
   bucketId: string;
   accessToken?: string;
+  correlationId?: string;
 };
 
 export const downloadDir = async (
   client: DdcClient,
   source: string,
   dest: string,
-  { bucketId, accessToken }: DownloadDirOptions,
+  { bucketId, accessToken, correlationId }: DownloadDirOptions,
 ) => {
   const dagUri = new DagNodeUri(BigInt(bucketId), source);
-  const response = await client.read(dagUri, { accessToken });
+  const response = await client.read(dagUri, { accessToken, correlationId });
 
   try {
     const data = JSON.parse(response.data.toString());
@@ -33,7 +34,7 @@ export const downloadDir = async (
   const promises = response.links.map((link) => {
     const filePath = path.join(dest, link.name);
 
-    return downloadFile(client, link.cid, filePath, { bucketId, accessToken });
+    return downloadFile(client, link.cid, filePath, { bucketId, accessToken, correlationId });
   });
 
   await Promise.all(promises);

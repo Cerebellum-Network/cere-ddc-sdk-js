@@ -8,7 +8,7 @@ import { mnemonicGenerate } from '@polkadot/util-crypto';
 import { upload } from './upload';
 import { createBucket } from './createBucket';
 import { deposit } from './deposit';
-import { withClient } from './createClient';
+import { withClient, createCorrelationId } from './createClient';
 import { account } from './account';
 import { download } from './download';
 import { decodeToken, createToken } from './token';
@@ -79,11 +79,20 @@ yargs(hideBin(process.argv))
           alias: ['t', 'token'],
           type: 'string',
           describe: 'Access token to upload the file',
+        })
+        .option('correlationId', {
+          type: 'string',
+          default: '',
+          defaultDescription: 'Randomly generated',
+          describe: 'Correlation ID for DDC opperations',
         }),
     async (argv) => {
+      argv.correlationId ||= createCorrelationId();
+
       const { isDirectory, cid } = await withClient(argv, (client) => upload(client, argv.path, argv));
 
       console.group(isDirectory ? 'Directory upload completed' : 'File upload completed');
+      console.log('Correlation ID:', argv.correlationId);
       console.log('Network:', argv.network);
       console.log('Bucket ID:', BigInt(argv.bucketId));
       console.log('Path:', argv.path);
@@ -122,11 +131,20 @@ yargs(hideBin(process.argv))
           type: 'string',
           demandOption: true,
           describe: 'Bucket ID',
+        })
+        .option('correlationId', {
+          type: 'string',
+          default: '',
+          defaultDescription: 'Randomly generated',
+          describe: 'Correlation ID for DDC opperations',
         }),
     async (argv) => {
+      argv.correlationId ||= createCorrelationId();
+
       const result = await withClient(argv, (client) => download(client, argv.source, argv.dest, argv));
 
       console.group(result.isDirectory ? 'Directory download completed' : 'File download completed');
+      console.log('Correlation ID:', argv.correlationId);
       console.log('Network:', argv.network);
       console.log('Bucket ID:', argv.bucketId);
       console.log('CID:', result.cid);

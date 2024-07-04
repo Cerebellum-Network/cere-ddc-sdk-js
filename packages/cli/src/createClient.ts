@@ -3,6 +3,8 @@ import { readFile } from 'fs/promises';
 import { StorageNodeMode } from '@cere-ddc-sdk/ddc';
 import { DdcClient, DEVNET, TESTNET, MAINNET, DdcClientConfig, UriSigner, JsonSigner } from '@cere-ddc-sdk/ddc-client';
 
+export { createCorrelationId } from '@cere-ddc-sdk/ddc-client';
+
 type NodeConfig = {
   grpcUrl: string;
   httpUrl: string;

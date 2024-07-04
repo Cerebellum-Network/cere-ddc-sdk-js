@@ -23,6 +23,7 @@ import {
   CnsRecordStoreOptions,
   CnsRecordGetOptions,
 } from './NodeInterface';
+import { createCorrelationId } from '../activity';
 
 export type StorageNodeConfig = RpcTransportOptions &
   LoggerOptions & {
@@ -49,6 +50,7 @@ export type StorageNodeConfig = RpcTransportOptions &
  */
 export class StorageNode implements NodeInterface {
   readonly nodeId: string;
+  readonly displayName: string;
 
   private dagApi: DagApi;
   private fileApi: FileApi;
@@ -60,7 +62,7 @@ export class StorageNode implements NodeInterface {
 
   constructor(
     private signer: Signer,
-    config: StorageNodeConfig,
+    readonly config: StorageNodeConfig,
   ) {
     const authToken = AuthToken.maybeToken(config.authToken);
     const transport = new DefaultTransport({
@@ -72,6 +74,11 @@ export class StorageNode implements NodeInterface {
     this.mode = config.mode;
     this.logger = createLogger('StorageNode', config);
     this.rootTokenPromise = authToken && Promise.resolve(authToken);
+
+    /**
+     * Use the HTTP URL as the display name.
+     */
+    this.displayName = config.httpUrl;
 
     const options = {
       signer,
@@ -144,8 +151,7 @@ export class StorageNode implements NodeInterface {
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
     let cidBytes: Uint8Array | undefined = undefined;
     const token = await this.createAuthToken(options);
-
-    this.logger.debug({ piece, options }, 'Store piece');
+    const correlationId = options?.correlationId || createCorrelationId();
 
     if (MultipartPiece.isMultipartPiece(piece)) {
       this.logger.info('Storing multipart piece into bucket %s', bucketId);
@@ -153,6 +159,7 @@ export class StorageNode implements NodeInterface {
       cidBytes = await this.fileApi.putMultipartPiece({
         bucketId,
         token,
+        correlationId,
         partHashes: piece.partHashes,
         partSize: piece.meta.partSize,
         totalSize: piece.meta.totalSize,
@@ -166,6 +173,7 @@ export class StorageNode implements NodeInterface {
         {
           bucketId,
           token,
+          correlationId,
           isMultipart: piece.isPart,
           offset: piece.offset,
           size: piece.size,
@@ -213,13 +221,14 @@ export class StorageNode implements NodeInterface {
    */
   async storeDagNode(bucketId: BucketId, node: DagNode, options?: DagNodeStoreOptions) {
     const token = await this.createAuthToken(options);
+    const correlationId = options?.correlationId || createCorrelationId();
 
     this.logger.info('Storing DAG node into bucket %s', bucketId);
-    this.logger.debug({ bucketId, node, options }, 'Store DAG node');
 
     const cidBytes = await this.dagApi.putNode({
       bucketId,
       token,
+      correlationId,
       node: mapDagNodeToAPI(node),
     });
 
@@ -255,14 +264,15 @@ export class StorageNode implements NodeInterface {
    */
   async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
     const token = await this.createAuthToken(options);
+    const correlationId = options?.correlationId || createCorrelationId();
 
-    this.logger.debug({ bucketId, cidOrName, options }, 'Read piece');
     this.logger.info('Reading piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
 
     const cid = await this.resolveName(bucketId, cidOrName, options);
     const contentStream = await this.fileApi.getFile({
       bucketId,
       token,
+      correlationId,
       cid: cid.toBytes(),
       range: options?.range,
     });
@@ -272,7 +282,6 @@ export class StorageNode implements NodeInterface {
     });
 
     this.logger.info('Read piece by CID or name "%s" from bucket %s', cidOrName, bucketId);
-    this.logger.debug({ cid: cid.toString(), response }, 'Piece response');
 
     return response;
   }
@@ -298,14 +307,15 @@ export class StorageNode implements NodeInterface {
    */
   async getDagNode(bucketId: BucketId, cidOrName: string, options?: DagNodeGetOptions) {
     const token = await this.createAuthToken(options);
+    const correlationId = options?.correlationId || createCorrelationId();
 
     this.logger.info('Getting DAG Node by CID or name "%s" from bucket %s', cidOrName, bucketId);
-    this.logger.debug({ token }, 'Auth token');
 
     const cid = await this.resolveName(bucketId, cidOrName, options);
     const node = await this.dagApi.getNode({
       bucketId,
       token,
+      correlationId,
       cid: cid.toBytes(),
       path: options?.path,
     });
@@ -313,7 +323,6 @@ export class StorageNode implements NodeInterface {
     const response = node && new DagNodeResponse(cid, new Uint8Array(node.data), node.links, node.tags);
 
     this.logger.info('Got DAG Node by CID or name "%s" from bucket %s', cidOrName, bucketId);
-    this.logger.debug({ cid: cid.toString(), response }, 'DAG Node response');
 
     return response;
   }
@@ -339,13 +348,14 @@ export class StorageNode implements NodeInterface {
    */
   async storeCnsRecord(bucketId: BucketId, record: CnsRecord, options?: CnsRecordStoreOptions) {
     const token = await this.createAuthToken(options);
+    const correlationId = options?.correlationId || createCorrelationId();
 
-    this.logger.debug({ bucketId, record, options }, 'Store CNS record');
     this.logger.info('Storing CNS record into bucket %s', bucketId);
 
     const storredRecord = await this.cnsApi.putRecord({
       bucketId,
       token,
+      correlationId,
       record: mapCnsRecordToAPI(record),
     });
 
@@ -375,14 +385,11 @@ export class StorageNode implements NodeInterface {
    */
   async getCnsRecord(bucketId: BucketId, name: string, options?: CnsRecordGetOptions) {
     const token = await this.createAuthToken(options);
+    const correlationId = options?.correlationId || createCorrelationId();
 
     this.logger.info(`Getting CNS record by name "${name}" from bucket ${bucketId}`);
-    this.logger.debug({ token }, 'Auth token');
-
-    const record = await this.cnsApi.getRecord({ bucketId, name, token });
-
+    const record = await this.cnsApi.getRecord({ bucketId, name, token, correlationId });
     this.logger.info('Got CNS record by name "%s" from bucket %s', name, bucketId);
-    this.logger.debug({ record }, 'CNS record');
 
     return record && new CnsRecordResponse(record.cid, record.name, record.signature);
   }
@@ -417,7 +424,6 @@ export class StorageNode implements NodeInterface {
     }
 
     this.logger.info('Resolved CNS name "%s" from bucket %s to "%s"', cidOrName, bucketId, record.cid);
-    this.logger.debug({ record }, 'CNS record');
 
     return new Cid(record.cid);
   }
