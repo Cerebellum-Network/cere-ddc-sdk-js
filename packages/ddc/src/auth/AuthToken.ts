@@ -109,6 +109,13 @@ export class AuthToken {
     return this.token.payload!.expiresAt!;
   }
 
+  /**
+   * Whether the token is properly signed.
+   */
+  get isSigned() {
+    return this.subject ? this.signature?.signer === this.subject : !!this.signature;
+  }
+
   private toBinary() {
     return Token.toBinary(this.token);
   }
