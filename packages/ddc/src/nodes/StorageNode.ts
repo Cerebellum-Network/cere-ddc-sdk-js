@@ -111,10 +111,16 @@ export class StorageNode implements NodeInterface {
   }
 
   private async createAuthToken({ accessToken }: OperationAuthOptions = {}) {
-    const token = AuthToken.maybeToken(accessToken) || (await this.getRootToken());
-    const sdkSigner = token.subject && getSdkSigner(this.signer, token.subject);
+    const inputToken = AuthToken.maybeToken(accessToken);
 
-    return AuthToken.from(token).sign(sdkSigner || this.signer);
+    if (inputToken?.isSigned) {
+      return inputToken;
+    }
+
+    const unsignedToken = inputToken || (await this.getRootToken());
+    const sdkSigner = unsignedToken.subject && getSdkSigner(this.signer, unsignedToken.subject);
+
+    return AuthToken.from(unsignedToken).sign(sdkSigner || this.signer);
   }
 
   /**

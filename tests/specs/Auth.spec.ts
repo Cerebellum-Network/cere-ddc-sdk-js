@@ -27,10 +27,10 @@ describe('Auth', () => {
   } = getBlockchainState();
 
   const ownerSigner = new UriSigner(ROOT_USER_SEED);
-  const readerSigner = new UriSigner('//Bob');
+  const userSigner = new UriSigner('//Bob');
 
   let ownerClient: DdcClient;
-  let readerClient: DdcClient;
+  let userClient: DdcClient;
   let normalFile: File;
   let largeFile: File;
 
@@ -38,12 +38,12 @@ describe('Auth', () => {
     const configs = getClientConfig();
 
     ownerClient = await DdcClient.create(ownerSigner, configs);
-    readerClient = await DdcClient.create(readerSigner, configs);
+    userClient = await DdcClient.create(userSigner, configs);
   });
 
   afterAll(async () => {
     await ownerClient.disconnect();
-    await readerClient.disconnect();
+    await userClient.disconnect();
   });
 
   beforeEach(async () => {
@@ -67,7 +67,7 @@ describe('Auth', () => {
 
     test('Delegate token', async () => {
       const token = new AuthToken({
-        subject: readerSigner.address,
+        subject: userSigner.address,
         operations: [AuthTokenOperation.GET],
       });
 
@@ -84,7 +84,7 @@ describe('Auth', () => {
       expect(delegatedToken).toBeDefined();
 
       const token = AuthToken.from(delegatedToken);
-      await token.sign(readerSigner);
+      await token.sign(userSigner);
 
       expect(token.canDelegate).toEqual(false);
       expect(token.operations).toEqual([AuthTokenOperation.GET]);
@@ -94,6 +94,21 @@ describe('Auth', () => {
   describe('Bucket access', () => {
     let publicFileUri: FileUri;
     let privateFileUri: FileUri;
+
+    const readToken = new AuthToken({
+      bucketId: privateBucketId,
+      operations: [AuthTokenOperation.GET],
+    });
+
+    const writeToken = new AuthToken({
+      bucketId: privateBucketId,
+      operations: [AuthTokenOperation.PUT],
+    });
+
+    beforeAll(async () => {
+      await readToken.sign(ownerSigner);
+      await writeToken.sign(ownerSigner);
+    });
 
     test('Owner can store to private bucket', async () => {
       privateFileUri = await ownerClient.store(privateBucketId, normalFile);
@@ -115,32 +130,50 @@ describe('Auth', () => {
       expect(file.cid).toEqual(privateFileUri.cid);
     });
 
-    test('Reader can read from public bucket', async () => {
+    test('User can read from public bucket', async () => {
       expect(publicFileUri).toBeDefined();
 
-      const file = await readerClient.read(publicFileUri);
+      const file = await userClient.read(publicFileUri);
 
       expect(file.cid).toEqual(publicFileUri.cid);
     });
 
-    test('Reader can not read from private bucket', async () => {
+    test('User can not read from private bucket', async () => {
       expect(privateFileUri).toBeDefined();
 
-      await expect(readerClient.read(privateFileUri)).rejects.toThrow();
+      await expect(userClient.read(privateFileUri)).rejects.toThrow();
     });
 
-    test('Reader can not store to public bucket', async () => {
+    test('User can not store to public bucket', async () => {
       expect(publicBucketId).toBeDefined();
 
-      await expect(readerClient.store(publicBucketId, normalFile)).rejects.toThrow();
+      await expect(userClient.store(publicBucketId, normalFile)).rejects.toThrow();
     });
 
-    test('Reader can not store to private bucket', async () => {
-      await expect(readerClient.store(privateBucketId, normalFile)).rejects.toThrow();
+    test('User can not store to private bucket', async () => {
+      await expect(userClient.store(privateBucketId, normalFile)).rejects.toThrow();
     });
 
-    test('Reader can not store large file to public bucket', async () => {
-      await expect(readerClient.store(publicBucketId, largeFile)).rejects.toThrow();
+    test('User can not store large file to public bucket', async () => {
+      await expect(userClient.store(publicBucketId, largeFile)).rejects.toThrow();
+    });
+
+    test('User can read from private bucket with access token', async () => {
+      expect(privateFileUri).toBeDefined();
+
+      const file = await userClient.read(privateFileUri, {
+        accessToken: readToken,
+      });
+
+      expect(file.cid).toEqual(privateFileUri.cid);
+    });
+
+    test('User can store to private bucket with access token', async () => {
+      const uri = await userClient.store(privateBucketId, normalFile, {
+        accessToken: writeToken,
+      });
+
+      expect(uri.cid).toBeDefined();
     });
   });
 
@@ -156,12 +189,12 @@ describe('Auth', () => {
     });
 
     test('Owner grants access to private bucket', async () => {
-      writeToken = await ownerClient.grantAccess(readerSigner.address, {
+      writeToken = await ownerClient.grantAccess(userSigner.address, {
         bucketId: privateBucketId,
         operations: [AuthTokenOperation.PUT],
       });
 
-      readToken = await ownerClient.grantAccess(readerSigner.address, {
+      readToken = await ownerClient.grantAccess(userSigner.address, {
         bucketId: privateBucketId,
         operations: [AuthTokenOperation.GET],
       });
@@ -170,56 +203,56 @@ describe('Auth', () => {
       expect(readToken).toBeDefined();
     });
 
-    test('Reader can store file to private bucket', async () => {
+    test('User can store file to private bucket', async () => {
       expect(writeToken).toBeDefined();
 
-      const fileUri = await readerClient.store(privateBucketId, normalFile, { accessToken: writeToken });
+      const fileUri = await userClient.store(privateBucketId, normalFile, { accessToken: writeToken });
 
       expect(fileUri.cid).toBeDefined();
     });
 
-    test('Reader can store large file to private bucket', async () => {
+    test('User can store large file to private bucket', async () => {
       expect(writeToken).toBeDefined();
 
-      const fileUri = await readerClient.store(privateBucketId, largeFile, { accessToken: writeToken });
+      const fileUri = await userClient.store(privateBucketId, largeFile, { accessToken: writeToken });
 
       expect(fileUri.cid).toBeDefined();
     });
 
-    test('Reader can read from private bucket', async () => {
+    test('User can read from private bucket', async () => {
       expect(readToken).toBeDefined();
 
-      const file = await readerClient.read(privateFileUri, { accessToken: readToken });
+      const file = await userClient.read(privateFileUri, { accessToken: readToken });
 
       expect(file.cid).toEqual(privateFileUri.cid);
     });
 
-    test('Reader can not read file with write-only token', async () => {
+    test('User can not read file with write-only token', async () => {
       expect(writeToken).toBeDefined();
 
-      await expect(readerClient.read(privateFileUri, { accessToken: writeToken })).rejects.toThrow();
+      await expect(userClient.read(privateFileUri, { accessToken: writeToken })).rejects.toThrow();
     });
 
-    test('Reader can not store file with read-only token', async () => {
+    test('User can not store file with read-only token', async () => {
       expect(readToken).toBeDefined();
 
-      await expect(readerClient.store(privateBucketId, normalFile, { accessToken: readToken })).rejects.toThrow();
+      await expect(userClient.store(privateBucketId, normalFile, { accessToken: readToken })).rejects.toThrow();
     });
 
-    test('Reader can store DagNode to private bucket', async () => {
+    test('User can store DagNode to private bucket', async () => {
       expect(writeToken).toBeDefined();
 
-      const dagNodeUri = await readerClient.store(privateBucketId, new DagNode(new Uint8Array([1, 2, 3]), [], []), {
+      const dagNodeUri = await userClient.store(privateBucketId, new DagNode(new Uint8Array([1, 2, 3]), [], []), {
         accessToken: writeToken,
       });
 
       expect(dagNodeUri.cid).toBeDefined();
     });
 
-    test('Reader can read DagNode from private bucket', async () => {
+    test('User can read DagNode from private bucket', async () => {
       expect(readToken).toBeDefined();
 
-      const dagNode = await readerClient.read(privateDagNodeUri, { accessToken: readToken });
+      const dagNode = await userClient.read(privateDagNodeUri, { accessToken: readToken });
 
       expect(dagNode.cid).toEqual(privateDagNodeUri.cid);
     });
