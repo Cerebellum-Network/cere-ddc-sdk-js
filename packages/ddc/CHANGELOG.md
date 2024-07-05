@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.11.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.10.0...v2.11.0) (2024-07-05)
+
+### Features
+
+- Add support for correlationId to group several requests ([#254](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/254)) ([3c264a0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/3c264a0ecb652803bcd67974646f82b99f03d70c))
+
+### Bug Fixes
+
+- **ddc:** Do not sign an access token if already signed properly ([#255](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/255)) ([8f275de](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/8f275de9810c81be8545987995188fd536734a83))
+
 ## [2.10.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.9.2...v2.10.0) (2024-06-18)
 
 ### Features
