@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.11.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.11.0...v2.11.1) (2024-07-10)
+
+### Bug Fixes
+
+- **ddc:** Update correlation id gRPC meta key ([#258](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/258)) ([f33de8c](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/f33de8c3049938c5162782bd8f2397ae26040b19))
+
 ## [2.11.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.10.0...v2.11.0) (2024-07-05)
 
 ### Features
