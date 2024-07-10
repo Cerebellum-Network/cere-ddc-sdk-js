@@ -273,6 +273,7 @@ describe('Activity Capture', () => {
   describe.each(correlationVariants)('Requests correlation ($name)', ({ correlationId }) => {
     let dagNodeUri: DagNodeUri;
 
+    const correlationIdMetaKey = 'correlation-id';
     const fileName = 'test/tiny-file';
     const fileData = new TextEncoder().encode('Tiny file');
 
@@ -284,14 +285,14 @@ describe('Activity Capture', () => {
           service: 'file.FileApi',
           method: 'putRawPiece',
           meta: expect.objectContaining({
-            CorrelationID: correlationId || expect.any(String),
+            [correlationIdMetaKey]: correlationId || expect.any(String),
           }),
         },
         {
           service: 'cns.CnsApi',
           method: 'Put',
           meta: expect.objectContaining({
-            CorrelationID: correlationId || expect.any(String),
+            [correlationIdMetaKey]: correlationId || expect.any(String),
           }),
         },
       ]);
@@ -305,14 +306,14 @@ describe('Activity Capture', () => {
           service: 'cns.CnsApi',
           method: 'Get',
           meta: expect.objectContaining({
-            CorrelationID: correlationId || expect.any(String),
+            [correlationIdMetaKey]: correlationId || expect.any(String),
           }),
         },
         {
           service: 'file.FileApi',
           method: 'getFile',
           meta: expect.objectContaining({
-            CorrelationID: correlationId || expect.any(String),
+            [correlationIdMetaKey]: correlationId || expect.any(String),
           }),
         },
       ]);
@@ -325,7 +326,7 @@ describe('Activity Capture', () => {
         service: 'dag.DagApi',
         method: 'Put',
         meta: expect.objectContaining({
-          CorrelationID: correlationId || expect.any(String),
+          [correlationIdMetaKey]: correlationId || expect.any(String),
         }),
       });
     });
@@ -339,7 +340,7 @@ describe('Activity Capture', () => {
         service: 'dag.DagApi',
         method: 'Get',
         meta: expect.objectContaining({
-          CorrelationID: correlationId || expect.any(String),
+          [correlationIdMetaKey]: correlationId || expect.any(String),
         }),
       });
     });

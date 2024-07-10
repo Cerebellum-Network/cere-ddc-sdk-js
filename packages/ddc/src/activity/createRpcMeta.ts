@@ -3,6 +3,8 @@ import { RpcMetadata } from '@protobuf-ts/runtime-rpc';
 
 export type CorrelationMetaParams = { correlationId?: string };
 
+const CORRELATION_ID_META_KEY = 'correlation-id';
+
 export const createRpcMeta = (correlationId?: string, meta?: RpcMetadata): RpcMetadata => {
-  return { ...meta, CorrelationID: correlationId || uuid() };
+  return { ...meta, [CORRELATION_ID_META_KEY]: correlationId || uuid() };
 };
