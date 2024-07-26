@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.11.1...v2.12.0) (2024-07-26)
+
+### Features
+
+- Add CNS Record cache control option ([#260](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/260)) ([4100540](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/4100540b07926679d764c05ff239bc93e0b1acc0))
+
 ## [2.11.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.11.0...v2.11.1) (2024-07-10)
 
 ### Bug Fixes
