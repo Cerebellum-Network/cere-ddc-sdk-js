@@ -102,8 +102,8 @@ export class DagNode {
    */
   public tags: Tag[];
 
-  constructor(data: Uint8Array | string | Buffer, links: Link[] = [], tags: Tag[] = []) {
-    this.dataBuffer = Buffer.from(data);
+  constructor(data?: Uint8Array | Buffer | string | null, links: Link[] = [], tags: Tag[] = []) {
+    this.dataBuffer = Buffer.from(data || []);
     this.links = links;
     this.tags = tags;
   }

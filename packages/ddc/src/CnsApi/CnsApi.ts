@@ -25,7 +25,11 @@ type PutRequest = Omit<ProtoPutRequest, 'record'> &
     record: Omit<Record, 'signature'>;
   };
 
-type GetRequest = CorrelationMetaParams & ProtoGetRequest & AuthMetaParams;
+type GetRequest = CorrelationMetaParams &
+  ProtoGetRequest &
+  AuthMetaParams & {
+    cacheControl?: 'no-cache';
+  };
 
 const createSignatureMessage = (record: Omit<Record, 'signature'>) => {
   const message = ProtoRecord.create(record);
@@ -138,11 +142,15 @@ export class CnsApi {
    * console.log(record);
    * ```
    */
-  async getRecord({ token, name, bucketId, correlationId }: GetRequest): Promise<Record | undefined> {
-    this.logger.debug({ name, bucketId, token, correlationId }, 'Retrieving CNS record');
+  async getRecord({ token, name, bucketId, correlationId, cacheControl }: GetRequest): Promise<Record | undefined> {
+    this.logger.debug({ name, bucketId, token, correlationId, cacheControl }, 'Retrieving CNS record');
 
     let record: ProtoRecord | undefined;
     const meta = createCorrelationRpcMeta(correlationId, createAuthRpcMeta(token));
+
+    if (cacheControl) {
+      meta['cache-control'] = cacheControl;
+    }
 
     if (this.options.signer) {
       meta.request = await createActivityRequest(

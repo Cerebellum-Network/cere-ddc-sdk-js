@@ -16,6 +16,10 @@ type ActivityOptions = {
   correlationId?: string;
 };
 
+type CacheControlOptions = {
+  cacheControl?: 'no-cache';
+};
+
 /**
  * The `OperationAuthOptions` type defines the authentication options for a DDC operation.
  *
@@ -34,7 +38,8 @@ export type OperationAuthOptions = {
  * @hidden
  * @extends OperationAuthOptions
  */
-export type PieceReadOptions = ActivityOptions &
+export type PieceReadOptions = CacheControlOptions &
+  ActivityOptions &
   OperationAuthOptions & {
     /**
      * An optional range to read from the piece.
@@ -48,7 +53,8 @@ export type PieceReadOptions = ActivityOptions &
  * @hidden
  * @extends OperationAuthOptions
  */
-export type DagNodeGetOptions = ActivityOptions &
+export type DagNodeGetOptions = CacheControlOptions &
+  ActivityOptions &
   OperationAuthOptions & {
     /**
      * An optional path to retrieve from the DAG node.
@@ -62,7 +68,8 @@ export type DagNodeGetOptions = ActivityOptions &
  * @hidden
  * @extends OperationAuthOptions
  */
-export type CnsRecordGetOptions = ActivityOptions &
+export type CnsRecordGetOptions = CacheControlOptions &
+  ActivityOptions &
   OperationAuthOptions & {
     /**
      * An optional path to retrieve from the CNS record.
