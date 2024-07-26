@@ -391,10 +391,10 @@ export class StorageNode implements NodeInterface {
    */
   async getCnsRecord(bucketId: BucketId, name: string, options?: CnsRecordGetOptions) {
     const token = await this.createAuthToken(options);
-    const correlationId = options?.correlationId || createCorrelationId();
+    const { cacheControl, correlationId = createCorrelationId() } = options || {};
 
     this.logger.info(`Getting CNS record by name "${name}" from bucket ${bucketId}`);
-    const record = await this.cnsApi.getRecord({ bucketId, name, token, correlationId });
+    const record = await this.cnsApi.getRecord({ bucketId, name, token, correlationId, cacheControl });
     this.logger.info('Got CNS record by name "%s" from bucket %s', name, bucketId);
 
     return record && new CnsRecordResponse(record.cid, record.name, record.signature);
