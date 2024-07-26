@@ -1,13 +1,11 @@
-import type { EmbedWallet, PermissionRequest } from '@cere/embed-wallet';
-import { inject } from '@cere/embed-wallet-inject';
+import type { EmbedWallet, WalletConnectOptions } from '@cere/embed-wallet';
 
-import { Web3Signer } from './Web3Signer';
+import { Signer, SignerType } from './Signer';
+import { Signer } from '@polkadot/types/types';
 
 const CERE_WALLET_EXTENSION = 'Cere Wallet';
 
-export type CereWalletSignerOptions = {
-  permissions?: PermissionRequest;
-};
+export type CereWalletSignerOptions = WalletConnectOptions;
 
 /**
  * Signer that uses Cere Wallet to sign messages.
@@ -28,29 +26,49 @@ export type CereWalletSignerOptions = {
  * console.log(signature);
  * ```
  */
-export class CereWalletSigner extends Web3Signer {
-  protected wallet: EmbedWallet;
+export class CereWalletSigner extends Signer {
+  readonly type = 'ed25519';
+  readonly isLocked = false;
+
+  private currentAddress?: string;
+  private currentPublicKey?: Uint8Array;
 
   constructor(
-    wallet: EmbedWallet,
+    private wallet: EmbedWallet,
     private options: CereWalletSignerOptions = {},
   ) {
-    super({ extensions: [CERE_WALLET_EXTENSION] });
-
-    this.wallet = wallet;
+    super();
   }
 
+  get address() {
+    if (!this.currentAddress) {
+      throw new Error('Cere Wallet signer is not ready');
+    }
+
+    return this.currentAddress;
+  }
+
+  get publicKey() {
+    if (!this.currentPublicKey) {
+      throw new Error('Cere Wallet signer is not ready');
+    }
+
+    return this.currentPublicKey;
+  }
+
+  getSigner(): Promise<Signer> {}
+
+  isReady(): Promise<boolean> {
+    return Promise.resolve(true);
+  }
+
+  async sign(data: string): Promise<string> {
+    return this.wallet.sign(data);
+  }
+
+  async unlock(passphrase?: string) {}
+
   async connect() {
-    await inject(this.wallet, {
-      name: CERE_WALLET_EXTENSION,
-      autoConnect: true,
-      permissions: this.options.permissions || {
-        ed25519_signRaw: {}, // Request permission to sign messages in the login process
-      },
-    });
-
-    await super.connect();
-
     return this;
   }
 }

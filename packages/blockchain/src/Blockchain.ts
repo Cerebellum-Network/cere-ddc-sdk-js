@@ -1,5 +1,5 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { AddressOrPair, SignerOptions } from '@polkadot/api/types';
+import { AddressOrPair, SignerOptions, ApiOptions } from '@polkadot/api/types';
 import { Index, AccountInfo } from '@polkadot/types/interfaces';
 import { SubmittableExtrinsic } from '@polkadot/api-base/types';
 import { formatBalance } from '@polkadot/util';
@@ -22,6 +22,7 @@ export type BlockchainConnectOptions =
     }
   | {
       wsEndpoint: string;
+      apiOptions?: Omit<ApiOptions, 'provider'>;
     };
 
 /**
@@ -39,56 +40,57 @@ export type BlockchainConnectOptions =
  * ```
  */
 export class Blockchain {
-  private readonly apiPromise: ApiPromise;
+  readonly api: ApiPromise;
 
   /**
    * The DDC Nodes pallet.
    *
    * @category Pallets
    */
-  public readonly ddcNodes: DDCNodesPallet;
+  readonly ddcNodes: DDCNodesPallet;
 
   /**
    * The DDC Clusters pallet.
    *
    * @category Pallets
    */
-  public readonly ddcClusters: DDCClustersPallet;
+  readonly ddcClusters: DDCClustersPallet;
 
   /**
    * The DDC Staking pallet.
    *
    * @category Pallets
    */
-  public readonly ddcStaking: DDCStakingPallet;
+  readonly ddcStaking: DDCStakingPallet;
 
   /**
    * The DDC Customers pallet.
    *
    * @category Pallets
    */
-  public readonly ddcCustomers: DDCCustomersPallet;
+  readonly ddcCustomers: DDCCustomersPallet;
 
   /**
    * The DDC Cluster government pallet.
    *
    * @category Pallets
    */
-  public readonly ddcClustersGov: DDCClustersGovPallet;
+  readonly ddcClustersGov: DDCClustersGovPallet;
 
   constructor(options: BlockchainConnectOptions) {
-    this.apiPromise =
+    this.api =
       'apiPromise' in options
         ? options.apiPromise
         : new ApiPromise({
             provider: new WsProvider(options.wsEndpoint),
+            ...options.apiOptions,
           });
 
-    this.ddcNodes = new DDCNodesPallet(this.apiPromise);
-    this.ddcClusters = new DDCClustersPallet(this.apiPromise);
-    this.ddcStaking = new DDCStakingPallet(this.apiPromise);
-    this.ddcCustomers = new DDCCustomersPallet(this.apiPromise);
-    this.ddcClustersGov = new DDCClustersGovPallet(this.apiPromise);
+    this.ddcNodes = new DDCNodesPallet(this.api);
+    this.ddcClusters = new DDCClustersPallet(this.api);
+    this.ddcStaking = new DDCStakingPallet(this.api);
+    this.ddcCustomers = new DDCCustomersPallet(this.api);
+    this.ddcClustersGov = new DDCClustersGovPallet(this.api);
   }
 
   /**
@@ -121,7 +123,7 @@ export class Blockchain {
    * ```
    */
   async isReady() {
-    await this.apiPromise.isReady;
+    await this.api.isReady;
 
     return true;
   }
@@ -130,7 +132,7 @@ export class Blockchain {
    * The decimals of the chain's native token.
    */
   get chainDecimals() {
-    const [decimals] = this.apiPromise.registry.chainDecimals;
+    const [decimals] = this.api.registry.chainDecimals;
 
     return decimals;
   }
@@ -149,7 +151,7 @@ export class Blockchain {
    * ```
    */
   async getNextNonce(address: string | AccountId) {
-    const nonce = await this.apiPromise.rpc.system.accountNextIndex<Index>(address);
+    const nonce = await this.api.rpc.system.accountNextIndex<Index>(address);
 
     return nonce.toNumber();
   }
@@ -204,7 +206,7 @@ export class Blockchain {
             let errorMessage: string;
 
             if (result.dispatchError.isModule) {
-              const decoded = this.apiPromise.registry.findMetaError(result.dispatchError.asModule);
+              const decoded = this.api.registry.findMetaError(result.dispatchError.asModule);
               errorMessage = `${decoded.section}.${decoded.name}: ${decoded.docs.join(' ')}`;
             } else {
               errorMessage = result.dispatchError.toString();
@@ -238,7 +240,7 @@ export class Blockchain {
    * ```
    */
   batchSend(sendables: Sendable[], options: SendOptions) {
-    return this.send(this.apiPromise.tx.utility.batch(sendables), options);
+    return this.send(this.api.tx.utility.batch(sendables), options);
   }
 
   /**
@@ -263,11 +265,11 @@ export class Blockchain {
    * ```
    */
   batchAllSend(sendables: Sendable[], options: SendOptions) {
-    return this.send(this.apiPromise.tx.utility.batchAll(sendables), options);
+    return this.send(this.api.tx.utility.batchAll(sendables), options);
   }
 
   sudo(sendable: Sendable) {
-    return this.apiPromise.tx.sudo.sudo(sendable) as Sendable;
+    return this.api.tx.sudo.sudo(sendable) as Sendable;
   }
 
   /**
@@ -281,7 +283,7 @@ export class Blockchain {
    * ```
    */
   disconnect() {
-    return this.apiPromise.disconnect();
+    return this.api.disconnect();
   }
 
   formatBalance(balance: string | number | bigint, withUnit: boolean | string = 'CERE') {
@@ -302,7 +304,7 @@ export class Blockchain {
    * ```
    */
   async getAccountFreeBalance(accountId: AccountId) {
-    const { data } = await this.apiPromise.query.system.account<AccountInfo>(accountId);
+    const { data } = await this.api.query.system.account<AccountInfo>(accountId);
     return data.free.toBigInt();
   }
 
@@ -320,7 +322,7 @@ export class Blockchain {
    * ```
    */
   async getCurrentBlockNumber() {
-    const { number } = await this.apiPromise.rpc.chain.getHeader();
+    const { number } = await this.api.rpc.chain.getHeader();
     return number.toNumber();
   }
 }
