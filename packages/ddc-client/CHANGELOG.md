@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.0...v2.12.1) (2024-07-29)
+
+### Bug Fixes
+
+- Cere Wallet signer not triggering 3rd party extensions consent ([#259](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/259)) ([f67e344](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/f67e344a8732fae2b19af557924440f20dcdeac0))
+
 ## [2.12.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.11.1...v2.12.0) (2024-07-26)
 
 **Note:** Version bump only for package @cere-ddc-sdk/ddc-client
