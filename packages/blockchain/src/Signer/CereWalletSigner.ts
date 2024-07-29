@@ -1,11 +1,15 @@
+import type { InjectedAccount, InjectedExtension } from '@polkadot/extension-inject/types';
+import { enable } from '@cere/embed-wallet-inject';
 import type { EmbedWallet, WalletConnectOptions } from '@cere/embed-wallet';
 
-import { Signer, SignerType } from './Signer';
-import { Signer } from '@polkadot/types/types';
+import { Web3Signer, Web3SignerOptions } from './Web3Signer';
+import { cryptoWaitReady } from '../utils';
 
 const CERE_WALLET_EXTENSION = 'Cere Wallet';
 
-export type CereWalletSignerOptions = WalletConnectOptions;
+export type CereWalletSignerOptions = Pick<Web3SignerOptions, 'autoConnect'> & {
+  connectOptions?: WalletConnectOptions;
+};
 
 /**
  * Signer that uses Cere Wallet to sign messages.
@@ -26,49 +30,51 @@ export type CereWalletSignerOptions = WalletConnectOptions;
  * console.log(signature);
  * ```
  */
-export class CereWalletSigner extends Signer {
-  readonly type = 'ed25519';
-  readonly isLocked = false;
-
-  private currentAddress?: string;
-  private currentPublicKey?: Uint8Array;
+export class CereWalletSigner extends Web3Signer {
+  private extensionPromise: Promise<InjectedExtension>;
 
   constructor(
     private wallet: EmbedWallet,
     private options: CereWalletSignerOptions = {},
   ) {
-    super();
+    super(options);
+
+    this.extensionPromise = enable(this.wallet, { autoConnect: false }).then((injected) => {
+      injected.accounts.get().then(this.setAccount);
+      injected.accounts.subscribe(this.setAccount);
+
+      return { ...injected, name: CERE_WALLET_EXTENSION, version: '0.20.0' };
+    });
   }
 
-  get address() {
-    if (!this.currentAddress) {
-      throw new Error('Cere Wallet signer is not ready');
+  private setAccount = ([account]: InjectedAccount[]) => {
+    this.injectedAccount = account;
+  };
+
+  protected async getInjector() {
+    return this.extensionPromise;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async isReady() {
+    await cryptoWaitReady();
+
+    if (this.injectedAccount) {
+      return true;
     }
 
-    return this.currentAddress;
-  }
-
-  get publicKey() {
-    if (!this.currentPublicKey) {
-      throw new Error('Cere Wallet signer is not ready');
+    if (this.autoConnect) {
+      await this.connect(this.options.connectOptions);
     }
 
-    return this.currentPublicKey;
+    return true;
   }
 
-  getSigner(): Promise<Signer> {}
+  async connect(options?: WalletConnectOptions) {
+    await this.wallet.connect(options);
 
-  isReady(): Promise<boolean> {
-    return Promise.resolve(true);
-  }
-
-  async sign(data: string): Promise<string> {
-    return this.wallet.sign(data);
-  }
-
-  async unlock(passphrase?: string) {}
-
-  async connect() {
     return this;
   }
 }
