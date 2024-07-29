@@ -38,13 +38,30 @@ type DepositBalanceOptions = {
  * It provides methods to manage buckets, grant access, and store and read files and DAG nodes.
  */
 export class DdcClient {
-  protected constructor(
-    private readonly ddcNode: NodeInterface,
-    private readonly blockchain: Blockchain,
-    private readonly fileStorage: FileStorage,
-    private readonly signer: Signer,
-    private readonly logger: Logger,
-  ) {
+  private readonly ddcNode: NodeInterface;
+  private readonly blockchain: Blockchain;
+  private readonly fileStorage: FileStorage;
+  private readonly signer: Signer;
+  private readonly logger: Logger;
+
+  constructor(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
+    const logger = createLogger('DdcClient', config);
+    const blockchain =
+      typeof config.blockchain === 'string' ? new Blockchain({ wsEndpoint: config.blockchain }) : config.blockchain;
+
+    const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
+    const router = config.nodes
+      ? new Router({ signer, nodes: config.nodes, logger })
+      : new Router({ signer, blockchain, logger });
+
+    this.blockchain = blockchain;
+    this.signer = signer;
+    this.logger = logger;
+    this.ddcNode = new BalancedNode({ ...config, router, logger });
+    this.fileStorage = new FileStorage(router, { ...config, logger });
+
+    logger.debug(config, 'DdcClient created');
+
     bindErrorLogger(this, this.logger, [
       'getBalance',
       'depositBalance',
@@ -80,27 +97,21 @@ export class DdcClient {
    * ```
    */
   static async create(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
-    const logger = createLogger('DdcClient', config);
-    const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
-    const blockchain =
-      typeof config.blockchain === 'string'
-        ? await Blockchain.connect({ wsEndpoint: config.blockchain })
-        : config.blockchain;
+    const client = new DdcClient(uriOrSigner, config);
 
-    const router = config.nodes
-      ? new Router({ signer, nodes: config.nodes, logger })
-      : new Router({ signer, blockchain, logger });
+    return client.connect();
+  }
 
-    const ddcNode = new BalancedNode({ ...config, router, logger });
-    const fileStorage = new FileStorage(router, { ...config, logger });
+  async connect() {
+    await this.blockchain.isReady();
 
-    logger.debug(config, 'DdcClient created');
-
-    return new DdcClient(ddcNode, blockchain, fileStorage, signer, logger);
+    return this;
   }
 
   async disconnect() {
     await this.blockchain.disconnect();
+
+    return this;
   }
 
   /**

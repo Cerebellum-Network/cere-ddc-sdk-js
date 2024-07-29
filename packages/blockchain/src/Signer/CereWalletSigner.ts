@@ -1,12 +1,14 @@
-import type { EmbedWallet, PermissionRequest } from '@cere/embed-wallet';
-import { inject } from '@cere/embed-wallet-inject';
+import type { InjectedAccount, InjectedExtension } from '@polkadot/extension-inject/types';
+import { enable } from '@cere/embed-wallet-inject';
+import type { EmbedWallet, WalletConnectOptions } from '@cere/embed-wallet';
 
-import { Web3Signer } from './Web3Signer';
+import { Web3Signer, Web3SignerOptions } from './Web3Signer';
+import { cryptoWaitReady } from '../utils';
 
 const CERE_WALLET_EXTENSION = 'Cere Wallet';
 
-export type CereWalletSignerOptions = {
-  permissions?: PermissionRequest;
+export type CereWalletSignerOptions = Pick<Web3SignerOptions, 'autoConnect'> & {
+  connectOptions?: WalletConnectOptions;
 };
 
 /**
@@ -29,27 +31,49 @@ export type CereWalletSignerOptions = {
  * ```
  */
 export class CereWalletSigner extends Web3Signer {
-  protected wallet: EmbedWallet;
+  private extensionPromise: Promise<InjectedExtension>;
 
   constructor(
-    wallet: EmbedWallet,
+    private wallet: EmbedWallet,
     private options: CereWalletSignerOptions = {},
   ) {
-    super({ extensions: [CERE_WALLET_EXTENSION] });
+    super(options);
 
-    this.wallet = wallet;
+    this.extensionPromise = enable(this.wallet, { autoConnect: false }).then((injected) => {
+      injected.accounts.get().then(this.setAccount);
+      injected.accounts.subscribe(this.setAccount);
+
+      return { ...injected, name: CERE_WALLET_EXTENSION, version: '0.20.0' };
+    });
   }
 
-  async connect() {
-    await inject(this.wallet, {
-      name: CERE_WALLET_EXTENSION,
-      autoConnect: true,
-      permissions: this.options.permissions || {
-        ed25519_signRaw: {}, // Request permission to sign messages in the login process
-      },
-    });
+  private setAccount = ([account]: InjectedAccount[]) => {
+    this.injectedAccount = account;
+  };
 
-    await super.connect();
+  protected async getInjector() {
+    return this.extensionPromise;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async isReady() {
+    await cryptoWaitReady();
+
+    if (this.injectedAccount) {
+      return true;
+    }
+
+    if (this.autoConnect) {
+      await this.connect(this.options.connectOptions);
+    }
+
+    return true;
+  }
+
+  async connect(options?: WalletConnectOptions) {
+    await this.wallet.connect(options);
 
     return this;
   }
