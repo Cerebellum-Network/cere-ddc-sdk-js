@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.2](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.1...v2.12.2) (2024-07-30)
+
+### Bug Fixes
+
+- Make sure Cere Wallet address always stays in sync ([#261](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/261)) ([db86415](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/db86415cd7494778a967ecdeccc1f2b474e297bf))
+
 ## [2.12.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.0...v2.12.1) (2024-07-29)
 
 ### Bug Fixes

@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/file-storage",
   "description": "File storage client",
-  "version": "2.12.1",
+  "version": "2.12.2",
   "type": "module",
   "repository": {
     "type": "git",
@@ -28,8 +28,8 @@
     "clean": "rimraf dist package"
   },
   "dependencies": {
-    "@cere-ddc-sdk/blockchain": "2.12.1",
-    "@cere-ddc-sdk/ddc": "2.12.1"
+    "@cere-ddc-sdk/blockchain": "2.12.2",
+    "@cere-ddc-sdk/ddc": "2.12.2"
   },
   "publishConfig": {
     "access": "public"

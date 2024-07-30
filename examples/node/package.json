@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/node-examples",
-  "version": "2.12.1",
+  "version": "2.12.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "example:4": "ts-node --esm ./4-store-read-events/index.ts"
   },
   "dependencies": {
-    "@cere-ddc-sdk/ddc-client": "2.12.1",
+    "@cere-ddc-sdk/ddc-client": "2.12.2",
     "ts-node": "^10.9.2"
   }
 }
