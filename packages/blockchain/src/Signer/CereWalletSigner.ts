@@ -51,6 +51,12 @@ export class CereWalletSigner extends Web3Signer {
     this.injectedAccount = account;
   };
 
+  private async syncAccount() {
+    const { accounts } = await this.extensionPromise;
+
+    await accounts.get().then(this.setAccount);
+  }
+
   protected async getInjector() {
     return this.extensionPromise;
   }
@@ -59,7 +65,7 @@ export class CereWalletSigner extends Web3Signer {
    * @inheritdoc
    */
   async isReady() {
-    await cryptoWaitReady();
+    await Promise.all([this.extensionPromise, cryptoWaitReady()]);
 
     if (this.injectedAccount) {
       return true;
@@ -69,11 +75,21 @@ export class CereWalletSigner extends Web3Signer {
       await this.connect(this.options.connectOptions);
     }
 
+    /**
+     * Make sure the account is synced with the extension.
+     */
+    await this.syncAccount();
+
     return true;
   }
 
   async connect(options?: WalletConnectOptions) {
     await this.wallet.connect(options);
+
+    /**
+     * Make sure the account is synced with the extension after connecting the wallet.
+     */
+    await this.syncAccount();
 
     return this;
   }

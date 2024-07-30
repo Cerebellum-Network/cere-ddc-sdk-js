@@ -127,7 +127,11 @@ export class DdcClient {
    * ```
    * */
   async getBalance() {
-    return this.blockchain.getAccountFreeBalance(this.signer.address);
+    this.logger.info('Getting the account balance %s', this.signer.address);
+    const balance = await this.blockchain.getAccountFreeBalance(this.signer.address);
+    this.logger.info('The account (%s) balance is %s', this.signer.address, balance);
+
+    return balance;
   }
 
   /**
@@ -176,9 +180,12 @@ export class DdcClient {
    * ```
    * */
   async getDeposit() {
+    this.logger.info('Getting the account deposit %s', this.signer.address);
     const info = await this.blockchain.ddcCustomers.getStackingInfo(this.signer.address);
+    const deposit = BigInt(info?.active || 0n);
+    this.logger.info('The account (%s) deposit is %s', this.signer.address, deposit);
 
-    return BigInt(info?.active || 0n);
+    return deposit;
   }
 
   /**
@@ -201,7 +208,6 @@ export class DdcClient {
    */
   async createBucket(clusterId: ClusterId, params: Partial<BucketParams> = {}) {
     this.logger.info('Creating bucket on cluster %s', clusterId);
-
     const defaultParams: BucketParams = {
       isPublic: false,
     };
@@ -257,7 +263,6 @@ export class DdcClient {
   async getBucketList() {
     this.logger.info('Getting bucket list');
     const list = await this.blockchain.ddcCustomers.listBuckets();
-
     this.logger.info('Got bucket list of lenght %s', list.length);
 
     return list;
