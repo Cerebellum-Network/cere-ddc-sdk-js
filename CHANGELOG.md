@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.3](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.2...v2.12.3) (2024-08-01)
+
+### Bug Fixes
+
+- Update SDK token if signer address changed ([#262](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/262)) ([c1a9f30](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/c1a9f30d63e2222f0656d028adf26a4b04b65d4f))
+
 ## [2.12.2](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.1...v2.12.2) (2024-07-30)
 
 ### Bug Fixes
