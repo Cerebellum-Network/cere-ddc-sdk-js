@@ -29,6 +29,10 @@ export const getSdkSigner = (signer: Signer, address: string) => {
   return getRegestry(signer).get(address);
 };
 
+export const isValidSdkToken = (signer: Signer, token: AuthToken) => {
+  return signer.address === token.signature?.signer;
+};
+
 export const createSdkToken = async (signer: Signer) => {
   if (!isWeb3Signer(signer)) {
     return AuthToken.fullAccess().sign(signer);
