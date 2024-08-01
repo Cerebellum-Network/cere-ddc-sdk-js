@@ -5,7 +5,7 @@ import { RouterNode, RouterOperation, RoutingStrategy } from './RoutingStrategy'
 import { BlockchainStrategy, BlockchainStrategyConfig } from './BlockchainStrategy';
 import { StaticStrategy, StaticStrategyConfig } from './StaticStrategy';
 import { Logger, LoggerOptions, createLogger } from '../logger';
-import { AuthToken, createSdkToken } from '../auth';
+import { AuthToken, createSdkToken, isValidSdkToken } from '../auth';
 
 export type RouterConfig = (StaticStrategyConfig | BlockchainStrategyConfig) &
   LoggerOptions & {
@@ -47,6 +47,17 @@ export class Router {
   }
 
   /**
+   * Returns an SDK token for the current signer
+   */
+  private getSdkToken() {
+    this.sdkTokenPromise = Promise.resolve(this.sdkTokenPromise).then((token) =>
+      token && isValidSdkToken(this.signer, token) ? token : createSdkToken(this.signer),
+    );
+
+    return this.sdkTokenPromise;
+  }
+
+  /**
    * Retrieves a node for a specific operation in a specific bucket, excluding certain nodes.
    *
    * @param operation - The operation for which to retrieve a node.
@@ -60,7 +71,7 @@ export class Router {
   async getNode(operation: RouterOperation, bucketId: BucketId, exclude: string[] = []) {
     this.logger.info('Getting node for operation "%s" in bucket %s', operation, bucketId);
 
-    this.sdkTokenPromise ||= createSdkToken(this.signer); // Request the token only once
+    const sdkTokenPromise = this.getSdkToken();
     await this.strategy.isReady();
 
     const allNodes = await this.strategy.getNodes(bucketId);
@@ -75,7 +86,7 @@ export class Router {
     const storageNode = new StorageNode(this.signer, {
       ...node,
       logger: this.logger,
-      authToken: await this.sdkTokenPromise,
+      authToken: await sdkTokenPromise,
       nodeId: node.nodeId || node.grpcUrl,
     });
 
