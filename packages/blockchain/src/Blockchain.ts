@@ -191,11 +191,14 @@ export class Blockchain {
       sendable
         .signAndSend(finalAccount, { nonce, signer: finalSigner }, (result) => {
           if (result.status.isFinalized) {
-            const events = result.events.map(({ event }) => ({
+            const events: Event[] = result.events.map(({ event }) => ({
               method: event.method,
               section: event.section,
               meta: event.meta.toJSON(),
               data: event.data.toJSON(),
+              payload: Object.fromEntries(
+                event.meta.fields.map((field, index) => [field.name, event.data[index].toJSON()]),
+              ),
             }));
 
             resolve({
@@ -338,4 +341,5 @@ export type Event = {
   section: string;
   method: string;
   data?: any;
+  payload?: Record<string, any>;
 };
