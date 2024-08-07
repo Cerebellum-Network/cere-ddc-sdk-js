@@ -224,8 +224,8 @@ export class DDCCustomersPallet {
   extractCreatedBucketIds(events: Event[]) {
     return events
       .filter((event) => event.section === 'ddcCustomers' && event.method === 'BucketCreated')
-      .map((event) => event.data?.[0])
-      .filter((bucketId) => bucketId !== undefined && (typeof bucketId === 'number' || typeof bucketId === 'string'))
-      .map((bucketId) => BigInt(bucketId) as BucketId);
+      .map((event) => event.payload?.bucket_id)
+      .filter(Boolean)
+      .map(BigInt);
   }
 }
