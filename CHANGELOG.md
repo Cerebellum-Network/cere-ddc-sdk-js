@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.4](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.3...v2.12.4) (2024-08-07)
+
+### Bug Fixes
+
+- Properly get bucketId from BucketCreated event ([#264](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/264)) ([2581320](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/2581320aa964073d994823f1877c8406d02c116d))
+
 ## [2.12.3](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.2...v2.12.3) (2024-08-01)
 
 ### Bug Fixes
