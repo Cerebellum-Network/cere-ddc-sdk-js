@@ -1,8 +1,11 @@
-import { AuthToken, AuthTokenOperation, UriSigner, AuthTokenParams, Cid } from '@cere-ddc-sdk/ddc';
+import { AuthToken, AuthTokenOperation, AuthTokenParams, Cid } from '@cere-ddc-sdk/ddc';
+
+import { createSigner } from './createClient';
 
 export type TokenOptions = Omit<AuthTokenParams, 'bucketId' | 'operations'> & {
   signer?: string;
   signerType?: string;
+  signerPassphrase?: string;
   bucketId?: string;
   operations: string[];
 };
@@ -33,12 +36,6 @@ export const decodeToken = async (token: string) => {
 };
 
 export const createToken = async (options: TokenOptions) => {
-  const signer =
-    options.signer &&
-    new UriSigner(options.signer, {
-      type: options.signerType === 'ed25519' ? 'ed25519' : 'sr25519',
-    });
-
   if (options.pieceCid && !Cid.isCid(options.pieceCid)) {
     throw new Error('Invalid CID');
   }
@@ -53,7 +50,10 @@ export const createToken = async (options: TokenOptions) => {
     operations: options.operations.map((op) => operationsMap[op]),
   });
 
-  if (signer) {
+  if (options.signer) {
+    const signer = await createSigner(options.signer, options.signerType);
+
+    await signer.unlock(options.signerPassphrase);
     await token.sign(signer);
   }
 
