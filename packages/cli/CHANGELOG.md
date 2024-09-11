@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.5](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.4...v2.12.5) (2024-09-11)
+
+### Bug Fixes
+
+- **cli:** Add Cere Wallet backup file support in token generation command ([#265](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/265)) ([2944a3c](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/2944a3c141f7196a9018b7a64528194b30af3ab8))
+
 ## [2.12.4](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.3...v2.12.4) (2024-08-07)
 
 **Note:** Version bump only for package @cere-ddc-sdk/cli
