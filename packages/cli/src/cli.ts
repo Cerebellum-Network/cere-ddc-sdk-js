@@ -302,7 +302,7 @@ yargs(hideBin(process.argv))
         })
         .option('expiresIn', {
           type: 'number',
-          describe: 'Token expiration time in milliseconds',
+          describe: 'Token expiration time in seconds',
         })
         .option('signer', {
           alias: 's',
