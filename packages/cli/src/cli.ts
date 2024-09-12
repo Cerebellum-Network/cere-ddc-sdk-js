@@ -202,13 +202,14 @@ yargs(hideBin(process.argv))
         }),
     async ({ bucketAccess, ...argv }) => {
       const bucketId = await withClient(argv, (client) =>
-        createBucket(client, { ...argv, isPublic: argv.bucketAccess === 'public' }),
+        createBucket(client, { ...argv, isPublic: bucketAccess === 'public' }),
       );
 
-      console.group('Deposit completed');
+      console.group('Bucket created');
       console.log('Network:', argv.network);
       console.log('Cluster ID:', argv.clusterId);
-      console.log('Bucket ID:', bucketId);
+      console.log('Bucket ID:', Number(bucketId));
+      console.log('Access:', bucketAccess);
       console.groupEnd();
     },
   )
