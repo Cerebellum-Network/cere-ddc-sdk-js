@@ -1,11 +1,12 @@
 import { DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait } from 'testcontainers';
 import type { BlockchainConfig } from './blockchain';
-import { getHostIP } from '../../helpers';
+import { getHostIP, STORAGE_NODE_MAX_STARTUP_TIME } from '../../helpers';
 
 let environment: StartedDockerComposeEnvironment | undefined;
 
 const uuid = { nextUuid: () => 'ddc' };
-const waitStrategy = () => Wait.forLogMessage(/Start GRPC server on port \d+/).withStartupTimeout(10000);
+const waitStrategy = () =>
+  Wait.forLogMessage(/Start GRPC server on port \d+/).withStartupTimeout(STORAGE_NODE_MAX_STARTUP_TIME);
 
 export const startDDC = async (bc: BlockchainConfig) => {
   console.group('DDC');

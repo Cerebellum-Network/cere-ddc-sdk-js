@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { DockerComposeEnvironment, StartedDockerComposeEnvironment, Wait } from 'testcontainers';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
+import { Blockchain, ClusterId, ClusterNodeKind } from '@cere-ddc-sdk/blockchain';
 
 import {
   createBlockhainApi,
@@ -14,8 +15,8 @@ import {
   BLOCKCHAIN_RPC_URL,
   getHostIP,
   getStorageNodes,
+  BLOCKCHAIN_NODE_MAX_STARTUP_TIME,
 } from '../../helpers';
-import { Blockchain, ClusterId, ClusterNodeKind } from '@cere-ddc-sdk/blockchain';
 
 export type BlockchainConfig = BlockchainState & {
   apiUrl: string;
@@ -49,7 +50,10 @@ export const startBlockchain = async (): Promise<BlockchainConfig> => {
     .withEnvironment({
       BC_CAHCHE_DIR: bcCachePath,
     })
-    .withWaitStrategy('cere-chain', Wait.forLogMessage(/Running JSON-RPC server/gi))
+    .withWaitStrategy(
+      'cere-chain',
+      Wait.forLogMessage(/Running JSON-RPC server/gi).withStartupTimeout(BLOCKCHAIN_NODE_MAX_STARTUP_TIME),
+    )
     .up();
 
   const blockchainState: BlockchainState = !process.env.CI && chachedState ? chachedState : await setupBlockchain();
