@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/tests",
-  "version": "2.12.4",
+  "version": "2.12.6",
   "description": "Cere DDC SDK tests",
   "private": true,
   "scripts": {

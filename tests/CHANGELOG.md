@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.6](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.5...v2.12.6) (2024-09-13)
+
+### Miscellaneous Chores
+
+- **tests:** Increase nodes startup time threshold in tests ([#266](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/266)) ([03fd451](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/03fd451cb80624f43b7feaf4e38e7f32e54ba019))
+
 ## [2.12.4](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.3...v2.12.4) (2024-08-07)
 
 **Note:** Version bump only for package @cere-ddc-sdk/tests

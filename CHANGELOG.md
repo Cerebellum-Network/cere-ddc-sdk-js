@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.6](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.5...v2.12.6) (2024-09-13)
+
+### Bug Fixes
+
+- **cli:** Make it possible to create public buckets using CLI ([#267](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/267)) ([0025c9a](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/0025c9aa3bb8fb2957aa3dc8bdc414769161c397))
+
+### Miscellaneous Chores
+
+- **tests:** Increase nodes startup time threshold in tests ([#266](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/266)) ([03fd451](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/03fd451cb80624f43b7feaf4e38e7f32e54ba019))
+
 ## [2.12.5](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.4...v2.12.5) (2024-09-11)
 
 ### Bug Fixes
