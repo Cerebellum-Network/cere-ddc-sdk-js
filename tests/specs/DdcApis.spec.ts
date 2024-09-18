@@ -43,7 +43,7 @@ const apiVariants = [
 ];
 
 describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
-  const { logLevel } = getClientConfig();
+  const { logLevel, logOptions } = getClientConfig();
   const bucketId = 1n;
   const testRunRandom = Math.round(Math.random() * 10 ** 5);
   const signer = new UriSigner(ROOT_USER_SEED);
@@ -55,7 +55,7 @@ describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
   });
 
   describe.each(apiVariants)('DAG Api ($name)', ({ authenticate }) => {
-    const dagApi = new DagApi(transport, { signer, authenticate, logLevel });
+    const dagApi = new DagApi(transport, { signer, authenticate, logLevel, logOptions });
     const nodeData = new Uint8Array(randomBytes(10));
 
     let nodeCid: Uint8Array;
@@ -133,7 +133,7 @@ describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
   });
 
   describe('Cns Api', () => {
-    const cnsApi = new CnsApi(transport, { signer, logLevel });
+    const cnsApi = new CnsApi(transport, { signer, logLevel, logOptions });
     const testCid = new Cid('baebb4ifbvlaklsqk4ex2n2xfaghhrkd3bbqg53d2du4sdgsz7uixt25ycu').toBytes();
     const alias = `dir/file-name-${testRunRandom}`;
 
@@ -165,7 +165,7 @@ describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
   });
 
   describe.each(apiVariants)('File Api ($name)', ({ authenticate }) => {
-    const fileApi = new FileApi(transport, { signer, authenticate, logLevel });
+    const fileApi = new FileApi(transport, { signer, authenticate, logLevel, logOptions });
 
     const storeRawPiece = async (content: Content, meta?: PieceMeta) =>
       fileApi.putRawPiece(
@@ -333,6 +333,7 @@ describe.each(transportsVariants)('DDC APIs ($name)', ({ transport }) => {
           signer: createRandomSigner(),
           enableAcks: false,
           logLevel,
+          logOptions,
         });
 
         const contentStream = await unfairFileApi.getFile({

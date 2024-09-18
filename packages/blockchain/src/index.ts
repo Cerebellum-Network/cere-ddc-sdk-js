@@ -5,7 +5,7 @@ export { Blockchain, type Sendable, type SendResult, type Event } from './Blockc
 /**
  * Utilities
  */
-export { decodeAddress, encodeAddress, cryptoWaitReady, createRandomSigner } from './utils';
+export { decodeAddress, encodeAddress, cryptoWaitReady, createRandomSigner, isValidSignature } from './utils';
 
 /**
  * Constants
