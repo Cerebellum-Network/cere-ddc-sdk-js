@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/playground",
-  "version": "2.12.4",
+  "version": "2.12.7",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@cere-ddc-sdk/blockchain": "2.12.4",
-    "@cere-ddc-sdk/ddc-client": "2.12.4",
+    "@cere-ddc-sdk/ddc-client": "2.12.7",
     "@cere/embed-wallet": "^0.20.1",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",

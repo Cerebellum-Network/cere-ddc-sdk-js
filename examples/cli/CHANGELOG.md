@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.7](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.6...v2.12.7) (2024-09-27)
+
+**Note:** Version bump only for package @cere-ddc-sdk/cli-examples
+
 ## [2.12.6](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.5...v2.12.6) (2024-09-13)
 
 **Note:** Version bump only for package @cere-ddc-sdk/cli-examples

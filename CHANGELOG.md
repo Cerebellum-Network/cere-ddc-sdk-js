@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.7](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.6...v2.12.7) (2024-09-27)
+
+### Bug Fixes
+
+- **ddc:** Auth token sign method waits the signer to become ready ([#269](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/269)) ([49818a3](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/49818a3a5c4d06f9487d897c7bddc6cc670a0154))
+
 ## [2.12.6](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.5...v2.12.6) (2024-09-13)
 
 ### Bug Fixes
