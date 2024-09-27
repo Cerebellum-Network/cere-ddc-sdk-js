@@ -50,7 +50,7 @@ export class Router {
    * Returns an SDK token for the current signer
    */
   private getSdkToken() {
-    this.sdkTokenPromise = Promise.resolve(this.sdkTokenPromise).then((token) =>
+    this.sdkTokenPromise = Promise.all([this.sdkTokenPromise, this.signer.isReady()]).then(([token]) =>
       token && isValidSdkToken(this.signer, token) ? token : createSdkToken(this.signer),
     );
 

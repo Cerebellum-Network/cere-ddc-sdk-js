@@ -34,6 +34,10 @@ export class BlockchainStrategy extends PingStrategy {
 
     this.logger.debug({ nodes }, 'Using nodes from blockchain');
 
+    if (!nodes.length) {
+      throw new Error(`No nodes found in the cluster: ${clusterId}`);
+    }
+
     return nodes;
   }
 
