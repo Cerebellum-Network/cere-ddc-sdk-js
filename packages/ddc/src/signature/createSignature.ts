@@ -10,17 +10,17 @@ export type CreateSignatureOptions = {
 };
 
 export const createSignature = async (signer: Signer, message: Uint8Array, { token }: CreateSignatureOptions = {}) => {
-  const finalSigner = maybeSdkSigner(signer, token);
+  const proxySigner = maybeSdkSigner(signer, token);
 
-  await finalSigner.isReady();
+  await proxySigner.isReady();
 
-  if (signer.type !== 'ed25519' && signer.type !== 'sr25519') {
-    throw new Error(`Signer type ${signer.type} is not allowed in DDC`);
+  if (proxySigner.type !== 'ed25519' && proxySigner.type !== 'sr25519') {
+    throw new Error(`Signer type ${proxySigner.type} is not allowed in DDC`);
   }
 
   return Signature.create({
-    algorithm: signer.type === 'ed25519' ? SigAlg.ED_25519 : SigAlg.SR_25519,
-    signer: finalSigner.publicKey,
-    value: await finalSigner.sign(message),
+    algorithm: proxySigner.type === 'ed25519' ? SigAlg.ED_25519 : SigAlg.SR_25519,
+    signer: proxySigner.publicKey,
+    value: await proxySigner.sign(message),
   });
 };
