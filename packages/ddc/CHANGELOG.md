@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.12.8](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.7...v2.12.8) (2024-10-02)
+
+### Bug Fixes
+
+- **ddc:** Throw RpcError if the upload stream closed by the node ([#270](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/270)) ([b6ccce1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/b6ccce13759e8dcfa65b044ebf9a91d654380cb7))
+
 ## [2.12.7](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.6...v2.12.7) (2024-09-27)
 
 ### Bug Fixes
