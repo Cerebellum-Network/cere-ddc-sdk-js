@@ -161,7 +161,10 @@ export class FileApi {
 
     const call = this.api.putRawPiece({ meta });
 
-    await call.requests.send({
+    /**
+     * Send none-blocking request message.
+     */
+    call.requests.send({
       body: {
         oneofKind: 'metadata',
         metadata: { ...metadata, size },
@@ -185,9 +188,12 @@ export class FileApi {
         break;
       }
 
-      await call.requests.send({
-        body: { oneofKind: 'content', content: { data: value } },
-      });
+      await Promise.race([
+        call.status,
+        call.requests.send({
+          body: { oneofKind: 'content', content: { data: value } },
+        }),
+      ]);
 
       bytesSent += value.byteLength;
     }
@@ -250,9 +256,9 @@ export class FileApi {
     const call = this.api.getFile({ meta });
 
     /**
-     * Send request message.
+     * Send none-blocking request message.
      */
-    await call.requests.send({
+    call.requests.send({
       body: {
         oneofKind: 'request',
         request: { ...request, authenticate },
