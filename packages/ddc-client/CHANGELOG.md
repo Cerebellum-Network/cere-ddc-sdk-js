@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.13.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.8...v2.13.0) (2024-10-07)
+
+### Features
+
+- Extend node operation errors with correlation ID and node URL ([#271](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/271)) ([049cb80](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/049cb8058be4db7e11d5d07863f5139bc806e72a))
+
 ## [2.12.8](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.7...v2.12.8) (2024-10-02)
 
 **Note:** Version bump only for package @cere-ddc-sdk/ddc-client
