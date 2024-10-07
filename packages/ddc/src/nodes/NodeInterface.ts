@@ -12,12 +12,17 @@ type NamingOptions = {
   name?: string;
 };
 
-type ActivityOptions = {
-  correlationId?: string;
-};
-
 type CacheControlOptions = {
   cacheControl?: 'no-cache';
+};
+
+/**
+ * The `CorrelationOptions` type defines the correlation options for a DDC operation.
+ *
+ * @hidden
+ */
+export type CorrelationOptions = {
+  correlationId?: string;
 };
 
 /**
@@ -39,7 +44,7 @@ export type OperationAuthOptions = {
  * @extends OperationAuthOptions
  */
 export type PieceReadOptions = CacheControlOptions &
-  ActivityOptions &
+  CorrelationOptions &
   OperationAuthOptions & {
     /**
      * An optional range to read from the piece.
@@ -54,7 +59,7 @@ export type PieceReadOptions = CacheControlOptions &
  * @extends OperationAuthOptions
  */
 export type DagNodeGetOptions = CacheControlOptions &
-  ActivityOptions &
+  CorrelationOptions &
   OperationAuthOptions & {
     /**
      * An optional path to retrieve from the DAG node.
@@ -69,7 +74,7 @@ export type DagNodeGetOptions = CacheControlOptions &
  * @extends OperationAuthOptions
  */
 export type CnsRecordGetOptions = CacheControlOptions &
-  ActivityOptions &
+  CorrelationOptions &
   OperationAuthOptions & {
     /**
      * An optional path to retrieve from the CNS record.
@@ -84,7 +89,7 @@ export type CnsRecordGetOptions = CacheControlOptions &
  * @extends NamingOptions
  * @extends OperationAuthOptions
  */
-export type PieceStoreOptions = ActivityOptions & NamingOptions & OperationAuthOptions;
+export type PieceStoreOptions = CorrelationOptions & NamingOptions & OperationAuthOptions;
 
 /**
  * The `DagNodeStoreOptions` type defines the options for storing a DAG node.
@@ -93,7 +98,7 @@ export type PieceStoreOptions = ActivityOptions & NamingOptions & OperationAuthO
  * @extends NamingOptions
  * @extends OperationAuthOptions
  */
-export type DagNodeStoreOptions = ActivityOptions & NamingOptions & OperationAuthOptions;
+export type DagNodeStoreOptions = CorrelationOptions & NamingOptions & OperationAuthOptions;
 
 /**
  * The `CnsRecordStoreOptions` type defines the options for storing a CNS record.
@@ -101,7 +106,7 @@ export type DagNodeStoreOptions = ActivityOptions & NamingOptions & OperationAut
  * @hidden
  * @extends OperationAuthOptions
  */
-export type CnsRecordStoreOptions = ActivityOptions & OperationAuthOptions;
+export type CnsRecordStoreOptions = CorrelationOptions & OperationAuthOptions;
 
 /**
  * The `NodeInterface` interface defines the methods to interact with DDC storage nodes.

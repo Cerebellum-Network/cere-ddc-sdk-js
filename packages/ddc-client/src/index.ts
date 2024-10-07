@@ -18,6 +18,8 @@ export {
   MAINNET,
   AuthToken,
   AuthTokenOperation,
+  StorageNodeMode,
+  NodeError,
   type DagNodeStoreOptions,
   type Signer,
 } from '@cere-ddc-sdk/ddc';

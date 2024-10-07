@@ -1,6 +1,6 @@
 import { BucketId, Signer } from '@cere-ddc-sdk/blockchain';
 
-import { StorageNode } from '../nodes';
+import { StorageNode, StorageNodeConfig } from '../nodes';
 import { RouterNode, RouterOperation, RoutingStrategy } from './RoutingStrategy';
 import { BlockchainStrategy, BlockchainStrategyConfig } from './BlockchainStrategy';
 import { StaticStrategy, StaticStrategyConfig } from './StaticStrategy';
@@ -68,7 +68,12 @@ export class Router {
    *
    * @throws Will throw an error if no nodes are available to handle the operation.
    */
-  async getNode(operation: RouterOperation, bucketId: BucketId, exclude: string[] = []) {
+  async getNode(
+    operation: RouterOperation,
+    bucketId: BucketId,
+    config: Partial<StorageNodeConfig> = {},
+    exclude: string[] = [],
+  ) {
     this.logger.info('Getting node for operation "%s" in bucket %s', operation, bucketId);
 
     const sdkTokenPromise = this.getSdkToken();
@@ -88,6 +93,7 @@ export class Router {
       logger: this.logger,
       authToken: await sdkTokenPromise,
       nodeId: node.nodeId || node.grpcUrl,
+      ...config,
     });
 
     this.logger.info(`Selected node for operation "%s" in bucket %s: %s`, operation, bucketId, storageNode.displayName);

@@ -62,17 +62,19 @@ export class DdcClient {
 
     logger.debug(config, 'DdcClient created');
 
-    bindErrorLogger(this, this.logger, [
-      'getBalance',
-      'depositBalance',
-      'getDeposit',
-      'createBucket',
-      'getBucket',
-      'getBucketList',
-      'store',
-      'read',
-      'resolveName',
-    ]);
+    if (config.logErrors !== false) {
+      bindErrorLogger(this, this.logger, [
+        'getBalance',
+        'depositBalance',
+        'getDeposit',
+        'createBucket',
+        'getBucket',
+        'getBucketList',
+        'store',
+        'read',
+        'resolveName',
+      ]);
+    }
   }
 
   /**
