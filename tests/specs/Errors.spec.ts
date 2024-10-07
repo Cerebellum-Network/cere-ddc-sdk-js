@@ -1,6 +1,6 @@
 import { RouterNode } from '@cere-ddc-sdk/ddc';
 import { DdcClient, StorageNodeMode, File, NodeError } from '@cere-ddc-sdk/ddc-client';
-import { getClientConfig, ROOT_USER_SEED } from '../helpers';
+import { getClientConfig, getStorageNodes, ROOT_USER_SEED } from '../helpers';
 
 describe('Errors', () => {
   let smallFile: File;
@@ -32,7 +32,32 @@ describe('Errors', () => {
     });
   });
 
-  describe('Unreachable node', () => {
+  describe('Static nodes client', () => {
+    let client: DdcClient;
+
+    beforeAll(async () => {
+      client = await DdcClient.create(ROOT_USER_SEED, getClientConfig({ nodes: getStorageNodes() }));
+    });
+
+    afterAll(async () => {
+      await client.disconnect();
+    });
+
+    it('should throw an RPC bucket error', async () => {
+      const error = await client.store(99n, smallFile).catch((error) => error);
+
+      expect(error).toBeInstanceOf(NodeError);
+      expect(error).toEqual(
+        expect.objectContaining({
+          code: 'NOT_FOUND',
+          correlationId: expect.any(String),
+          nodeId: expect.any(String),
+        }),
+      );
+    });
+  });
+
+  describe('Unreachable node client', () => {
     let client: DdcClient;
     const bucketId = 1n;
     const unreachableNode: RouterNode = {
@@ -59,7 +84,6 @@ describe('Errors', () => {
           serviceName: 'file.FileApi',
           methodName: 'putRawPiece',
           nodeId: unreachableNode.grpcUrl,
-          message: expect.any(String),
           correlationId: expect.any(String),
         }),
       );
