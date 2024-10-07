@@ -18,3 +18,14 @@ export const createRandomSigner = (options: UriSignerOptions = {}) => {
 
   return new UriSigner(uri, options);
 };
+
+export const isValidSignature = (
+  message: string | Uint8Array,
+  signature: string | Uint8Array,
+  signer: string | Uint8Array,
+) => {
+  const publicKey = typeof signer === 'string' ? decodeAddress(signer) : signer;
+  const { isValid } = cryptoUtil.signatureVerify(message, signature, publicKey);
+
+  return isValid;
+};

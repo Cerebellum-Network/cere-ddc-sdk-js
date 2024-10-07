@@ -1,5 +1,12 @@
 import base58 from 'bs58';
-import { AccountId, Signer, decodeAddress, encodeAddress } from '@cere-ddc-sdk/blockchain';
+import {
+  AccountId,
+  Signer,
+  cryptoWaitReady,
+  decodeAddress,
+  encodeAddress,
+  isValidSignature,
+} from '@cere-ddc-sdk/blockchain';
 
 import { AUTH_TOKEN_EXPIRATION_TIME } from '../constants';
 import { createSignature, mapSignature, Signature } from '../signature';
@@ -18,6 +25,11 @@ export type AuthTokenParams = Omit<Payload, 'subject' | 'prev' | 'pieceCid'> & {
   expiresIn?: number;
   subject?: AccountId;
   prev?: AuthToken | string;
+
+  /**
+   * Alias for `prev`.
+   */
+  parent?: AuthToken | string;
 };
 
 /**
@@ -54,7 +66,7 @@ export class AuthToken {
       expiresAt: params.expiresAt ?? Date.now() + expiresIn,
       subject: params.subject ? decodeAddress(params.subject) : undefined,
       pieceCid: params.pieceCid ? new Cid(params.pieceCid).toBytes() : undefined,
-      prev: AuthToken.maybeToken(params.prev)?.token,
+      prev: AuthToken.maybeToken(params.prev || params.parent)?.token,
     };
 
     this.token = Token.create({ payload });
@@ -113,11 +125,14 @@ export class AuthToken {
    * Whether the token is properly signed.
    */
   get isSigned() {
-    return this.subject ? this.signature?.signer === this.subject : !!this.signature;
+    return !!this.signature;
   }
 
-  private toBinary() {
-    return Token.toBinary(this.token);
+  /**
+   * The previous token in the delegation chain.
+   */
+  get parent() {
+    return this.token.payload?.prev && AuthToken.fromProto(this.token.payload.prev);
   }
 
   private static fromProto(protoToken: Token) {
@@ -126,6 +141,15 @@ export class AuthToken {
     newToken.token = protoToken;
 
     return newToken;
+  }
+
+  /**
+   * Converts the authentication token to a binary representation.
+   *
+   * @returns The token as a binary representation.
+   */
+  toBinary() {
+    return Token.toBinary(this.token);
   }
 
   /**
@@ -157,10 +181,33 @@ export class AuthToken {
     return this;
   }
 
+  async validate(): Promise<AuthToken> {
+    const { payload } = this.token;
+
+    if (this.expiresAt < Date.now()) {
+      throw new Error('Token is expired');
+    }
+
+    if (!this.signature) {
+      throw new Error('Token is not signed');
+    }
+
+    await cryptoWaitReady();
+
+    const unsignedToken = Token.create({ payload });
+    const isValid = isValidSignature(Token.toBinary(unsignedToken), this.signature.value, this.signature.signer);
+
+    if (!isValid) {
+      throw new Error('Invalid token signature');
+    }
+
+    return this.parent ? this.parent.validate() : this;
+  }
+
   /**
-   * Creates an `AuthToken` from a string or another `AuthToken`.
+   * Creates a new `AuthToken` from a delegated token.
    *
-   * @param token - The token as a string or an `AuthToken`.
+   * @param parentToken - Delegated parent token as a string or an `AuthToken`.
    *
    * @returns An instance of the `AuthToken` class.
    *
@@ -175,8 +222,8 @@ export class AuthToken {
    * console.log(authToken);
    * ```
    */
-  static from(token: string | AuthToken) {
-    const parent = this.maybeToken(token);
+  static from(parentToken: string | AuthToken) {
+    const parent = this.maybeToken(parentToken);
 
     if (!parent?.token.payload) {
       throw new Error('Invalid token');
@@ -188,6 +235,28 @@ export class AuthToken {
       ...params,
       prev: subject && parent, // Set `prev` only if `subject` is provided
     });
+  }
+
+  /**
+   * Creates an `AuthToken` from a base58-encoded string.
+   *
+   * @param token - The base58-encoded string.
+   *
+   * @returns An instance of the `AuthToken` class.
+   *
+   * @throws Will throw an error if the token is invalid.
+   *
+   * @example
+   *
+   * ```typescript
+   * const token: string = '...';
+   * const authToken = AuthToken.fromString(token);
+   *
+   * console.log(authToken);
+   * ```
+   */
+  static fromString(token: string) {
+    return this.fromProto(Token.fromBinary(base58.decode(token)));
   }
 
   /**
@@ -211,7 +280,7 @@ export class AuthToken {
       return token;
     }
 
-    return this.fromProto(Token.fromBinary(base58.decode(token)));
+    return this.fromString(token);
   }
 
   /**

@@ -18,6 +18,8 @@ export {
   MAINNET,
   AuthToken,
   AuthTokenOperation,
+  StorageNodeMode,
+  Cid,
   type DagNodeStoreOptions,
   type Signer,
 } from '@cere-ddc-sdk/ddc';
@@ -30,4 +32,4 @@ export {
   type FileReadOptions,
 } from '@cere-ddc-sdk/file-storage';
 
-export type { BucketId, ClusterId, Bucket, AccountId } from '@cere-ddc-sdk/blockchain';
+export type { BucketId, ClusterId, Bucket, AccountId, Blockchain } from '@cere-ddc-sdk/blockchain';

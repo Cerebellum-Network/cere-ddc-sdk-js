@@ -91,6 +91,65 @@ describe('Auth', () => {
     });
   });
 
+  describe('Token validation', () => {
+    let rootToken: AuthToken;
+    let delegatedToken: AuthToken;
+
+    beforeEach(async () => {
+      rootToken = await AuthToken.fullAccess().sign(ownerSigner);
+      delegatedToken = new AuthToken({
+        parent: rootToken,
+        subject: userSigner.address,
+        operations: [AuthTokenOperation.GET],
+      });
+    });
+
+    test('Valid token chain', async () => {
+      await delegatedToken.sign(ownerSigner);
+      const finalToken = await AuthToken.from(delegatedToken).sign(userSigner);
+
+      expect(finalToken.validate()).resolves.not.toThrow();
+    });
+
+    test('Last token of the chain is unsigned', async () => {
+      await delegatedToken.sign(ownerSigner);
+      const finalToken = AuthToken.from(delegatedToken);
+
+      expect(finalToken.validate()).rejects.toThrow('Token is not signed');
+    });
+
+    test('One token in the middle of the chain is unsigned', async () => {
+      const finalToken = await AuthToken.from(delegatedToken).sign(userSigner);
+
+      expect(finalToken.validate()).rejects.toThrow('Token is not signed');
+    });
+
+    test('Expired token', async () => {
+      const finalToken = new AuthToken({
+        operations: [AuthTokenOperation.GET],
+        expiresAt: Date.parse('2021-01-01'),
+      });
+
+      expect(finalToken.validate()).rejects.toThrow('Token is expired');
+    });
+
+    test('Invalid signature', async () => {
+      const finalToken = new AuthToken({
+        operations: [AuthTokenOperation.GET],
+        expiresAt: Date.parse('2021-01-01'),
+      });
+
+      await finalToken.sign(userSigner);
+
+      /**
+       * Change the signature value to an invalid one
+       */
+      finalToken.signature!.value = new Uint8Array([1, 2, 3]);
+
+      expect(finalToken.validate()).rejects.toThrow('Token is expired');
+    });
+  });
+
   describe('Bucket access', () => {
     let publicFileUri: FileUri;
     let privateFileUri: FileUri;
