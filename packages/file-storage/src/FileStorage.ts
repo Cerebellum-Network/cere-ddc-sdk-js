@@ -55,12 +55,18 @@ export class FileStorage {
   constructor(config: RouterConfig & Config);
   constructor(router: Router, config: Config);
   constructor(configOrRouter: (RouterConfig & Config) | Router, config?: Config) {
+    let finalConfig: Config | undefined;
+
     if (configOrRouter instanceof Router) {
+      finalConfig = config;
+
       this.logger = createLogger('FileStorage', config);
       this.ddcNode = new BalancedNode({ ...config, router: configOrRouter, logger: this.logger });
 
       this.logger.debug(config, 'FileStorage created');
     } else {
+      finalConfig = configOrRouter;
+
       this.logger = createLogger('FileStorage', configOrRouter);
       this.blockchain = 'blockchain' in configOrRouter ? configOrRouter.blockchain : undefined;
       this.ddcNode = new BalancedNode({
@@ -72,7 +78,9 @@ export class FileStorage {
       this.logger.debug(configOrRouter, 'FileStorage created');
     }
 
-    bindErrorLogger(this, this.logger, ['store', 'read']);
+    if (finalConfig?.logErrors === false) {
+      bindErrorLogger(this, this.logger, ['store', 'read']);
+    }
   }
 
   /**

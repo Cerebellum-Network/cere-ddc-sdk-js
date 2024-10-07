@@ -53,4 +53,5 @@ type ClientOptions = Pick<DdcClientConfig, 'logLevel' | 'nodes'>;
 export const getClientConfig = (options: ClientOptions = {}): DdcClientConfig => ({
   blockchain: BLOCKCHAIN_RPC_URL,
   logLevel: options.logLevel || 'silent',
+  ...options,
 });

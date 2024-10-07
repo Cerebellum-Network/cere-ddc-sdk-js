@@ -8,7 +8,9 @@ import { Router, RouterOperation } from '../routing';
 import { Piece, MultipartPiece } from '../Piece';
 import { DagNode } from '../DagNode';
 import { CnsRecord } from '../CnsRecord';
-import { Logger, LoggerOptions, createLogger } from '../logger';
+import { Logger, LoggerOptions, bindErrorLogger, createLogger } from '../logger';
+import { createCorrelationId } from '../activity';
+import { NodeError } from './NodeError';
 import {
   DagNodeGetOptions,
   DagNodeStoreOptions,
@@ -16,6 +18,7 @@ import {
   PieceStoreOptions,
   NodeInterface,
   CnsRecordGetOptions,
+  CorrelationOptions,
 } from './NodeInterface';
 
 /**
@@ -35,6 +38,11 @@ export type BalancedNodeConfig = LoggerOptions & {
   router: Router;
   retries?: number | OpperationRetryOptions;
 };
+
+const withCorrelationId = <T extends CorrelationOptions>(options: T): T => ({
+  ...options,
+  correlationId: options.correlationId || createCorrelationId(),
+});
 
 /**
  * The `BalancedNode` class implements the `NodeInterface` and provides methods for interacting with storage nodes.
@@ -73,6 +81,18 @@ export class BalancedNode implements NodeInterface {
 
       this.retryOptions = { ...this.retryOptions, ...retryOptions, retries: attempts };
     }
+
+    if (config.logErrors !== false) {
+      bindErrorLogger(this, this.logger, [
+        'storePiece',
+        'storeDagNode',
+        'readPiece',
+        'getDagNode',
+        'storeCnsRecord',
+        'getCnsRecord',
+        'resolveName',
+      ]);
+    }
   }
 
   /**
@@ -86,9 +106,12 @@ export class BalancedNode implements NodeInterface {
   private async withRetry<T>(
     bucketId: BucketId,
     operation: RouterOperation,
+    { correlationId }: CorrelationOptions,
     body: (node: NodeInterface, bail: (e: Error) => void, attempt: number) => Promise<T>,
   ) {
-    let lastError: RpcError | undefined;
+    let lastOperationError: RpcError | undefined;
+    let lastRouterError: Error | undefined;
+
     const exclude: NodeInterface[] = [];
 
     return retry(
@@ -99,6 +122,7 @@ export class BalancedNode implements NodeInterface {
           node = await this.router.getNode(
             operation,
             bucketId,
+            { logErrors: false },
             exclude.map((node) => node.nodeId),
           );
 
@@ -117,25 +141,33 @@ export class BalancedNode implements NodeInterface {
               node.displayName,
             );
           }
+
+          if (error instanceof Error) {
+            lastRouterError = error;
+          }
         }
 
         if (!node) {
-          throw lastError ?? new Error('No nodes available to handle the operation');
+          throw lastOperationError ?? lastRouterError ?? new Error('No nodes available to handle the operation');
         }
 
         try {
           return await body(node, bail, attempt);
         } catch (error) {
-          if (
-            error instanceof RpcError &&
-            RETRYABLE_GRPC_ERROR_CODES.map((status) => GrpcStatus[status]).includes(error.code)
-          ) {
-            lastError = error;
+          const nodeError = error instanceof RpcError ? NodeError.fromRpcError(error) : undefined;
 
-            throw error;
+          if (nodeError) {
+            nodeError.nodeId = node.nodeId;
+            nodeError.correlationId = correlationId;
+
+            if (RETRYABLE_GRPC_ERROR_CODES.map((status) => GrpcStatus[status]).includes(nodeError.code)) {
+              lastOperationError = nodeError;
+
+              throw nodeError;
+            }
           }
 
-          bail(error as Error);
+          bail(nodeError || (error as Error));
         }
       },
       {
@@ -149,8 +181,10 @@ export class BalancedNode implements NodeInterface {
     ) as T;
   }
 
-  async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, options?: PieceStoreOptions) {
-    return this.withRetry(bucketId, RouterOperation.STORE_PIECE, (node, bail, attempt) =>
+  async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, storeOptions: PieceStoreOptions = {}) {
+    const options = withCorrelationId(storeOptions);
+
+    return this.withRetry(bucketId, RouterOperation.STORE_PIECE, options, (node, bail, attempt) =>
       /**
        * Clone the piece if it is a piece and this is not the first attempt.
        * This is done to avoid reusing the same stream multiple times.
@@ -159,32 +193,50 @@ export class BalancedNode implements NodeInterface {
     );
   }
 
-  async readPiece(bucketId: BucketId, cidOrName: string, options?: PieceReadOptions) {
-    return this.withRetry(bucketId, RouterOperation.READ_PIECE, (node) => node.readPiece(bucketId, cidOrName, options));
+  async readPiece(bucketId: BucketId, cidOrName: string, readOptions: PieceReadOptions = {}) {
+    const options = withCorrelationId(readOptions);
+
+    return this.withRetry(bucketId, RouterOperation.READ_PIECE, options, (node) =>
+      node.readPiece(bucketId, cidOrName, options),
+    );
   }
 
-  async storeDagNode(bucketId: BucketId, dagNode: DagNode, options?: DagNodeStoreOptions) {
-    return this.withRetry(bucketId, RouterOperation.STORE_DAG_NODE, (node) =>
+  async storeDagNode(bucketId: BucketId, dagNode: DagNode, storeOptions: DagNodeStoreOptions = {}) {
+    const options = withCorrelationId(storeOptions);
+
+    return this.withRetry(bucketId, RouterOperation.STORE_DAG_NODE, options, (node) =>
       node.storeDagNode(bucketId, dagNode, options),
     );
   }
 
-  async getDagNode(bucketId: BucketId, cidOrName: string, options?: DagNodeGetOptions) {
-    return this.withRetry(bucketId, RouterOperation.READ_DAG_NODE, (node) =>
+  async getDagNode(bucketId: BucketId, cidOrName: string, getOptions: DagNodeGetOptions = {}) {
+    const options = withCorrelationId(getOptions);
+
+    return this.withRetry(bucketId, RouterOperation.READ_DAG_NODE, options, (node) =>
       node.getDagNode(bucketId, cidOrName, options),
     );
   }
 
-  async storeCnsRecord(bucketId: BucketId, record: CnsRecord) {
-    return this.withRetry(bucketId, RouterOperation.STORE_CNS_RECORD, (node) => node.storeCnsRecord(bucketId, record));
+  async storeCnsRecord(bucketId: BucketId, record: CnsRecord, storeOptions: DagNodeStoreOptions = {}) {
+    const options = withCorrelationId(storeOptions);
+
+    return this.withRetry(bucketId, RouterOperation.STORE_CNS_RECORD, options, (node) =>
+      node.storeCnsRecord(bucketId, record, options),
+    );
   }
 
-  async getCnsRecord(bucketId: BucketId, name: string) {
-    return this.withRetry(bucketId, RouterOperation.READ_CNS_RECORD, (node) => node.getCnsRecord(bucketId, name));
+  async getCnsRecord(bucketId: BucketId, name: string, getOptions: CnsRecordGetOptions = {}) {
+    const options = withCorrelationId(getOptions);
+
+    return this.withRetry(bucketId, RouterOperation.READ_CNS_RECORD, options, (node) =>
+      node.getCnsRecord(bucketId, name, options),
+    );
   }
 
-  async resolveName(bucketId: BucketId, cidOrName: string, options?: CnsRecordGetOptions) {
-    return this.withRetry(bucketId, RouterOperation.READ_CNS_RECORD, (node) =>
+  async resolveName(bucketId: BucketId, cidOrName: string, resolveOptions: CnsRecordGetOptions = {}) {
+    const options = withCorrelationId(resolveOptions);
+
+    return this.withRetry(bucketId, RouterOperation.READ_CNS_RECORD, options, (node) =>
       node.resolveName(bucketId, cidOrName, options),
     );
   }

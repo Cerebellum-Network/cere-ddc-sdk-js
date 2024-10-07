@@ -93,15 +93,17 @@ export class StorageNode implements NodeInterface {
 
     this.logger.debug(config, 'Storage node initialized');
 
-    bindErrorLogger(this, this.logger, [
-      'storePiece',
-      'storeDagNode',
-      'readPiece',
-      'getDagNode',
-      'storeCnsRecord',
-      'getCnsRecord',
-      'resolveName',
-    ]);
+    if (config.logErrors !== false) {
+      bindErrorLogger(this, this.logger, [
+        'storePiece',
+        'storeDagNode',
+        'readPiece',
+        'getDagNode',
+        'storeCnsRecord',
+        'getCnsRecord',
+        'resolveName',
+      ]);
+    }
   }
 
   private async getRootToken() {

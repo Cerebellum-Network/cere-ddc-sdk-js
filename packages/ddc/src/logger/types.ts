@@ -26,6 +26,11 @@ export type LoggerOptions = {
   logLevel?: LogLevel;
   logOptions?: LoggerConfig;
   logger?: Logger;
+
+  /**
+   * Wether to log all errors (including caught ones)
+   */
+  logErrors?: boolean;
 };
 
 export type { Logger };
