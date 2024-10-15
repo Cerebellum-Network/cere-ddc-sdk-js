@@ -58,7 +58,14 @@ export const createAccount = () => {
 export const transferCere = async (api: ApiPromise, to: string, tokens: number) => {
   const [decimals] = api.registry.chainDecimals;
   const multiplier = 10n ** BigInt(decimals);
-  const transfer = api.tx.balances.transfer(to, BigInt(tokens) * multiplier);
+
+  let transfer;
+  try {
+    transfer = api.tx.balances.transferAllowDeath(to, BigInt(tokens) * multiplier);
+  } catch {
+    // TODO: remove when all networks are upgraded to polkadot-sdk ^v1.2.0.
+    transfer = api.tx.balances.transfer(to, BigInt(tokens) * multiplier);
+  }
 
   return signAndSend(transfer, getAccount('//Alice'));
 };
@@ -69,7 +76,15 @@ export const sendMultipleTransfers = (api: ApiPromise, transfers: { to: string; 
       const [decimals] = api.registry.chainDecimals;
       const multiplier = 10n ** BigInt(decimals);
 
-      return api.tx.balances.transfer(to, BigInt(tokens) * multiplier);
+      let transfer;
+      try {
+        transfer = api.tx.balances.transferAllowDeath(to, BigInt(tokens) * multiplier);
+      } catch {
+        // TODO: remove when all networks are upgraded to polkadot-sdk ^v1.2.0.
+        transfer = api.tx.balances.transfer(to, BigInt(tokens) * multiplier);
+      }
+
+      return transfer;
     }),
   );
 
