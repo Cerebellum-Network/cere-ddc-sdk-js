@@ -1,11 +1,13 @@
-import { Blockchain, ClusterNodeKind, ClusterProps, ClusterStatus, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, ClusterNodeKind, ClusterParams, ClusterStatus, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 import { cryptoWaitReady, randomAsHex } from '@polkadot/util-crypto';
 import { ApiPromise } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
 
-import { createAccount, createBlockhainApi, sendMultipleTransfers } from '../helpers';
+import { CERE, createAccount, createBlockhainApi, DDC_CLUSTER_STAKE, sendMultipleTransfers } from '../helpers';
 
 describe('Blockchain', () => {
+  const bondSize = 10n * CERE;
+
   let apiPromise: ApiPromise;
   let blockchain: Blockchain;
 
@@ -16,10 +18,9 @@ describe('Blockchain', () => {
   let storageNode2Key: string;
   let storageNode3Key: string;
   let nonExistentKey1: string;
-  const bondSize = 10_000_000_000n;
 
   const clusterId = randomAsHex(20);
-  const clusterProps: ClusterProps = {
+  const clusterProps: ClusterParams = {
     nodeProviderAuthContract: null,
     erasureCodingRequired: 4,
     erasureCodingTotal: 6,
@@ -53,9 +54,9 @@ describe('Blockchain', () => {
     apiPromise = await createBlockhainApi();
 
     await sendMultipleTransfers(apiPromise, [
-      { to: userAccount.address, tokens: 100 },
-      { to: storageNode1Account.address, tokens: 10 },
-      { to: nodeProviderAccount.address, tokens: 10 },
+      { to: userAccount.address, tokens: DDC_CLUSTER_STAKE + 100 },
+      { to: storageNode1Account.address, tokens: 100 },
+      { to: nodeProviderAccount.address, tokens: 100 },
     ]);
   });
 
@@ -144,7 +145,7 @@ describe('Blockchain', () => {
   });
 
   test('Should set cluster props', async () => {
-    const clusterProps: ClusterProps = {
+    const clusterProps: ClusterParams = {
       nodeProviderAuthContract: null,
       erasureCodingRequired: 4,
       erasureCodingTotal: 6,
