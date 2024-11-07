@@ -23,12 +23,12 @@ const dir = path.dirname(fileURLToPath(import.meta.url));
 /**
  * The file to be stored
  */
-const inputFilePath = path.resolve(dir, '2mb.jpg');
+const inputFilePath = path.resolve(dir, '../assets/nature.jpg');
 
 /**
  * The path to store the downloaded file
  */
-const outputFilePath = path.resolve(dir, '2mb-downloaded.jpg');
+const outputFilePath = path.resolve(dir, '../assets/nature-downloaded.jpg');
 
 /**
  * Create a DDC client instance and connect it to DDC TESTNET

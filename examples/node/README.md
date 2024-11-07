@@ -32,13 +32,13 @@ Run the following commands from the project root
 4. Go to `examples` directory
 
    ```bash
-   cd ./examples
+   cd ./examples/node
    ```
 
 5. Run an example
 
    ```bash
-   npm run example:1 # can be 1-4
+   npm run example:1 # can be 1-6
    ```
 
   
