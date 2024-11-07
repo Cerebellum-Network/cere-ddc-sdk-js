@@ -8,6 +8,7 @@ This examples directory contains several common DDC SDK use-cases for NodeJs app
 - [How to stream events](./4-store-read-events/index.ts)
 - [How to use exported account (Cere Wallet)](./5-use-exported-account/index.ts)
 - [How to index files so that they are visible in Developer Console](./6-developer-console-compatibility/index.ts)
+- [How to share access to a content in private bucket](./7-private-bucket-access-sharing/index.ts)
 
 ## Quick start
 
@@ -40,7 +41,7 @@ Run the following commands from the project root
 5. Run an example
 
    ```bash
-   npm run example:1 # can be 1-6
+   npm run example:1 # can be 1-7
    ```
 
   
