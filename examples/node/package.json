@@ -9,7 +9,8 @@
     "example:3": "ts-node --esm ./3-upload-website/index.ts",
     "example:4": "ts-node --esm ./4-store-read-events/index.ts",
     "example:5": "ts-node --esm ./5-use-exported-account/index.ts",
-    "example:6": "ts-node --esm ./6-developer-console-compatibility/index.ts"
+    "example:6": "ts-node --esm ./6-developer-console-compatibility/index.ts",
+    "example:7": "ts-node --esm ./7-private-bucket-access-sharing/index.ts"
   },
   "dependencies": {
     "@cere-ddc-sdk/ddc-client": "2.13.0",
