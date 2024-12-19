@@ -13,6 +13,22 @@ import { account } from './account';
 import { download } from './download';
 import { decodeToken, createToken } from './token';
 
+process.on('unhandledRejection', (reason, p) => {
+  p.catch((err) => {
+    console.error('\nUnhandled Promise error:\n');
+
+    console.error('filename: ', err.filename);
+    console.error('lineno: ', err.lineno);
+    console.error('colno: ', err.colno);
+    console.error('error: ', err.error);
+    console.error('timeStamp: ', err.timeStamp);
+    console.error('target: ', err.target);
+    console.error('srcElement: ', err.srcElement);
+
+    process.exit(-1);
+  });
+});
+
 yargs(hideBin(process.argv))
   .wrap(null)
   .demandCommand()
