@@ -103,7 +103,6 @@ export const setupBlockchain = async () => {
     ...storageNodeAccounts.map((storageNodeAccount) => ({ to: storageNodeAccount.address, tokens: 500 })),
   ]);
   console.timeEnd('Top-up accounts');
-
   const blockchain = await Blockchain.connect({ apiPromise });
 
   console.time('Create and bond cluster');
