@@ -5,8 +5,6 @@ import type { EmbedWallet, WalletConnectOptions } from '@cere/embed-wallet';
 import { Web3Signer, Web3SignerOptions } from './Web3Signer';
 import { cryptoWaitReady } from '../utils';
 
-const CERE_WALLET_EXTENSION = 'Cere Wallet';
-
 export type CereWalletSignerOptions = Pick<Web3SignerOptions, 'autoConnect'> & {
   connectOptions?: WalletConnectOptions;
 };
@@ -43,7 +41,7 @@ export class CereWalletSigner extends Web3Signer {
       injected.accounts.get().then(this.setAccount);
       injected.accounts.subscribe(this.setAccount);
 
-      return { ...injected, name: CERE_WALLET_EXTENSION, version: '0.20.0' };
+      return injected as InjectedExtension;
     });
   }
 

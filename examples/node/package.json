@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/node-examples",
-  "version": "2.13.0",
+  "version": "2.14.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,7 +13,7 @@
     "example:7": "ts-node --esm ./7-private-bucket-access-sharing/index.ts"
   },
   "dependencies": {
-    "@cere-ddc-sdk/ddc-client": "2.13.0",
+    "@cere-ddc-sdk/ddc-client": "2.14.0",
     "ts-node": "^10.9.2"
   }
 }

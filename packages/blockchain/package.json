@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/blockchain",
-  "version": "2.12.4",
+  "version": "2.14.0",
   "description": "Cere Blockchain client",
   "type": "module",
   "main": "dist/index.cjs",
@@ -32,15 +32,15 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@cere/embed-wallet-inject": "^0.20.1",
-    "@polkadot/api": "^10.11.2",
-    "@polkadot/api-base": "^10.11.2",
-    "@polkadot/api-contract": "^10.11.2",
-    "@polkadot/extension-dapp": "^0.46.6",
-    "@polkadot/extension-inject": "^0.46.6",
-    "@polkadot/keyring": "^12.6.2",
-    "@polkadot/types": "^10.11.2",
-    "@polkadot/util": "^12.6.2",
-    "@polkadot/util-crypto": "^12.6.2"
+    "@polkadot/api": "^15.5.1",
+    "@polkadot/api-base": "^15.5.1",
+    "@polkadot/api-contract": "^15.5.1",
+    "@polkadot/extension-dapp": "^0.58.2",
+    "@polkadot/extension-inject": "^0.58.2",
+    "@polkadot/keyring": "^13.3.1",
+    "@polkadot/types": "^15.5.1",
+    "@polkadot/util": "^13.3.1",
+    "@polkadot/util-crypto": "^13.3.1"
   },
   "peerDependencies": {
     "@cere/embed-wallet": "*"
