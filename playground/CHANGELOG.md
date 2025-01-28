@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.14.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.13.0...v2.14.1) (2025-01-28)
+
+**Note:** Version bump only for package @cere-ddc-sdk/playground
+
 ## [2.13.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.8...v2.13.0) (2024-10-07)
 
 **Note:** Version bump only for package @cere-ddc-sdk/playground

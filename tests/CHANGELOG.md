@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.14.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.13.0...v2.14.1) (2025-01-28)
+
+### Miscellaneous Chores
+
+- Update cluster creation/bonding flow in tests ([#273](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/273)) ([1642c29](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/1642c299740399bec00c8b82920eb05a134017ba))
+
 ## [2.13.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.12.8...v2.13.0) (2024-10-07)
 
 ### Features
