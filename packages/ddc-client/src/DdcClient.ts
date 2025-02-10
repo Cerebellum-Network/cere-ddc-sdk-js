@@ -271,6 +271,31 @@ export class DdcClient {
   }
 
   /**
+   * Mark existing buckets with specified bucket ids as removed.
+   *
+   * @param bucketIds - The IDs of the buckets to remove.
+   * @returns A promise that resolves to the IDs of the removed buckets.
+   *
+   * @example
+   *
+   * ```typescript
+   * const removedBucketIds = await ddcClient.removeBucket(1, 2, 3);
+   * ```
+   */
+  async removeBuckets(...bucketIds: BucketId[]) {
+    this.logger.info('Removing buckets %s', bucketIds);
+
+    const response = await this.blockchain.send(this.blockchain.ddcCustomers.removeBuckets(...bucketIds), {
+      account: this.signer,
+    });
+
+    const removedBucketIds = this.blockchain.ddcCustomers.extractRemovedBucketIds(response.events);
+    this.logger.info('Buckets %s removed in TX: %s', removedBucketIds, response.txHash);
+
+    return removedBucketIds;
+  }
+
+  /**
    * @deprecated Use `getBucket` instead
    */
   bucketGet(bucketId: BucketId) {
