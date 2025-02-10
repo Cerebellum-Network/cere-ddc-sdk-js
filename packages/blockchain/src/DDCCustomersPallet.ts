@@ -228,4 +228,52 @@ export class DDCCustomersPallet {
       .filter(Boolean)
       .map(BigInt);
   }
+
+  /**
+   * Mark existing buckets with specified bucket ids as removed.
+   *
+   * @param bucketIds - The IDs of the buckets to remove.
+   * @returns An extrinsic to remove the buckets.
+   *
+   * @example
+   *
+   * ```typescript
+   * const tx = blockchain.ddcCustomers.removeBuckets(1n, 2n);
+   *
+   * await blockchain.send(tx, { account });
+   * ```
+   */
+  removeBuckets(...bucketIds: BucketId[]) {
+    if (bucketIds.length === 0) {
+      throw new Error('At least one bucket ID must be provided');
+    } else if (bucketIds.length === 1) {
+      return this.apiPromise.tx.ddcCustomers.removeBucket(bucketIds[0]) as Sendable;
+    }
+
+    return this.apiPromise.tx.utility.batch(
+      bucketIds.map((bucketId) => this.apiPromise.tx.ddcCustomers.removeBucket(bucketId)),
+    ) as Sendable;
+  }
+
+  /**
+   * Extracts the IDs of the removed buckets from the given events.
+   *
+   * @param events - The events to extract the bucket IDs from.
+   * @returns The IDs of the removed buckets.
+   *
+   * @example
+   *
+   * ```typescript
+   * const bucketIds = blockchain.ddcCustomers.extractRemovedBucketIds(events);
+   *
+   * console.log(bucketIds);
+   * ```
+   */
+  extractRemovedBucketIds(events: Event[]) {
+    return events
+      .filter((event) => event.section === 'ddcCustomers' && event.method === 'BucketRemoved')
+      .map((event) => event.payload?.bucket_id)
+      .filter(Boolean)
+      .map(BigInt);
+  }
 }

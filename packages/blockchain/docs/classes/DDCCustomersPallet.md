@@ -127,6 +127,34 @@ console.log(bucketIds);
 
 ___
 
+### extractRemovedBucketIds
+
+▸ **extractRemovedBucketIds**(`events`): `bigint`[]
+
+Extracts the IDs of the removed buckets from the given events.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `events` | `Event`[] | The events to extract the bucket IDs from. |
+
+#### Returns
+
+`bigint`[]
+
+The IDs of the removed buckets.
+
+**`Example`**
+
+```typescript
+const bucketIds = blockchain.ddcCustomers.extractRemovedBucketIds(events);
+
+console.log(bucketIds);
+```
+
+___
+
 ### getBucket
 
 ▸ **getBucket**(`bucketId`): `Promise`\<`undefined` \| `Bucket`\>
@@ -223,6 +251,34 @@ A promise that resolves to the list of buckets.
 const buckets = await blockchain.ddcCustomers.listBuckets();
 
 console.log(buckets);
+```
+
+___
+
+### removeBuckets
+
+▸ **removeBuckets**(`...bucketIds`): `Sendable`
+
+Mark existing buckets with specified bucket ids as removed.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `...bucketIds` | `bigint`[] | The IDs of the buckets to remove. |
+
+#### Returns
+
+`Sendable`
+
+An extrinsic to remove the buckets.
+
+**`Example`**
+
+```typescript
+const tx = blockchain.ddcCustomers.removeBuckets(1n, 2n);
+
+await blockchain.send(tx, { account });
 ```
 
 ___

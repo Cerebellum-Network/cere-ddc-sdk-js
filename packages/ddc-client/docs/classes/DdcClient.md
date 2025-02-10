@@ -261,6 +261,32 @@ console.log(textContent);
 
 ___
 
+### removeBuckets
+
+▸ **removeBuckets**(`...bucketIds`): `Promise`\<`bigint`[]\>
+
+Mark existing buckets with specified bucket ids as removed.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `...bucketIds` | `bigint`[] | The IDs of the buckets to remove. |
+
+#### Returns
+
+`Promise`\<`bigint`[]\>
+
+A promise that resolves to the IDs of the removed buckets.
+
+**`Example`**
+
+```typescript
+const removedBucketIds = await ddcClient.removeBucket(1, 2, 3);
+```
+
+___
+
 ### resolveName
 
 ▸ **resolveName**(`bucketId`, `cnsName`, `options?`): `Promise`\<`Cid`\>

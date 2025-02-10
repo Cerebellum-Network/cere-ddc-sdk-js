@@ -299,4 +299,28 @@ describe('Blockchain', () => {
     const currentBlockNumber = await blockchain.getCurrentBlockNumber();
     expect(currentBlockNumber).toBeGreaterThan(0);
   });
+
+  test('Should remove buckets', async () => {
+    const createdBucketIds: bigint[] = [];
+    for (let i = 0; i < 3; i++) {
+      const result = await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true }), {
+        account: userAccount,
+      });
+
+      const [bucketId] = blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
+      createdBucketIds.push(bucketId);
+    }
+
+    const result = await blockchain.send(blockchain.ddcCustomers.removeBuckets(...createdBucketIds), {
+      account: userAccount,
+    });
+
+    const removedBucketIds = blockchain.ddcCustomers.extractRemovedBucketIds(result.events);
+    expect(createdBucketIds.sort()).toEqual(removedBucketIds.sort());
+
+    for (const bucketId of removedBucketIds) {
+      const bucket = await blockchain.ddcCustomers.getBucket(bucketId);
+      expect(bucket?.isRemoved).toBe(true);
+    }
+  }, 120_000);
 });
