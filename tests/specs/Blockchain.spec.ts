@@ -299,4 +299,23 @@ describe('Blockchain', () => {
     const currentBlockNumber = await blockchain.getCurrentBlockNumber();
     expect(currentBlockNumber).toBeGreaterThan(0);
   });
+
+  test('Should remove buckets', async () => {
+    const buckets = await blockchain.ddcCustomers.listBuckets();
+    const existingBuckets = buckets.filter((bucket) => !bucket.isRemoved);
+    expect(existingBuckets.length).toBeGreaterThanOrEqual(2);
+
+    const existingBucketIds = existingBuckets.map((bucket) => bucket.bucketId);
+    const result = await blockchain.send(blockchain.ddcCustomers.removeBuckets(...existingBucketIds), {
+      account: userAccount,
+    });
+
+    const removedBucketIds = blockchain.ddcCustomers.extractRemovedBucketIds(result.events);
+    expect(existingBucketIds.toSorted()).toEqual(removedBucketIds.toSorted());
+
+    for (const bucketId of removedBucketIds) {
+      const bucket = await blockchain.ddcCustomers.getBucket(bucketId);
+      expect(bucket?.isRemoved).toBe(true);
+    }
+  });
 });
