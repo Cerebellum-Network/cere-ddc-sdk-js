@@ -240,13 +240,14 @@ describe('DDC Client', () => {
     });
 
     test('Remove buckets', async () => {
-      const buckets = await client.getBucketList();
-      const existingBuckets = buckets.filter((bucket) => !bucket.isRemoved);
-      expect(existingBuckets.length).toBeGreaterThanOrEqual(2);
+      const createdBucketIds: bigint[] = [];
+      for (let i = 0; i < 3; i++) {
+        const createdBucketId = await client.createBucket(clusterId);
+        createdBucketIds.push(createdBucketId);
+      }
 
-      const existingBucketIds = existingBuckets.map((bucket) => bucket.bucketId);
-      const removedBucketIds = await client.removeBuckets(...existingBucketIds);
-      expect(existingBucketIds.sort()).toEqual(removedBucketIds.sort());
-    });
+      const removedBucketIds = await client.removeBuckets(...createdBucketIds);
+      expect(createdBucketIds.sort()).toEqual(removedBucketIds.sort());
+    }, 120_000);
   });
 });

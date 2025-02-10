@@ -301,21 +301,26 @@ describe('Blockchain', () => {
   });
 
   test('Should remove buckets', async () => {
-    const buckets = await blockchain.ddcCustomers.listBuckets();
-    const existingBuckets = buckets.filter((bucket) => !bucket.isRemoved);
-    expect(existingBuckets.length).toBeGreaterThanOrEqual(2);
+    const createdBucketIds: bigint[] = [];
+    for (let i = 0; i < 3; i++) {
+      const result = await blockchain.send(blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true }), {
+        account: userAccount,
+      });
 
-    const existingBucketIds = existingBuckets.map((bucket) => bucket.bucketId);
-    const result = await blockchain.send(blockchain.ddcCustomers.removeBuckets(...existingBucketIds), {
+      const [bucketId] = blockchain.ddcCustomers.extractCreatedBucketIds(result.events);
+      createdBucketIds.push(bucketId);
+    }
+
+    const result = await blockchain.send(blockchain.ddcCustomers.removeBuckets(...createdBucketIds), {
       account: userAccount,
     });
 
     const removedBucketIds = blockchain.ddcCustomers.extractRemovedBucketIds(result.events);
-    expect(existingBucketIds.toSorted()).toEqual(removedBucketIds.toSorted());
+    expect(createdBucketIds.sort()).toEqual(removedBucketIds.sort());
 
     for (const bucketId of removedBucketIds) {
       const bucket = await blockchain.ddcCustomers.getBucket(bucketId);
       expect(bucket?.isRemoved).toBe(true);
     }
-  });
+  }, 120_000);
 });
