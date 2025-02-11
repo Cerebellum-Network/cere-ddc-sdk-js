@@ -10,10 +10,14 @@
     "example:4": "ts-node --esm ./4-store-read-events/index.ts",
     "example:5": "ts-node --esm ./5-use-exported-account/index.ts",
     "example:6": "ts-node --esm ./6-developer-console-compatibility/index.ts",
-    "example:7": "ts-node --esm ./7-private-bucket-access-sharing/index.ts"
+    "example:7": "ts-node --esm ./7-private-bucket-access-sharing/index.ts",
+    "example:8": "ts-node --esm ./8-sudo-batch-remove-buckets/index.ts"
   },
   "dependencies": {
+    "@cere-ddc-sdk/blockchain": "^2.14.1",
     "@cere-ddc-sdk/ddc-client": "2.14.1",
+    "@types/json-bigint": "^1.0.4",
+    "json-bigint": "^1.0.0",
     "ts-node": "^10.9.2"
   }
 }
