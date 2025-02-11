@@ -14,6 +14,8 @@
   },
   "dependencies": {
     "@cere-ddc-sdk/ddc-client": "2.14.1",
+    "@types/json-bigint": "^1.0.4",
+    "json-bigint": "^1.0.0",
     "ts-node": "^10.9.2"
   }
 }
