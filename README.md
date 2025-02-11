@@ -20,7 +20,7 @@ The playground app is small demo application you can try how DDC SDK works in br
 
 1. Prepare Node.JS version
 
-   ```
+   ```console
    nvm use
    ```
 
@@ -28,6 +28,12 @@ The playground app is small demo application you can try how DDC SDK works in br
 
    ```bash
    npm i
+   ```
+
+   On GNU/Linux you may also need to add executables path:
+
+   ```console
+   export PATH=$PWD/node_modules/.bin:$PATH
    ```
 
 3. Build all packages and Playground app:
