@@ -275,6 +275,10 @@ export class Blockchain {
     return this.api.tx.sudo.sudo(sendable) as Sendable;
   }
 
+  sudoAs(who: AccountId, sendable: Sendable) {
+    return this.api.tx.sudo.sudoAs(who, sendable) as Sendable;
+  }
+
   /**
    * Disconnects from the blockchain.
    *
