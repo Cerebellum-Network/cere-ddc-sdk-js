@@ -2,6 +2,10 @@
 
 The DDC SDK is a development kit used by developers to create applications that interact with the CERE infrastructure. It provides a set of modules and methods that allow seamless integration with the Cerebellum Network's decentralized data cloud (DDC).
 
+## Architecture diagram
+
+![architecture diagram](/docs/image.png)
+
 ## Packages
 
 - [@cere-ddc-sdk/ddc-client](packages/ddc-client/README.md) - The main DDC SDK interface with all methods for working with DDC
@@ -9,9 +13,10 @@ The DDC SDK is a development kit used by developers to create applications that 
 - [@cere-ddc-sdk/file-storage](packages/file-storage/README.md) - Upload large files, using chunk streaming
 - [@cere-ddc-sdk/ddc](packages/ddc/README.md) - Low level package to directly communicate with DDC nodes
 - [@cere-ddc-sdk/cli](packages/cli/README.md) - DDC Command Line Interface
-## Demo
 
-The playground app is small demo application you can try how DDC SDK works in browser.
+## Playground
+
+The playground is a simple demo application that you can use during development or try how DDC SDK works in browser. Check Quick Start section below to find out how to run the playground.
 
 - [Source code](playground)
 - [Online demo](https://cerebellum-network.github.io/cere-ddc-sdk-js/)
@@ -79,6 +84,10 @@ The main source of documentation for all SDK packages is the source code doc com
 ```bash
 npm run docs
 ```
+
+## Examples
+
+Most commonly used scenarios are present in [examples](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/tree/main/examples) directory. Please, extend it in case you add any significant feature. 
 
 ## Publish
 
