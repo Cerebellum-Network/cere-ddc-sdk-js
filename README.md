@@ -4,7 +4,7 @@ The DDC SDK is a development kit used by developers to create applications that 
 
 ## Architecture diagram
 
-![architecture diagram](/docs/image.png)
+![architecture diagram](/docs/acrhitecture_diagram.png)
 
 The SDK provides several modules. The DDC Client module acts as an entry point and offers a concise API for straightforward use cases, like creating a bucket or uploading/downloading a file. Additional modules present more advanced APIs that provide enough flexibility for other SDKs to be built on top of the DDC SDK.
 
