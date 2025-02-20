@@ -6,6 +6,8 @@ The DDC SDK is a development kit used by developers to create applications that 
 
 ![architecture diagram](/docs/image.png)
 
+The SDK provides several modules. The DDC Client module acts as an entry point and offers a concise API for straightforward use cases, like creating a bucket or uploading/downloading a file. Additional modules present more advanced APIs that provide enough flexibility for other SDKs to be built on top of the DDC SDK.
+
 ## Packages
 
 - [@cere-ddc-sdk/ddc-client](packages/ddc-client/README.md) - The main DDC SDK interface with all methods for working with DDC
