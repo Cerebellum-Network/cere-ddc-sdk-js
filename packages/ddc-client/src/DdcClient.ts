@@ -19,7 +19,16 @@ import {
   CnsRecordGetOptions,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
-import { AccountId, Blockchain, BucketId, BucketParams, ClusterId, Sendable } from '@cere-ddc-sdk/blockchain';
+import {
+  AccountId,
+  Blockchain,
+  BucketId,
+  BucketParams,
+  ClusterId,
+  Sendable,
+  Cipher,
+  NoOpCipher,
+} from '@cere-ddc-sdk/blockchain';
 
 import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
 
@@ -44,7 +53,11 @@ export class DdcClient {
   private readonly signer: Signer;
   private readonly logger: Logger;
 
-  constructor(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
+  constructor(
+    uriOrSigner: Signer | string,
+    cipher: Cipher = new NoOpCipher(),
+    config: DdcClientConfig = DEFAULT_PRESET,
+  ) {
     const logger = createLogger('DdcClient', config);
     const blockchain =
       typeof config.blockchain === 'string' ? new Blockchain({ wsEndpoint: config.blockchain }) : config.blockchain;
@@ -81,6 +94,7 @@ export class DdcClient {
    * Creates a new instance of the DdcClient.
    *
    * @param uriOrSigner - A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri).
+   * @param cipher - A Cipher instance.
    * @param config - Configuration options for the DdcClient. Defaults to TESTNET.
    *
    * @returns A promise that resolves to a new instance of the DdcClient.
@@ -99,7 +113,13 @@ export class DdcClient {
    * ```
    */
   static async create(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
-    const client = new DdcClient(uriOrSigner, config);
+    const client = new DdcClient(uriOrSigner, new NoOpCipher(), config);
+
+    return client.connect();
+  }
+
+  static async createEncrypted(uriOrSigner: Signer | string, cipher: Cipher, config: DdcClientConfig = DEFAULT_PRESET) {
+    const client = new DdcClient(uriOrSigner, cipher, config);
 
     return client.connect();
   }

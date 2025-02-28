@@ -2,6 +2,7 @@ import { readFile } from 'fs/promises';
 
 import { StorageNodeMode } from '@cere-ddc-sdk/ddc';
 import { DdcClient, DEVNET, TESTNET, MAINNET, DdcClientConfig, UriSigner, JsonSigner } from '@cere-ddc-sdk/ddc-client';
+import { XorCipher } from '@cere-ddc-sdk/blockchain';
 
 export { createCorrelationId } from '@cere-ddc-sdk/ddc-client';
 
@@ -17,6 +18,8 @@ export type CreateClientOptions = {
   logLevel: string;
   signerPassphrase: string;
   signerType?: string;
+  cipherType?: string;
+  cipherKey?: string;
   blockchainRpc?: string;
   nodes?: NodeConfig[];
 };
@@ -53,7 +56,7 @@ export const createClient = async (options: CreateClientOptions) => {
    */
   await signer.unlock(options.signerPassphrase);
 
-  return DdcClient.create(signer, {
+  const config = {
     ...preset,
     blockchain,
     logLevel: options.logLevel as DdcClientConfig['logLevel'],
@@ -62,7 +65,18 @@ export const createClient = async (options: CreateClientOptions) => {
       ...node,
       mode: StorageNodeMode[(node.mode as keyof typeof StorageNodeMode) || 'Full'],
     })),
-  });
+  };
+
+  if (options.cipherType == 'xor') {
+    const xorKey = Number(options.cipherKey);
+    if (isNaN(xorKey)) {
+      throw new Error('Xor cipher key should be a number between 0 and 255');
+    }
+
+    return DdcClient.createEncrypted(signer, new XorCipher(xorKey), config);
+  }
+
+  return DdcClient.create(signer, config);
 };
 
 export const withClient = async <T>(options: CreateClientOptions, fn: (client: DdcClient) => Promise<T>) => {
