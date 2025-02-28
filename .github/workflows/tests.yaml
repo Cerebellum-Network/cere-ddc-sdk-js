@@ -47,7 +47,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Install packages
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Check code style
         run: npm run lint

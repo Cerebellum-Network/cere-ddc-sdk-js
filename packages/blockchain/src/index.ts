@@ -18,6 +18,11 @@ export { CERE_SS58_PREFIX } from './constants';
 export * from './Signer';
 
 /**
+ * Ciphers
+ */
+export * from './Cipher';
+
+/**
  * Pallets
  */
 export * from './DDCCustomersPallet';

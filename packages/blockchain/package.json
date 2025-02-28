@@ -31,7 +31,7 @@
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
   "dependencies": {
-    "@cere/embed-wallet-inject": "^0.20.1",
+    "@cere/embed-wallet-inject": "0.23.4",
     "@polkadot/api": "^15.5.1",
     "@polkadot/api-base": "^15.5.1",
     "@polkadot/api-contract": "^15.5.1",

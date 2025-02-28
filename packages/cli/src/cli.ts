@@ -47,6 +47,16 @@ yargs(hideBin(process.argv))
     default: '',
     describe: 'Passphrase to unlock the actor wallet signer',
   })
+  .option('cipherType', {
+    choices: ['xor'],
+    default: '',
+    describe: 'Type of the cipher',
+  })
+  .option('cipherKey', {
+    string: true,
+    default: '',
+    describe: 'Key to encrypt and decrypt data',
+  })
   .option('logLevel', {
     alias: 'log',
     choices: ['silent', 'warn', 'info', 'debug', 'error'],
