@@ -37,7 +37,7 @@ jobs:
         uses: actions/configure-pages@v3
 
       - name: Install packages
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build packages
         run: npm run build
