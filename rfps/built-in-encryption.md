@@ -1,4 +1,7 @@
+# Built-in encryption for Secure Data Storage 🔑
 This document outlines the details of the program, including its objectives, challenges, proposed solutions, deliverables, and resources. Below is the index for easy navigation:
+
+---
 
 ## 📚 Index
 
