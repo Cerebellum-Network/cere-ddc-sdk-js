@@ -241,18 +241,37 @@ export class Orchestrator {
 
     switch (action.method) {
       case 'store': {
-        // Store data as DagNode or File based on payload structure
+        let cid: any; // DDC client returns DagNodeUri or FileUri, not string
+
+        // Determine storage format based on payload structure
         if (action.payload.data && typeof action.payload.data === 'string') {
           // Create DagNode for structured data
           const { DagNode } = await import('@cere-ddc-sdk/ddc-client');
           const dagNode = new DagNode(action.payload.data, action.payload.links || []);
-          return this.ddcClient.store(this.config.ddcConfig.bucketId, dagNode);
-        } else {
-          // Create File for file-like data
+          cid = await this.ddcClient.store(this.config.ddcConfig.bucketId, dagNode);
+        } else if (Buffer.isBuffer(action.payload.data) || action.payload.data instanceof Uint8Array) {
+          // Create File for binary data
           const { File } = await import('@cere-ddc-sdk/ddc-client');
-          const file = new File(action.payload.data);
-          return this.ddcClient.store(this.config.ddcConfig.bucketId, file);
+          const file = new File(action.payload.data, action.payload.metadata || {});
+          cid = await this.ddcClient.store(this.config.ddcConfig.bucketId, file);
+        } else {
+          // For any other data type, serialize to JSON and store as DagNode
+          const { DagNode } = await import('@cere-ddc-sdk/ddc-client');
+          const jsonData = JSON.stringify(action.payload.data || action.payload);
+          const dagNode = new DagNode(jsonData, []);
+          cid = await this.ddcClient.store(this.config.ddcConfig.bucketId, dagNode);
         }
+
+        this.logger('debug', 'DDC storage completed', { cid, bucketId: this.config.ddcConfig.bucketId });
+
+        // Return response with CID for conversation stream use cases
+        return {
+          cid: cid.toString(), // Convert DDC URI to string for consistency
+          bucketId: this.config.ddcConfig.bucketId,
+          status: 'stored',
+          timestamp: new Date().toISOString(),
+          size: this.estimateDataSize(action.payload),
+        };
       }
 
       case 'storeBatch':
@@ -389,6 +408,17 @@ export class Orchestrator {
    */
   private generateEventId(): string {
     return `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Estimate data size for logging and metrics
+   */
+  private estimateDataSize(payload: any): number {
+    try {
+      return JSON.stringify(payload).length;
+    } catch {
+      return 0;
+    }
   }
 
   /**

@@ -125,8 +125,11 @@ describe('Orchestrator', () => {
     };
 
     beforeEach(async () => {
-      // Mock successful initialization
-      const mockDdcClient = { store: jest.fn(), disconnect: jest.fn() };
+      // Mock successful initialization with proper return values
+      const mockDdcClient = {
+        store: jest.fn().mockResolvedValue({ toString: () => '0xabc123' }),
+        disconnect: jest.fn(),
+      };
       const { DdcClient } = await import('@cere-ddc-sdk/ddc-client');
       (DdcClient.create as jest.Mock) = jest.fn().mockResolvedValue(mockDdcClient);
       await orchestrator.initialize();
@@ -139,6 +142,12 @@ describe('Orchestrator', () => {
       expect(result.overallStatus).toBe('success');
       expect(result.transactionId).toMatch(/^txn_/);
       expect(result.totalExecutionTime).toBeGreaterThanOrEqual(0);
+
+      // Check the DDC response structure
+      const ddcResult = result.results[0];
+      expect(ddcResult.success).toBe(true);
+      expect(ddcResult.response.cid).toBe('0xabc123');
+      expect(ddcResult.response.status).toBe('stored');
     });
 
     it('should execute parallel actions', async () => {
@@ -161,7 +170,14 @@ describe('Orchestrator', () => {
       const result = await orchestrator.execute(parallelPlan);
 
       expect(result.results).toHaveLength(2);
-      expect(result.overallStatus).toBe('partial'); // Activity SDK not initialized
+      expect(result.overallStatus).toBe('partial'); // Activity SDK action will be skipped/failed
+
+      // DDC action should succeed
+      expect(result.results[0].success).toBe(true);
+      expect(result.results[0].response.cid).toBe('0xabc123');
+
+      // Activity SDK action should be skipped (no Activity SDK initialized)
+      expect(result.results[1].success).toBe(false);
     });
 
     it('should determine correct overall status', async () => {
@@ -205,7 +221,7 @@ describe('Orchestrator', () => {
 
     beforeEach(async () => {
       const mockDdcClient = {
-        store: jest.fn().mockResolvedValue('0xabc123'),
+        store: jest.fn().mockResolvedValue({ toString: () => '0xabc123' }),
         disconnect: jest.fn(),
       };
       const { DdcClient } = await import('@cere-ddc-sdk/ddc-client');
@@ -227,7 +243,9 @@ describe('Orchestrator', () => {
       const result = await (orchestrator as any).executeDDCAction(mockAction);
 
       expect(DagNode).toHaveBeenCalledWith(mockAction.payload.data, []);
-      expect(result).toBe('0xabc123');
+      expect(result.cid).toBe('0xabc123');
+      expect(result.status).toBe('stored');
+      expect(result.bucketId).toBe(BigInt(12345));
     });
 
     it('should execute DDC store action with File', async () => {
@@ -246,8 +264,9 @@ describe('Orchestrator', () => {
 
       const result = await (orchestrator as any).executeDDCAction(fileAction);
 
-      expect(File).toHaveBeenCalledWith(fileAction.payload.data);
-      expect(result).toBe('0xabc123');
+      expect(File).toHaveBeenCalledWith(fileAction.payload.data, {});
+      expect(result.cid).toBe('0xabc123');
+      expect(result.status).toBe('stored');
     });
 
     it('should throw error for batch storage (not implemented)', async () => {

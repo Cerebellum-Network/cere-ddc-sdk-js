@@ -231,6 +231,185 @@ await sdk.writeTelegramMessage({
 
 ## Advanced Telegram Features
 
+### 1. CID Retrieval for Conversation Streams
+
+The Unified SDK returns Content Identifiers (CIDs) when data is stored in DDC, enabling conversation streams and other systems to reference original data sources.
+
+```typescript
+// Store conversation data and get CID for future reference
+const response = await sdk.writeTelegramMessage(
+  {
+    messageId: 'msg_12345',
+    chatId: 'chat_conversations',
+    userId: 'user_789',
+    messageText: 'This is an important conversation message',
+    messageType: 'text',
+    timestamp: new Date(),
+    metadata: {
+      conversationId: 'conv_session_001',
+      importance: 'high',
+      category: 'support_request',
+    },
+  },
+  {
+    // Force storage in DDC to get CID
+    writeMode: 'direct', // This ensures direct DDC storage
+    priority: 'high',
+  },
+);
+
+// Extract CID for conversation reference
+const conversationCID = response.dataCloudHash;
+console.log(`Conversation stored with CID: ${conversationCID}`);
+
+// Store conversation metadata with CID reference
+const conversationIndex = {
+  conversationId: 'conv_session_001',
+  participants: ['user_789', 'support_agent_123'],
+  startTime: new Date(),
+  originalDataCID: conversationCID, // Reference to original data
+  status: 'active',
+};
+
+await sdk.writeData(conversationIndex, {
+  processing: {
+    dataCloudWriteMode: 'direct',
+    indexWriteMode: 'realtime',
+    priority: 'high',
+  },
+});
+```
+
+### 2. Building Conversation History with CID References
+
+```typescript
+class ConversationStream {
+  private sdk: UnifiedSDK;
+  private conversationCIDs: Map<string, string> = new Map();
+
+  async addMessage(messageData: TelegramMessageData): Promise<string> {
+    // Store message and get CID
+    const response = await this.sdk.writeTelegramMessage(messageData, {
+      writeMode: 'direct', // Ensure DDC storage for CID
+      priority: 'normal',
+    });
+
+    if (response.dataCloudHash) {
+      // Store CID reference for this message
+      this.conversationCIDs.set(messageData.messageId, response.dataCloudHash);
+
+      // Update conversation index with new message reference
+      await this.updateConversationIndex(messageData.chatId, {
+        messageId: messageData.messageId,
+        messageCID: response.dataCloudHash,
+        timestamp: messageData.timestamp,
+        userId: messageData.userId,
+      });
+
+      return response.dataCloudHash;
+    }
+
+    throw new Error('Failed to store message in DDC');
+  }
+
+  async getMessageCID(messageId: string): Promise<string | undefined> {
+    return this.conversationCIDs.get(messageId);
+  }
+
+  private async updateConversationIndex(chatId: string, messageRef: any) {
+    await this.sdk.writeData(
+      {
+        type: 'conversation_update',
+        chatId,
+        messageReference: messageRef,
+        updatedAt: new Date(),
+      },
+      {
+        processing: {
+          dataCloudWriteMode: 'skip', // Index only
+          indexWriteMode: 'realtime',
+          priority: 'low',
+        },
+      },
+    );
+  }
+}
+```
+
+### 3. Cross-System Data References
+
+```typescript
+// Use CIDs to reference data across different systems
+async function processQuestCompletion(userId: string, questData: any) {
+  // Store quest completion data
+  const response = await sdk.writeTelegramEvent(
+    {
+      eventType: 'quest_completed',
+      userId,
+      eventData: questData,
+      timestamp: new Date(),
+    },
+    {
+      writeMode: 'direct', // Get CID for external reference
+      priority: 'high',
+    },
+  );
+
+  // Use CID in external systems (e.g., blockchain, other databases)
+  if (response.dataCloudHash) {
+    await notifyExternalSystem({
+      userId,
+      eventType: 'quest_completion',
+      dataReference: {
+        cid: response.dataCloudHash,
+        network: 'cere-ddc',
+        bucket: process.env.DDC_BUCKET_ID,
+      },
+      points: questData.points,
+      timestamp: new Date(),
+    });
+
+    // Store in local database with CID reference
+    await localDB.quests.create({
+      userId,
+      questId: questData.questId,
+      completedAt: new Date(),
+      originalDataCID: response.dataCloudHash, // Link to immutable data
+      status: 'completed',
+    });
+  }
+}
+```
+
+### 4. Data Verification Using CIDs
+
+```typescript
+// Verify data integrity using CIDs
+async function verifyConversationData(messageId: string, expectedCID: string) {
+  try {
+    // Could implement DDC retrieval to verify data matches CID
+    // This ensures data hasn't been tampered with
+    const isValid = await verifyCIDIntegrity(expectedCID);
+
+    if (!isValid) {
+      console.warn(`Data integrity check failed for message ${messageId}`);
+      // Handle integrity violation
+    }
+
+    return isValid;
+  } catch (error) {
+    console.error('CID verification failed:', error);
+    return false;
+  }
+}
+
+async function verifyCIDIntegrity(cid: string): Promise<boolean> {
+  // Implementation would use DDC client to retrieve and verify
+  // This is a placeholder for the verification logic
+  return true;
+}
+```
+
 ### 1. Inline Keyboard Analytics
 
 ```typescript

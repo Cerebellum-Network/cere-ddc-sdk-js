@@ -332,7 +332,17 @@ interface UnifiedResponse {
   transactionId: string; // Unique transaction identifier
   results: ActionResult[]; // Results from individual actions
   metadata: ResponseMetadata; // Response metadata
-  dataCloudHash?: string; // DDC content hash (if stored)
+
+  /**
+   * DDC Content Identifier (CID) - returned when data is stored in DDC
+   * This CID can be used to:
+   * - Reference original data sources in conversation streams
+   * - Link data across different systems and databases
+   * - Verify data integrity and immutability
+   * - Build audit trails and data provenance systems
+   */
+  dataCloudHash?: string;
+
   activityEventId?: string; // Activity SDK event ID (if indexed)
 }
 
@@ -348,6 +358,30 @@ interface ResponseMetadata {
   processingTime: number; // Total processing time
   routingDecisions: string[]; // Routing decisions made
   fallbacksUsed: string[]; // Any fallbacks that were used
+}
+```
+
+**CID Usage Examples:**
+
+```typescript
+// Store data and get CID for future reference
+const response = await sdk.writeTelegramMessage(messageData, {
+  writeMode: 'direct', // Ensures DDC storage and CID return
+});
+
+if (response.dataCloudHash) {
+  // Use CID in conversation streams
+  await conversationDB.addMessage({
+    messageId: messageData.messageId,
+    originalDataCID: response.dataCloudHash, // Link to immutable data
+    timestamp: new Date(),
+  });
+
+  // Reference in external systems
+  await notifyOtherSystem({
+    dataReference: response.dataCloudHash,
+    network: 'cere-ddc',
+  });
 }
 ```
 

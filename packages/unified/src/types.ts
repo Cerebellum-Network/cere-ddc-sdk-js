@@ -62,8 +62,20 @@ export type UnifiedMetadata = z.infer<typeof MetadataSchema>;
 export interface UnifiedResponse {
   transactionId: string;
   status: 'success' | 'partial' | 'failed';
+
+  /**
+   * DDC Content Identifier (CID) for data stored in Data Cloud
+   * This CID can be used to reference the original data source in conversation streams
+   * or other systems that need to link back to the stored content
+   */
   dataCloudHash?: string;
+
+  /**
+   * Activity SDK event identifier for indexed data
+   * Useful for tracking and querying analytics events
+   */
   indexId?: string;
+
   errors?: Array<{
     component: string;
     error: string;
