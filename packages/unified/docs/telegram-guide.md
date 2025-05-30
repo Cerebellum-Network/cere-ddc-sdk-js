@@ -1,0 +1,483 @@
+# Telegram Use Cases Guide
+
+## Overview
+
+The Unified SDK is specifically designed and optimized for Telegram bot and mini-app development. It provides native support for Telegram-specific data types, intelligent routing for different interaction patterns, and seamless integration with Telegram's ecosystem.
+
+## Telegram Data Types
+
+### TelegramEventData
+
+Represents user actions and interactions within Telegram bots or mini-apps:
+
+```typescript
+interface TelegramEventData {
+  eventType: string; // Type of event (quest_completed, button_click, etc.)
+  userId: string; // Telegram user ID
+  chatId?: string; // Optional chat ID for group events
+  eventData: any; // Event-specific data
+  timestamp: Date; // When the event occurred
+  messageId?: string; // Optional related message ID
+  botId?: string; // Optional bot identifier
+  miniAppId?: string; // Optional mini-app identifier
+}
+```
+
+### TelegramMessageData
+
+Represents messages sent within Telegram:
+
+```typescript
+interface TelegramMessageData {
+  messageId: string; // Unique message identifier
+  chatId: string; // Chat where message was sent
+  userId: string; // User who sent the message
+  messageText?: string; // Text content (for text messages)
+  messageType: 'text' | 'photo' | 'video' | 'document' | 'sticker' | 'voice' | 'location' | 'contact';
+  timestamp: Date; // Message timestamp
+  replyToMessageId?: string; // ID of message being replied to
+  metadata?: any; // Additional message metadata
+}
+```
+
+## Common Telegram Use Cases
+
+### 1. Quest and Gamification Systems
+
+```typescript
+// Quest completion tracking
+await sdk.writeTelegramEvent({
+  eventType: 'quest_completed',
+  userId: 'user123',
+  chatId: 'private_chat',
+  eventData: {
+    questId: 'daily_checkin',
+    questType: 'daily',
+    points: 100,
+    streak: 7,
+    completion_time: 45000, // milliseconds
+  },
+  timestamp: new Date(),
+  botId: 'gamification_bot',
+});
+
+// Achievement unlocked
+await sdk.writeTelegramEvent({
+  eventType: 'achievement_unlocked',
+  userId: 'user123',
+  eventData: {
+    achievementId: 'first_quest',
+    achievementTier: 'bronze',
+    totalPoints: 500,
+    unlockedAt: new Date(),
+  },
+  timestamp: new Date(),
+});
+
+// Leaderboard interaction
+await sdk.writeTelegramEvent({
+  eventType: 'leaderboard_view',
+  userId: 'user123',
+  chatId: 'group_chat_456',
+  eventData: {
+    leaderboardType: 'weekly',
+    userRank: 15,
+    topUsers: ['user001', 'user002', 'user003'],
+  },
+  timestamp: new Date(),
+});
+```
+
+### 2. Mini-App Interactions
+
+```typescript
+// Mini-app launch
+await sdk.writeTelegramEvent({
+  eventType: 'miniapp_launch',
+  userId: 'user789',
+  eventData: {
+    appName: 'CereWallet',
+    launchSource: 'inline_button',
+    sessionId: 'session_abc123',
+  },
+  timestamp: new Date(),
+  miniAppId: 'cere_wallet_v1',
+});
+
+// In-app purchase
+await sdk.writeTelegramEvent({
+  eventType: 'in_app_purchase',
+  userId: 'user789',
+  eventData: {
+    itemId: 'premium_features',
+    itemType: 'subscription',
+    price: 9.99,
+    currency: 'USD',
+    transactionId: 'txn_xyz789',
+  },
+  timestamp: new Date(),
+  miniAppId: 'cere_wallet_v1',
+});
+
+// Mini-app sharing
+await sdk.writeTelegramEvent({
+  eventType: 'content_shared',
+  userId: 'user789',
+  eventData: {
+    contentType: 'achievement',
+    contentId: 'level_10_reached',
+    shareTarget: 'group_chat',
+    shareMethod: 'inline_button',
+  },
+  timestamp: new Date(),
+  miniAppId: 'cere_wallet_v1',
+});
+```
+
+### 3. Social Features
+
+```typescript
+// User joins group
+await sdk.writeTelegramEvent({
+  eventType: 'user_joined_group',
+  userId: 'user456',
+  chatId: 'group_789',
+  eventData: {
+    invitedBy: 'user123',
+    groupType: 'public',
+    memberCount: 1250,
+  },
+  timestamp: new Date(),
+});
+
+// Message reactions
+await sdk.writeTelegramEvent({
+  eventType: 'message_reaction',
+  userId: 'user456',
+  chatId: 'group_789',
+  messageId: 'msg_12345',
+  eventData: {
+    reactionType: 'like',
+    emoji: '👍',
+    isAddition: true,
+  },
+  timestamp: new Date(),
+});
+
+// Referral tracking
+await sdk.writeTelegramEvent({
+  eventType: 'referral_successful',
+  userId: 'user123', // referrer
+  eventData: {
+    referredUserId: 'user999',
+    referralCode: 'REF123',
+    reward: {
+      type: 'points',
+      amount: 500,
+    },
+  },
+  timestamp: new Date(),
+});
+```
+
+### 4. Message Analytics
+
+```typescript
+// Important announcements
+await sdk.writeTelegramMessage({
+  messageId: 'announce_001',
+  chatId: 'announcement_channel',
+  userId: 'bot_admin',
+  messageText: '🎉 New features available in CereWallet!',
+  messageType: 'text',
+  timestamp: new Date(),
+  metadata: {
+    messageCategory: 'announcement',
+    priority: 'high',
+    expectedReach: 10000,
+  },
+});
+
+// User feedback
+await sdk.writeTelegramMessage({
+  messageId: 'feedback_456',
+  chatId: 'support_chat',
+  userId: 'user789',
+  messageText: 'The new wallet feature is amazing!',
+  messageType: 'text',
+  timestamp: new Date(),
+  metadata: {
+    messageCategory: 'feedback',
+    sentiment: 'positive',
+    topic: 'wallet_features',
+  },
+});
+
+// Media sharing
+await sdk.writeTelegramMessage({
+  messageId: 'media_789',
+  chatId: 'community_group',
+  userId: 'user456',
+  messageType: 'photo',
+  timestamp: new Date(),
+  metadata: {
+    mediaSize: 2048576, // bytes
+    mediaFormat: 'jpeg',
+    hasCaption: true,
+    messageCategory: 'user_content',
+  },
+});
+```
+
+## Advanced Telegram Features
+
+### 1. Inline Keyboard Analytics
+
+```typescript
+// Button click tracking
+await sdk.writeTelegramEvent({
+  eventType: 'inline_button_click',
+  userId: 'user123',
+  chatId: 'private_chat',
+  messageId: 'msg_with_keyboard',
+  eventData: {
+    buttonText: 'Start Quest',
+    buttonData: 'quest_start_daily',
+    keyboardLayout: 'quest_menu',
+    clickPosition: { row: 0, column: 1 },
+  },
+  timestamp: new Date(),
+});
+
+// Callback query handling
+await sdk.writeTelegramEvent({
+  eventType: 'callback_query',
+  userId: 'user123',
+  eventData: {
+    queryId: 'cbq_12345',
+    queryData: 'view_profile',
+    messageId: 'msg_profile_button',
+    responseTime: 250, // milliseconds
+  },
+  timestamp: new Date(),
+});
+```
+
+### 2. Bot Command Analytics
+
+```typescript
+// Command usage tracking
+await sdk.writeTelegramEvent({
+  eventType: 'bot_command_used',
+  userId: 'user456',
+  chatId: 'private_chat',
+  eventData: {
+    command: '/start',
+    parameters: ['ref_user123'],
+    isFirstTime: true,
+    executionTime: 150,
+  },
+  timestamp: new Date(),
+  botId: 'cere_quest_bot',
+});
+
+// Help system usage
+await sdk.writeTelegramEvent({
+  eventType: 'help_requested',
+  userId: 'user789',
+  eventData: {
+    helpTopic: 'wallet_setup',
+    helpMethod: 'command', // or 'button', 'menu'
+    previousAction: 'failed_transaction',
+  },
+  timestamp: new Date(),
+});
+```
+
+### 3. WebApp Integration
+
+```typescript
+// WebApp launch from Telegram
+await sdk.writeTelegramEvent({
+  eventType: 'webapp_opened',
+  userId: 'user123',
+  eventData: {
+    webAppUrl: 'https://wallet.cere.network',
+    launchParams: {
+      theme: 'dark',
+      lang: 'en',
+      platform: 'ios',
+    },
+    referringMessage: 'msg_webapp_button',
+  },
+  timestamp: new Date(),
+});
+
+// Data exchange between WebApp and Telegram
+await sdk.writeTelegramEvent({
+  eventType: 'webapp_data_sent',
+  userId: 'user123',
+  eventData: {
+    dataType: 'wallet_balance',
+    dataSize: 1024,
+    sendMethod: 'telegram_api',
+    success: true,
+  },
+  timestamp: new Date(),
+});
+```
+
+## Routing Patterns for Telegram Data
+
+### 1. High-Volume Message Processing
+
+```typescript
+// For chat rooms with high message volume
+await sdk.writeTelegramMessage(messageData, {
+  writeMode: 'batch', // Use batching for efficiency
+  priority: 'low', // Lower priority for bulk messages
+  encryption: false, // Skip encryption for public messages
+});
+```
+
+### 2. Critical Event Tracking
+
+```typescript
+// For important events that need immediate indexing
+await sdk.writeTelegramEvent(eventData, {
+  writeMode: 'viaIndex', // Write via Activity SDK for immediate indexing
+  priority: 'high', // High priority processing
+  encryption: true, // Encrypt sensitive event data
+});
+```
+
+### 3. Analytics-Only Data
+
+```typescript
+// For data that only needs to be indexed (not stored in DDC)
+await sdk.writeData(analyticsData, {
+  processing: {
+    dataCloudWriteMode: 'skip', // Skip DDC storage
+    indexWriteMode: 'realtime', // Index immediately
+    priority: 'normal',
+  },
+});
+```
+
+## Performance Optimization for Telegram
+
+### 1. Batching Strategies
+
+```typescript
+// Configure SDK for high-throughput Telegram bots
+const sdk = new UnifiedSDK({
+  // ... other config
+  processing: {
+    enableBatching: true,
+    defaultBatchSize: 100, // Larger batches for message processing
+    defaultBatchTimeout: 2000, // 2 second timeout
+    maxRetries: 3,
+    retryDelay: 1000,
+  },
+});
+
+// Batch process multiple events
+const events = [
+  { eventType: 'message_sent', userId: 'user1' /* ... */ },
+  { eventType: 'message_sent', userId: 'user2' /* ... */ },
+  { eventType: 'message_sent', userId: 'user3' /* ... */ },
+];
+
+for (const event of events) {
+  // These will be automatically batched by the SDK
+  sdk.writeTelegramEvent(event, { writeMode: 'batch' });
+}
+```
+
+### 2. Payload Size Optimization
+
+```typescript
+// For large media or file data
+await sdk.writeTelegramMessage({
+  messageId: 'large_video_msg',
+  chatId: 'media_group',
+  userId: 'user123',
+  messageType: 'video',
+  timestamp: new Date(),
+  metadata: {
+    fileReference: 'ddc://bucket123/video456.mp4', // Store reference instead of data
+    fileSize: 50 * 1024 * 1024, // 50MB
+    thumbnailUrl: 'https://cdn.example.com/thumb456.jpg',
+  },
+});
+```
+
+## Error Handling for Telegram Bots
+
+### 1. Graceful Degradation
+
+```typescript
+try {
+  await sdk.writeTelegramEvent(eventData);
+} catch (error) {
+  if (error instanceof UnifiedSDKError) {
+    // Log the error but continue bot operation
+    console.error('Event tracking failed:', error.message);
+
+    // Maybe store in local queue for retry
+    await localQueue.add(eventData);
+
+    // Bot continues to respond to user
+    await bot.sendMessage(chatId, 'Action completed!');
+  }
+}
+```
+
+### 2. Monitoring and Alerting
+
+```typescript
+// Check SDK health periodically
+setInterval(async () => {
+  const status = sdk.getStatus();
+
+  if (!status.initialized) {
+    // Alert monitoring system
+    await alerting.send('Unified SDK not initialized');
+
+    // Attempt to reinitialize
+    try {
+      await sdk.initialize();
+    } catch (error) {
+      await alerting.send('SDK initialization failed', error);
+    }
+  }
+}, 30000); // Check every 30 seconds
+```
+
+## Best Practices for Telegram Integration
+
+### 1. **Data Privacy**
+
+- Always encrypt sensitive user data
+- Use privacy-friendly user identifiers
+- Implement data retention policies
+
+### 2. **Performance**
+
+- Use batching for high-volume bots
+- Implement proper error handling
+- Monitor SDK health and performance
+
+### 3. **User Experience**
+
+- Track user interactions to improve bot flow
+- Monitor response times and optimize
+- Implement graceful fallbacks
+
+### 4. **Analytics**
+
+- Track meaningful events that provide business value
+- Use consistent event naming conventions
+- Implement proper user attribution
+
+This guide provides comprehensive coverage of Telegram-specific use cases and demonstrates how the Unified SDK is optimized for Telegram bot and mini-app development.
