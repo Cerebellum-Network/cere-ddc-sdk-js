@@ -47,11 +47,12 @@ Enhance the DDC SDK by introducing built-in optional encryption capabilities, en
 
 ---
 
-## Existing System ⚙️
+## Encryption ⚙️
 
-![architecture diagram](./../docs/acrhitecture_diagram.png)
+### Symmetric
 
-The SDK provides several modules. The DDC Client module acts as an entry point and offers a concise API for straightforward use cases, like creating a bucket or uploading/downloading a file. Additional modules present more advanced APIs that provide enough flexibility for other SDKs to be built on top of the DDC SDK
+![symmetric_encryption](./symmetric_encryption.png)
+
 
 ---
 
