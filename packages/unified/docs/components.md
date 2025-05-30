@@ -20,14 +20,14 @@ The Unified Data Ingestion SDK is built using a modular architecture with four m
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                 Processing Layer                            │
-│  ┌──────────────────────┐    ┌──────────────────────────────┐│
-│  │  RulesInterpreter    │    │        Dispatcher            ││
-│  │                      │    │                              ││
-│  │ • Metadata           │    │ • Route Planning             ││
-│  │   Validation         │    │ • Action Creation            ││
+│  ┌──────────────────────┐    ┌─────────────────────────────┐│
+│  │  RulesInterpreter    │    │        Dispatcher           ││
+│  │                      │    │                             ││
+│  │ • Metadata           │    │ • Route Planning            ││
+│  │   Validation         │    │ • Action Creation           ││
 │  │ • Rule Extraction    │    │ • Priority Management       ││
 │  │ • Business Logic     │    │ • Execution Mode Selection  ││
-│  └──────────────────────┘    └──────────────────────────────┘│
+│  └──────────────────────┘    └─────────────────────────────┘│
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -37,8 +37,8 @@ The Unified Data Ingestion SDK is built using a modular architecture with four m
 │  │                  Orchestrator                           ││
 │  │                                                         ││
 │  │ • Action Execution    • Resource Management             ││
-│  │ • Error Handling      • Fallback Logic                 ││
-│  │ • Performance Mgmt    • Connection Pooling             ││
+│  │ • Error Handling      • Fallback Logic                  ││
+│  │ • Performance Mgmt    • Connection Pooling              ││
 │  └─────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────┘
                               │

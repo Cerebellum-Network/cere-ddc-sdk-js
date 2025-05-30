@@ -60,7 +60,7 @@ The Unified Data Ingestion SDK follows a **layered architecture** with clear sep
 │  │  • Batched execution                ││
 │  └─────────────────────────────────────┘│
 │  ┌─────────────────────────────────────┐│
-│  │  Error Handling & Fallbacks        ││
+│  │  Error Handling & Fallbacks         ││
 │  │  • Retry logic                      ││
 │  │  • Circuit breakers                 ││
 │  │  • Graceful degradation             ││
