@@ -7,20 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @cere-ddc-sdk/conventional-changelog-changelog-preset
 
-## [2.15.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.14.1...v2.15.0) (2025-06-02)
-
-**Note:** Version bump only for package @cere-ddc-sdk/conventional-changelog-changelog-preset
-
-## [2.16.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.15.0...v2.16.0) (2025-06-02)
-
-**Note:** Version bump only for package @cere-ddc-sdk/conventional-changelog-changelog-preset
-
-**Note:** Version bump only for package @cere-ddc-sdk/conventional-changelog-changelog-preset
-
-## [2.15.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.14.1...v2.15.0) (2025-06-02)
-
-**Note:** Version bump only for package @cere-ddc-sdk/conventional-changelog-changelog-preset
-
 ## [2.7.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.7.0-rc.2...v2.7.0) (2024-05-06)
 
 **Note:** Version bump only for package @cere-ddc-sdk/conventional-changelog-changelog-preset
