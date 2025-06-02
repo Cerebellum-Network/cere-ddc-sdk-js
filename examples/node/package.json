@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/node-examples",
-  "version": "2.15.0",
+  "version": "2.16.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,8 +14,8 @@
     "example:8": "ts-node --esm ./8-sudo-batch-remove-buckets/index.ts"
   },
   "dependencies": {
-    "@cere-ddc-sdk/blockchain": "2.15.0",
-    "@cere-ddc-sdk/ddc-client": "2.15.0",
+    "@cere-ddc-sdk/blockchain": "2.16.0",
+    "@cere-ddc-sdk/ddc-client": "2.16.0",
     "@types/json-bigint": "^1.0.4",
     "json-bigint": "^1.0.0",
     "ts-node": "^10.9.2"
