@@ -99,6 +99,7 @@ export const Playground = () => {
   const [deposit, setDeposit] = useState<string>();
   const [extraDeposit, setExtraDeposit] = useState<number>(0);
   const [client, setClient] = useState<DdcClient>();
+  const [blockchain, setBlockchain] = useState<Blockchain>();
 
   const isCompleted = !!realFileCid && !!randomFileCid;
   const currentClusterId = clusterId || clusters[0]?.clusterId;
@@ -165,9 +166,9 @@ export const Playground = () => {
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
-    } finally {
-      setInProgress(false);
     }
+
+    setInProgress(false);
   }, [bucketId, client, currentClusterId, isNewBucket, step]);
 
   const handleRandomFileUpload = useCallback(async () => {
@@ -189,7 +190,7 @@ export const Playground = () => {
       setRandomFileCid(uri.cid);
       setStep(step + 1);
     } catch (error) {
-      setErrorStep(step);
+      setErrorStep(5);
     }
 
     setInProgress(false);
@@ -228,7 +229,7 @@ export const Playground = () => {
       setRealFileCid(uri.cid);
       setStep(step + 1);
     } catch (error) {
-      setErrorStep(step);
+      setErrorStep(6);
     }
 
     setInProgress(false);
@@ -245,16 +246,12 @@ export const Playground = () => {
       setInProgress(true);
       const blockchain = await Blockchain.connect({ wsEndpoint: preset.blockchain });
       const client = await DdcClient.create(signer!, { ...preset, blockchain, logLevel: 'debug' });
-      const [clusters, balance, deposit] = await Promise.all([
-        blockchain.ddcClusters.listClusters(),
-        client.getBalance(),
-        client.getDeposit(),
-      ]);
+      const [clusters, balance] = await Promise.all([blockchain.ddcClusters.listClusters(), client.getBalance()]);
 
+      setBlockchain(blockchain);
       setClient(client);
       setClusters(clusters);
       setBalance(blockchain.formatBalance(balance, false));
-      setDeposit(blockchain.formatBalance(deposit, false));
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
@@ -263,17 +260,36 @@ export const Playground = () => {
     setInProgress(false);
   }, [selectedBc, step, bcCustomUrl, signer]);
 
-  const handleDeposit = useCallback(async () => {
+  const handleClusterSelect = useCallback(async () => {
+    if (!currentClusterId) return;
+
     try {
       setInProgress(true);
-      await client!.depositBalance(BigInt(extraDeposit) * CERE);
+      const deposit = await client!.getDeposit(currentClusterId as ClusterId);
+      setDeposit(blockchain!.formatBalance(deposit, false));
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
     }
 
     setInProgress(false);
-  }, [client, extraDeposit, step]);
+  }, [client, blockchain, currentClusterId, step]);
+
+  const handleDeposit = useCallback(async () => {
+    if (!currentClusterId) return;
+
+    try {
+      setInProgress(true);
+      await client!.depositBalance(currentClusterId as ClusterId, BigInt(extraDeposit) * CERE);
+      const updatedDeposit = await client!.getDeposit(currentClusterId as ClusterId);
+      setDeposit(blockchain!.formatBalance(updatedDeposit, false));
+      setStep(step + 1);
+    } catch (error) {
+      setErrorStep(step);
+    }
+
+    setInProgress(false);
+  }, [client, blockchain, currentClusterId, extraDeposit, step]);
 
   return (
     <Container maxWidth="md" sx={{ paddingY: 2 }}>
@@ -391,22 +407,73 @@ export const Playground = () => {
             </StepContent>
           </Step>
 
-          <Step completed={!!currentClusterId}>
-            <StepLabel error={errorStep === 2}>Make deposit</StepLabel>
+          <Step completed={!!currentClusterId && step > 2}>
+            <StepLabel error={errorStep === 2}>
+              Select cluster
+              {currentClusterId && step > 2 && (
+                <Typography color="GrayText" variant="caption">
+                  {' - '}
+                  {currentClusterId}
+                </Typography>
+              )}
+            </StepLabel>
+            <StepContent>
+              {clusters.length === 0 && (
+                <Alert severity="warning" sx={{ marginBottom: 1 }}>
+                  No clusters found on the selected blockchain.
+                </Alert>
+              )}
+
+              <Stack width={450} paddingTop={1} spacing={2} alignItems="start">
+                {!!clusters.length && (
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Cluster</InputLabel>
+                    <Select
+                      label="Cluster"
+                      value={currentClusterId}
+                      onChange={(event) => setClusterId(event.target.value)}
+                    >
+                      {clusters.map(({ clusterId }) => (
+                        <MenuItem key={clusterId} value={clusterId}>
+                          {clusterId}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+
+                <Stack direction="row" spacing={1}>
+                  <LoadingButton
+                    loading={inProgress}
+                    disabled={!currentClusterId}
+                    variant="contained"
+                    onClick={handleClusterSelect}
+                  >
+                    Continue
+                  </LoadingButton>
+                </Stack>
+              </Stack>
+            </StepContent>
+          </Step>
+
+          <Step completed={!!deposit && Number(deposit) > 0 && step > 3}>
+            <StepLabel error={errorStep === 3}>Make deposit</StepLabel>
             <StepContent>
               <Stack spacing={2} alignItems="start">
                 <Stack spacing={0}>
                   <Typography variant="body2">Balance: {balance}</Typography>
-                  <Typography variant="body2">Deposit: {deposit}</Typography>
+                  <Typography variant="body2">Deposit: {deposit || '0'}</Typography>
+                  <Typography variant="body2">Cluster: {currentClusterId}</Typography>
                 </Stack>
 
                 {Number(deposit) > 0 ? (
                   <Alert severity="info">
-                    You already have a deposit, so you can either add an additional deposit or skip this step
+                    You already have a deposit in this cluster, so you can either add an additional deposit or skip this
+                    step
                   </Alert>
                 ) : (
                   <Alert severity="warning">
-                    You need to have a positive deposit in order to create buckets in future steps.
+                    You need to have a positive deposit in this cluster in order to create buckets in future steps.
                   </Alert>
                 )}
 
@@ -438,10 +505,10 @@ export const Playground = () => {
             </StepContent>
           </Step>
 
-          <Step completed={!!bucketId && step > 3}>
-            <StepLabel error={errorStep === 3}>
+          <Step completed={!!bucketId && step > 4}>
+            <StepLabel error={errorStep === 4}>
               Select bucket
-              {!!bucketId && step > 3 && (
+              {!!bucketId && step > 4 && (
                 <Typography color="GrayText" variant="caption">
                   {' - '}
                   {bucketId.toString()}
@@ -449,50 +516,27 @@ export const Playground = () => {
               )}
             </StepLabel>
             <StepContent>
-              {clusters.length === 0 && (
-                <Alert severity="warning" sx={{ marginBottom: 1 }}>
-                  No clusters found on the selected blockchain. Falling back to test bucket with ID = 1.
-                </Alert>
-              )}
-
               <Stack width={450} paddingTop={1} spacing={2} alignItems="start">
-                {!!clusters.length && (
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Cluster</InputLabel>
-                    <Select
-                      label="Cluster"
-                      value={currentClusterId}
-                      onChange={(event) => setClusterId(event.target.value)}
-                    >
-                      {clusters.map(({ clusterId }) => (
-                        <MenuItem key={clusterId} value={clusterId}>
-                          {clusterId}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                )}
+                <Typography variant="body2">Cluster: {currentClusterId}</Typography>
 
-                {currentClusterId && (
-                  <Stack spacing={1} direction="row" alignSelf="stretch">
-                    <TextField
-                      label="Bucket ID"
-                      size="small"
-                      type="number"
-                      disabled={isNewBucket}
-                      value={isNewBucket ? '' : bucketId?.toString() || ''}
-                      onChange={(event) => setBucketId(event.target.value ? BigInt(event.target.value) : undefined)}
-                    />
+                <Stack spacing={1} direction="row" alignSelf="stretch">
+                  <TextField
+                    label="Bucket ID"
+                    size="small"
+                    type="number"
+                    disabled={isNewBucket}
+                    value={isNewBucket ? '' : bucketId?.toString() || ''}
+                    onChange={(event) => setBucketId(event.target.value ? BigInt(event.target.value) : undefined)}
+                  />
 
-                    <FormControlLabel
-                      label="Create new"
-                      sx={{ whiteSpace: 'nowrap' }}
-                      control={
-                        <Checkbox checked={isNewBucket} onChange={(event) => setIsNewBucket(event.target.checked)} />
-                      }
-                    />
-                  </Stack>
-                )}
+                  <FormControlLabel
+                    label="Create new"
+                    sx={{ whiteSpace: 'nowrap' }}
+                    control={
+                      <Checkbox checked={isNewBucket} onChange={(event) => setIsNewBucket(event.target.checked)} />
+                    }
+                  />
+                </Stack>
 
                 <Stack direction="row" spacing={1}>
                   <LoadingButton
@@ -509,7 +553,7 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!randomFileCid}>
-            <StepLabel error={errorStep === 4}>
+            <StepLabel error={errorStep === 5}>
               Random file
               {randomFileCid && (
                 <Typography color="GrayText" variant="caption">
@@ -549,7 +593,7 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!realFileCid}>
-            <StepLabel error={errorStep === 5}>
+            <StepLabel error={errorStep === 6}>
               Real file
               {realFileCid && (
                 <Typography color="GrayText" variant="caption">
