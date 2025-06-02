@@ -74,16 +74,17 @@ ___
 
 ### depositBalance
 
-▸ **depositBalance**(`amount`, `options?`): `Promise`\<`SendResult`\>
+▸ **depositBalance**(`clusterId`, `amount`, `options?`): `Promise`\<`SendResult`\>
 
-Deposits a specified amount of tokens to the account. The account must have enough tokens to cover the deposit.
+Deposits a specified amount of tokens to the account for a specific cluster. The account must have enough tokens to cover the deposit.
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
+| `clusterId` | \`0x$\{string}\` | The ID of the cluster to deposit tokens for. |
 | `amount` | `bigint` | The amount of tokens to deposit. |
-| `options` | `DepositBalanceOptions` | - |
+| `options` | `DepositBalanceOptions` | Additional options for the deposit. |
 
 #### Returns
 
@@ -94,8 +95,43 @@ A promise that resolves to the transaction hash of the deposit.
 **`Example`**
 
 ```typescript
+const clusterId: ClusterId = '0x...';
 const amount = 100n;
-const txHash = await ddcClient.depositBalance(amount);
+const txHash = await ddcClient.depositBalance(clusterId, amount);
+
+console.log(txHash);
+```
+
+___
+
+### depositBalanceFor
+
+▸ **depositBalanceFor**(`targetAddress`, `clusterId`, `amount`): `Promise`\<`SendResult`\>
+
+Deposits a specified amount of tokens to the target address for a specific cluster.
+This allows depositing funds on behalf of another address.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `targetAddress` | `string` | The target address to deposit funds for. |
+| `clusterId` | \`0x$\{string}\` | The ID of the cluster to deposit tokens for. |
+| `amount` | `bigint` | The amount of tokens to deposit. |
+
+#### Returns
+
+`Promise`\<`SendResult`\>
+
+A promise that resolves to the transaction hash of the deposit.
+
+**`Example`**
+
+```typescript
+const targetAddress = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
+const clusterId: ClusterId = '0x...';
+const amount = 100n;
+const txHash = await ddcClient.depositBalanceFor(targetAddress, clusterId, amount);
 
 console.log(txHash);
 ```
@@ -177,9 +213,16 @@ ___
 
 ### getDeposit
 
-▸ **getDeposit**(): `Promise`\<`bigint`\>
+▸ **getDeposit**(`clusterId`, `accountId?`): `Promise`\<`bigint`\>
 
-Retrieves the current active deposit of the account.
+Retrieves the current active deposit of the account for a specific cluster.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `clusterId` | \`0x$\{string}\` | The ID of the cluster to get deposit for. |
+| `accountId?` | `string` | Optional account ID. If not provided, uses the signer's address. |
 
 #### Returns
 
@@ -190,7 +233,8 @@ A promise that resolves to the current active deposit of the account.
 **`Example`**
 
 ```typescript
-const deposit = await ddcClient.getDeposit();
+const clusterId: ClusterId = '0x...';
+const deposit = await ddcClient.getDeposit(clusterId);
 
 console.log(deposit);
 ```
@@ -347,11 +391,71 @@ Will throw an error if the `entity` argument is neither a File nor a DagNode.
 
 ```typescript
 const bucketId: BucketId = 1n;
-const fileContent = ...;
+const fileContent = '...';
 const file: File = new File(fileContent, { size: 1000 });
 const fileUri = await ddcClient.store(bucketId, file);
 
 console.log(fileUri);
+```
+
+___
+
+### unlockDeposit
+
+▸ **unlockDeposit**(`clusterId`, `amount`): `Promise`\<`SendResult`\>
+
+Unlocks deposit funds from the account for the specified cluster.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
+| `amount` | `bigint` | The amount to unlock. |
+
+#### Returns
+
+`Promise`\<`SendResult`\>
+
+A promise that resolves to the transaction hash.
+
+**`Example`**
+
+```typescript
+const clusterId: ClusterId = '0x...';
+const amount = 100n;
+const txHash = await ddcClient.unlockDeposit(clusterId, amount);
+
+console.log(txHash);
+```
+
+___
+
+### withdrawUnlockedDeposit
+
+▸ **withdrawUnlockedDeposit**(`clusterId`): `Promise`\<`SendResult`\>
+
+Withdraws unlocked funds from the account for the specified cluster.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
+
+#### Returns
+
+`Promise`\<`SendResult`\>
+
+A promise that resolves to the transaction hash.
+
+**`Example`**
+
+```typescript
+const clusterId: ClusterId = '0x...';
+const txHash = await ddcClient.withdrawUnlockedDeposit(clusterId);
+
+console.log(txHash);
 ```
 
 ___

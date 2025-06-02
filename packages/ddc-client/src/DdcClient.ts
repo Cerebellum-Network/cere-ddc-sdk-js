@@ -137,8 +137,48 @@ export class DdcClient {
   }
 
   /**
-   * Deposits a specified amount of tokens to the account. The account must have enough tokens to cover the deposit.
+   * Deposits a specified amount of tokens to the account for a specific cluster. The account must have enough tokens to cover the deposit.
    *
+   * @param clusterId - The ID of the cluster to deposit tokens for.
+   * @param amount - The amount of tokens to deposit.
+   * @param options - Additional options for the deposit.
+   *
+   * @returns A promise that resolves to the transaction hash of the deposit.
+   *
+   * @example
+   *
+   * ```typescript
+   * const clusterId: ClusterId = '0x...';
+   * const amount = 100n;
+   * const txHash = await ddcClient.depositBalance(clusterId, amount);
+   *
+   * console.log(txHash);
+   * ```
+   * */
+  async depositBalance(clusterId: ClusterId, amount: bigint, options: DepositBalanceOptions = {}) {
+    let tx: Sendable;
+    const currentDeposit =
+      options.allowExtra === false
+        ? null
+        : await this.blockchain.ddcCustomers.getStackingInfo(clusterId, this.signer.address);
+
+    if (currentDeposit === null) {
+      this.logger.info('Depositing balance %s to %s for cluster %s', amount, this.signer.address, clusterId);
+      tx = this.blockchain.ddcCustomers.deposit(clusterId, amount);
+    } else {
+      this.logger.info('Depositing extra balance %s to %s for cluster %s', amount, this.signer.address, clusterId);
+      tx = this.blockchain.ddcCustomers.depositExtra(clusterId, amount);
+    }
+
+    return this.blockchain.send(tx, { account: this.signer });
+  }
+
+  /**
+   * Deposits a specified amount of tokens to the target address for a specific cluster.
+   * This allows depositing funds on behalf of another address.
+   *
+   * @param targetAddress - The target address to deposit funds for.
+   * @param clusterId - The ID of the cluster to deposit tokens for.
    * @param amount - The amount of tokens to deposit.
    *
    * @returns A promise that resolves to the transaction hash of the deposit.
@@ -146,48 +186,91 @@ export class DdcClient {
    * @example
    *
    * ```typescript
+   * const targetAddress = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
+   * const clusterId: ClusterId = '0x...';
    * const amount = 100n;
-   * const txHash = await ddcClient.depositBalance(amount);
+   * const txHash = await ddcClient.depositBalanceFor(targetAddress, clusterId, amount);
    *
    * console.log(txHash);
    * ```
    * */
-  async depositBalance(amount: bigint, options: DepositBalanceOptions = {}) {
-    let tx: Sendable;
-    const currentDeposit =
-      options.allowExtra === false ? null : await this.blockchain.ddcCustomers.getStackingInfo(this.signer.address);
-
-    if (currentDeposit === null) {
-      this.logger.info('Depositing balance %s to %s', amount, this.signer.address);
-      tx = this.blockchain.ddcCustomers.deposit(amount);
-    } else {
-      this.logger.info('Depositing extra balance %s to %s', amount, this.signer.address);
-      tx = this.blockchain.ddcCustomers.depositExtra(amount);
-    }
-
+  async depositBalanceFor(targetAddress: AccountId, clusterId: ClusterId, amount: bigint) {
+    this.logger.info('Depositing balance %s for %s in cluster %s', amount, targetAddress, clusterId);
+    const tx = this.blockchain.ddcCustomers.depositFor(targetAddress, clusterId, amount);
     return this.blockchain.send(tx, { account: this.signer });
   }
 
   /**
-   * Retrieves the current active deposit of the account.
+   * Retrieves the current active deposit of the account for a specific cluster.
+   *
+   * @param clusterId - The ID of the cluster to get deposit for.
+   * @param accountId - Optional account ID. If not provided, uses the signer's address.
    *
    * @returns A promise that resolves to the current active deposit of the account.
    *
    * @example
    *
    * ```typescript
-   * const deposit = await ddcClient.getDeposit();
+   * const clusterId: ClusterId = '0x...';
+   * const deposit = await ddcClient.getDeposit(clusterId);
    *
    * console.log(deposit);
    * ```
    * */
-  async getDeposit() {
-    this.logger.info('Getting the account deposit %s', this.signer.address);
-    const info = await this.blockchain.ddcCustomers.getStackingInfo(this.signer.address);
+  async getDeposit(clusterId: ClusterId, accountId?: AccountId) {
+    const targetAccountId = accountId || this.signer.address;
+    this.logger.info('Getting the account deposit %s for cluster %s', targetAccountId, clusterId);
+    const info = await this.blockchain.ddcCustomers.getStackingInfo(clusterId, targetAccountId);
     const deposit = BigInt(info?.active || 0n);
-    this.logger.info('The account (%s) deposit is %s', this.signer.address, deposit);
+    this.logger.info('The account (%s) deposit for cluster %s is %s', targetAccountId, clusterId, deposit);
 
     return deposit;
+  }
+
+  /**
+   * Unlocks deposit funds from the account for the specified cluster.
+   *
+   * @param clusterId - The ID of the cluster.
+   * @param amount - The amount to unlock.
+   *
+   * @returns A promise that resolves to the transaction hash.
+   *
+   * @example
+   *
+   * ```typescript
+   * const clusterId: ClusterId = '0x...';
+   * const amount = 100n;
+   * const txHash = await ddcClient.unlockDeposit(clusterId, amount);
+   *
+   * console.log(txHash);
+   * ```
+   * */
+  async unlockDeposit(clusterId: ClusterId, amount: bigint) {
+    this.logger.info('Unlocking deposit %s for cluster %s', amount, clusterId);
+    const tx = this.blockchain.ddcCustomers.unlockDeposit(clusterId, amount);
+    return this.blockchain.send(tx, { account: this.signer });
+  }
+
+  /**
+   * Withdraws unlocked funds from the account for the specified cluster.
+   *
+   * @param clusterId - The ID of the cluster.
+   *
+   * @returns A promise that resolves to the transaction hash.
+   *
+   * @example
+   *
+   * ```typescript
+   * const clusterId: ClusterId = '0x...';
+   * const txHash = await ddcClient.withdrawUnlockedDeposit(clusterId);
+   *
+   * console.log(txHash);
+   * ```
+   * */
+  async withdrawUnlockedDeposit(clusterId: ClusterId) {
+    this.logger.info('Withdrawing unlocked deposit for cluster %s', clusterId);
+    const tx = this.blockchain.ddcCustomers.withdrawUnlockedDeposit(clusterId);
+    return this.blockchain.send(tx, { account: this.signer });
   }
 
   /**

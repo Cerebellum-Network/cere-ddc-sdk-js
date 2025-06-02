@@ -4,6 +4,7 @@ import fs from 'fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { mnemonicGenerate } from '@polkadot/util-crypto';
+import type { ClusterId } from '@cere-ddc-sdk/blockchain';
 
 import { upload } from './upload';
 import { createBucket } from './createBucket';
@@ -160,7 +161,7 @@ yargs(hideBin(process.argv))
   )
   .command(
     'deposit <amount>',
-    'Deposit CERE tokens',
+    'Deposit CERE tokens to a cluster',
     (yargs) =>
       yargs
         .positional('amount', {
@@ -168,16 +169,25 @@ yargs(hideBin(process.argv))
           demandOption: true,
           describe: 'Amount of CERE tokens to deposit',
         })
+        .option('clusterId', {
+          alias: 'c',
+          type: 'string',
+          demandOption: true,
+          describe: 'Cluster ID to deposit tokens for',
+        })
         .option('allowExtra', {
           type: 'boolean',
           default: true,
           describe: 'Whether to allow extra amount to be deposited',
         }),
     async (argv) => {
-      const total = await withClient(argv, (client) => deposit(client, argv.amount, argv));
+      const total = await withClient(argv, (client) =>
+        deposit(client, argv.amount, { ...argv, clusterId: argv.clusterId as ClusterId }),
+      );
 
       console.group('Deposit completed');
       console.log('Network:', argv.network);
+      console.log('Cluster ID:', argv.clusterId);
       console.log('Amount:', argv.amount);
       console.log('Total deposit:', total);
       console.groupEnd();
@@ -253,7 +263,6 @@ yargs(hideBin(process.argv))
 
       if (!argv.random) {
         console.log('Balance:', acc.balance);
-        console.log('Deposit:', acc.deposit);
       }
 
       console.groupEnd();
