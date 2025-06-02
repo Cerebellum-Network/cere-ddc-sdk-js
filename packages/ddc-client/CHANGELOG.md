@@ -7,6 +7,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @cere-ddc-sdk/ddc-client
 
+## [2.15.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.14.1...v2.15.0) (2025-06-02)
+
+**Note:** Version bump only for package @cere-ddc-sdk/ddc-client
+
 ## [2.16.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.15.0...v2.16.0) (2025-06-02)
 
 **Note:** Version bump only for package @cere-ddc-sdk/ddc-client
