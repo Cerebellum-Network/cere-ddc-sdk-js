@@ -45,6 +45,7 @@ describe('Errors', () => {
 
     it('should throw an RPC bucket error', async () => {
       const error = await client.store(99n, smallFile).catch((error) => error);
+      console.dir(error, { depth: null });
 
       expect(error).toBeInstanceOf(NodeError);
       expect(error).toEqual(
