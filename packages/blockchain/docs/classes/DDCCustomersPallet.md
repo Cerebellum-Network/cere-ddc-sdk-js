@@ -45,14 +45,15 @@ ___
 
 ### deposit
 
-▸ **deposit**(`value`): `Sendable`
+▸ **deposit**(`clusterId`, `value`): `Sendable`
 
-Deposits funds to the account.
+Deposits funds to the account for the specified cluster.
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
+| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
 | `value` | `bigint` | The amount to deposit. |
 
 #### Returns
@@ -64,7 +65,7 @@ An extrinsic to deposit funds.
 **`Example`**
 
 ```typescript
-const tx = blockchain.ddcCustomers.deposit(100n);
+const tx = blockchain.ddcCustomers.deposit('0x...', 100n);
 
 await blockchain.send(tx, { account });
 ```
@@ -73,14 +74,15 @@ ___
 
 ### depositExtra
 
-▸ **depositExtra**(`maxAdditional`): `Sendable`
+▸ **depositExtra**(`clusterId`, `maxAdditional`): `Sendable`
 
-Deposits additional funds to the account.
+Deposits additional funds to the account for the specified cluster.
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
+| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
 | `maxAdditional` | `bigint` | The maximum amount to deposit. |
 
 #### Returns
@@ -92,7 +94,38 @@ An extrinsic to deposit additional funds.
 **`Example`**
 
 ```typescript
-const tx = blockchain.ddcCustomers.depositExtra(100n);
+const tx = blockchain.ddcCustomers.depositExtra('0x...', 100n);
+
+await blockchain.send(tx, { account });
+```
+
+___
+
+### depositFor
+
+▸ **depositFor**(`targetAddress`, `clusterId`, `amount`): `Sendable`
+
+Deposits funds to the target address for the specified cluster.
+This allows a third party to deposit funds on behalf of another address.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `targetAddress` | `string` | The target address to deposit funds for. |
+| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
+| `amount` | `bigint` | The amount to deposit. |
+
+#### Returns
+
+`Sendable`
+
+An extrinsic to deposit funds for the target address.
+
+**`Example`**
+
+```typescript
+const tx = blockchain.ddcCustomers.depositFor('5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu', '0x...', 100n);
 
 await blockchain.send(tx, { account });
 ```
@@ -207,9 +240,40 @@ ___
 
 ### getStackingInfo
 
-▸ **getStackingInfo**(`accountId`): `Promise`\<`undefined` \| `StakingInfo`\>
+▸ **getStackingInfo**(`clusterId`, `accountId`): `Promise`\<`undefined` \| `StakingInfo`\>
 
-Returns the staking info for the given account.
+Returns the staking info for the given account in the specified cluster.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
+| `accountId` | `string` | The ID of the account. |
+
+#### Returns
+
+`Promise`\<`undefined` \| `StakingInfo`\>
+
+A promise that resolves to the staking info.
+
+**`Example`**
+
+```typescript
+const stakingInfo = await blockchain.ddcCustomers.getStackingInfo('0x...', '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu');
+
+console.log(stakingInfo);
+```
+
+___
+
+### getStackingInfoLegacy
+
+▸ **getStackingInfoLegacy**(`accountId`): `Promise`\<`undefined` \| `StakingInfo`\>
+
+Returns the staking info for the given account (legacy method - deprecated).
+This method is deprecated because the storage has migrated to cluster-based ledger.
+Use getStackingInfo(clusterId, accountId) instead.
 
 #### Parameters
 
@@ -223,13 +287,9 @@ Returns the staking info for the given account.
 
 A promise that resolves to the staking info.
 
-**`Example`**
+**`Deprecated`**
 
-```typescript
-const stakingInfo = await blockchain.ddcCustomers.getStackingInfo('5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu');
-
-console.log(stakingInfo);
-```
+Use getStackingInfo(clusterId, accountId) instead.
 
 ___
 
@@ -314,26 +374,27 @@ ___
 
 ### unlockDeposit
 
-▸ **unlockDeposit**(`value`): `Sendable`
+▸ **unlockDeposit**(`clusterId`, `value`): `Sendable`
 
-Withdraws funds from the account.
+Unlocks deposit funds from the account for the specified cluster.
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `value` | `bigint` | The amount to withdraw. |
+| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
+| `value` | `bigint` | The amount to unlock. |
 
 #### Returns
 
 `Sendable`
 
-An extrinsic to withdraw funds.
+An extrinsic to unlock deposit funds.
 
 **`Example`**
 
 ```typescript
-const tx = blockchain.ddcCustomers.withdraw(100n);
+const tx = blockchain.ddcCustomers.unlockDeposit('0x...', 100n);
 
 await blockchain.send(tx, { account });
 ```
@@ -342,9 +403,15 @@ ___
 
 ### withdrawUnlockedDeposit
 
-▸ **withdrawUnlockedDeposit**(): `Sendable`
+▸ **withdrawUnlockedDeposit**(`clusterId`): `Sendable`
 
-Withdraws unlocked funds from the account.
+Withdraws unlocked funds from the account for the specified cluster.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
 
 #### Returns
 
@@ -355,7 +422,7 @@ An extrinsic to withdraw unlocked funds.
 **`Example`**
 
 ```typescript
-const tx = blockchain.ddcCustomers.withdrawUnlockedDeposit();
+const tx = blockchain.ddcCustomers.withdrawUnlockedDeposit('0x...');
 
 await blockchain.send(tx, { account });
 ```

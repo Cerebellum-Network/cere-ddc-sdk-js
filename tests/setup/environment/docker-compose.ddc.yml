@@ -4,7 +4,7 @@ services:
   ddc-storage-node-1:
     platform: linux/amd64
     container_name: ddc-storage-node-1
-    image: 'cerebellumnetwork/ddc-storage-node:devnet'
+    image: cerebellumnetwork/ddc-storage-node@sha256:f68d44152d11552c5986f3676fae416ee099f6cc4dac9c44171d42754ab9d894
     environment:
       - 'NODE_ID=1'
       - 'MODE=storage'
@@ -32,7 +32,7 @@ services:
   ddc-storage-node-2:
     platform: linux/amd64
     container_name: ddc-storage-node-2
-    image: 'cerebellumnetwork/ddc-storage-node:devnet'
+    image: cerebellumnetwork/ddc-storage-node@sha256:f68d44152d11552c5986f3676fae416ee099f6cc4dac9c44171d42754ab9d894
     environment:
       - 'NODE_ID=2'
       - 'MODE=storage'
@@ -60,7 +60,7 @@ services:
   ddc-storage-node-3:
     platform: linux/amd64
     container_name: ddc-storage-node-3
-    image: 'cerebellumnetwork/ddc-storage-node:devnet'
+    image: cerebellumnetwork/ddc-storage-node@sha256:f68d44152d11552c5986f3676fae416ee099f6cc4dac9c44171d42754ab9d894
     environment:
       - 'NODE_ID=3'
       - 'MODE=full'
@@ -88,7 +88,7 @@ services:
   ddc-storage-node-4:
     platform: linux/amd64
     container_name: ddc-storage-node-4
-    image: 'cerebellumnetwork/ddc-storage-node:devnet'
+    image: cerebellumnetwork/ddc-storage-node@sha256:f68d44152d11552c5986f3676fae416ee099f6cc4dac9c44171d42754ab9d894
     environment:
       - 'NODE_ID=4'
       - 'MODE=full'
@@ -116,7 +116,7 @@ services:
   ddc-storage-node-5:
     platform: linux/amd64
     container_name: ddc-storage-node-5
-    image: 'cerebellumnetwork/ddc-storage-node:devnet'
+    image: cerebellumnetwork/ddc-storage-node@sha256:f68d44152d11552c5986f3676fae416ee099f6cc4dac9c44171d42754ab9d894
     environment:
       - 'NODE_ID=5'
       - 'MODE=cache'

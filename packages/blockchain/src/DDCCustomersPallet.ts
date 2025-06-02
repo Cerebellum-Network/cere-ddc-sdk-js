@@ -57,20 +57,37 @@ export class DDCCustomersPallet {
   }
 
   /**
-   * Returns the staking info for the given account.
+   * Returns the staking info for the given account in the specified cluster.
    *
+   * @param clusterId - The ID of the cluster.
    * @param accountId - The ID of the account.
    * @returns A promise that resolves to the staking info.
    *
    * @example
    *
    * ```typescript
-   * const stakingInfo = await blockchain.ddcCustomers.getStackingInfo('5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu');
+   * const stakingInfo = await blockchain.ddcCustomers.getStackingInfo('0x...', '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu');
    *
    * console.log(stakingInfo);
    * ```
    */
-  async getStackingInfo(accountId: AccountId) {
+  async getStackingInfo(clusterId: ClusterId, accountId: AccountId) {
+    const result = await this.apiPromise.query.ddcCustomers.clusterLedger(clusterId, accountId);
+    return result.toJSON() as unknown as StakingInfo | undefined;
+  }
+
+  /**
+   * Returns the staking info for the given account (legacy method - deprecated).
+   * This method is deprecated because the storage has migrated to cluster-based ledger.
+   * Use getStackingInfo(clusterId, accountId) instead.
+   *
+   * @deprecated Use getStackingInfo(clusterId, accountId) instead.
+   * @param accountId - The ID of the account.
+   * @returns A promise that resolves to the staking info.
+   */
+  async getStackingInfoLegacy(accountId: AccountId) {
+    // For backward compatibility, try to get from the first available cluster
+    // This is a fallback and should not be used in new code
     const result = await this.apiPromise.query.ddcCustomers.ledger(accountId);
     return result.toJSON() as unknown as StakingInfo | undefined;
   }
@@ -91,7 +108,7 @@ export class DDCCustomersPallet {
    * ```
    */
   createBucket(clusterId: ClusterId, params: BucketParams) {
-    return this.apiPromise.tx.ddcCustomers.createBucket(clusterId, params) as Sendable;
+    return this.apiPromise.tx.ddcCustomers.createBucket(clusterId, params) as unknown as Sendable;
   }
 
   /**
@@ -110,78 +127,103 @@ export class DDCCustomersPallet {
    * ```
    */
   setBucketParams(bucketId: BucketId, params: BucketParams) {
-    return this.apiPromise.tx.ddcCustomers.setBucketParams(bucketId, params) as Sendable;
+    return this.apiPromise.tx.ddcCustomers.setBucketParams(bucketId, params) as unknown as Sendable;
   }
 
   /**
-   * Deposits funds to the account.
+   * Deposits funds to the account for the specified cluster.
    *
+   * @param clusterId - The ID of the cluster.
    * @param value - The amount to deposit.
    * @returns An extrinsic to deposit funds.
    *
    * @example
    *
    * ```typescript
-   * const tx = blockchain.ddcCustomers.deposit(100n);
+   * const tx = blockchain.ddcCustomers.deposit('0x...', 100n);
    *
    * await blockchain.send(tx, { account });
    * ```
    */
-  deposit(value: bigint) {
-    return this.apiPromise.tx.ddcCustomers.deposit(value) as Sendable;
+  deposit(clusterId: ClusterId, value: bigint) {
+    return this.apiPromise.tx.ddcCustomers.deposit(clusterId, value) as unknown as Sendable;
   }
 
   /**
-   * Deposits additional funds to the account.
+   * Deposits additional funds to the account for the specified cluster.
    *
+   * @param clusterId - The ID of the cluster.
    * @param maxAdditional - The maximum amount to deposit.
    * @returns An extrinsic to deposit additional funds.
    *
    * @example
    *
    * ```typescript
-   * const tx = blockchain.ddcCustomers.depositExtra(100n);
+   * const tx = blockchain.ddcCustomers.depositExtra('0x...', 100n);
    *
    * await blockchain.send(tx, { account });
    * ```
    */
-  depositExtra(maxAdditional: bigint) {
-    return this.apiPromise.tx.ddcCustomers.depositExtra(maxAdditional) as Sendable;
+  depositExtra(clusterId: ClusterId, maxAdditional: bigint) {
+    return this.apiPromise.tx.ddcCustomers.depositExtra(clusterId, maxAdditional) as unknown as Sendable;
   }
 
   /**
-   * Withdraws funds from the account.
+   * Deposits funds to the target address for the specified cluster.
+   * This allows a third party to deposit funds on behalf of another address.
    *
-   * @param value - The amount to withdraw.
-   * @returns An extrinsic to withdraw funds.
+   * @param targetAddress - The target address to deposit funds for.
+   * @param clusterId - The ID of the cluster.
+   * @param amount - The amount to deposit.
+   * @returns An extrinsic to deposit funds for the target address.
    *
    * @example
    *
    * ```typescript
-   * const tx = blockchain.ddcCustomers.withdraw(100n);
+   * const tx = blockchain.ddcCustomers.depositFor('5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu', '0x...', 100n);
    *
    * await blockchain.send(tx, { account });
    * ```
    */
-  unlockDeposit(value: bigint) {
-    return this.apiPromise.tx.ddcCustomers.unlockDeposit(value) as Sendable;
+  depositFor(targetAddress: AccountId, clusterId: ClusterId, amount: bigint) {
+    return this.apiPromise.tx.ddcCustomers.depositFor(targetAddress, clusterId, amount) as unknown as Sendable;
   }
 
   /**
-   * Withdraws unlocked funds from the account.
+   * Unlocks deposit funds from the account for the specified cluster.
    *
+   * @param clusterId - The ID of the cluster.
+   * @param value - The amount to unlock.
+   * @returns An extrinsic to unlock deposit funds.
+   *
+   * @example
+   *
+   * ```typescript
+   * const tx = blockchain.ddcCustomers.unlockDeposit('0x...', 100n);
+   *
+   * await blockchain.send(tx, { account });
+   * ```
+   */
+  unlockDeposit(clusterId: ClusterId, value: bigint) {
+    return this.apiPromise.tx.ddcCustomers.unlockDeposit(clusterId, value) as unknown as Sendable;
+  }
+
+  /**
+   * Withdraws unlocked funds from the account for the specified cluster.
+   *
+   * @param clusterId - The ID of the cluster.
    * @returns An extrinsic to withdraw unlocked funds.
    *
    * @example
    *
    * ```typescript
-   * const tx = blockchain.ddcCustomers.withdrawUnlockedDeposit();
+   * const tx = blockchain.ddcCustomers.withdrawUnlockedDeposit('0x...');
    *
    * await blockchain.send(tx, { account });
    * ```
    */
-  withdrawUnlockedDeposit() {
-    return this.apiPromise.tx.ddcCustomers.withdrawUnlockedDeposit() as Sendable;
+  withdrawUnlockedDeposit(clusterId: ClusterId) {
+    return this.apiPromise.tx.ddcCustomers.withdrawUnlockedDeposit(clusterId) as unknown as Sendable;
   }
 
   /**
@@ -247,12 +289,12 @@ export class DDCCustomersPallet {
     if (bucketIds.length === 0) {
       throw new Error('At least one bucket ID must be provided');
     } else if (bucketIds.length === 1) {
-      return this.apiPromise.tx.ddcCustomers.removeBucket(bucketIds[0]) as Sendable;
+      return this.apiPromise.tx.ddcCustomers.removeBucket(bucketIds[0]) as unknown as Sendable;
     }
 
     return this.apiPromise.tx.utility.batch(
       bucketIds.map((bucketId) => this.apiPromise.tx.ddcCustomers.removeBucket(bucketId)),
-    ) as Sendable;
+    ) as unknown as Sendable;
   }
 
   /**

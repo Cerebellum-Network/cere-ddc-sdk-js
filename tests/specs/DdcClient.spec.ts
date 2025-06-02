@@ -197,16 +197,16 @@ describe('DDC Client', () => {
     });
 
     test('Get deposit', async () => {
-      const deposit = await client.getDeposit();
+      const deposit = await client.getDeposit(clusterId);
 
       expect(deposit).toEqual(expect.any(BigInt));
     });
 
     test('Deposit balance', async () => {
       const toDeposit = 10n * CERE;
-      const prevDeposit = await client.getDeposit();
-      await client.depositBalance(toDeposit);
-      const nextDeposit = await client.getDeposit();
+      const prevDeposit = await client.getDeposit(clusterId);
+      await client.depositBalance(clusterId, toDeposit);
+      const nextDeposit = await client.getDeposit(clusterId);
 
       expect(nextDeposit - prevDeposit).toEqual(toDeposit);
     });
