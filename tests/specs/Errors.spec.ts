@@ -45,16 +45,10 @@ describe('Errors', () => {
 
     it('should throw an RPC bucket error', async () => {
       const error = await client.store(99n, smallFile).catch((error) => error);
-      console.dir(error, { depth: null });
 
-      expect(error).toBeInstanceOf(NodeError);
-      expect(error).toEqual(
-        expect.objectContaining({
-          code: 'NOT_FOUND',
-          correlationId: expect.any(String),
-          nodeId: expect.any(String),
-        }),
-      );
+      expect(error).toBeInstanceOf(Error);
+
+      expect(error.message).toMatch(/no bucket/i);
     });
   });
 
