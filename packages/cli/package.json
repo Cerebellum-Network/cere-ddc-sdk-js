@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/cli",
   "description": "DDC command line interface",
-  "version": "2.16.0",
+  "version": "2.15.0",
   "repository": {
     "type": "git",
     "directory": "packages/cli",
@@ -22,8 +22,8 @@
     "clean": "rimraf dist package"
   },
   "dependencies": {
-    "@cere-ddc-sdk/ddc": "2.16.0",
-    "@cere-ddc-sdk/ddc-client": "2.16.0",
+    "@cere-ddc-sdk/ddc": "2.15.0",
+    "@cere-ddc-sdk/ddc-client": "2.15.0",
     "@polkadot/util-crypto": "^13.3.1",
     "@types/yargs": "^17.0.32",
     "yargs": "^17.7.2"
