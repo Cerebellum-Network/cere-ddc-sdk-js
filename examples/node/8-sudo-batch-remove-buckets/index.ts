@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { UriSigner, TESTNET } from '@cere-ddc-sdk/ddc-client';
+import { UriSigner, DEVNET } from '@cere-ddc-sdk/ddc-client';
 import { Blockchain } from '@cere-ddc-sdk/blockchain';
 
 import JSONBig from 'json-bigint';
@@ -10,12 +10,12 @@ import JSONBig from 'json-bigint';
 /**
  * Sudo account mnemonic. Make sure you never publish it.
  */
-const sudo = new UriSigner('bottom drive obey lake curtain smoke basket hold race lonely fit walk');
+const sudo = new UriSigner('flee club use dutch abandon thumb urban mystery possible much mushroom camera');
 
 /**
  * Create the blockchain RPC client instance and connect it to DDC TESTNET.
  */
-const blockchain = new Blockchain({ wsEndpoint: TESTNET.blockchain });
+const blockchain = new Blockchain({ wsEndpoint: DEVNET.blockchain });
 await blockchain.isReady();
 
 /**
