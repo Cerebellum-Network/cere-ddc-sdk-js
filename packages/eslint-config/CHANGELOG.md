@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.15.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.14.1...v2.15.0) (2025-06-02)
+
+**Note:** Version bump only for package @cere-ddc-sdk/eslint-config
+
 ## [2.7.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.7.0-rc.2...v2.7.0) (2024-05-06)
 
 **Note:** Version bump only for package @cere-ddc-sdk/eslint-config
