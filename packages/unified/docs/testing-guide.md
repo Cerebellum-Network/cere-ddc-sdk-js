@@ -98,11 +98,55 @@ describe('UnifiedSDK', () => {
 
     const result = await sdk.writeData(
       { test: 'data' },
-      { processing: { dataCloudWriteMode: 'direct', indexWriteMode: 'realtime' } },
+      {
+        priority: 'high',
+        metadata: {
+          processing: {
+            dataCloudWriteMode: 'direct',
+            indexWriteMode: 'realtime',
+          },
+        },
+      },
     );
 
-    expect(result.status).toBe('success');
+    expect(result.success).toBe(true);
     expect(result.transactionId).toBeDefined();
+  });
+
+  test('should auto-detect Telegram events', async () => {
+    const sdk = new UnifiedSDK(mockConfig);
+    await sdk.initialize();
+
+    const telegramEvent = {
+      eventType: 'quest_completed',
+      userId: 'user123',
+      timestamp: new Date(),
+      eventData: { questId: 'daily', points: 100 },
+    };
+
+    const result = await sdk.writeData(telegramEvent);
+
+    expect(result.success).toBe(true);
+    expect(result.metadata.routingDecisions).toContain('telegram_event_detected');
+  });
+
+  test('should auto-detect Telegram messages', async () => {
+    const sdk = new UnifiedSDK(mockConfig);
+    await sdk.initialize();
+
+    const telegramMessage = {
+      messageId: 'msg123',
+      chatId: 'chat456',
+      userId: 'user123',
+      messageType: 'text',
+      messageText: 'Hello world!',
+      timestamp: new Date(),
+    };
+
+    const result = await sdk.writeData(telegramMessage);
+
+    expect(result.success).toBe(true);
+    expect(result.metadata.routingDecisions).toContain('telegram_message_detected');
   });
 });
 ```
@@ -111,6 +155,19 @@ describe('UnifiedSDK', () => {
 
 ```typescript
 describe('RulesInterpreter', () => {
+  test('should detect data types correctly', () => {
+    const interpreter = new RulesInterpreter();
+
+    const telegramEvent = {
+      eventType: 'button_click',
+      userId: 'user123',
+      timestamp: new Date(),
+    };
+
+    const dataType = interpreter.detectDataType(telegramEvent);
+    expect(dataType).toBe('telegram_event');
+  });
+
   test('should validate metadata correctly', () => {
     const interpreter = new RulesInterpreter();
     const metadata = {
@@ -315,81 +372,107 @@ CMD ["node", "test-credentials.js"]
 
 ## Common Test Scenarios
 
-### 1. Basic Data Ingestion
+### 1. Automatic Data Type Detection Testing
 
 ```typescript
-const testBasicIngestion = async () => {
-  const sdk = new UnifiedSDK(config);
-  await sdk.initialize();
-
-  const result = await sdk.writeData(
-    { userId: 'test-123', action: 'click' },
-    {
-      processing: {
-        dataCloudWriteMode: 'direct',
-        indexWriteMode: 'realtime',
-      },
-    },
-  );
-
-  console.log('Result:', result);
-};
-```
-
-### 2. Telegram Event Processing
-
-```typescript
-const testTelegramEvent = async () => {
-  const sdk = new UnifiedSDK(config);
-  await sdk.initialize();
-
-  const event = {
-    eventType: 'quest_completed',
-    userId: 'telegram-user-123',
-    chatId: 'chat-456',
-    eventData: { questId: 'daily-login', points: 100 },
-    timestamp: new Date(),
-  };
-
-  const result = await sdk.writeTelegramEvent(event, {
-    priority: 'high',
-    writeMode: 'realtime',
-  });
-
-  console.log('Telegram event result:', result);
-};
-```
-
-### 3. Error Handling
-
-```typescript
-const testErrorHandling = async () => {
-  const sdk = new UnifiedSDK(invalidConfig);
-
-  try {
+describe('Data Type Detection', () => {
+  test('should detect all supported data types', async () => {
+    const sdk = new UnifiedSDK(testConfig);
     await sdk.initialize();
-  } catch (error) {
-    console.log('Expected initialization error:', error.code);
-  }
-};
+
+    const testCases = [
+      {
+        name: 'Telegram Event',
+        data: { eventType: 'test', userId: 'user1', timestamp: new Date() },
+        expectedType: 'telegram_event',
+      },
+      {
+        name: 'Telegram Message',
+        data: { messageId: 'msg1', chatId: 'chat1', userId: 'user1', messageType: 'text' },
+        expectedType: 'telegram_message',
+      },
+      {
+        name: 'Drone Telemetry',
+        data: { droneId: 'drone1', telemetry: { lat: 1, lng: 2 }, timestamp: new Date() },
+        expectedType: 'drone_telemetry',
+      },
+      {
+        name: 'Generic Data',
+        data: { customField: 'value', arbitrary: 'data' },
+        expectedType: 'generic',
+      },
+    ];
+
+    for (const testCase of testCases) {
+      const result = await sdk.writeData(testCase.data);
+      expect(result.metadata.detectedDataType).toBe(testCase.expectedType);
+    }
+  });
+});
 ```
 
-### 4. Fallback Scenarios
+### 2. Routing Logic Testing
 
 ```typescript
-const testFallback = async () => {
-  // Test with Activity SDK disabled
-  const config = {
-    ...baseConfig,
-    activityConfig: undefined, // This will trigger fallback mode
-  };
+describe('Intelligent Routing', () => {
+  test('should route based on data type and options', async () => {
+    const sdk = new UnifiedSDK(testConfig);
+    await sdk.initialize();
 
-  const sdk = new UnifiedSDK(config);
-  await sdk.initialize();
+    const ddcOnlyResult = await sdk.writeData(
+      { test: 'data' },
+      {
+        metadata: {
+          processing: {
+            dataCloudWriteMode: 'direct',
+            indexWriteMode: 'skip',
+          },
+        },
+      },
+    );
 
-  const result = await sdk.writeData(testData, metadata);
-  console.log('Fallback result:', result);
-};
+    expect(ddcOnlyResult.dataCloudHash).toBeDefined();
+    expect(ddcOnlyResult.activityEventId).toBeUndefined();
+
+    const activityOnlyResult = await sdk.writeData(
+      { eventType: 'test', userId: 'user1', timestamp: new Date() },
+      {
+        metadata: {
+          processing: {
+            dataCloudWriteMode: 'skip',
+            indexWriteMode: 'realtime',
+          },
+        },
+      },
+    );
+
+    expect(activityOnlyResult.dataCloudHash).toBeUndefined();
+    expect(activityOnlyResult.activityEventId).toBeDefined();
+  });
+});
+```
+
+### 3. Error Handling and Fallbacks
+
+```typescript
+describe('Error Handling', () => {
+  test('should handle graceful fallbacks', async () => {
+    const sdk = new UnifiedSDK(testConfigWithFailures);
+    await sdk.initialize();
+
+    mockActivitySDK.dispatchEvent.mockRejectedValue(new Error('Service unavailable'));
+
+    const result = await sdk.writeData({
+      eventType: 'test_event',
+      userId: 'user123',
+      timestamp: new Date(),
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.metadata.fallbacksUsed).toContain('ddc_fallback');
+    expect(result.dataCloudHash).toBeDefined();
+  });
+});
 ```
 
 ## Troubleshooting Tests
@@ -418,7 +501,6 @@ cd ../unified
 **Solution:**
 
 ```javascript
-// Check network connectivity
 const testConnection = async () => {
   try {
     const response = await fetch('https://rpc.testnet.cere.network/health');
@@ -436,7 +518,6 @@ const testConnection = async () => {
 **Solution:**
 
 ```javascript
-// Validate credentials format
 const validateCredentials = (config) => {
   console.log('Signer format:', typeof config.ddcConfig.signer);
   console.log('Bucket ID type:', typeof config.ddcConfig.bucketId);
@@ -451,14 +532,12 @@ const validateCredentials = (config) => {
 **Solution:**
 
 ```javascript
-// Increase timeout for network operations
 jest.setTimeout(60000);
 
-// Or use async/await properly
 test('long running test', async () => {
   const result = await longRunningOperation();
   expect(result).toBeDefined();
-}, 60000); // 60 second timeout
+}, 60000);
 ```
 
 ### Debug Mode
@@ -467,7 +546,6 @@ Enable debug logging:
 
 ```javascript
 const config = {
-  // ... other config
   logging: {
     level: 'debug',
     enableMetrics: true,
@@ -479,7 +557,6 @@ const config = {
 
 ```javascript
 afterEach(async () => {
-  // Cleanup test data
   if (sdk) {
     await sdk.cleanup();
   }
@@ -554,7 +631,6 @@ const loadTest = async () => {
   const startTime = Date.now();
   const promises = [];
 
-  // Send 100 concurrent requests
   for (let i = 0; i < 100; i++) {
     promises.push(
       sdk.writeData(
@@ -581,7 +657,6 @@ const memoryTest = async () => {
   const sdk = new UnifiedSDK(config);
   await sdk.initialize();
 
-  // Process multiple requests
   for (let i = 0; i < 1000; i++) {
     await sdk.writeData({ data: `test-${i}` }, metadata);
   }

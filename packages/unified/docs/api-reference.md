@@ -55,62 +55,48 @@ Initializes the SDK and its dependencies. Must be called before using other meth
 await sdk.initialize();
 ```
 
-#### writeTelegramEvent()
+#### writeData() ⭐
 
 ```typescript
-async writeTelegramEvent(
-  eventData: TelegramEventData,
-  options?: TelegramOptions
+async writeData(
+  payload: any,
+  options?: WriteOptions
 ): Promise<UnifiedResponse>
 ```
 
-Writes a Telegram event to the appropriate storage and indexing systems.
+**🎯 The ONE method for all data ingestion needs.** Automatically detects data types and routes to appropriate storage and indexing systems.
+
+**Automatic Data Type Detection:**
+
+- **Telegram Events**: Detected by `eventType`, `userId`, `timestamp` fields
+- **Telegram Messages**: Detected by `messageId`, `chatId`, `userId`, `messageType` fields
+- **Drone Telemetry**: Detected by `droneId`, `telemetry`, location data
+- **Drone Video**: Detected by `droneId`, video data
+- **Generic Data**: Fallback for all other data types
 
 **Parameters:**
 
-- `eventData` - Telegram event data (see [TelegramEventData](#telegrameventdata))
-- `options` - Optional routing and processing options (see [TelegramOptions](#telegramoptions))
+- `payload` - Data to be stored/indexed (any structure)
+- `options` - Optional routing and processing configuration (see [WriteOptions](#writeoptions))
 
 **Returns:**
 
 - `Promise<UnifiedResponse>` - Unified response with results from all targets
 
-**Example:**
+**Examples:**
 
 ```typescript
-const response = await sdk.writeTelegramEvent({
+// ✨ Telegram Event - Auto-detected by structure
+const response1 = await sdk.writeData({
   eventType: 'quest_completed',
   userId: 'user123',
   chatId: 'chat456',
   eventData: { questId: 'daily_checkin', points: 100 },
   timestamp: new Date(),
 });
-```
 
-#### writeTelegramMessage()
-
-```typescript
-async writeTelegramMessage(
-  messageData: TelegramMessageData,
-  options?: TelegramOptions
-): Promise<UnifiedResponse>
-```
-
-Writes a Telegram message to the appropriate storage and indexing systems.
-
-**Parameters:**
-
-- `messageData` - Telegram message data (see [TelegramMessageData](#telegrammessagedata))
-- `options` - Optional routing and processing options (see [TelegramOptions](#telegramoptions))
-
-**Returns:**
-
-- `Promise<UnifiedResponse>` - Unified response with results from all targets
-
-**Example:**
-
-```typescript
-const response = await sdk.writeTelegramMessage({
+// ✨ Telegram Message - Auto-detected by structure
+const response2 = await sdk.writeData({
   messageId: 'msg123',
   chatId: 'chat456',
   userId: 'user789',
@@ -118,38 +104,34 @@ const response = await sdk.writeTelegramMessage({
   messageType: 'text',
   timestamp: new Date(),
 });
-```
 
-#### writeData()
-
-```typescript
-async writeData(payload: any, metadata: Metadata): Promise<UnifiedResponse>
-```
-
-Generic method for writing any data with custom metadata.
-
-**Parameters:**
-
-- `payload` - Data to be stored/indexed
-- `metadata` - Processing metadata (see [Metadata](#metadata))
-
-**Returns:**
-
-- `Promise<UnifiedResponse>` - Unified response with results from all targets
-
-**Example:**
-
-```typescript
-const response = await sdk.writeData(
-  { customData: 'value' },
+// ✨ Custom Data with options
+const response3 = await sdk.writeData(
+  { customAnalytics: 'value', userId: 'user123' },
   {
-    processing: {
-      dataCloudWriteMode: 'direct',
-      indexWriteMode: 'realtime',
-      priority: 'high',
+    priority: 'high',
+    writeMode: 'direct',
+    encryption: true,
+    metadata: {
+      processing: {
+        dataCloudWriteMode: 'direct',
+        indexWriteMode: 'realtime',
+      },
     },
   },
 );
+
+// ✨ Drone Telemetry - Auto-detected
+const response4 = await sdk.writeData({
+  droneId: 'drone_001',
+  telemetry: {
+    latitude: 37.7749,
+    longitude: -122.4194,
+    altitude: 100,
+    speed: 15.5,
+  },
+  timestamp: new Date(),
+});
 ```
 
 #### getStatus()
@@ -250,9 +232,30 @@ interface LoggingConfig {
 }
 ```
 
+### WriteOptions
+
+Optional configuration for the unified `writeData()` method.
+
+```typescript
+interface WriteOptions {
+  // Simple options (most common)
+  priority?: 'low' | 'normal' | 'high'; // Processing priority
+  writeMode?: 'direct' | 'batch' | 'viaIndex'; // How to write data
+  encryption?: boolean; // Whether to encrypt data
+  ttl?: number; // Time-to-live in seconds
+
+  // Advanced metadata (when you need fine control)
+  metadata?: {
+    processing: ProcessingMetadata;
+    user_context?: any;
+    trace_id?: string;
+  };
+}
+```
+
 ### TelegramEventData
 
-Represents a Telegram event (user action, interaction, etc.).
+**Auto-detected data structure** for Telegram events (user actions, interactions, etc.).
 
 ```typescript
 interface TelegramEventData {
@@ -269,7 +272,7 @@ interface TelegramEventData {
 
 ### TelegramMessageData
 
-Represents a Telegram message.
+**Auto-detected data structure** for Telegram messages.
 
 ```typescript
 interface TelegramMessageData {
@@ -286,28 +289,11 @@ interface TelegramMessageData {
 type TelegramMessageType = 'text' | 'photo' | 'video' | 'document' | 'sticker' | 'voice' | 'location' | 'contact';
 ```
 
-### TelegramOptions
-
-Optional configuration for Telegram-specific operations.
-
-```typescript
-interface TelegramOptions {
-  writeMode?: 'direct' | 'batch' | 'viaIndex'; // How to write data
-  priority?: 'low' | 'normal' | 'high'; // Processing priority
-  encryption?: boolean; // Whether to encrypt data
-  ttl?: number; // Time-to-live in seconds
-}
-```
-
-### Metadata
+### ProcessingMetadata
 
 Generic metadata for controlling data processing.
 
 ```typescript
-interface Metadata {
-  processing: ProcessingMetadata;
-}
-
 interface ProcessingMetadata {
   dataCloudWriteMode: DataCloudWriteMode;
   indexWriteMode: IndexWriteMode;
@@ -505,10 +491,10 @@ const sdk = new UnifiedSDK({
 
 await sdk.initialize();
 
-// Track user events
+// ✨ ONE method for all Telegram data - auto-detects type and routes
 bot.on('callback_query', async (query) => {
-  await sdk.writeTelegramEvent({
-    eventType: 'button_click',
+  await sdk.writeData({
+    eventType: 'button_click', // Auto-detected as Telegram Event
     userId: query.from.id.toString(),
     chatId: query.message?.chat.id.toString(),
     eventData: {
@@ -519,10 +505,9 @@ bot.on('callback_query', async (query) => {
   });
 });
 
-// Track messages
 bot.on('message', async (msg) => {
-  await sdk.writeTelegramMessage({
-    messageId: msg.message_id.toString(),
+  await sdk.writeData({
+    messageId: msg.message_id.toString(), // Auto-detected as Telegram Message
     chatId: msg.chat.id.toString(),
     userId: msg.from?.id.toString() || 'unknown',
     messageText: msg.text,
@@ -552,32 +537,34 @@ const sdk = new UnifiedSDK({
   },
 });
 
-// Process multiple events efficiently
+// Process multiple events efficiently - all auto-detected
 const events = await getEventsFromQueue();
 for (const event of events) {
-  // These will be automatically batched
-  sdk.writeTelegramEvent(event, { writeMode: 'batch' });
+  // These will be automatically batched and routed
+  sdk.writeData(event, { writeMode: 'batch' });
 }
 ```
 
 ### Custom Data Processing
 
 ```typescript
-// Use generic writeData for custom scenarios
+// Use writeData for any custom scenarios - ultimate flexibility
 await sdk.writeData(
   {
     type: 'custom_analytics',
     data: analyticsData,
+    userId: 'user123', // Any structure you want
   },
   {
-    processing: {
-      dataCloudWriteMode: 'skip', // Don't store in DDC
-      indexWriteMode: 'realtime', // Only index for analytics
-      priority: 'low',
-      encryption: false,
+    priority: 'low',
+    metadata: {
+      processing: {
+        dataCloudWriteMode: 'skip', // Don't store in DDC
+        indexWriteMode: 'realtime', // Only index for analytics
+      },
     },
   },
 );
 ```
 
-This API reference provides comprehensive documentation for all public methods, types, and usage patterns of the Unified Data Ingestion SDK.
+This API reference provides comprehensive documentation for the unified `writeData()` method that simplifies all data ingestion operations into a single, intelligent entry point.

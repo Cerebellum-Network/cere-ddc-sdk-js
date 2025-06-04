@@ -50,13 +50,42 @@ const sdk = new UnifiedSDK({
 // Initialize and use
 await sdk.initialize();
 
-// Store some data
-const result = await sdk.writeData(
-  { userId: 'user123', action: 'click', timestamp: new Date() },
-  { processing: { dataCloudWriteMode: 'direct', indexWriteMode: 'realtime' } },
+// ✨ ONE method for all data types - automatically detects and routes
+// Telegram Event (auto-detected by eventType, userId, timestamp)
+const result1 = await sdk.writeData({
+  eventType: 'quest_completed',
+  userId: 'user123',
+  chatId: 'chat456',
+  eventData: { questId: 'daily_checkin', points: 100 },
+  timestamp: new Date(),
+});
+
+// Telegram Message (auto-detected by messageId, chatId, messageType)
+const result2 = await sdk.writeData({
+  messageId: 'msg123',
+  chatId: 'chat456',
+  userId: 'user789',
+  messageText: 'Hello from mini-app!',
+  messageType: 'text',
+  timestamp: new Date(),
+});
+
+// Custom data with options
+const result3 = await sdk.writeData(
+  { analytics: true, userId: 'user123', action: 'click' },
+  {
+    priority: 'high',
+    writeMode: 'direct',
+    metadata: {
+      processing: {
+        dataCloudWriteMode: 'direct',
+        indexWriteMode: 'realtime',
+      },
+    },
+  },
 );
 
-console.log('Data stored:', result.transactionId);
+console.log('Data stored:', result1.transactionId);
 
 // Cleanup
 await sdk.cleanup();
@@ -247,63 +276,98 @@ const status = sdk.getStatus();
 console.log('SDK ready:', status.initialized);
 ```
 
-### Store Data
+### Store Data with Automatic Detection ⭐
 
-#### Simple Data Storage
+The **core feature** of the Unified SDK is the single `writeData()` method that automatically detects your data type and routes it appropriately:
 
 ```javascript
-const userData = {
-  userId: 'user_123',
-  action: 'page_view',
-  page: '/dashboard',
-  timestamp: new Date().toISOString(),
-  metadata: {
-    userAgent: 'Mozilla/5.0...',
-    sessionId: 'sess_abc123',
-  },
-};
-
-const result = await sdk.writeData(userData, {
-  processing: {
-    dataCloudWriteMode: 'direct', // Store directly to DDC
-    indexWriteMode: 'realtime', // Index immediately
-    priority: 'normal', // Processing priority
-  },
+// ✨ Telegram Event - Auto-detected by structure
+const eventResult = await sdk.writeData({
+  eventType: 'button_click',
+  userId: 'user123',
+  chatId: 'chat456',
+  eventData: { buttonId: 'quest_start', section: 'main_menu' },
+  timestamp: new Date(),
 });
 
-console.log('Stored:', {
-  transactionId: result.transactionId,
-  dataCloudHash: result.dataCloudHash,
-  indexId: result.indexId,
-  status: result.status,
+// ✨ Telegram Message - Auto-detected by structure
+const messageResult = await sdk.writeData({
+  messageId: 'msg789',
+  chatId: 'chat456',
+  userId: 'user123',
+  messageText: 'Started new quest!',
+  messageType: 'text',
+  timestamp: new Date(),
+});
+
+// ✨ Custom Data - You control the routing
+const customResult = await sdk.writeData(
+  {
+    analytics: { pageView: '/dashboard', duration: 45000 },
+    userId: 'user123',
+    sessionId: 'session456',
+  },
+  {
+    priority: 'low',
+    writeMode: 'batch',
+    encryption: false,
+  },
+);
+
+// ✨ Drone Telemetry - Auto-detected by structure
+const droneResult = await sdk.writeData({
+  droneId: 'drone_001',
+  telemetry: {
+    latitude: 37.7749,
+    longitude: -122.4194,
+    altitude: 150,
+    speed: 12.5,
+  },
+  timestamp: new Date(),
 });
 ```
 
-#### Batch Data Storage
+### Auto-Detection Logic
+
+The SDK automatically detects data types based on structure:
+
+| Data Type            | Detection Criteria                      | Example Fields                                                               |
+| -------------------- | --------------------------------------- | ---------------------------------------------------------------------------- |
+| **Telegram Event**   | `eventType` + `userId` + `timestamp`    | `{ eventType: 'quest_completed', userId: 'user123', timestamp: new Date() }` |
+| **Telegram Message** | `messageId` + `chatId` + `messageType`  | `{ messageId: 'msg123', chatId: 'chat456', messageType: 'text' }`            |
+| **Drone Telemetry**  | `droneId` + `telemetry` + location data | `{ droneId: 'drone_001', telemetry: {...}, timestamp: new Date() }`          |
+| **Drone Video**      | `droneId` + video-related fields        | `{ droneId: 'drone_001', videoData: {...} }`                                 |
+| **Generic Data**     | Any other structure                     | `{ customField: 'value', data: {...} }`                                      |
+
+### Simple vs Advanced Usage
+
+**Simple Usage (Recommended for 80% of cases):**
 
 ```javascript
-const batchData = [
-  { userId: 'user1', action: 'click' },
-  { userId: 'user2', action: 'scroll' },
-  { userId: 'user3', action: 'hover' },
-];
+// Just pass your data - the SDK handles everything
+await sdk.writeData(yourTelegramEventData);
+await sdk.writeData(yourTelegramMessageData);
+await sdk.writeData(yourCustomData);
+```
 
-const results = await Promise.all(
-  batchData.map((data) =>
-    sdk.writeData(data, {
-      processing: {
-        dataCloudWriteMode: 'batch', // Use batch mode
-        indexWriteMode: 'realtime',
-        batchOptions: {
-          maxSize: 50, // Batch up to 50 items
-          maxWaitTime: 10000, // Wait max 10 seconds
-        },
-      },
-    }),
-  ),
-);
+**Advanced Usage (For fine control):**
 
-console.log(`Processed ${results.length} items`);
+```javascript
+// Override routing with explicit options
+await sdk.writeData(yourData, {
+  priority: 'high',
+  writeMode: 'direct',
+  encryption: true,
+  ttl: 3600,
+  metadata: {
+    processing: {
+      dataCloudWriteMode: 'viaIndex',
+      indexWriteMode: 'realtime',
+    },
+    user_context: { source: 'mobile_app' },
+    trace_id: 'req_12345',
+  },
+});
 ```
 
 ### Query Status

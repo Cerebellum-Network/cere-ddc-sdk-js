@@ -7,6 +7,7 @@ The Unified Data Ingestion SDK is a comprehensive solution that provides a **sin
 ## Key Features
 
 - **🎯 Single Entry Point**: One SDK to rule them all - eliminates complexity of managing multiple SDKs
+- **🤖 Automatic Data Detection**: Intelligently detects data types (Telegram events, messages, drone telemetry) and routes appropriately
 - **🧠 Intelligent Routing**: Metadata-driven routing to DDC Client and Activity SDK
 - **📱 Telegram Optimized**: Built-in support for Telegram events, messages, and mini-app interactions
 - **🔄 Fallback Mechanisms**: Graceful degradation when services are unavailable
@@ -38,13 +39,43 @@ const sdk = new UnifiedSDK({
 
 await sdk.initialize();
 
-// Store data with intelligent routing
-const result = await sdk.writeData(
-  { userId: 'user123', action: 'click', timestamp: new Date() },
-  { processing: { dataCloudWriteMode: 'direct', indexWriteMode: 'realtime' } },
+// ✨ One method for all data types - automatically detects and routes:
+
+// Telegram Event (auto-detected by eventType, userId, timestamp)
+const result1 = await sdk.writeData({
+  eventType: 'quest_completed',
+  userId: 'user123',
+  chatId: 'chat456',
+  eventData: { questId: 'daily_checkin', points: 100 },
+  timestamp: new Date(),
+});
+
+// Telegram Message (auto-detected by messageId, chatId, messageType)
+const result2 = await sdk.writeData({
+  messageId: 'msg123',
+  chatId: 'chat456',
+  userId: 'user789',
+  messageText: 'Hello from mini-app!',
+  messageType: 'text',
+  timestamp: new Date(),
+});
+
+// Custom data with explicit options
+const result3 = await sdk.writeData(
+  { customData: 'value', analytics: true },
+  {
+    priority: 'high',
+    writeMode: 'direct',
+    metadata: {
+      processing: {
+        dataCloudWriteMode: 'direct',
+        indexWriteMode: 'realtime',
+      },
+    },
+  },
 );
 
-console.log('Data stored:', result.transactionId);
+console.log('Data stored:', result1.transactionId);
 
 // Cleanup
 await sdk.cleanup();
@@ -54,19 +85,23 @@ await sdk.cleanup();
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Unified SDK (Entry Point)                │
+│              Unified SDK (Single Entry Point)              │
 ├─────────────────────────────────────────────────────────────┤
-│  • writeTelegramEvent()   • writeTelegramMessage()          │
-│  • writeData()            • getStatus()                     │
+│  🎯 writeData() - One method for all data types            │
+│  • Automatic type detection (Telegram, Drone, Generic)     │
+│  • Intelligent routing based on data structure             │
+│  • getStatus(), initialize(), cleanup()                    │
 └─────────────────┬───────────────────────────┬───────────────┘
                   │                           │
         ┌─────────▼──────────┐      ┌─────────▼──────────┐
         │  Rules Interpreter │      │    Dispatcher      │
         │                    │      │                    │
-        │ • Metadata         │      │ • Route Planning   │
-        │   Validation       │      │ • Action Creation  │
-        │ • Rules Extraction │      │ • Priority Mgmt    │
-        │ • Optimization     │      │ • Execution Mode   │
+        │ • Data Type        │      │ • Route Planning   │
+        │   Detection        │      │ • Action Creation  │
+        │ • Metadata         │      │ • Priority Mgmt    │
+        │   Validation       │      │ • Execution Mode   │
+        │ • Rules Extraction │      │                    │
+        │ • Optimization     │      │                    │
         └─────────┬──────────┘      └─────────┬──────────┘
                   │                           │
                   └─────────┬─────────────────┘
@@ -165,7 +200,16 @@ await sdk.cleanup();
 
 ## Design Philosophy
 
-### 1. **Metadata-Driven Architecture**
+### 1. **Single Method Simplicity**
+
+The core principle is **extreme simplicity**: one `writeData()` method that automatically:
+
+- **Detects data types** based on structure (Telegram events, messages, drone telemetry, generic data)
+- **Routes intelligently** to appropriate backends
+- **Handles complexity** internally without exposing it to developers
+- **Provides consistent interface** regardless of data type or destination
+
+### 2. **Metadata-Driven Architecture**
 
 Instead of hardcoded routing logic, the SDK uses flexible metadata to determine:
 
@@ -174,15 +218,16 @@ Instead of hardcoded routing logic, the SDK uses flexible metadata to determine:
 - Processing priorities and encryption requirements
 - Batching and performance optimizations
 
-### 2. **Telegram-First Design**
+### 3. **Telegram-First Design**
 
 While the SDK is generic, it's optimized for Telegram use cases:
 
-- Specialized data types for Telegram events and messages
-- Intelligent routing for different Telegram data types
-- Built-in support for mini-app interactions and user analytics
+- **Automatic detection** of Telegram events and messages
+- **Intelligent routing** for different Telegram data types
+- **Built-in support** for mini-app interactions and user analytics
+- **No learning curve** - developers just call `writeData()` with their data
 
-### 3. **Graceful Degradation**
+### 4. **Graceful Degradation**
 
 The system is designed to handle failures gracefully:
 
@@ -190,7 +235,7 @@ The system is designed to handle failures gracefully:
 - If DDC is unavailable, queue for later processing
 - Partial success scenarios are handled intelligently
 
-### 4. **Performance & Scalability**
+### 5. **Performance & Scalability**
 
 - Batching for high-throughput scenarios
 - Parallel execution when possible
@@ -201,7 +246,8 @@ The system is designed to handle failures gracefully:
 
 ### For Developers
 
-- **Simplified Integration**: One SDK instead of multiple
+- **🎯 Ultimate Simplicity**: One method (`writeData()`) for all use cases
+- **🤖 Zero Configuration**: Automatic data type detection and routing
 - **Type Safety**: Full TypeScript support with comprehensive type definitions
 - **Flexible Configuration**: Metadata-driven behavior without code changes
 - **Rich Documentation**: Comprehensive guides and examples
@@ -217,7 +263,8 @@ The system is designed to handle failures gracefully:
 
 ### For Telegram Bots
 
-- **Native Support**: Built-in Telegram data types and routing
+- **🚀 Instant Integration**: Just call `writeData()` with your Telegram data
+- **🤖 Auto-Detection**: Automatically detects events vs messages
 - **Analytics Ready**: Automatic event tracking and user analytics
 - **Mini-App Optimized**: Specialized handling for mini-app interactions
 - **Quest Integration**: Easy integration with gamification systems

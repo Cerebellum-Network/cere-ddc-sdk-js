@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide helps you migrate from using individual DDC Client and Activity SDK packages to the Unified Data Ingestion SDK. The migration provides significant benefits including simplified integration, intelligent routing, better error handling, and optimized performance.
+This guide helps you migrate from using individual DDC Client and Activity SDK packages to the Unified Data Ingestion SDK. The migration provides significant benefits including **one unified method**, automatic data type detection, intelligent routing, better error handling, and optimized performance.
 
 ## Migration Benefits
 
@@ -36,10 +36,10 @@ try {
 }
 ```
 
-### After: Unified SDK
+### After: Unified SDK ⭐
 
 ```typescript
-// New approach - single SDK
+// New approach - single SDK with ONE method
 import { UnifiedSDK } from '@cere-ddc-sdk/unified';
 
 // Simple initialization
@@ -54,12 +54,71 @@ const sdk = new UnifiedSDK({
 
 await sdk.initialize();
 
-// Intelligent routing and error handling
-const response = await sdk.writeTelegramEvent({
+// ✨ ONE method for everything - automatic detection and routing
+const response = await sdk.writeData({
   eventType: 'quest_completed',
   userId: 'user123',
   eventData: { questId: 'daily', points: 100 },
   timestamp: new Date(),
+});
+
+// The SDK automatically:
+// 1. Detects this is a Telegram event
+// 2. Routes to both DDC and Activity SDK
+// 3. Handles all errors and fallbacks
+// 4. Returns unified response
+```
+
+## Key Migration Principles
+
+### 🎯 From Multiple Methods to ONE Method
+
+**Before (Complex):**
+
+- `ddcClient.store()` for DDC storage
+- `eventDispatcher.dispatchEvent()` for Activity SDK
+- `writeTelegramEvent()` for events
+- `writeTelegramMessage()` for messages
+- Different methods for different data types
+
+**After (Simple):**
+
+```typescript
+// ✨ ONE method for EVERYTHING
+await sdk.writeData(anyData);
+```
+
+### 🤖 Automatic Data Type Detection
+
+**Before:** You had to know which method to call
+**After:** Just pass your data structure - the SDK detects the type automatically
+
+```typescript
+// All these are detected automatically:
+
+// Telegram Event (detected by eventType + userId + timestamp)
+await sdk.writeData({
+  eventType: 'quest_completed',
+  userId: 'user123',
+  timestamp: new Date(),
+  eventData: {
+    /* ... */
+  },
+});
+
+// Telegram Message (detected by messageId + chatId + messageType)
+await sdk.writeData({
+  messageId: 'msg123',
+  chatId: 'chat456',
+  messageType: 'text',
+  messageText: 'Hello!',
+  timestamp: new Date(),
+});
+
+// Custom data (falls back to generic handling)
+await sdk.writeData({
+  analytics: { page: '/dashboard' },
+  userId: 'user123',
 });
 ```
 
@@ -69,53 +128,60 @@ const response = await sdk.writeTelegramEvent({
 
 Migrate incrementally while maintaining existing functionality:
 
-**Phase 1: Install and Initialize**
+**Phase 1: Install and Test**
 
 ```typescript
 // Add Unified SDK alongside existing SDKs
 npm install @cere-ddc-sdk/unified
 
-// Initialize both systems temporarily
+// Initialize and test with one data type
 const sdk = new UnifiedSDK(config);
 await sdk.initialize();
 
-// Keep existing DDC and Activity SDK instances
-// const ddcClient = await DdcClient.create(...);
-// const eventDispatcher = new EventDispatcher(...);
+// Test with simple data first
+const testResult = await sdk.writeData({
+  eventType: 'test_migration',
+  userId: 'test_user',
+  timestamp: new Date(),
+  eventData: { migration: 'phase1' }
+});
+
+console.log('Migration test successful:', testResult);
 ```
 
-**Phase 2: Migrate New Features**
+**Phase 2: Replace Individual Operations**
 
 ```typescript
-// Use Unified SDK for all new features
-async function handleNewTelegramEvent(eventData) {
-  return sdk.writeTelegramEvent(eventData);
-}
+// Replace DDC operations
+// OLD:
+// const dagNode = new DagNode('data', data);
+// const cid = await ddcClient.store(bucketId, dagNode);
 
-// Keep existing code unchanged
-async function handleLegacyOperation(data) {
-  // Continue using old SDKs
-  return ddcClient.store(bucketId, new DagNode('data', data));
-}
-```
-
-**Phase 3: Migrate Existing Features**
-
-```typescript
-// Replace old implementations one by one
-async function handleExistingFeature(data) {
-  // Old implementation
-  // const dagNode = new DagNode('data', data);
-  // const cid = await ddcClient.store(bucketId, dagNode);
-
-  // New implementation
-  return sdk.writeData(data, {
+// NEW:
+const result = await sdk.writeData(data, {
+  writeMode: 'direct', // Forces DDC storage
+  metadata: {
     processing: {
       dataCloudWriteMode: 'direct',
-      indexWriteMode: 'skip',
+      indexWriteMode: 'skip', // Skip Activity SDK if not needed
     },
-  });
-}
+  },
+});
+```
+
+**Phase 3: Migrate Complex Workflows**
+
+```typescript
+// Replace complex multi-SDK operations
+// OLD:
+// try {
+//   const cid = await ddcClient.store(bucketId, dagNode);
+//   const event = new ActivityEvent('data.stored', { cid, ...data });
+//   await dispatcher.dispatchEvent(event);
+// } catch (error) { /* complex error handling */ }
+
+// NEW:
+const result = await sdk.writeData(data); // Handles everything automatically
 ```
 
 **Phase 4: Remove Legacy Dependencies**
@@ -130,8 +196,8 @@ async function handleExistingFeature(data) {
 For new projects or major refactoring:
 
 ```typescript
-// Replace all SDK usage at once
-class DataService {
+// Replace entire data service with unified approach
+class UnifiedDataService {
   private sdk: UnifiedSDK;
 
   constructor(config: UnifiedSDKConfig) {
@@ -142,17 +208,22 @@ class DataService {
     await this.sdk.initialize();
   }
 
-  // Unified methods replace multiple SDK calls
-  async handleTelegramEvent(eventData: TelegramEventData) {
-    return this.sdk.writeTelegramEvent(eventData);
+  // ✨ ONE method replaces all previous data operations
+  async storeData(data: any, options?: WriteOptions) {
+    return this.sdk.writeData(data, options);
   }
 
-  async handleTelegramMessage(messageData: TelegramMessageData) {
-    return this.sdk.writeTelegramMessage(messageData);
+  // Convenience wrappers if needed (but not required)
+  async storeTelegramEvent(eventData: any) {
+    return this.sdk.writeData(eventData); // Auto-detected
   }
 
-  async handleCustomData(data: any, metadata: Metadata) {
-    return this.sdk.writeData(data, metadata);
+  async storeTelegramMessage(messageData: any) {
+    return this.sdk.writeData(messageData); // Auto-detected
+  }
+
+  async storeCustomData(data: any, priority: 'low' | 'normal' | 'high' = 'normal') {
+    return this.sdk.writeData(data, { priority });
   }
 }
 ```
@@ -181,20 +252,18 @@ const dagCid = await ddcClient.store(bucketId, dagNode);
 **After:**
 
 ```typescript
-import { UnifiedSDK } from '@cere-ddc-sdk/unified';
-
-const sdk = new UnifiedSDK({ ddcConfig, activityConfig });
-
-// Store with intelligent routing
-const response = await sdk.writeData(userData, {
-  processing: {
-    dataCloudWriteMode: 'direct', // Direct DDC storage
-    indexWriteMode: 'skip', // Skip Activity SDK
+// ✨ One method for all storage types
+const fileResult = await sdk.writeData(bufferData, {
+  writeMode: 'direct',
+  metadata: {
+    processing: {
+      dataCloudWriteMode: 'direct',
+      indexWriteMode: 'skip',
+    },
   },
 });
 
-// Access DDC hash from response
-const ddcHash = response.dataCloudHash;
+const dataResult = await sdk.writeData(userData); // Auto-routes based on structure
 ```
 
 ### 2. Activity SDK Migration
@@ -219,16 +288,23 @@ const success = await dispatcher.dispatchEvent(event);
 **After:**
 
 ```typescript
-// Automatic Activity SDK integration
-const response = await sdk.writeData(eventData, {
-  processing: {
-    dataCloudWriteMode: 'skip', // Skip DDC storage
-    indexWriteMode: 'realtime', // Real-time indexing
-  },
+// ✨ Automatic Activity SDK integration
+const response = await sdk.writeData({
+  eventType: 'user_action', // Auto-detected as Telegram event
+  userId: 'user123',
+  eventData: eventData,
+  timestamp: new Date(),
 });
 
-// Access Activity SDK result
-const activityEventId = response.activityEventId;
+// Or for index-only operations:
+const indexOnlyResult = await sdk.writeData(eventData, {
+  metadata: {
+    processing: {
+      dataCloudWriteMode: 'skip', // Skip DDC storage
+      indexWriteMode: 'realtime', // Real-time indexing
+    },
+  },
+});
 ```
 
 ### 3. Combined Operations Migration
@@ -248,12 +324,14 @@ async function storeAndIndex(data: any) {
       ...data,
       ddcCid: cid,
     });
-    const indexed = await eventDispatcher.dispatchEvent(event);
+    await dispatcher.dispatchEvent(event);
 
-    return { cid, indexed };
+    return { success: true, cid, indexed: true };
   } catch (error) {
-    // Manual error handling and cleanup
-    console.error('Operation failed:', error);
+    // Complex error handling and rollback logic
+    if (cid) {
+      // Try to clean up partial state
+    }
     throw error;
   }
 }
@@ -262,399 +340,110 @@ async function storeAndIndex(data: any) {
 **After:**
 
 ```typescript
-// Automatic coordination with fallback handling
+// ✨ Unified operation with automatic coordination
 async function storeAndIndex(data: any) {
-  const response = await sdk.writeData(data, {
-    processing: {
-      dataCloudWriteMode: 'direct', // Store in DDC
-      indexWriteMode: 'realtime', // Index in Activity SDK
+  return sdk.writeData(data); // Handles both DDC and Activity SDK automatically
+}
+
+// Or with explicit control:
+async function storeAndIndexWithControl(data: any) {
+  return sdk.writeData(data, {
+    writeMode: 'direct',
+    metadata: {
+      processing: {
+        dataCloudWriteMode: 'direct', // Store in DDC
+        indexWriteMode: 'realtime', // Index in Activity SDK
+      },
     },
   });
-
-  // Unified response with all results
-  return {
-    success: response.success,
-    ddcHash: response.dataCloudHash,
-    activityEventId: response.activityEventId,
-    metadata: response.metadata,
-  };
 }
 ```
 
-## Configuration Migration
-
-### DDC Client Configuration
+### 4. Telegram Bot Migration
 
 **Before:**
 
 ```typescript
-// Old DDC Client configuration
-const ddcClient = await DdcClient.create(signer, {
-  blockchain: 'wss://rpc.testnet.cere.network/ws',
-  logLevel: 'info',
+// Multiple methods for different Telegram data types
+import { UnifiedSDK } from '@cere-ddc-sdk/unified';
+
+bot.on('callback_query', async (query) => {
+  await sdk.writeTelegramEvent({
+    eventType: 'button_click',
+    userId: query.from.id.toString(),
+    // ...
+  });
+});
+
+bot.on('message', async (msg) => {
+  await sdk.writeTelegramMessage({
+    messageId: msg.message_id.toString(),
+    // ...
+  });
 });
 ```
 
 **After:**
 
 ```typescript
-// Unified SDK DDC configuration
-const sdk = new UnifiedSDK({
-  ddcConfig: {
-    signer: signer, // Same signer
-    bucketId: BigInt(bucketId), // Add bucket ID
-    network: 'testnet', // Simplified network config
-    clusterId: 'optional-cluster-id', // Optional cluster
-  },
-});
-```
-
-### Activity SDK Configuration
-
-**Before:**
-
-```typescript
-// Old Activity SDK configuration
-const signer = new UriSigner(keyringUri);
-const cipher = new NoOpCipher();
-const dispatcher = new EventDispatcher(signer, cipher, {
-  appId: 'my-app',
-  endpoint: 'https://api.stats.testnet.cere.network',
-  appPubKey: 'app-public-key',
-  dataServicePubKey: 'service-public-key',
-});
-```
-
-**After:**
-
-```typescript
-// Unified SDK Activity configuration
-const sdk = new UnifiedSDK({
-  ddcConfig: {
-    /* ... */
-  },
-  activityConfig: {
-    keyringUri: keyringUri, // Same URI
-    appId: 'my-app', // Same app ID
-    endpoint: 'https://api.stats.testnet.cere.network',
-    appPubKey: 'app-public-key', // Same keys
-    dataServicePubKey: 'service-public-key',
-  },
-});
-```
-
-## Error Handling Migration
-
-### Before: Manual Error Handling
-
-```typescript
-async function complexOperation(data: any) {
-  let ddcResult, activityResult;
-
-  try {
-    // DDC operation
-    ddcResult = await ddcClient.store(bucketId, new DagNode('data', data));
-  } catch (ddcError) {
-    console.error('DDC failed:', ddcError);
-    throw new Error(`DDC storage failed: ${ddcError.message}`);
-  }
-
-  try {
-    // Activity SDK operation
-    const event = new ActivityEvent('data.stored', data);
-    activityResult = await eventDispatcher.dispatchEvent(event);
-  } catch (activityError) {
-    console.error('Activity SDK failed:', activityError);
-    // Manual cleanup needed
-    // Should we remove from DDC? Complex decision...
-    throw new Error(`Activity indexing failed: ${activityError.message}`);
-  }
-
-  return { ddcResult, activityResult };
-}
-```
-
-### After: Unified Error Handling
-
-```typescript
-async function complexOperation(data: any) {
-  try {
-    // Unified operation with automatic error handling
-    const response = await sdk.writeData(data, {
-      processing: {
-        dataCloudWriteMode: 'direct',
-        indexWriteMode: 'realtime',
-      },
-    });
-
-    // Check results
-    if (!response.success) {
-      console.warn('Partial failure:', response.metadata.fallbacksUsed);
-    }
-
-    return response;
-  } catch (error) {
-    // Unified error with context
-    if (error instanceof UnifiedSDKError) {
-      console.error(`${error.component} failed: ${error.message}`, {
-        code: error.code,
-        cause: error.cause,
-      });
-    }
-    throw error;
-  }
-}
-```
-
-## Performance Migration
-
-### Before: Manual Batching
-
-```typescript
-// Manual batching logic
-class DataProcessor {
-  private batch: any[] = [];
-  private batchTimer?: NodeJS.Timeout;
-
-  async processBatch() {
-    if (this.batch.length === 0) return;
-
-    const currentBatch = [...this.batch];
-    this.batch = [];
-
-    // Manual parallel processing
-    const promises = currentBatch.map(async (item) => {
-      try {
-        const dagNode = new DagNode('batch_item', item);
-        const cid = await ddcClient.store(bucketId, dagNode);
-
-        const event = new ActivityEvent('batch.item', item);
-        await eventDispatcher.dispatchEvent(event);
-
-        return { success: true, cid };
-      } catch (error) {
-        return { success: false, error: error.message };
-      }
-    });
-
-    return Promise.all(promises);
-  }
-
-  addToBatch(data: any) {
-    this.batch.push(data);
-
-    if (this.batch.length >= 50) {
-      this.processBatch();
-    } else {
-      clearTimeout(this.batchTimer);
-      this.batchTimer = setTimeout(() => this.processBatch(), 5000);
-    }
-  }
-}
-```
-
-### After: Automatic Batching
-
-```typescript
-// Automatic intelligent batching
-const sdk = new UnifiedSDK({
-  ddcConfig: {
-    /* ... */
-  },
-  activityConfig: {
-    /* ... */
-  },
-  processing: {
-    enableBatching: true,
-    defaultBatchSize: 50,
-    defaultBatchTimeout: 5000,
-  },
-});
-
-class DataProcessor {
-  async processItem(data: any) {
-    // Automatic batching handled by SDK
-    return sdk.writeData(data, {
-      processing: {
-        dataCloudWriteMode: 'batch', // SDK handles batching
-        indexWriteMode: 'realtime',
-      },
-    });
-  }
-}
-```
-
-## Testing Migration
-
-### Before: Complex Test Setup
-
-```typescript
-// Complex mocking for multiple SDKs
-jest.mock('@cere-ddc-sdk/ddc-client');
-jest.mock('@cere-activity-sdk/events');
-jest.mock('@cere-activity-sdk/signers');
-jest.mock('@cere-activity-sdk/ciphers');
-
-describe('DataService', () => {
-  let mockDdcClient: jest.Mocked<DdcClient>;
-  let mockEventDispatcher: jest.Mocked<EventDispatcher>;
-
-  beforeEach(() => {
-    // Complex mock setup
-    mockDdcClient = {
-      store: jest.fn(),
-      // ... other methods
-    } as any;
-
-    mockEventDispatcher = {
-      dispatchEvent: jest.fn(),
-      // ... other methods
-    } as any;
-
-    (DdcClient.create as jest.Mock).mockResolvedValue(mockDdcClient);
-    (EventDispatcher as jest.Mock).mockImplementation(() => mockEventDispatcher);
+// ✨ ONE method for all Telegram data - auto-detected
+bot.on('callback_query', async (query) => {
+  await sdk.writeData({
+    eventType: 'button_click', // Auto-detected as Telegram Event
+    userId: query.from.id.toString(),
+    chatId: query.message?.chat.id.toString(),
+    eventData: { buttonData: query.data },
+    timestamp: new Date(),
   });
+});
 
-  it('should store and index data', async () => {
-    mockDdcClient.store.mockResolvedValue('test-cid');
-    mockEventDispatcher.dispatchEvent.mockResolvedValue(true);
-
-    // Test implementation
+bot.on('message', async (msg) => {
+  await sdk.writeData({
+    messageId: msg.message_id.toString(), // Auto-detected as Telegram Message
+    chatId: msg.chat.id.toString(),
+    userId: msg.from?.id.toString(),
+    messageText: msg.text,
+    messageType: 'text',
+    timestamp: new Date(msg.date * 1000),
   });
 });
 ```
 
-### After: Simplified Testing
+## Migration Benefits Summary
 
-```typescript
-// Simple unified mock
-jest.mock('@cere-ddc-sdk/unified');
-
-describe('DataService', () => {
-  let mockSdk: jest.Mocked<UnifiedSDK>;
-
-  beforeEach(() => {
-    mockSdk = {
-      writeData: jest.fn(),
-      writeTelegramEvent: jest.fn(),
-      writeTelegramMessage: jest.fn(),
-      initialize: jest.fn(),
-      cleanup: jest.fn(),
-      getStatus: jest.fn(),
-    } as any;
-
-    (UnifiedSDK as jest.Mock).mockImplementation(() => mockSdk);
-  });
-
-  it('should handle data processing', async () => {
-    mockSdk.writeData.mockResolvedValue({
-      success: true,
-      transactionId: 'test-tx',
-      results: [],
-      metadata: { processingTime: 100, routingDecisions: [], fallbacksUsed: [] },
-    });
-
-    // Simplified test implementation
-  });
-});
-```
+| Aspect                  | Before (Multiple SDKs)  | After (Unified SDK)            |
+| ----------------------- | ----------------------- | ------------------------------ |
+| **Methods to Learn**    | 10+ different methods   | ✨ **1 method**: `writeData()` |
+| **Data Type Detection** | Manual method selection | 🤖 **Automatic detection**     |
+| **Error Handling**      | Complex, per-SDK        | 🛡️ **Unified, graceful**       |
+| **Fallback Logic**      | Manual implementation   | 🔄 **Automatic fallbacks**     |
+| **Configuration**       | Multiple configurations | ⚙️ **Single configuration**    |
+| **Learning Curve**      | Steep (multiple APIs)   | 📈 **Minimal (one method)**    |
+| **Maintenance**         | High (multiple SDKs)    | 🔧 **Low (single SDK)**        |
+| **Type Safety**         | Partial                 | 💯 **Complete TypeScript**     |
 
 ## Migration Checklist
 
-### Pre-Migration
-
-- [ ] **Audit Current Usage**: Document all DDC Client and Activity SDK usage
-- [ ] **Review Dependencies**: Check which features you're using from each SDK
-- [ ] **Test Coverage**: Ensure you have tests for existing functionality
-- [ ] **Configuration Inventory**: Document current configuration patterns
-
-### Migration Process
-
-- [ ] **Install Unified SDK**: `npm install @cere-ddc-sdk/unified`
-- [ ] **Create Migration Plan**: Decide on gradual vs. complete migration
-- [ ] **Update Configuration**: Convert to unified configuration format
-- [ ] **Migrate Core Functions**: Start with most critical operations
-- [ ] **Update Error Handling**: Implement unified error handling patterns
-- [ ] **Migrate Tests**: Update test suites for unified approach
-
-### Post-Migration
-
-- [ ] **Remove Old Dependencies**: Uninstall individual SDK packages
-- [ ] **Update Documentation**: Document new patterns and configurations
-- [ ] **Performance Testing**: Verify performance improvements
-- [ ] **Monitor Production**: Watch for any issues in production deployment
-
-## Common Issues and Solutions
-
-### Issue 1: Type Compatibility
-
-**Problem**: TypeScript types don't match between old and new SDKs.
-
-**Solution**:
-
-```typescript
-// Create type adapters during migration
-function adaptLegacyData(legacyData: OldDataType): UnifiedDataType {
-  return {
-    // Map old structure to new structure
-    ...legacyData,
-    timestamp: legacyData.createdAt,
-  };
-}
-```
-
-### Issue 2: Configuration Complexity
-
-**Problem**: Existing configuration doesn't map directly to unified format.
-
-**Solution**:
-
-```typescript
-// Create configuration migration utility
-function migrateConfig(oldConfig: OldConfig): UnifiedSDKConfig {
-  return {
-    ddcConfig: {
-      signer: oldConfig.ddcSigner,
-      bucketId: BigInt(oldConfig.bucketId),
-      network: oldConfig.network,
-    },
-    activityConfig: oldConfig.activityEnabled
-      ? {
-          keyringUri: oldConfig.activitySigner,
-          appId: oldConfig.appId,
-          endpoint: oldConfig.activityEndpoint,
-          appPubKey: oldConfig.appPublicKey,
-          dataServicePubKey: oldConfig.servicePublicKey,
-        }
-      : undefined,
-  };
-}
-```
-
-### Issue 3: Behavioral Differences
-
-**Problem**: Unified SDK behaves differently than manual coordination.
-
-**Solution**:
-
-```typescript
-// Use metadata to control behavior precisely
-await sdk.writeData(data, {
-  processing: {
-    dataCloudWriteMode: 'direct', // Match old DDC behavior
-    indexWriteMode: 'realtime', // Match old Activity behavior
-    priority: 'high', // Control execution order
-  },
-});
-```
+- [ ] Install `@cere-ddc-sdk/unified`
+- [ ] Create unified configuration
+- [ ] Initialize UnifiedSDK
+- [ ] Test with simple `writeData()` call
+- [ ] Replace DDC operations with `writeData()`
+- [ ] Replace Activity SDK operations with `writeData()`
+- [ ] Migrate Telegram-specific operations to use `writeData()`
+- [ ] Update error handling to use unified responses
+- [ ] Remove old SDK dependencies
+- [ ] Update tests to use unified API
+- [ ] Deploy and monitor
 
 ## Migration Support
 
-If you encounter issues during migration:
+If you need help with migration:
 
-1. **Check the Documentation**: Review the [API Reference](./api-reference.md) and [Configuration Guide](./configuration.md)
-2. **Search Issues**: Look for similar issues in the repository
-3. **Create an Issue**: Provide details about your migration scenario
-4. **Community Support**: Join the Cere developer community for help
+1. **Start Simple**: Begin with one data type and the basic `writeData()` call
+2. **Use Auto-Detection**: Structure your data properly and let the SDK handle routing
+3. **Gradual Replacement**: Replace old methods one by one
+4. **Test Thoroughly**: Verify that auto-detection works for your data structures
+5. **Leverage Types**: Use TypeScript for better migration safety
 
-The migration to Unified SDK provides significant benefits in terms of simplicity, performance, and maintainability while maintaining compatibility with existing Cere ecosystem features.
+The key principle: **Replace complexity with simplicity** - one method (`writeData()`) instead of many.

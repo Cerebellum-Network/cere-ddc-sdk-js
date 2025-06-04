@@ -2,13 +2,23 @@
 
 ## Overview
 
-The Unified SDK is specifically designed and optimized for Telegram bot and mini-app development. It provides native support for Telegram-specific data types, intelligent routing for different interaction patterns, and seamless integration with Telegram's ecosystem.
+The Unified SDK is specifically designed and optimized for Telegram bot and mini-app development. It provides **automatic detection** of Telegram-specific data types, intelligent routing for different interaction patterns, and seamless integration with Telegram's ecosystem.
+
+## 🚀 Unified API for Telegram
+
+**The key advantage**: You only need to learn **ONE method** - `writeData()`. The SDK automatically detects whether your data is a Telegram event, message, or any other type and routes it appropriately.
+
+### Automatic Detection
+
+- **Telegram Events**: Automatically detected by `eventType`, `userId`, `timestamp` fields
+- **Telegram Messages**: Automatically detected by `messageId`, `chatId`, `userId`, `messageType` fields
+- **No method confusion**: Just call `writeData()` with your data structure
 
 ## Telegram Data Types
 
 ### TelegramEventData
 
-Represents user actions and interactions within Telegram bots or mini-apps:
+**Auto-detected structure** for user actions and interactions within Telegram bots or mini-apps:
 
 ```typescript
 interface TelegramEventData {
@@ -25,7 +35,7 @@ interface TelegramEventData {
 
 ### TelegramMessageData
 
-Represents messages sent within Telegram:
+**Auto-detected structure** for messages sent within Telegram:
 
 ```typescript
 interface TelegramMessageData {
@@ -45,8 +55,8 @@ interface TelegramMessageData {
 ### 1. Quest and Gamification Systems
 
 ```typescript
-// Quest completion tracking
-await sdk.writeTelegramEvent({
+// ✨ Quest completion tracking - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'quest_completed',
   userId: 'user123',
   chatId: 'private_chat',
@@ -61,8 +71,8 @@ await sdk.writeTelegramEvent({
   botId: 'gamification_bot',
 });
 
-// Achievement unlocked
-await sdk.writeTelegramEvent({
+// ✨ Achievement unlocked - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'achievement_unlocked',
   userId: 'user123',
   eventData: {
@@ -74,8 +84,8 @@ await sdk.writeTelegramEvent({
   timestamp: new Date(),
 });
 
-// Leaderboard interaction
-await sdk.writeTelegramEvent({
+// ✨ Leaderboard interaction - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'leaderboard_view',
   userId: 'user123',
   chatId: 'group_chat_456',
@@ -91,8 +101,8 @@ await sdk.writeTelegramEvent({
 ### 2. Mini-App Interactions
 
 ```typescript
-// Mini-app launch
-await sdk.writeTelegramEvent({
+// ✨ Mini-app launch - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'miniapp_launch',
   userId: 'user789',
   eventData: {
@@ -104,8 +114,8 @@ await sdk.writeTelegramEvent({
   miniAppId: 'cere_wallet_v1',
 });
 
-// In-app purchase
-await sdk.writeTelegramEvent({
+// ✨ In-app purchase - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'in_app_purchase',
   userId: 'user789',
   eventData: {
@@ -119,8 +129,8 @@ await sdk.writeTelegramEvent({
   miniAppId: 'cere_wallet_v1',
 });
 
-// Mini-app sharing
-await sdk.writeTelegramEvent({
+// ✨ Mini-app sharing - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'content_shared',
   userId: 'user789',
   eventData: {
@@ -137,8 +147,8 @@ await sdk.writeTelegramEvent({
 ### 3. Social Features
 
 ```typescript
-// User joins group
-await sdk.writeTelegramEvent({
+// ✨ User joins group - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'user_joined_group',
   userId: 'user456',
   chatId: 'group_789',
@@ -150,8 +160,8 @@ await sdk.writeTelegramEvent({
   timestamp: new Date(),
 });
 
-// Message reactions
-await sdk.writeTelegramEvent({
+// ✨ Message reactions - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'message_reaction',
   userId: 'user456',
   chatId: 'group_789',
@@ -164,8 +174,8 @@ await sdk.writeTelegramEvent({
   timestamp: new Date(),
 });
 
-// Referral tracking
-await sdk.writeTelegramEvent({
+// ✨ Referral tracking - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'referral_successful',
   userId: 'user123', // referrer
   eventData: {
@@ -183,8 +193,8 @@ await sdk.writeTelegramEvent({
 ### 4. Message Analytics
 
 ```typescript
-// Important announcements
-await sdk.writeTelegramMessage({
+// ✨ Important announcements - Auto-detected as Telegram Message
+await sdk.writeData({
   messageId: 'announce_001',
   chatId: 'announcement_channel',
   userId: 'bot_admin',
@@ -198,8 +208,8 @@ await sdk.writeTelegramMessage({
   },
 });
 
-// User feedback
-await sdk.writeTelegramMessage({
+// ✨ User feedback - Auto-detected as Telegram Message
+await sdk.writeData({
   messageId: 'feedback_456',
   chatId: 'support_chat',
   userId: 'user789',
@@ -213,8 +223,8 @@ await sdk.writeTelegramMessage({
   },
 });
 
-// Media sharing
-await sdk.writeTelegramMessage({
+// ✨ Media sharing - Auto-detected as Telegram Message
+await sdk.writeData({
   messageId: 'media_789',
   chatId: 'community_group',
   userId: 'user456',
@@ -236,8 +246,8 @@ await sdk.writeTelegramMessage({
 The Unified SDK returns Content Identifiers (CIDs) when data is stored in DDC, enabling conversation streams and other systems to reference original data sources.
 
 ```typescript
-// Store conversation data and get CID for future reference
-const response = await sdk.writeTelegramMessage(
+// ✨ Store conversation data and get CID for future reference
+const response = await sdk.writeData(
   {
     messageId: 'msg_12345',
     chatId: 'chat_conversations',
@@ -272,10 +282,12 @@ const conversationIndex = {
 };
 
 await sdk.writeData(conversationIndex, {
-  processing: {
-    dataCloudWriteMode: 'direct',
-    indexWriteMode: 'realtime',
-    priority: 'high',
+  priority: 'high',
+  metadata: {
+    processing: {
+      dataCloudWriteMode: 'direct',
+      indexWriteMode: 'realtime',
+    },
   },
 });
 ```
@@ -288,8 +300,8 @@ class ConversationStream {
   private conversationCIDs: Map<string, string> = new Map();
 
   async addMessage(messageData: TelegramMessageData): Promise<string> {
-    // Store message and get CID
-    const response = await this.sdk.writeTelegramMessage(messageData, {
+    // ✨ Store message and get CID - Auto-detects as Telegram Message
+    const response = await this.sdk.writeData(messageData, {
       writeMode: 'direct', // Ensure DDC storage for CID
       priority: 'normal',
     });
@@ -325,10 +337,12 @@ class ConversationStream {
         updatedAt: new Date(),
       },
       {
-        processing: {
-          dataCloudWriteMode: 'skip', // Index only
-          indexWriteMode: 'realtime',
-          priority: 'low',
+        priority: 'low',
+        metadata: {
+          processing: {
+            dataCloudWriteMode: 'skip', // Index only
+            indexWriteMode: 'realtime',
+          },
         },
       },
     );
@@ -341,8 +355,8 @@ class ConversationStream {
 ```typescript
 // Use CIDs to reference data across different systems
 async function processQuestCompletion(userId: string, questData: any) {
-  // Store quest completion data
-  const response = await sdk.writeTelegramEvent(
+  // ✨ Store quest completion data - Auto-detected as Telegram Event
+  const response = await sdk.writeData(
     {
       eventType: 'quest_completed',
       userId,
@@ -410,11 +424,13 @@ async function verifyCIDIntegrity(cid: string): Promise<boolean> {
 }
 ```
 
+## Telegram Bot Integration Patterns
+
 ### 1. Inline Keyboard Analytics
 
 ```typescript
-// Button click tracking
-await sdk.writeTelegramEvent({
+// ✨ Button click tracking - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'inline_button_click',
   userId: 'user123',
   chatId: 'private_chat',
@@ -428,8 +444,8 @@ await sdk.writeTelegramEvent({
   timestamp: new Date(),
 });
 
-// Callback query handling
-await sdk.writeTelegramEvent({
+// ✨ Callback query handling - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'callback_query',
   userId: 'user123',
   eventData: {
@@ -445,8 +461,8 @@ await sdk.writeTelegramEvent({
 ### 2. Bot Command Analytics
 
 ```typescript
-// Command usage tracking
-await sdk.writeTelegramEvent({
+// ✨ Command usage tracking - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'bot_command_used',
   userId: 'user456',
   chatId: 'private_chat',
@@ -460,8 +476,8 @@ await sdk.writeTelegramEvent({
   botId: 'cere_quest_bot',
 });
 
-// Help system usage
-await sdk.writeTelegramEvent({
+// ✨ Help system usage - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'help_requested',
   userId: 'user789',
   eventData: {
@@ -476,8 +492,8 @@ await sdk.writeTelegramEvent({
 ### 3. WebApp Integration
 
 ```typescript
-// WebApp launch from Telegram
-await sdk.writeTelegramEvent({
+// ✨ WebApp launch from Telegram - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'webapp_opened',
   userId: 'user123',
   eventData: {
@@ -492,8 +508,8 @@ await sdk.writeTelegramEvent({
   timestamp: new Date(),
 });
 
-// Data exchange between WebApp and Telegram
-await sdk.writeTelegramEvent({
+// ✨ Data exchange between WebApp and Telegram - Auto-detected as Telegram Event
+await sdk.writeData({
   eventType: 'webapp_data_sent',
   userId: 'user123',
   eventData: {
@@ -512,7 +528,7 @@ await sdk.writeTelegramEvent({
 
 ```typescript
 // For chat rooms with high message volume
-await sdk.writeTelegramMessage(messageData, {
+await sdk.writeData(messageData, {
   writeMode: 'batch', // Use batching for efficiency
   priority: 'low', // Lower priority for bulk messages
   encryption: false, // Skip encryption for public messages
@@ -523,7 +539,7 @@ await sdk.writeTelegramMessage(messageData, {
 
 ```typescript
 // For important events that need immediate indexing
-await sdk.writeTelegramEvent(eventData, {
+await sdk.writeData(eventData, {
   writeMode: 'viaIndex', // Write via Activity SDK for immediate indexing
   priority: 'high', // High priority processing
   encryption: true, // Encrypt sensitive event data
@@ -535,10 +551,12 @@ await sdk.writeTelegramEvent(eventData, {
 ```typescript
 // For data that only needs to be indexed (not stored in DDC)
 await sdk.writeData(analyticsData, {
-  processing: {
-    dataCloudWriteMode: 'skip', // Skip DDC storage
-    indexWriteMode: 'realtime', // Index immediately
-    priority: 'normal',
+  priority: 'normal',
+  metadata: {
+    processing: {
+      dataCloudWriteMode: 'skip', // Skip DDC storage
+      indexWriteMode: 'realtime', // Index immediately
+    },
   },
 });
 ```
@@ -568,16 +586,16 @@ const events = [
 ];
 
 for (const event of events) {
-  // These will be automatically batched by the SDK
-  sdk.writeTelegramEvent(event, { writeMode: 'batch' });
+  // ✨ These will be automatically batched by the SDK - Auto-detected
+  sdk.writeData(event, { writeMode: 'batch' });
 }
 ```
 
 ### 2. Payload Size Optimization
 
 ```typescript
-// For large media or file data
-await sdk.writeTelegramMessage({
+// ✨ For large media or file data - Auto-detected as Telegram Message
+await sdk.writeData({
   messageId: 'large_video_msg',
   chatId: 'media_group',
   userId: 'user123',
@@ -597,7 +615,8 @@ await sdk.writeTelegramMessage({
 
 ```typescript
 try {
-  await sdk.writeTelegramEvent(eventData);
+  // ✨ One method for all Telegram data
+  await sdk.writeData(eventData);
 } catch (error) {
   if (error instanceof UnifiedSDKError) {
     // Log the error but continue bot operation
@@ -659,4 +678,10 @@ setInterval(async () => {
 - Use consistent event naming conventions
 - Implement proper user attribution
 
-This guide provides comprehensive coverage of Telegram-specific use cases and demonstrates how the Unified SDK is optimized for Telegram bot and mini-app development.
+### 5. **🎯 Simplicity**
+
+- **Use only `writeData()`** - the SDK handles the complexity
+- **Let automatic detection work** - structure your data properly and the SDK routes it correctly
+- **No method confusion** - one method for all Telegram use cases
+
+This guide demonstrates how the Unified SDK's **single `writeData()` method** with automatic detection makes Telegram bot development incredibly simple while maintaining full functionality and performance.
