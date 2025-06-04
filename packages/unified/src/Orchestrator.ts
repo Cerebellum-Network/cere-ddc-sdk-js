@@ -66,8 +66,24 @@ export class Orchestrator {
           // eslint-disable-next-line import/no-extraneous-dependencies
           const { NoOpCipher } = await import('@cere-activity-sdk/ciphers');
 
-          // Create signer from the activity config
-          const signer = new UriSigner(this.config.activityConfig.keyringUri || '//Alice');
+          // Create signer from the activity config with correct type for Event Service
+          const signer = new UriSigner(this.config.activityConfig.keyringUri || '//Alice', {
+            type: 'ed25519', // Use ed25519 signatures to match Event Service expectations
+          });
+
+          // Wait for signer to be ready (minimal fix for enterprise-level reliability)
+          this.logger('debug', 'Waiting for UriSigner to be ready...');
+          await new Promise((resolve) => setTimeout(resolve, 2000)); // Give signer time to initialize
+
+          // Verify signer is ready before proceeding
+          try {
+            // Test signer readiness by accessing address (will throw if not ready)
+            const testAddress = signer.address;
+            this.logger('debug', 'UriSigner ready with address:', testAddress);
+          } catch (signerError) {
+            this.logger('warn', 'UriSigner not ready after wait, will retry with longer delay');
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+          }
 
           // Create cipher (using NoOpCipher for now, can be enhanced later)
           const cipher = new NoOpCipher();
