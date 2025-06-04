@@ -1,0 +1,16 @@
+{
+  "ddcTests": [],
+  "activityTests": [],
+  "errors": [
+    {
+      "component": "DDC Client",
+      "error": "Cannot find module '/Users/giorgobg/Desktop/Cere/CereDesign:IMP/CereDesignTask/repos/cere-ddc-sdk-js/node_modules/@cere-ddc-sdk/ddc-client/dist/index.js' imported from /Users/giorgobg/Desktop/Cere/CereDesign:IMP/CereDesignTask/repos/cere-ddc-sdk-js/packages/unified/manual-test-real.cjs",
+      "stack": "Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/giorgobg/Desktop/Cere/CereDesign:IMP/CereDesignTask/repos/cere-ddc-sdk-js/node_modules/@cere-ddc-sdk/ddc-client/dist/index.js' imported from /Users/giorgobg/Desktop/Cere/CereDesign:IMP/CereDesignTask/repos/cere-ddc-sdk-js/packages/unified/manual-test-real.cjs\n    at new NodeError (node:internal/errors:405:5)\n    at finalizeResolution (node:internal/modules/esm/resolve:226:11)\n    at moduleResolve (node:internal/modules/esm/resolve:838:10)\n    at defaultResolve (node:internal/modules/esm/resolve:1036:11)\n    at DefaultModuleLoader.resolve (node:internal/modules/esm/loader:251:12)\n    at DefaultModuleLoader.getModuleJob (node:internal/modules/esm/loader:140:32)\n    at DefaultModuleLoader.import (node:internal/modules/esm/loader:227:28)\n    at importModuleDynamically (node:internal/modules/cjs/loader:1163:37)\n    at importModuleDynamicallyWrapper (node:internal/vm/module:428:21)\n    at importModuleDynamically (node:internal/vm:105:46)"
+    },
+    {
+      "component": "Activity SDK",
+      "error": "Named export 'blake2bHex' not found. The requested module 'blakejs' is a CommonJS module, which may not support all module.exports as named exports.\nCommonJS modules can always be imported via the default export, for example using:\n\nimport pkg from 'blakejs';\nconst { blake2bHex } = pkg;\n",
+      "stack": "file:///Users/giorgobg/Desktop/Cere/CereDesign:IMP/CereDesignTask/repos/cere-ddc-sdk-js/node_modules/@cere-activity-sdk/events/dist/index.js:5\nimport { blake2bHex } from 'blakejs';\n         ^^^^^^^^^^\nSyntaxError: Named export 'blake2bHex' not found. The requested module 'blakejs' is a CommonJS module, which may not support all module.exports as named exports.\nCommonJS modules can always be imported via the default export, for example using:\n\nimport pkg from 'blakejs';\nconst { blake2bHex } = pkg;\n\n    at ModuleJob._instantiate (node:internal/modules/esm/module_job:122:21)\n    at async ModuleJob.run (node:internal/modules/esm/module_job:188:5)\n    at async DefaultModuleLoader.import (node:internal/modules/esm/loader:228:24)\n    at async importModuleDynamicallyWrapper (node:internal/vm/module:428:15)\n    at async testWithRealPackages (/Users/giorgobg/Desktop/Cere/CereDesign:IMP/CereDesignTask/repos/cere-ddc-sdk-js/packages/unified/manual-test-real.cjs:110:35)"
+    }
+  ]
+}
