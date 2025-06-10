@@ -1,0 +1,53 @@
+
+sequenceDiagram
+    participant Client as Drone Video Client
+    participant UnifiedAPI as Unified SDK/API
+    participant Rules as Rules Interpreter
+    participant Dispatcher
+    participant Orchestrator
+    participant DataCloudSDK as Data Cloud SDK
+    participant ActivitySDK
+    participant DataCloud as Data Cloud
+    participant IndexLayer as Indexing Layer
+    
+    Note over Client,DataCloud: Drone Video Stream: Two-Phase Process
+    
+    rect rgb(245,245,245)
+    Note right of Client: Phase 1: Store Raw Video Chunk
+    Client->>+UnifiedAPI: writeData(videoChunk, {<br/>  "processing": {<br/>    "dataCloudWriteMode": "direct",<br/>    "indexWriteMode": "skip"<br/>  }<br/>})
+    UnifiedAPI->>+Rules: Parse metadata.processing
+    Rules-->>-UnifiedAPI: routing instructions
+    
+    UnifiedAPI->>+Dispatcher: route(videoChunk, instructions)
+    Dispatcher->>+Orchestrator: execute(videoChunk, instructions)
+    
+    Orchestrator->>+DataCloudSDK: write(videoChunk)
+    DataCloudSDK->>+DataCloud: store(videoChunk)
+    DataCloud-->>-DataCloudSDK: hash
+    DataCloudSDK-->>-Orchestrator: success + hash
+    
+    Orchestrator-->>-Dispatcher: success + metadata (with hash)
+    Dispatcher-->>-UnifiedAPI: success + metadata (with hash)
+    UnifiedAPI-->>-Client: success + transaction ID + Data Cloud hash
+    end
+    
+    rect rgb(240,248,255)
+    Note right of Client: Phase 2: Index Video Metadata with Reference
+    Client->>+UnifiedAPI: writeData(videoEvent, {<br/>  "streamDataCloudHash": "hash_from_phase_1",<br/>  "processing": {<br/>    "dataCloudWriteMode": "skip",<br/>    "indexWriteMode": "realtime"<br/>  }<br/>})
+    UnifiedAPI->>+Rules: Parse metadata.processing
+    Rules-->>-UnifiedAPI: routing instructions
+    
+    UnifiedAPI->>+Dispatcher: route(videoEvent, instructions)
+    Dispatcher->>+Orchestrator: execute(videoEvent, instructions)
+    
+    Orchestrator->>+ActivitySDK: write(videoEvent)
+    ActivitySDK->>+IndexLayer: store(videoEvent)
+    IndexLayer-->>-ActivitySDK: success
+    ActivitySDK-->>-Orchestrator: success
+    
+    Orchestrator-->>-Dispatcher: success + metadata
+    Dispatcher-->>-UnifiedAPI: success + metadata
+    UnifiedAPI-->>-Client: success + transaction ID
+    end
+    
+    Note over Client,IndexLayer: Current pattern: Direct Data Cloud SDK for chunks<br/>Activity SDK for events with hash reference<br/><br/>New pattern: Unified SDK with different metadata for each phase
