@@ -13,7 +13,8 @@ The **@cere-ddc-sdk/unified** package represents a sophisticated, well-architect
 - Full integration with DDC (Decentralized Data Cloud) and Activity SDK
 - Excellent test coverage (68 tests passing)
 - Robust metadata validation using Zod schemas
-- Telegram-optimized use cases with specialized methods
+- **Single Entry Point**: ONE `writeData()` method with automatic data type detection
+- **Telegram-optimized**: Automatic detection of Telegram events and messages
 - Extensive documentation and troubleshooting guides
 
 ⚠️ **Areas for Improvement:**
@@ -101,19 +102,37 @@ packages/unified/
 
 ### 2.2 Telegram Integration
 
-The package provides specialized Telegram support:
+The package provides specialized Telegram support through **automatic data type detection**:
 
 ```typescript
-// Telegram Event Processing
-sdk.writeTelegramEvent(questEvent, options);
+// ✨ Telegram Event Processing - Auto-detected
+await sdk.writeData({
+  eventType: 'quest_completed',
+  userId: 'user123',
+  eventData: { questId: 'daily', points: 100 },
+  timestamp: new Date(),
+});
 
-// Telegram Message Storage
-sdk.writeTelegramMessage(messageData, options) -
-  // Supported Event Types
-  'quest_completed' -
-  'user_action' -
-  'mini_app_interaction';
+// ✨ Telegram Message Storage - Auto-detected
+await sdk.writeData({
+  messageId: 'msg123',
+  chatId: 'chat456',
+  userId: 'user789',
+  messageText: 'Hello!',
+  messageType: 'text',
+  timestamp: new Date(),
+});
+
+// Supported Event Types (auto-detected)
+// - 'quest_completed'
+// - 'user_action' 
+// - 'mini_app_interaction'
 ```
+
+**Key Feature**: The SDK automatically detects data types based on payload structure:
+- **Telegram Events**: Detected by `eventType` + `userId` + `timestamp` fields
+- **Telegram Messages**: Detected by `messageId` + `chatId` + `messageType` fields
+- **Generic Data**: Fallback for any other structure
 
 ### 2.3 Metadata Schema
 

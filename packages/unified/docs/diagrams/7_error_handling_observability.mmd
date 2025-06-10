@@ -1,0 +1,139 @@
+flowchart TD
+    %% Enhanced styling for better readability and cross-editor compatibility
+    classDef client fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#0d47a1
+    classDef unified fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef backend fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef error fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
+    classDef success fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    classDef observability fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#01579b
+    classDef decision fill:#f9fbe7,stroke:#689f38,stroke-width:2px,color:#33691e
+    classDef partial fill:#fff8e1,stroke:#f9a825,stroke-width:2px,color:#e65100
+    
+    %% Client Layer
+    Client["CLIENT APPLICATION<br/>Request with Correlation ID<br/>Response Handling"]:::client
+    
+    %% Main Request Flow
+    Client ==>|"Request with correlationId"| UnifiedSDK
+    
+    %% Unified Data Ingestion Layer
+    subgraph UnifiedLayer["UNIFIED DATA INGESTION LAYER"]
+        direction TB
+        
+        UnifiedSDK["UNIFIED SDK/API<br/>Entry Point<br/>Request Validation<br/>At-Most-Once Guarantee"]:::unified
+        
+        RulesInterpreter["RULES INTERPRETER<br/>Metadata Processing<br/>Routing Logic"]:::unified
+        
+        Dispatcher["DISPATCHER<br/>System Routing<br/>Load Management"]:::unified
+        
+        Orchestrator["ORCHESTRATOR<br/>Dual-Write Coordinator<br/>Partial Success Handler"]:::unified
+        
+        %% Normal flow within unified layer
+        UnifiedSDK ==>|"Log: Request received"| RulesInterpreter
+        RulesInterpreter ==> Dispatcher
+        Dispatcher ==> Orchestrator
+    end
+    
+    %% Dual-Write Backend Systems
+    subgraph BackendSystems["DUAL-WRITE BACKEND SYSTEMS"]
+        direction TB
+        
+        subgraph DataCloudWrite["Data Cloud Write"]
+            DataCloudSDK["DATA CLOUD SDK<br/>Direct Storage<br/>Hash Generation"]:::backend
+        end
+        
+        subgraph IndexWrite["Index Write"]
+            HttpAPI["HTTP API<br/>Indexing Layer<br/>REST Interface"]:::backend
+        end
+        
+        %% Parallel writes
+        DataCloudSDK -.->|"Independent Write"| WriteResults
+        HttpAPI -.->|"Independent Write"| WriteResults
+        
+        WriteResults{"WRITE RESULTS<br/>Collect Responses<br/>Determine Overall Status"}:::decision
+    end
+    
+    %% Main data flow - Dual Write
+    Orchestrator ==>|"Parallel Writes"| BackendSystems
+    BackendSystems ==>|"Combined Response"| Orchestrator
+    
+    %% Response flow
+    Orchestrator ==> Dispatcher
+    Dispatcher ==> UnifiedSDK
+    UnifiedSDK ==>|"Response"| Client
+    
+    %% Error Handling Strategy (Simplified for MVP)
+    subgraph ErrorHandler["ERROR HANDLING STRATEGY (MVP)"]
+        direction TB
+        
+        ErrorDetection{"ERROR TYPE DETECTION<br/>Classify Error Category<br/>Simple Classification"}:::decision
+        
+        PartialSuccessHandler["PARTIAL SUCCESS HANDLER<br/>✓ Data Cloud Success + Index Fail = OK<br/>✓ Index Success + Data Cloud Fail = OK<br/>✓ Both Fail = Error Response"]:::partial
+        
+        RetryStrategy["SIMPLE RETRY STRATEGY<br/>Basic Retry with Backoff<br/>At-Most-Once Delivery"]:::error
+        
+        ErrorResponse["ERROR RESPONSE<br/>Return Error to Client<br/>Include Partial Success Info"]:::error
+        
+        %% Simplified error flow
+        ErrorDetection ==>|"Transient Error"| RetryStrategy
+        ErrorDetection ==>|"Permanent Error"| ErrorResponse
+        ErrorDetection ==>|"Partial Success"| PartialSuccessHandler
+        
+        RetryStrategy ==>|"Max Retries Exceeded"| ErrorResponse
+        RetryStrategy ==>|"Retry Attempt"| Orchestrator
+        PartialSuccessHandler ==>|"Success Response"| Orchestrator
+    end
+    
+    %% Error flow trigger
+    WriteResults ==>|"Error/Partial Success"| ErrorDetection
+    
+    %% Observability Infrastructure
+    subgraph Observability["OBSERVABILITY INFRASTRUCTURE"]
+        direction LR
+        
+        StructuredLogs[("STRUCTURED LOGS<br/>Correlation Tracking<br/>Request Tracing<br/>Partial Success Tracking")]:::observability
+        
+        Metrics[("METRICS COLLECTION<br/>Dual-Write Success Rates<br/>Partial Success Rates<br/>System Health")]:::observability
+        
+        Alerts[("ALERTING SYSTEM<br/>Error Rate Thresholds<br/>SLA Monitoring<br/>Data Stream Compute SLA")]:::observability
+    end
+    
+    %% Logging Points - Enhanced for dual-write
+    UnifiedSDK -.->|"Log: Request received + correlationId"| StructuredLogs
+    RulesInterpreter -.->|"Log: Processing rules applied"| StructuredLogs
+    Orchestrator -.->|"Log: Dual-write initiated + transaction ID"| StructuredLogs
+    DataCloudSDK -.->|"Log: Data Cloud response + hash"| StructuredLogs
+    HttpAPI -.->|"Log: Index response + status"| StructuredLogs
+    PartialSuccessHandler -.->|"Log: Partial success details"| StructuredLogs
+    ErrorHandler -.->|"Log: Error details + retry attempts"| StructuredLogs
+    
+    %% Metrics Collection Points - Enhanced for dual-write
+    Orchestrator -.->|"Metric: Dual-write latency"| Metrics
+    DataCloudSDK -.->|"Metric: Data Cloud success rate"| Metrics
+    HttpAPI -.->|"Metric: Index success rate"| Metrics
+    PartialSuccessHandler -.->|"Metric: Partial success rate"| Metrics
+    RetryStrategy -.->|"Metric: Retry count + success rate"| Metrics
+    
+    %% Implementation Decisions
+    subgraph ImplementationDecisions["IMPLEMENTATION DECISIONS (FINALIZED)"]
+        direction TB
+        
+        AtomicityDecision["ATOMICITY APPROACH<br/>✓ Partial success acceptable<br/>✓ No distributed transactions<br/>✓ No compensation mechanisms<br/>✓ Simple dual-write pattern"]:::success
+        
+        IdempotencyDecision["IDEMPOTENCY STRATEGY<br/>✓ At-most-once delivery for MVP<br/>✓ Simple deduplication<br/>✓ No complex exactly-once guarantees<br/>✓ Basic retry logic"]:::success
+        
+        DataLossDecision["DATA LOSS TOLERANCE<br/>✓ Acceptable for MVP<br/>✓ Focus on Data Stream Compute SLA<br/>✓ No strict consistency requirements<br/>✓ Eventual consistency acceptable"]:::success
+        
+        PartialFailureDecision["PARTIAL FAILURE HANDLING<br/>✓ Simple approach for first iteration<br/>✓ Log partial successes<br/>✓ Return success if any write succeeds<br/>✓ Monitor and alert on patterns"]:::success
+    end
+    
+    %% Decision connections
+    PartialSuccessHandler -.->|"Based on"| AtomicityDecision
+    UnifiedSDK -.->|"Implements"| IdempotencyDecision
+    Observability -.->|"Monitors"| DataLossDecision
+    ErrorHandler -.->|"Follows"| PartialFailureDecision
+    
+    %% Visual spacing for better layout
+    UnifiedLayer --> BackendSystems
+    BackendSystems --> ErrorHandler
+    ErrorHandler --> Observability
+    Observability --> ImplementationDecisions

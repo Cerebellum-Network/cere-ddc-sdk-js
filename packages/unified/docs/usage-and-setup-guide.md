@@ -420,37 +420,28 @@ Initializes the SDK and establishes connections to DDC and Activity SDK.
 await sdk.initialize();
 ```
 
-##### `writeData(data: any, metadata?: DataMetadata): Promise<IngestionResult>`
+##### `writeData(payload: any, options?: WriteOptions): Promise<UnifiedResponse>`
 
-Stores arbitrary data with optional metadata.
+**🎯 THE SINGLE ENTRY POINT** - The only data ingestion method that automatically detects data types and routes appropriately.
 
-```javascript
-const result = await sdk.writeData(
-  { key: 'value' },
-  { processing: { dataCloudWriteMode: 'direct', indexWriteMode: 'realtime' } },
-);
-```
-
-##### `writeTelegramEvent(event: TelegramEvent, options?: TelegramOptions): Promise<IngestionResult>`
-
-Stores Telegram-specific events with optimized handling.
+Automatically detects and handles:
+- Telegram Events (by `eventType` + `userId` + `timestamp` fields)
+- Telegram Messages (by `messageId` + `chatId` + `userId` + `messageType` fields)
+- Drone Telemetry and other data types
+- Generic data (fallback)
 
 ```javascript
-const result = await sdk.writeTelegramEvent({
+// ✨ Telegram Event - Auto-detected
+const result1 = await sdk.writeData({
   eventType: 'quest_completed',
-  userId: 'telegram_user_123',
-  chatId: 'chat_456',
+  userId: 'user123',
+  chatId: 'chat456',
   eventData: { questId: 'daily-login', points: 100 },
   timestamp: new Date(),
 });
-```
 
-##### `writeTelegramMessage(message: TelegramMessage, options?: TelegramOptions): Promise<IngestionResult>`
-
-Stores Telegram messages with metadata.
-
-```javascript
-const result = await sdk.writeTelegramMessage({
+// ✨ Telegram Message - Auto-detected  
+const result2 = await sdk.writeData({
   messageId: 'msg_123',
   chatId: 'chat_456',
   userId: 'user_789',
@@ -458,6 +449,18 @@ const result = await sdk.writeTelegramMessage({
   messageType: 'text',
   timestamp: new Date(),
 });
+
+// ✨ Custom data with options
+const result3 = await sdk.writeData(
+  { customData: 'value' },
+  { 
+    priority: 'high',
+    encryption: true,
+    metadata: { 
+      processing: { dataCloudWriteMode: 'direct', indexWriteMode: 'realtime' } 
+    }
+  }
+);
 ```
 
 ##### `getStatus(): SDKStatus`
@@ -466,14 +469,6 @@ Returns current SDK status and connection information.
 
 ```javascript
 const status = sdk.getStatus();
-```
-
-##### `getMetrics(): PerformanceMetrics`
-
-Returns performance metrics and statistics.
-
-```javascript
-const metrics = sdk.getMetrics();
 ```
 
 ##### `cleanup(): Promise<void>`
@@ -527,23 +522,33 @@ interface TelegramEvent {
 }
 ```
 
-#### IngestionResult
+#### UnifiedResponse
 
 ```typescript
-interface IngestionResult {
+interface UnifiedResponse {
   transactionId: string;
-  status: 'success' | 'partial_success' | 'failed';
-  dataCloudHash?: string; // DDC content hash
-  indexId?: string; // Activity SDK event ID
+  status: 'success' | 'partial' | 'failed';
+  
+  /**
+   * DDC Content Identifier (CID) for data stored in Data Cloud
+   */
+  dataCloudHash?: string;
+  
+  /**
+   * Activity SDK event identifier for indexed data
+   */
+  indexId?: string;
+  
   errors?: Array<{
-    code: string;
-    message: string;
-    component: 'ddc' | 'activity' | 'validation';
+    component: string;
+    error: string;
+    recoverable: boolean;
   }>;
+  
   metadata: {
-    processingTime: number; // Processing time in ms
-    retryCount: number; // Number of retries
-    fallbackUsed: boolean; // Whether fallback was used
+    processedAt: Date;
+    processingTime: number; // in milliseconds
+    actionsExecuted: string[];
   };
 }
 ```
@@ -658,7 +663,7 @@ import TelegramBot from 'node-telegram-bot-api';
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 
-// Handle messages
+// Handle messages - Auto-detected as Telegram Message
 bot.on('message', async (msg) => {
   const telegramMessage = {
     messageId: msg.message_id.toString(),
@@ -670,7 +675,7 @@ bot.on('message', async (msg) => {
   };
 
   try {
-    const result = await sdk.writeTelegramMessage(telegramMessage, {
+    const result = await sdk.writeData(telegramMessage, {
       priority: 'normal',
       writeMode: 'realtime',
     });
@@ -681,7 +686,7 @@ bot.on('message', async (msg) => {
   }
 });
 
-// Handle callback queries (inline buttons)
+// Handle callback queries (inline buttons) - Auto-detected as Telegram Event
 bot.on('callback_query', async (query) => {
   const telegramEvent = {
     eventType: 'button_click',
@@ -694,7 +699,7 @@ bot.on('callback_query', async (query) => {
     timestamp: new Date(),
   };
 
-  await sdk.writeTelegramEvent(telegramEvent, {
+  await sdk.writeData(telegramEvent, {
     priority: 'high',
     writeMode: 'realtime',
   });
@@ -704,7 +709,7 @@ bot.on('callback_query', async (query) => {
 ### Mini App Integration
 
 ```javascript
-// Handle Mini App events
+// Handle Mini App events - Auto-detected as Telegram Event
 const handleMiniAppEvent = async (eventData) => {
   const telegramEvent = {
     eventType: 'mini_app_interaction',
@@ -718,13 +723,13 @@ const handleMiniAppEvent = async (eventData) => {
     timestamp: new Date(),
   };
 
-  return await sdk.writeTelegramEvent(telegramEvent, {
+  return await sdk.writeData(telegramEvent, {
     priority: 'normal',
     writeMode: 'realtime',
   });
 };
 
-// Quest completion
+// Quest completion - Auto-detected as Telegram Event
 const handleQuestCompletion = async (questData) => {
   const telegramEvent = {
     eventType: 'quest_completed',
@@ -733,13 +738,12 @@ const handleQuestCompletion = async (questData) => {
     eventData: {
       questId: questData.questId,
       points: questData.points,
-      level: questData.level,
-      completionTime: questData.completionTime,
+      completedAt: new Date(),
     },
     timestamp: new Date(),
   };
 
-  return await sdk.writeTelegramEvent(telegramEvent, {
+  return await sdk.writeData(telegramEvent, {
     priority: 'high',
     writeMode: 'realtime',
   });

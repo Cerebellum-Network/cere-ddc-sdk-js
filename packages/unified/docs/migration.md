@@ -77,9 +77,8 @@ const response = await sdk.writeData({
 
 - `ddcClient.store()` for DDC storage
 - `eventDispatcher.dispatchEvent()` for Activity SDK
-- `writeTelegramEvent()` for events
-- `writeTelegramMessage()` for messages
 - Different methods for different data types
+- Manual coordination between systems
 
 **After (Simple):**
 

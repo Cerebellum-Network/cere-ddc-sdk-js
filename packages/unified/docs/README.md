@@ -2,18 +2,18 @@
 
 ## Overview
 
-The Unified Data Ingestion SDK is a comprehensive solution that provides a **single entry point** for data ingestion across multiple Cere ecosystem backends. It intelligently routes data to the appropriate storage and indexing systems based on configurable metadata, with specialized support for Telegram use cases.
+The Unified Data Ingestion SDK is a comprehensive solution that provides a **single entry point** for data ingestion across multiple Cere ecosystem backends. It intelligently routes data to the appropriate storage and indexing systems based on configurable metadata, with automatic data type detection for Telegram and drone telemetry use cases.
 
 ## Key Features
 
-- **🎯 Single Entry Point**: One SDK to rule them all - eliminates complexity of managing multiple SDKs
+- **🎯 Single Entry Point**: One `writeData()` method handles all data types automatically
 - **🤖 Automatic Data Detection**: Intelligently detects data types (Telegram events, messages, drone telemetry) and routes appropriately
 - **🧠 Intelligent Routing**: Metadata-driven routing to DDC Client and Activity SDK
 - **📱 Telegram Optimized**: Built-in support for Telegram events, messages, and mini-app interactions
-- **🔄 Fallback Mechanisms**: Graceful degradation when services are unavailable
+- **🔄 Fallback Mechanisms**: Graceful degradation when Activity SDK is unavailable (fallback to DDC storage)
 - **⚡ Performance Optimized**: Batching, parallel execution, and resource management
-- **🧪 Production Ready**: Comprehensive test coverage (68 tests, 100% pass rate)
-- **📊 Analytics Integration**: Built-in metrics and monitoring capabilities
+- **🧪 Production Ready**: Comprehensive test coverage with real DDC integration
+- **📊 Analytics Integration**: Built-in Activity SDK integration with UriSigner approach
 
 ## Quick Start
 
@@ -29,11 +29,24 @@ const sdk = new UnifiedSDK({
     network: 'testnet',
   },
   activityConfig: {
-    endpoint: 'https://ai-event.stage.cere.io',
+    endpoint: 'https://api.stats.cere.network',
     keyringUri: 'your twelve word mnemonic phrase here',
     appId: '2621',
+    connectionId: 'conn_' + Date.now(),
+    sessionId: 'sess_' + Date.now(),
     appPubKey: '0x367bd16b9fa69acc8d769add1652799683d68273eae126d2d4bae4d7b8e75bb6',
     dataServicePubKey: '0x8225bda7fc68c17407e933ba8a44a3cbb31ce933ef002fb60337ff63c952b932',
+  },
+  processing: {
+    enableBatching: true,
+    defaultBatchSize: 100,
+    defaultBatchTimeout: 5000,
+    maxRetries: 3,
+    retryDelay: 1000,
+  },
+  logging: {
+    level: 'info',
+    enableMetrics: true,
   },
 });
 
@@ -65,7 +78,7 @@ const result3 = await sdk.writeData(
   { customData: 'value', analytics: true },
   {
     priority: 'high',
-    writeMode: 'direct',
+    writeMode: 'realtime',
     metadata: {
       processing: {
         dataCloudWriteMode: 'direct',
@@ -76,6 +89,8 @@ const result3 = await sdk.writeData(
 );
 
 console.log('Data stored:', result1.transactionId);
+console.log('DDC CID:', result1.dataCloudHash); // Available if stored in DDC
+console.log('Activity Event ID:', result1.indexId); // Available if indexed
 
 // Cleanup
 await sdk.cleanup();
@@ -85,7 +100,7 @@ await sdk.cleanup();
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│              Unified SDK (Single Entry Point)              │
+│              UnifiedSDK (Single Entry Point)               │
 ├─────────────────────────────────────────────────────────────┤
 │  🎯 writeData() - One method for all data types            │
 │  • Automatic type detection (Telegram, Drone, Generic)     │
@@ -94,13 +109,13 @@ await sdk.cleanup();
 └─────────────────┬───────────────────────────┬───────────────┘
                   │                           │
         ┌─────────▼──────────┐      ┌─────────▼──────────┐
-        │  Rules Interpreter │      │    Dispatcher      │
+        │  RulesInterpreter  │      │    Dispatcher      │
         │                    │      │                    │
         │ • Data Type        │      │ • Route Planning   │
         │   Detection        │      │ • Action Creation  │
         │ • Metadata         │      │ • Priority Mgmt    │
-        │   Validation       │      │ • Execution Mode   │
-        │ • Rules Extraction │      │                    │
+        │   Validation       │      │ • DDC/Activity     │
+        │ • Rules Extraction │      │ • Optimization     │
         │ • Optimization     │      │                    │
         └─────────┬──────────┘      └─────────┬──────────┘
                   │                           │
@@ -113,70 +128,350 @@ await sdk.cleanup();
                   │ • Resource Mgmt    │
                   │ • Error Handling   │
                   │ • Fallback Logic   │
+                  │ • DDC Client Init  │
+                  │ • Activity SDK     │
                   └─────────┬──────────┘
                             │
            ┌────────────────┼────────────────┐
            │                │                │
     ┌──────▼──────┐  ┌──────▼──────┐  ┌──────▼──────┐
     │ DDC Client  │  │Activity SDK │  │ HTTP APIs   │
-    │             │  │             │  │             │
-    │ • Data      │  │ • Events    │  │ • Webhooks  │
-    │   Storage   │  │ • Analytics │  │ • External  │
-    │ • Files     │  │ • Indexing  │  │   Services  │
+    │             │  │             │  │ (Future)    │
+    │ • Data      │  │ • Events    │  │             │
+    │   Storage   │  │ • Analytics │  │ • Webhooks  │
+    │ • Files     │  │ • Indexing  │  │ • External  │
+    │ • DagNodes  │  │ • Fallback  │  │   Services  │
     └─────────────┘  └─────────────┘  └─────────────┘
+```
+
+## Core API
+
+### UnifiedSDK Class
+
+The main entry point for all data ingestion operations.
+
+#### Constructor
+
+```typescript
+constructor(config: UnifiedSDKConfig)
+```
+
+#### Methods
+
+##### `initialize(): Promise<void>`
+Initializes the SDK and all backend clients (DDC Client, Activity SDK).
+
+##### `writeData(payload: any, options?: WriteOptions): Promise<UnifiedResponse>`
+**🎯 THE SINGLE ENTRY POINT** - The only data ingestion method that automatically detects data types and routes appropriately.
+
+**This is the ONLY method you need** - it replaces all individual methods by automatically detecting:
+- Telegram Events (by `eventType` + `userId` + `timestamp` fields)
+- Telegram Messages (by `messageId` + `chatId` + `userId` + `messageType` fields)  
+- Drone Telemetry (by `droneId` + `telemetry` + location fields)
+- Generic data (fallback for any other structure)
+
+**Parameters:**
+- `payload`: The data to ingest (automatically detected type)
+- `options`: Optional configuration for this specific write operation
+
+**Returns:** `UnifiedResponse` with transaction details and storage references
+
+##### `getStatus(): object`
+Returns the current status of the SDK and its components.
+
+##### `cleanup(): Promise<void>`
+Cleans up resources and disconnects from backends.
+
+### Response Format
+
+```typescript
+interface UnifiedResponse {
+  transactionId: string;
+  status: 'success' | 'partial' | 'failed';
+  
+  // DDC Content Identifier - reference to stored data
+  dataCloudHash?: string;
+  
+  // Activity SDK event identifier for indexed data  
+  indexId?: string;
+  
+  errors?: Array<{
+    component: string;
+    error: string;
+    recoverable: boolean;
+  }>;
+  
+  metadata: {
+    processedAt: Date;
+    processingTime: number; // in milliseconds
+    actionsExecuted: string[];
+  };
+}
+```
+
+## Configuration
+
+### UnifiedSDKConfig
+
+```typescript
+interface UnifiedSDKConfig {
+  // DDC Client configuration
+  ddcConfig: {
+    signer: string; // Substrate URI or mnemonic phrase
+    bucketId: bigint;
+    clusterId?: bigint;
+    network?: 'testnet' | 'devnet' | 'mainnet';
+  };
+
+  // Activity SDK configuration (optional)
+  activityConfig?: {
+    endpoint?: string;
+    keyringUri?: string; // Substrate URI for signing
+    appId?: string;
+    connectionId?: string;
+    sessionId?: string;
+    appPubKey?: string;
+    dataServicePubKey?: string;
+  };
+
+  // Processing options
+  processing: {
+    enableBatching: boolean;
+    defaultBatchSize: number;
+    defaultBatchTimeout: number; // in milliseconds
+    maxRetries: number;
+    retryDelay: number; // in milliseconds
+  };
+
+  // Logging and monitoring
+  logging: {
+    level: 'debug' | 'info' | 'warn' | 'error';
+    enableMetrics: boolean;
+  };
+}
+```
+
+### Write Options
+
+```typescript
+interface WriteOptions {
+  priority?: 'low' | 'normal' | 'high';
+  encryption?: boolean;
+  writeMode?: 'realtime' | 'batch';
+  metadata?: Partial<UnifiedMetadata>;
+}
+```
+
+### Processing Metadata
+
+Controls how data is processed and routed:
+
+```typescript
+interface ProcessingMetadata {
+  dataCloudWriteMode: 'direct' | 'batch' | 'viaIndex' | 'skip';
+  indexWriteMode: 'realtime' | 'skip';
+  priority?: 'low' | 'normal' | 'high';
+  ttl?: number; // Time to live in seconds
+  encryption?: boolean;
+  batchOptions?: {
+    maxSize?: number;
+    maxWaitTime?: number; // in milliseconds
+  };
+}
+```
+
+**Data Cloud Write Modes:**
+- `direct`: Write immediately to DDC (bypassing indexing)
+- `batch`: Buffer and write to DDC in batches  
+- `viaIndex`: Let Activity SDK handle DDC storage
+- `skip`: Don't store in DDC
+
+**Index Write Modes:**
+- `realtime`: Write to Activity SDK immediately
+- `skip`: Don't index this data
+
+## Automatic Data Type Detection
+
+The SDK automatically detects data types based on payload structure:
+
+### Telegram Event Detection
+Detected when payload contains:
+- `eventType` (string)
+- `userId` (string)  
+- `timestamp` (Date)
+
+```typescript
+{
+  eventType: 'quest_completed',
+  userId: 'user123',
+  chatId: 'chat456', // optional
+  eventData: { questId: 'daily', points: 100 },
+  timestamp: new Date()
+}
+```
+
+### Telegram Message Detection
+Detected when payload contains:
+- `messageId` (string)
+- `chatId` (string)
+- `userId` (string)
+- `messageType` (string)
+
+```typescript
+{
+  messageId: 'msg123',
+  chatId: 'chat456',
+  userId: 'user789',
+  messageText: 'Hello!',
+  messageType: 'text',
+  timestamp: new Date()
+}
+```
+
+### Drone Telemetry Detection
+Detected when payload contains:
+- `droneId` (string)
+- `telemetry` (object)
+- `latitude` or `longitude` (number)
+
+### Generic Data
+Any data that doesn't match the above patterns is treated as generic data.
+
+## Error Handling & Fallbacks
+
+The SDK implements comprehensive error handling:
+
+### Structured Errors
+
+```typescript
+class UnifiedSDKError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public component: string,
+    public recoverable: boolean = false,
+    public originalError?: Error
+  );
+}
+```
+
+### Fallback Mechanisms
+
+1. **Activity SDK Unavailable**: Falls back to DDC storage only
+2. **DDC Storage Failure**: Returns error but preserves Activity SDK indexing
+3. **Partial Success**: Returns partial status with successful operations noted
+
+## Integration Examples
+
+### Basic Telegram Bot Integration
+
+```typescript
+import { UnifiedSDK } from '@cere-ddc-sdk/unified';
+import { Telegraf } from 'telegraf';
+
+const sdk = new UnifiedSDK(config);
+await sdk.initialize();
+
+const bot = new Telegraf(process.env.BOT_TOKEN);
+
+// Quest completion
+bot.command('quest', async (ctx) => {
+  const result = await sdk.writeData({
+    eventType: 'quest_completed',
+    userId: ctx.from.id.toString(),
+    chatId: ctx.chat.id.toString(),
+    eventData: { questType: 'daily', points: 100 },
+    timestamp: new Date(),
+  });
+  
+  ctx.reply(`Quest completed! Transaction: ${result.transactionId}`);
+});
+
+// Message storage
+bot.on('text', async (ctx) => {
+  await sdk.writeData({
+    messageId: ctx.message.message_id.toString(),
+    chatId: ctx.chat.id.toString(),
+    userId: ctx.from.id.toString(),
+    messageText: ctx.message.text,
+    messageType: 'text',
+    timestamp: new Date(ctx.message.date * 1000),
+  });
+});
+```
+
+### Custom Metadata Example
+
+```typescript
+// High priority encrypted data
+await sdk.writeData(
+  { sensitiveData: 'important info' },
+  {
+    priority: 'high',
+    encryption: true,
+    metadata: {
+      processing: {
+        dataCloudWriteMode: 'direct',
+        indexWriteMode: 'realtime',
+        ttl: 86400, // 24 hours
+      },
+    },
+  }
+);
+
+// Batch mode for high volume
+await sdk.writeData(
+  bulkDataArray,
+  {
+    writeMode: 'batch',
+    metadata: {
+      processing: {
+        dataCloudWriteMode: 'batch',
+        indexWriteMode: 'realtime',
+        batchOptions: {
+          maxSize: 50,
+          maxWaitTime: 2000,
+        },
+      },
+    },
+  }
+);
 ```
 
 ## Documentation Navigation
 
 ### 📖 **Getting Started**
-
-| Document                                              | Description                                  | Best For                  |
-| ----------------------------------------------------- | -------------------------------------------- | ------------------------- |
-| **[Usage & Setup Guide](./usage-and-setup-guide.md)** | Complete setup and usage guide with examples | New users, implementation |
-| **[Quick Start](#quick-start)**                       | 5-minute setup guide                         | First-time users          |
-| **[Configuration Guide](./configuration.md)**         | Configuration options and environment setup  | DevOps, production setup  |
+- **[Usage & Setup Guide](./usage-and-setup-guide.md)** - Complete setup and usage guide with examples
+- **[Configuration Guide](./configuration.md)** - Configuration options and environment setup
 
 ### 🏗️ **Architecture & Design**
+- **[Architecture Guide](./architecture.md)** - Detailed system architecture and patterns
+- **[Component Guide](./components.md)** - Deep dive into each component
+- **[Design Decisions](./design-decisions.md)** - Rationale behind architectural choices
 
-| Document                                                                | Description                               | Best For                        |
-| ----------------------------------------------------------------------- | ----------------------------------------- | ------------------------------- |
-| **[Comprehensive Analysis Report](./comprehensive-analysis-report.md)** | Full architecture analysis and assessment | Architects, technical review    |
-| **[Architecture Guide](./architecture.md)**                             | Detailed system architecture and patterns | System architects, developers   |
-| **[Component Guide](./components.md)**                                  | Deep dive into each component             | Advanced developers             |
-| **[Design Decisions](./design-decisions.md)**                           | Rationale behind architectural choices    | Understanding design philosophy |
-
-### 🔧 **Development & Integration**
-
-| Document                                | Description                    | Best For                   |
-| --------------------------------------- | ------------------------------ | -------------------------- |
-| **[API Reference](./api-reference.md)** | Complete API documentation     | Implementation, reference  |
-| **[Testing Guide](./testing-guide.md)** | Comprehensive testing guide    | Testing, CI/CD, validation |
-| **[Migration Guide](./migration.md)**   | Migrating from individual SDKs | Legacy system integration  |
+### 🔧 **Development & Integration**  
+- **[API Reference](./api-reference.md)** - Complete API documentation
+- **[Testing Guide](./testing-guide.md)** - Comprehensive testing guide
+- **[Migration Guide](./migration.md)** - Migrating from individual SDKs
 
 ### 📱 **Telegram Integration**
-
-| Document                                  | Description                      | Best For                  |
-| ----------------------------------------- | -------------------------------- | ------------------------- |
-| **[Telegram Guide](./telegram-guide.md)** | Telegram-specific implementation | Bot developers, mini-apps |
+- **[Telegram Guide](./telegram-guide.md)** - Telegram-specific implementation
 
 ### 🔧 **Operations & Troubleshooting**
-
-| Document                                    | Description                 | Best For                      |
-| ------------------------------------------- | --------------------------- | ----------------------------- |
-| **[Troubleshooting](./troubleshooting.md)** | Common issues and solutions | Production support, debugging |
+- **[Troubleshooting](./troubleshooting.md)** - Common issues and solutions
 
 ## Core Components
 
-| Component            | Purpose            | Responsibilities                                         | Lines of Code |
-| -------------------- | ------------------ | -------------------------------------------------------- | ------------- |
-| **UnifiedSDK**       | Main entry point   | API surface, initialization, high-level operations       | 324           |
-| **RulesInterpreter** | Metadata processor | Validation, rule extraction, optimization                | 208           |
-| **Dispatcher**       | Route planner      | Action creation, priority management, execution planning | 261           |
-| **Orchestrator**     | Execution engine   | Resource management, error handling, fallback logic      | 442           |
+| Component            | Purpose              | Responsibilities                                         | File                  |
+| -------------------- | -------------------- | -------------------------------------------------------- | --------------------- |
+| **UnifiedSDK**       | Main entry point    | API surface, initialization, high-level operations      | UnifiedSDK.ts         |
+| **RulesInterpreter** | Metadata processor   | Validation, rule extraction, optimization                | RulesInterpreter.ts   |
+| **Dispatcher**       | Route planner        | Action creation, priority management, execution planning | Dispatcher.ts         |
+| **Orchestrator**     | Execution engine     | Resource management, error handling, fallback logic     | Orchestrator.ts       |
 
 ## Test Coverage & Quality
 
-- **✅ 68 tests passing** with 100% success rate
+- **✅ Comprehensive Test Suite** with real DDC integration
 - **🏗️ 4-layer architecture** with clear separation of concerns
 - **🔒 Comprehensive error handling** with structured error codes
 - **📊 Performance metrics** built-in monitoring
@@ -186,143 +481,52 @@ await sdk.cleanup();
 ## Integration Status
 
 ### DDC Integration ✅
-
 - **Status**: Fully operational
-- **Test Results**: Successfully connected to Cere Testnet
-- **Storage Nodes**: 68 available nodes
-- **Performance**: ~1.6s average operation time
+- **Features**: Store data as DagNodes, Files, or JSON
+- **Networks**: Testnet, Devnet, Mainnet support
+- **Performance**: Real-time storage with CID references
 
-### Activity SDK Integration ⚠️
-
-- **Status**: Graceful fallback mode
+### Activity SDK Integration ✅
+- **Status**: Fully operational with fallback mode
+- **Features**: Event dispatching with UriSigner approach
 - **Fallback**: Automatic DDC storage when Activity SDK unavailable
-- **Test Results**: Mock responses working, real integration pending
+- **Authentication**: ed25519 signatures for Event Service compatibility
 
 ## Design Philosophy
 
 ### 1. **Single Method Simplicity**
-
 The core principle is **extreme simplicity**: one `writeData()` method that automatically:
-
-- **Detects data types** based on structure (Telegram events, messages, drone telemetry, generic data)
-- **Routes intelligently** to appropriate backends
+- **Detects data types** based on structure
+- **Routes intelligently** to appropriate backends  
 - **Handles complexity** internally without exposing it to developers
 - **Provides consistent interface** regardless of data type or destination
 
 ### 2. **Metadata-Driven Architecture**
-
 Instead of hardcoded routing logic, the SDK uses flexible metadata to determine:
-
 - Where data should be stored (DDC vs external)
-- How data should be indexed (realtime vs batch vs skip)
+- How data should be indexed (realtime vs skip)
 - Processing priorities and encryption requirements
 - Batching and performance optimizations
 
 ### 3. **Telegram-First Design**
-
 While the SDK is generic, it's optimized for Telegram use cases:
-
 - **Automatic detection** of Telegram events and messages
 - **Intelligent routing** for different Telegram data types
 - **Built-in support** for mini-app interactions and user analytics
 - **No learning curve** - developers just call `writeData()` with their data
 
 ### 4. **Graceful Degradation**
-
 The system is designed to handle failures gracefully:
-
 - If Activity SDK fails, fall back to DDC storage
 - If DDC is unavailable, queue for later processing
 - Partial success scenarios are handled intelligently
 
-### 5. **Performance & Scalability**
+## Getting Started
 
-- Batching for high-throughput scenarios
-- Parallel execution when possible
-- Resource pooling and connection management
-- Intelligent payload size optimization
+1. **Install**: `npm install @cere-ddc-sdk/unified`
+2. **Configure**: Set up DDC and Activity SDK credentials
+3. **Initialize**: Call `sdk.initialize()`
+4. **Use**: Call `sdk.writeData()` with any data structure
+5. **Monitor**: Check response status and handle errors
 
-## Key Benefits
-
-### For Developers
-
-- **🎯 Ultimate Simplicity**: One method (`writeData()`) for all use cases
-- **🤖 Zero Configuration**: Automatic data type detection and routing
-- **Type Safety**: Full TypeScript support with comprehensive type definitions
-- **Flexible Configuration**: Metadata-driven behavior without code changes
-- **Rich Documentation**: Comprehensive guides and examples
-- **Testing Support**: Complete test suite and testing tools
-
-### For Applications
-
-- **Better Performance**: Intelligent batching and parallel processing
-- **Reliability**: Built-in fallback mechanisms and error handling
-- **Observability**: Comprehensive logging and status reporting
-- **Scalability**: Optimized for high-throughput scenarios
-- **Production Ready**: Battle-tested with comprehensive error handling
-
-### For Telegram Bots
-
-- **🚀 Instant Integration**: Just call `writeData()` with your Telegram data
-- **🤖 Auto-Detection**: Automatically detects events vs messages
-- **Analytics Ready**: Automatic event tracking and user analytics
-- **Mini-App Optimized**: Specialized handling for mini-app interactions
-- **Quest Integration**: Easy integration with gamification systems
-
-## Recent Analysis & Improvements
-
-The SDK has undergone comprehensive analysis revealing:
-
-### ✅ **Strengths Identified**
-
-- Clean, modular architecture with clear separation of concerns
-- Comprehensive error handling and fallback mechanisms
-- Full integration capabilities with both DDC and Activity SDK
-- Excellent test coverage with robust validation
-- Telegram-optimized use cases with specialized methods
-
-### 🔧 **Improvement Areas**
-
-- Batch storage functionality implementation in progress
-- Activity SDK reliability enhancements planned
-- Performance optimization opportunities identified
-
-## Next Steps
-
-### For New Users
-
-1. **Start with [Usage & Setup Guide](./usage-and-setup-guide.md)** for complete implementation guide
-2. **Read [Comprehensive Analysis Report](./comprehensive-analysis-report.md)** for technical overview
-3. **Check [Testing Guide](./testing-guide.md)** for validation and testing
-
-### For Telegram Developers
-
-1. **Explore [Telegram Guide](./telegram-guide.md)** for specialized implementation
-2. **Review bot integration examples** in the usage guide
-3. **Check mini-app interaction patterns** in the API reference
-
-### For System Architects
-
-1. **Review [Comprehensive Analysis Report](./comprehensive-analysis-report.md)** for full assessment
-2. **Study [Architecture Guide](./architecture.md)** for system design
-3. **Examine [Design Decisions](./design-decisions.md)** for architectural rationale
-
-### For DevOps Teams
-
-1. **Configure using [Configuration Guide](./configuration.md)**
-2. **Set up testing with [Testing Guide](./testing-guide.md)**
-3. **Prepare troubleshooting with [Troubleshooting Guide](./troubleshooting.md)**
-
-## Production Readiness
-
-The SDK is **production-ready** with the following considerations:
-
-- ✅ Core functionality stable and tested
-- ✅ Comprehensive error handling implemented
-- ✅ Graceful fallbacks for service failures
-- ⚠️ Batch storage operations fall back to individual storage
-- ⚠️ Activity SDK integration uses fallback mode when service unavailable
-
----
-
-> **Note**: This SDK is part of the Cere DDC SDK monorepo and follows the same versioning and release cycle. For the latest updates and technical analysis, refer to the [Comprehensive Analysis Report](./comprehensive-analysis-report.md).
+The Unified SDK provides the simplest possible interface while maintaining maximum flexibility and reliability for production use cases.

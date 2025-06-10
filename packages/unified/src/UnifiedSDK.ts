@@ -114,6 +114,8 @@ export class UnifiedSDK {
         status: response.status,
         dataType: this.detectDataType(payload),
         processingTime: response.metadata.processingTime,
+        cloudHash: response.dataCloudHash,
+        indexId: response.indexId,
       });
 
       return response;

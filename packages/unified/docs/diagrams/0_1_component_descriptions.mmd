@@ -1,0 +1,217 @@
+flowchart TD
+    classDef component fill:#f9f9f9,stroke:#333,stroke-width:1px
+    classDef description fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px
+    classDef responsibility fill:#e1f5fe,stroke:#0277bd,stroke-width:1px
+    classDef interface fill:#fff9c4,stroke:#f57f17,stroke-width:1px
+    classDef sectionTitle fill:#ede7f6,stroke:#4527a0,stroke-width:2px
+    
+    ComponentTitle["Unified Data Ingestion SDK/API: Component Descriptions"]:::sectionTitle
+    
+    %% Unified SDK/API
+    subgraph UnifiedSDKSection["1. Unified SDK/API (Single Entry Point)"]
+        direction TB
+        
+        UnifiedSDK["Unified SDK/API"]:::component
+        
+        UnifiedSDKDesc["Serves as the single front door for all data ingestion into the system.
+        Abstracts away the complexity of choosing between multiple SDKs/APIs.
+        Client applications interact only with this layer for all data ingestion needs."]:::description
+        
+        UnifiedSDKResp["• Acts as facade over underlying Data Cloud SDK, Activity SDK and HTTP API
+        • Validates incoming requests and payload formats
+        • Forwards processing metadata to Rules Interpreter
+        • Returns unified response format with appropriate IDs/hashes
+        • Implements idempotency mechanisms to safely handle retries
+        • Provides consistent error handling and logging"]:::responsibility
+        
+        UnifiedSDKInterface["Public Interface:
+        writeData(payload, metadata) → Returns: {
+          transactionId: string,
+          status: string,
+          dataCloudHash?: string,
+          indexId?: string
+        }"]:::interface
+        
+        UnifiedSDK --- UnifiedSDKDesc
+        UnifiedSDK --- UnifiedSDKResp
+        UnifiedSDK --- UnifiedSDKInterface
+    end
+    
+    %% Rules Interpreter
+    subgraph RulesSection["2. Rules Interpreter"]
+        direction TB
+        
+        RulesInterpreter["Rules Interpreter"]:::component
+        
+        RulesDesc["Parses and validates the metadata.processing object to determine how data 
+        should be processed. Ensures that processing rules are valid and consistent.
+        Acts as the 'brain' of the unified layer that interprets client intentions."]:::description
+        
+        RulesResp["• Validates all metadata.processing fields against allowed values
+        • Applies defaults when values aren't specified
+        • Detects and rejects invalid combinations of processing rules
+        • Resolves conflicts in processing instructions
+        • Optimizes processing path based on metadata
+        • Enforces schema validation for metadata structure"]:::responsibility
+        
+        RulesInterface["Internal Interface:
+        validateMetadata(metadata) → Returns: boolean
+        extractProcessingRules(metadata) → Returns: {
+          dataCloudAction: string,
+          indexAction: string,
+          additionalParams: object
+        }"]:::interface
+        
+        RulesInterpreter --- RulesDesc
+        RulesInterpreter --- RulesResp
+        RulesInterpreter --- RulesInterface
+    end
+    
+    %% Dispatcher
+    subgraph DispatcherSection["3. Dispatcher"]
+        direction TB
+        
+        Dispatcher["Dispatcher"]:::component
+        
+        DispatcherDesc["Routes data to the appropriate underlying systems based on 
+        the processing rules interpreted from metadata. Determines which SDK/API 
+        calls need to be made and in what order."]:::description
+        
+        DispatcherResp["• Maps processing rules to specific SDK/API calls
+        • Determines optimal execution order for multiple actions
+        • Handles any transformations needed between systems
+        • Routes to appropriate batching mechanisms if required
+        • Applies payload format adaptations for target systems
+        • Ensures all routing decisions are logged for traceability"]:::responsibility
+        
+        DispatcherInterface["Internal Interface:
+        routeRequest(payload, processedRules) → Returns: {
+          actions: Array<{
+            target: string,
+            payload: any,
+            options: object
+          }>
+        }"]:::interface
+        
+        Dispatcher --- DispatcherDesc
+        Dispatcher --- DispatcherResp
+        Dispatcher --- DispatcherInterface
+    end
+    
+    %% Orchestrator/Error Handler
+    subgraph OrchestratorSection["4. Orchestrator/Error Handler"]
+        direction TB
+        
+        Orchestrator["Orchestrator/Error Handler"]:::component
+        
+        OrchestratorDesc["Manages the execution of multiple SDK/API calls, ensuring proper 
+        sequencing and error handling. Responsible for transaction integrity
+        across multiple systems when applicable."]:::description
+        
+        OrchestratorResp["• Executes actions determined by the Dispatcher
+        • Handles partial failures and compensation actions
+        • Implements retry logic with exponential backoff
+        • Records detailed error information and outcomes
+        • Maintains transaction context across multiple calls
+        • Provides circuit breaking for failing downstream services
+        • Implements timeout handling for long-running operations
+        • Ensures observability through comprehensive logging"]:::responsibility
+        
+        OrchestratorInterface["Internal Interface:
+        execute(actions) → Returns: {
+          results: Array<{
+            target: string,
+            success: boolean,
+            response: any,
+            error?: any
+          }>,
+          overallStatus: string
+        }"]:::interface
+        
+        Orchestrator --- OrchestratorDesc
+        Orchestrator --- OrchestratorResp
+        Orchestrator --- OrchestratorInterface
+    end
+    
+    %% Batching Component
+    subgraph BatchingSection["5. Batching Component"]
+        direction TB
+        
+        BatchingComponent["Batching Component"]:::component
+        
+        BatchingDesc["Optional component that aggregates multiple data items to be written 
+        to the Data Cloud in efficient batches. This improves performance for
+        high-volume, low-latency-requirement data."]:::description
+        
+        BatchingResp["• Buffers data items based on configurable parameters
+        • Applies size-based and time-based batching policies
+        • Ensures data durability during batching
+        • Handles batch submission to Data Cloud SDK
+        • Manages batch failure scenarios
+        • Provides batch status monitoring and metrics
+        • Supports prioritization within batch queues
+        • Implements backpressure mechanisms"]:::responsibility
+        
+        BatchingInterface["Internal Interface:
+        addToBatch(payload, options) → Returns: {
+          batchId: string,
+          position: number,
+          estimatedProcessingTime: number
+        }
+        
+        flushBatch(batchId?) → Returns: {
+          itemsProcessed: number,
+          failures: Array<any>
+        }"]:::interface
+        
+        BatchingComponent --- BatchingDesc
+        BatchingComponent --- BatchingResp
+        BatchingComponent --- BatchingInterface
+    end
+    
+    %% Configuration/Secrets Management
+    subgraph ConfigSection["6. Configuration/Secrets Management"]
+        direction TB
+        
+        ConfigMgmt["Configuration/Secrets Management"]:::component
+        
+        ConfigDesc["Manages all configuration settings, endpoints, credentials, and keys
+        required by the Unified SDK/API and its components. Ensures secure
+        access to sensitive information."]:::description
+        
+        ConfigResp["• Loads and validates configuration from environment or config service
+        • Securely manages API keys and credentials
+        • Implements encryption key management
+        • Provides dynamic configuration updates without restarts
+        • Enforces access controls to sensitive configuration
+        • Supports environment-specific configurations
+        • Handles configuration versioning and rollback"]:::responsibility
+        
+        ConfigInterface["Internal Interface:
+        getConfig(key, defaultValue?) → Returns: any
+        getCredentials(service) → Returns: {
+          endpoint: string,
+          apiKey?: string,
+          authToken?: string,
+          ...other credentials
+        }"]:::interface
+        
+        ConfigMgmt --- ConfigDesc
+        ConfigMgmt --- ConfigResp
+        ConfigMgmt --- ConfigInterface
+    end
+    
+    %% Connecting them to the title
+    ComponentTitle --> UnifiedSDKSection
+    ComponentTitle --> RulesSection
+    ComponentTitle --> DispatcherSection
+    ComponentTitle --> OrchestratorSection
+    ComponentTitle --> BatchingSection
+    ComponentTitle --> ConfigSection
+    
+    %% Component Relationships
+    UnifiedSDKSection -.-> RulesSection
+    RulesSection -.-> DispatcherSection
+    DispatcherSection -.-> OrchestratorSection
+    OrchestratorSection -.-> BatchingSection
+    ConfigSection -.-> UnifiedSDKSection 

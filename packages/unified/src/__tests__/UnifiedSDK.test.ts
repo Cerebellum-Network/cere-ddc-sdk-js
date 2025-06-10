@@ -88,10 +88,14 @@ describe('UnifiedSDK', () => {
 
     it('should process data successfully', async () => {
       const payload = { test: 'data' };
-      const metadata = {
-        processing: {
-          dataCloudWriteMode: 'direct' as const,
-          indexWriteMode: 'realtime' as const,
+      const options = {
+        priority: 'normal' as const,
+        encryption: false,
+        metadata: {
+          processing: {
+            dataCloudWriteMode: 'direct' as const,
+            indexWriteMode: 'realtime' as const,
+          },
         },
       };
 
@@ -100,7 +104,7 @@ describe('UnifiedSDK', () => {
       const mockDispatcher = (sdk as any).dispatcher;
       const mockOrchestrator = (sdk as any).orchestrator;
 
-      mockRulesInterpreter.validateMetadata = jest.fn().mockReturnValue(metadata);
+      mockRulesInterpreter.validateMetadata = jest.fn().mockReturnValue(options.metadata);
       mockRulesInterpreter.extractProcessingRules = jest.fn().mockReturnValue({
         dataCloudAction: 'write_direct',
         indexAction: 'write_realtime',
@@ -125,7 +129,7 @@ describe('UnifiedSDK', () => {
         transactionId: 'txn_123',
       });
 
-      const result = await sdk.writeData(payload, metadata);
+      const result = await sdk.writeData(payload, options);
 
       expect(result.status).toBe('success');
       expect(result.transactionId).toBe('txn_123');
@@ -136,7 +140,17 @@ describe('UnifiedSDK', () => {
       const sdkNotInit = new UnifiedSDK(mockConfig);
 
       await expect(
-        sdkNotInit.writeData({}, { processing: { dataCloudWriteMode: 'direct', indexWriteMode: 'realtime' } }),
+        sdkNotInit.writeData(
+          {},
+          {
+            metadata: {
+              processing: {
+                dataCloudWriteMode: 'direct',
+                indexWriteMode: 'realtime',
+              },
+            },
+          },
+        ),
       ).rejects.toThrow(UnifiedSDKError);
     });
 
@@ -147,19 +161,29 @@ describe('UnifiedSDK', () => {
       });
 
       await expect(
-        sdk.writeData({}, { processing: { dataCloudWriteMode: 'direct', indexWriteMode: 'realtime' } }),
+        sdk.writeData(
+          {},
+          {
+            metadata: {
+              processing: {
+                dataCloudWriteMode: 'direct',
+                indexWriteMode: 'realtime',
+              },
+            },
+          },
+        ),
       ).rejects.toThrow(UnifiedSDKError);
     });
   });
 
-  describe('writeTelegramEvent', () => {
+  describe('writeData with auto-detection', () => {
     beforeEach(async () => {
       const mockOrchestrator = (sdk as any).orchestrator;
       mockOrchestrator.initialize = jest.fn().mockResolvedValue(undefined);
       await sdk.initialize();
     });
 
-    it('should write Telegram event with defaults', async () => {
+    it('should auto-detect and process Telegram event', async () => {
       const eventData: TelegramEventData = {
         eventType: 'quest_completed',
         userId: 'user123',
@@ -168,88 +192,53 @@ describe('UnifiedSDK', () => {
         timestamp: new Date(),
       };
 
-      // Mock writeData method
-      jest.spyOn(sdk, 'writeData').mockResolvedValue({
-        transactionId: 'txn_event_123',
-        status: 'success',
-        metadata: {
-          processedAt: new Date(),
-          processingTime: 50,
-          actionsExecuted: ['ddc-client'],
-        },
-      });
+      // Mock component responses for auto-detection
+      const mockRulesInterpreter = (sdk as any).rulesInterpreter;
+      const mockDispatcher = (sdk as any).dispatcher;
+      const mockOrchestrator = (sdk as any).orchestrator;
 
-      const result = await sdk.writeTelegramEvent(eventData);
-
-      expect(sdk.writeData).toHaveBeenCalledWith(eventData, {
+      mockRulesInterpreter.validateMetadata = jest.fn().mockReturnValue({
         processing: {
           dataCloudWriteMode: 'viaIndex',
           indexWriteMode: 'realtime',
           priority: 'normal',
           encryption: false,
         },
-        userContext: {
-          source: 'telegram',
-          eventType: 'quest_completed',
-          userId: 'user123',
-        },
-        traceId: expect.stringMatching(/^telegram_event_user123_\d+$/),
       });
+      mockRulesInterpreter.extractProcessingRules = jest.fn().mockReturnValue({
+        dataCloudAction: 'write_via_index',
+        indexAction: 'write_realtime',
+        batchingRequired: false,
+        additionalParams: { priority: 'normal', encryption: false },
+      });
+      mockRulesInterpreter.optimizeProcessingRules = jest.fn().mockReturnValue({
+        dataCloudAction: 'write_via_index',
+        indexAction: 'write_realtime',
+        batchingRequired: false,
+        additionalParams: { priority: 'normal', encryption: false },
+      });
+      mockDispatcher.routeRequest = jest.fn().mockReturnValue({
+        actions: [{ target: 'activity-sdk', method: 'sendEvent' }],
+        executionMode: 'sequential',
+        rollbackRequired: false,
+      });
+      mockOrchestrator.execute = jest.fn().mockResolvedValue({
+        results: [{ target: 'activity-sdk', success: true, response: { eventId: 'evt_123' }, executionTime: 50 }],
+        overallStatus: 'success',
+        totalExecutionTime: 50,
+        transactionId: 'txn_event_123',
+      });
+
+      const result = await sdk.writeData(eventData);
 
       expect(result.status).toBe('success');
+      expect(result.transactionId).toBe('txn_event_123');
+      // Verify that detectDataType was called internally (via createMetadataForPayload)
+      expect(mockRulesInterpreter.validateMetadata).toHaveBeenCalled();
+      expect(mockDispatcher.routeRequest).toHaveBeenCalled();
     });
 
-    it('should write Telegram event with custom options', async () => {
-      const eventData: TelegramEventData = {
-        eventType: 'user_action',
-        userId: 'user456',
-        eventData: { action: 'purchase' },
-        timestamp: new Date(),
-      };
-
-      jest.spyOn(sdk, 'writeData').mockResolvedValue({
-        transactionId: 'txn_event_456',
-        status: 'success',
-        metadata: {
-          processedAt: new Date(),
-          processingTime: 75,
-          actionsExecuted: ['ddc-client', 'activity-sdk'],
-        },
-      });
-
-      const result = await sdk.writeTelegramEvent(eventData, {
-        priority: 'high',
-        encryption: true,
-        writeMode: 'batch',
-      });
-
-      expect(sdk.writeData).toHaveBeenCalledWith(eventData, {
-        processing: {
-          dataCloudWriteMode: 'batch',
-          indexWriteMode: 'realtime',
-          priority: 'high',
-          encryption: true,
-        },
-        userContext: {
-          source: 'telegram',
-          eventType: 'user_action',
-          userId: 'user456',
-        },
-        traceId: expect.stringMatching(/^telegram_event_user456_\d+$/),
-      });
-
-      expect(result.status).toBe('success');
-    });
-  });
-
-  describe('writeTelegramMessage', () => {
-    beforeEach(async () => {
-      const mockOrchestrator = (sdk as any).orchestrator;
-      mockOrchestrator.initialize = jest.fn().mockResolvedValue(undefined);
-      await sdk.initialize();
-    });
-
-    it('should write Telegram message with defaults', async () => {
+    it('should auto-detect and process Telegram message', async () => {
       const messageData: TelegramMessageData = {
         messageId: 'msg123',
         chatId: 'chat456',
@@ -259,80 +248,100 @@ describe('UnifiedSDK', () => {
         timestamp: new Date(),
       };
 
-      jest.spyOn(sdk, 'writeData').mockResolvedValue({
-        transactionId: 'txn_msg_123',
-        status: 'success',
-        metadata: {
-          processedAt: new Date(),
-          processingTime: 30,
-          actionsExecuted: ['ddc-client'],
-        },
-      });
+      // Mock component responses for auto-detection
+      const mockRulesInterpreter = (sdk as any).rulesInterpreter;
+      const mockDispatcher = (sdk as any).dispatcher;
+      const mockOrchestrator = (sdk as any).orchestrator;
 
-      const result = await sdk.writeTelegramMessage(messageData);
-
-      expect(sdk.writeData).toHaveBeenCalledWith(messageData, {
+      mockRulesInterpreter.validateMetadata = jest.fn().mockReturnValue({
         processing: {
           dataCloudWriteMode: 'viaIndex',
           indexWriteMode: 'realtime',
           priority: 'normal',
           encryption: false,
         },
-        userContext: {
-          source: 'telegram',
-          messageType: 'text',
-          userId: 'user789',
-          chatId: 'chat456',
-        },
-        traceId: expect.stringMatching(/^telegram_message_msg123_\d+$/),
       });
+      mockRulesInterpreter.extractProcessingRules = jest.fn().mockReturnValue({
+        dataCloudAction: 'write_via_index',
+        indexAction: 'write_realtime',
+        batchingRequired: false,
+        additionalParams: { priority: 'normal', encryption: false },
+      });
+      mockRulesInterpreter.optimizeProcessingRules = jest.fn().mockReturnValue({
+        dataCloudAction: 'write_via_index',
+        indexAction: 'write_realtime',
+        batchingRequired: false,
+        additionalParams: { priority: 'normal', encryption: false },
+      });
+      mockDispatcher.routeRequest = jest.fn().mockReturnValue({
+        actions: [{ target: 'ddc-client', method: 'store' }],
+        executionMode: 'sequential',
+        rollbackRequired: false,
+      });
+      mockOrchestrator.execute = jest.fn().mockResolvedValue({
+        results: [{ target: 'ddc-client', success: true, response: { cid: '0xmsg123' }, executionTime: 30 }],
+        overallStatus: 'success',
+        totalExecutionTime: 30,
+        transactionId: 'txn_msg_123',
+      });
+
+      const result = await sdk.writeData(messageData);
 
       expect(result.status).toBe('success');
+      expect(result.transactionId).toBe('txn_msg_123');
+      expect(result.dataCloudHash).toBe('0xmsg123');
     });
 
-    it('should write Telegram message with custom options', async () => {
-      const messageData: TelegramMessageData = {
-        messageId: 'msg456',
-        chatId: 'chat789',
-        userId: 'user123',
-        messageType: 'photo',
-        timestamp: new Date(),
-        metadata: { caption: 'A nice photo' },
+    it('should process custom data with explicit options', async () => {
+      const customData = { analytics: true, userId: 'user123', action: 'click' };
+      const options = {
+        priority: 'high' as const,
+        encryption: true,
+        writeMode: 'batch' as const,
       };
 
-      jest.spyOn(sdk, 'writeData').mockResolvedValue({
-        transactionId: 'txn_msg_456',
-        status: 'success',
-        metadata: {
-          processedAt: new Date(),
-          processingTime: 45,
-          actionsExecuted: ['ddc-client'],
-        },
-      });
+      // Mock component responses
+      const mockRulesInterpreter = (sdk as any).rulesInterpreter;
+      const mockDispatcher = (sdk as any).dispatcher;
+      const mockOrchestrator = (sdk as any).orchestrator;
 
-      const result = await sdk.writeTelegramMessage(messageData, {
-        priority: 'low',
-        encryption: false,
-        writeMode: 'batch',
-      });
-
-      expect(sdk.writeData).toHaveBeenCalledWith(messageData, {
+      mockRulesInterpreter.validateMetadata = jest.fn().mockReturnValue({
         processing: {
           dataCloudWriteMode: 'batch',
           indexWriteMode: 'realtime',
-          priority: 'low',
-          encryption: false,
+          priority: 'high',
+          encryption: true,
         },
-        userContext: {
-          source: 'telegram',
-          messageType: 'photo',
-          userId: 'user123',
-          chatId: 'chat789',
-        },
-        traceId: expect.stringMatching(/^telegram_message_msg456_\d+$/),
+      });
+      mockRulesInterpreter.extractProcessingRules = jest.fn().mockReturnValue({
+        dataCloudAction: 'write_batch',
+        indexAction: 'write_realtime',
+        batchingRequired: true,
+        additionalParams: { priority: 'high', encryption: true },
+      });
+      mockRulesInterpreter.optimizeProcessingRules = jest.fn().mockReturnValue({
+        dataCloudAction: 'write_batch',
+        indexAction: 'write_realtime',
+        batchingRequired: true,
+        additionalParams: { priority: 'high', encryption: true },
+      });
+      mockDispatcher.routeRequest = jest.fn().mockReturnValue({
+        actions: [{ target: 'ddc-client', method: 'storeBatch' }],
+        executionMode: 'sequential',
+        rollbackRequired: false,
+      });
+      mockOrchestrator.execute = jest.fn().mockResolvedValue({
+        results: [{ target: 'ddc-client', success: true, response: { cid: '0xcustom456' }, executionTime: 75 }],
+        overallStatus: 'success',
+        totalExecutionTime: 75,
+        transactionId: 'txn_custom_456',
       });
 
+      const result = await sdk.writeData(customData, options);
+
       expect(result.status).toBe('success');
+      expect(result.transactionId).toBe('txn_custom_456');
+      expect(result.dataCloudHash).toBe('0xcustom456');
     });
   });
 

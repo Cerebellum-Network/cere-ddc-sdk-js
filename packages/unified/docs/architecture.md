@@ -1,278 +1,438 @@
-# Architecture Guide
+# Unified SDK Architecture Guide
 
-## System Overview
+## Overview
 
-The Unified Data Ingestion SDK follows a **layered architecture** with clear separation of concerns, enabling maintainable, testable, and extensible code. Each layer has specific responsibilities and communicates through well-defined interfaces.
+The Unified Data Ingestion SDK implements a **4-layer architecture** designed around the principle of **extreme simplicity** with **maximum reliability**. The architecture follows clean separation of concerns with each layer having distinct responsibilities.
 
-## Architectural Layers
+## Core Architectural Principles
 
-### Layer 1: API Surface (UnifiedSDK)
+### 1. **Single Entry Point Philosophy**
+- **ONE method**: `writeData()` handles all data types and routing decisions
+- **Automatic detection**: Data type detection based on payload structure
+- **Zero configuration**: Smart defaults with metadata-driven customization
 
-**Purpose**: Provides the public interface and manages SDK lifecycle
+### 2. **Metadata-Driven Architecture**
+- Processing rules derived from metadata, not hardcoded logic
+- Flexible routing decisions configurable per request
+- Validation using Zod schemas for type safety
 
-```typescript
-┌─────────────────────────────────────────┐
-│              UnifiedSDK                 │
-│  ┌─────────────────────────────────────┐│
-│  │  Public API Methods                 ││
-│  │  • writeTelegramEvent()             ││
-│  │  • writeTelegramMessage()           ││
-│  │  • writeData()                      ││
-│  │  • initialize() / cleanup()         ││
-│  │  • getStatus()                      ││
-│  └─────────────────────────────────────┘│
-│  ┌─────────────────────────────────────┐│
-│  │  Lifecycle Management               ││
-│  │  • Component initialization         ││
-│  │  • Configuration validation         ││
-│  │  • Resource cleanup                 ││
-│  └─────────────────────────────────────┘│
-└─────────────────────────────────────────┘
+### 3. **Graceful Degradation**
+- Fallback mechanisms when services are unavailable
+- Partial success handling (some operations succeed, others fail)
+- Non-blocking error handling to maintain service availability
+
+## 4-Layer Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Layer 1: API Surface                    │
+│                     (UnifiedSDK)                            │
+├─────────────────────────────────────────────────────────────┤
+│  • Single writeData() method                               │
+│  • Automatic data type detection                           │
+│  • Initialization and cleanup management                   │
+│  • Status reporting and health checks                      │
+└─────────────────┬───────────────────────────┬───────────────┘
+                  │                           │
+        ┌─────────▼──────────┐      ┌─────────▼──────────┐
+        │    Layer 2:        │      │    Layer 2:        │
+        │ Business Logic     │      │ Route Planning     │
+        │(RulesInterpreter)  │      │  (Dispatcher)      │
+        ├────────────────────┤      ├────────────────────┤
+        │ • Metadata         │      │ • Action Creation  │
+        │   Validation       │      │ • Target Selection │
+        │ • Rules Extraction │      │ • Execution Plans  │
+        │ • Optimization     │      │ • Priority Mgmt    │
+        └─────────┬──────────┘      └─────────┬──────────┘
+                  │                           │
+                  └─────────┬─────────────────┘
+                            │
+                  ┌─────────▼──────────┐
+                  │      Layer 3:      │
+                  │ Execution Engine   │
+                  │   (Orchestrator)   │
+                  ├────────────────────┤
+                  │ • Resource Mgmt    │
+                  │ • Error Handling   │
+                  │ • Fallback Logic   │
+                  │ • Service Init     │
+                  └─────────┬──────────┘
+                            │
+           ┌────────────────┼────────────────┐
+           │                │                │
+    ┌──────▼──────┐  ┌──────▼──────┐  ┌──────▼──────┐
+    │   Layer 4:  │  │   Layer 4:  │  │   Layer 4:  │
+    │ DDC Client  │  │Activity SDK │  │ HTTP APIs   │
+    │             │  │             │  │ (Future)    │
+    │ • Data      │  │ • Events    │  │             │
+    │   Storage   │  │ • Analytics │  │ • Webhooks  │
+    │ • Files     │  │ • Indexing  │  │ • External  │
+    │ • DagNodes  │  │ • Fallback  │  │   Services  │
+    └─────────────┘  └─────────────┘  └─────────────┘
 ```
 
-### Layer 2: Processing Logic (RulesInterpreter + Dispatcher)
+## Layer 1: API Surface (UnifiedSDK)
 
-**Purpose**: Transforms user input into executable plans
+**File**: `UnifiedSDK.ts` (421 lines)
+
+### Responsibilities
+- **Single Entry Point**: Provides the unified `writeData()` method
+- **Data Type Detection**: Automatically detects Telegram events, messages, drone telemetry
+- **Component Orchestration**: Manages interaction between all layers
+- **Lifecycle Management**: Initialization, cleanup, and health monitoring
+
+### Key Methods
 
 ```typescript
-┌─────────────────────┐    ┌─────────────────────┐
-│  RulesInterpreter   │    │     Dispatcher      │
-│                     │    │                     │
-│ • Metadata          │    │ • Route Planning    │
-│   Validation        │    │ • Action Creation   │
-│ • Rules Extraction  │    │ • Priority Mgmt     │
-│ • Optimization      │    │ • Execution Mode    │
-│ • Business Logic    │    │ • Resource Alloc    │
-└─────────────────────┘    └─────────────────────┘
+class UnifiedSDK {
+  // Main entry point - ONE method for all data types
+  async writeData(payload: any, options?: WriteOptions): Promise<UnifiedResponse>
+  
+  // Lifecycle management
+  async initialize(): Promise<void>
+  async cleanup(): Promise<void>
+  getStatus(): object
+  
+  // Internal detection and routing
+  private detectDataType(payload: any): string
+  private createMetadataForPayload(payload: any, options?: WriteOptions): UnifiedMetadata
+  private generateTraceId(dataType: string, payload: any): string
+}
 ```
 
-### Layer 3: Execution Engine (Orchestrator)
+### Data Type Detection Logic
 
-**Purpose**: Executes plans and manages external dependencies
+The SDK automatically detects data types based on payload structure:
 
 ```typescript
-┌─────────────────────────────────────────┐
-│              Orchestrator               │
-│  ┌─────────────────────────────────────┐│
-│  │  Execution Strategies               ││
-│  │  • Sequential execution             ││
-│  │  • Parallel execution               ││
-│  │  • Batched execution                ││
-│  └─────────────────────────────────────┘│
-│  ┌─────────────────────────────────────┐│
-│  │  Error Handling & Fallbacks         ││
-│  │  • Retry logic                      ││
-│  │  • Circuit breakers                 ││
-│  │  • Graceful degradation             ││
-│  └─────────────────────────────────────┘│
-└─────────────────────────────────────────┘
+private detectDataType(payload: any): string {
+  // Telegram Event Detection
+  if (payload.eventType && payload.userId && payload.timestamp) {
+    return 'telegram_event';
+  }
+  
+  // Telegram Message Detection  
+  if (payload.messageId && payload.chatId && payload.userId && payload.messageType) {
+    return 'telegram_message';
+  }
+  
+  // Drone Telemetry Detection
+  if (payload.droneId && payload.telemetry && (payload.latitude || payload.longitude)) {
+    return 'drone_telemetry';
+  }
+  
+  // Drone Video Detection
+  if (payload.droneId && (payload.videoChunk || payload.frameData)) {
+    return 'drone_video';
+  }
+  
+  return 'generic';
+}
 ```
 
-### Layer 4: External Services
+## Layer 2A: Business Logic (RulesInterpreter)
 
-**Purpose**: Actual data storage and processing
+**File**: `RulesInterpreter.ts` (208 lines)
+
+### Responsibilities
+- **Metadata Validation**: Validate input metadata using Zod schemas
+- **Rule Extraction**: Convert metadata into actionable processing rules
+- **Business Logic**: Apply routing decisions and optimization logic
+
+### Key Methods
 
 ```typescript
-┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-│ DDC Client  │  │Activity SDK │  │ HTTP APIs   │
-│             │  │             │  │             │
-│ • File      │  │ • Events    │  │ • Webhooks  │
-│   Storage   │  │ • Analytics │  │ • External  │
-│ • DagNodes  │  │ • Indexing  │  │   Services  │
-└─────────────┘  └─────────────┘  └─────────────┘
+class RulesInterpreter {
+  // Core validation and rule extraction
+  validateMetadata(metadata: any): UnifiedMetadata
+  extractProcessingRules(metadata: UnifiedMetadata): ProcessingRules
+  optimizeProcessingRules(rules: ProcessingRules, context?: any): ProcessingRules
+  
+  // Internal mapping logic
+  private mapDataCloudWriteMode(mode: string): ProcessingRules['dataCloudAction']
+  private mapIndexWriteMode(mode: string): ProcessingRules['indexAction']
+  private determineBatchingRequirement(processing: ProcessingMetadata): boolean
+  private validateRuleConsistency(rules: ProcessingRules): void
+}
+```
+
+### Processing Rules Interface
+
+```typescript
+interface ProcessingRules {
+  dataCloudAction: 'write_direct' | 'write_batch' | 'write_via_index' | 'skip';
+  indexAction: 'write_realtime' | 'skip';
+  batchingRequired: boolean;
+  additionalParams: {
+    priority: 'low' | 'normal' | 'high';
+    ttl?: number;
+    encryption: boolean;
+    batchOptions?: {
+      maxSize: number;
+      maxWaitTime: number;
+    };
+  };
+}
+```
+
+## Layer 2B: Route Planning (Dispatcher)
+
+**File**: `Dispatcher.ts` (261 lines)
+
+### Responsibilities
+- **Action Creation**: Transform processing rules into concrete actions
+- **Target Selection**: Route to appropriate backend services
+- **Execution Planning**: Determine parallel vs sequential execution
+- **Data Transformation**: Adapt payloads for specific backend APIs
+
+### Key Methods
+
+```typescript
+class Dispatcher {
+  // Main routing method
+  routeRequest(payload: any, rules: ProcessingRules): DispatchPlan
+  
+  // Action creation
+  private createDataCloudAction(payload: any, rules: ProcessingRules): Action | null
+  private createIndexAction(payload: any, rules: ProcessingRules): Action | null
+  
+  // Data transformation
+  private transformPayloadForDDC(payload: any): any
+  private transformPayloadForActivity(payload: any): any
+  
+  // Type detection
+  private isTelegramEvent(payload: any): boolean
+  private isTelegramMessage(payload: any): boolean
+}
+```
+
+### Action and DispatchPlan Interfaces
+
+```typescript
+interface Action {
+  target: 'ddc-client' | 'activity-sdk' | 'http-api';
+  method: string;
+  payload: any;
+  options: Record<string, any>;
+  priority: 'low' | 'normal' | 'high';
+}
+
+interface DispatchPlan {
+  actions: Action[];
+  executionMode: 'sequential' | 'parallel';
+  rollbackRequired: boolean;
+}
+```
+
+## Layer 3: Execution Engine (Orchestrator)
+
+**File**: `Orchestrator.ts` (458 lines)
+
+### Responsibilities
+- **Resource Management**: Initialize and manage backend clients
+- **Execution Control**: Execute actions in parallel or sequential mode
+- **Error Handling**: Comprehensive error handling with fallbacks
+- **Service Integration**: Manage DDC Client and Activity SDK connections
+
+### Key Methods
+
+```typescript
+class Orchestrator {
+  // Lifecycle management
+  async initialize(): Promise<void>
+  async cleanup(): Promise<void>
+  
+  // Execution engine
+  async execute(plan: DispatchPlan): Promise<OrchestrationResult>
+  
+  // Execution modes
+  private async executeParallel(actions: Action[]): Promise<ExecutionResult[]>
+  private async executeSequential(actions: Action[]): Promise<ExecutionResult[]>
+  
+  // Backend integrations
+  private async executeDDCAction(action: Action): Promise<any>
+  private async executeActivityAction(action: Action): Promise<any>
+  private async executeHTTPAction(action: Action): Promise<any>
+}
+```
+
+### Execution Results
+
+```typescript
+interface ExecutionResult {
+  target: string;
+  success: boolean;
+  response: any;
+  error?: any;
+  executionTime: number;
+}
+
+interface OrchestrationResult {
+  results: ExecutionResult[];
+  overallStatus: 'success' | 'partial' | 'failed';
+  totalExecutionTime: number;
+  transactionId: string;
+}
+```
+
+## Layer 4: External Services
+
+### DDC Client Integration
+
+The Orchestrator manages DDC Client initialization and operations:
+
+```typescript
+// DDC Client initialization with network presets
+const networkConfig = this.config.ddcConfig.network === 'devnet'
+  ? 'wss://archive.devnet.cere.network/ws'
+  : 'wss://rpc.testnet.cere.network/ws';
+
+this.ddcClient = await DdcClient.create(this.config.ddcConfig.signer, {
+  blockchain: networkConfig,
+  logLevel: this.config.logging.level === 'debug' ? 'debug' : 'silent',
+});
+```
+
+### Activity SDK Integration
+
+Activity SDK integration with UriSigner approach and fallback mechanisms:
+
+```typescript
+// Activity SDK initialization with UriSigner
+const signer = new UriSigner(this.config.activityConfig.keyringUri || '//Alice', {
+  type: 'ed25519', // Use ed25519 signatures for Event Service compatibility
+});
+
+this.activityClient = new EventDispatcher(signer, cipher, {
+  baseUrl: this.config.activityConfig.endpoint || 'https://api.stats.cere.network',
+  appId: this.config.activityConfig.appId || 'unified-sdk',
+  // ... additional configuration
+});
 ```
 
 ## Data Flow Architecture
 
+### Complete Request Flow
+
 ```mermaid
 sequenceDiagram
-    participant App as Application
-    participant SDK as UnifiedSDK
-    participant Rules as RulesInterpreter
-    participant Dispatch as Dispatcher
-    participant Orch as Orchestrator
+    participant Client
+    participant UnifiedSDK
+    participant RulesInterpreter
+    participant Dispatcher
+    participant Orchestrator
     participant DDC as DDC Client
     participant Activity as Activity SDK
 
-    App->>SDK: writeTelegramEvent(eventData)
-    SDK->>Rules: validateMetadata(metadata)
-    Rules-->>SDK: validatedMetadata
-    SDK->>Rules: extractProcessingRules(metadata)
-    Rules-->>SDK: processingRules
-    SDK->>Dispatch: routeRequest(payload, rules)
-    Dispatch-->>SDK: dispatchPlan
-    SDK->>Orch: execute(dispatchPlan)
-
-    par DDC Storage
-        Orch->>DDC: store(data)
-        DDC-->>Orch: cid
-    and Activity Indexing
-        Orch->>Activity: sendEvent(event)
-        Activity-->>Orch: eventId
+    Client->>UnifiedSDK: writeData(payload, options)
+    
+    UnifiedSDK->>UnifiedSDK: detectDataType(payload)
+    UnifiedSDK->>UnifiedSDK: createMetadataForPayload()
+    
+    UnifiedSDK->>RulesInterpreter: validateMetadata(metadata)
+    RulesInterpreter-->>UnifiedSDK: validatedMetadata
+    
+    UnifiedSDK->>RulesInterpreter: extractProcessingRules(metadata)
+    RulesInterpreter-->>UnifiedSDK: processingRules
+    
+    UnifiedSDK->>RulesInterpreter: optimizeProcessingRules(rules)
+    RulesInterpreter-->>UnifiedSDK: optimizedRules
+    
+    UnifiedSDK->>Dispatcher: routeRequest(payload, rules)
+    Dispatcher-->>UnifiedSDK: dispatchPlan
+    
+    UnifiedSDK->>Orchestrator: execute(plan)
+    
+    alt Parallel Execution
+        Orchestrator->>DDC: executeDDCAction()
+        Orchestrator->>Activity: executeActivityAction()
+        par
+            DDC-->>Orchestrator: ddcResult
+        and
+            Activity-->>Orchestrator: activityResult
+        end
+    else Sequential Execution
+        Orchestrator->>DDC: executeDDCAction()
+        DDC-->>Orchestrator: ddcResult
+        Orchestrator->>Activity: executeActivityAction()
+        Activity-->>Orchestrator: activityResult
     end
-
-    Orch-->>SDK: executionResult
-    SDK-->>App: unifiedResponse
-```
-
-## Component Interactions
-
-### 1. Metadata Processing Flow
-
-```typescript
-// Input: Raw metadata from user
-const metadata = {
-  processing: {
-    dataCloudWriteMode: 'viaIndex',
-    indexWriteMode: 'realtime',
-    priority: 'high',
-    encryption: true,
-  },
-};
-
-// Step 1: RulesInterpreter validates and extracts rules
-const rules = {
-  dataCloudAction: 'write_via_index', // Derived from dataCloudWriteMode
-  indexAction: 'write_realtime', // Derived from indexWriteMode
-  batchingRequired: false, // Derived from mode + payload size
-  additionalParams: {
-    priority: 'high',
-    encryption: true,
-    ttl: undefined,
-    batchOptions: undefined,
-  },
-};
-
-// Step 2: Dispatcher creates execution plan
-const plan = {
-  actions: [
-    {
-      target: 'activity-sdk',
-      method: 'sendEvent',
-      payload: { type: 'telegram.event', data: eventData },
-      options: { writeToDataCloud: true },
-      priority: 'high',
-    },
-  ],
-  executionMode: 'sequential',
-  rollbackRequired: false,
-};
-```
-
-### 2. Execution Strategies
-
-#### Sequential Execution
-
-```typescript
-// For dependent operations or when order matters
-for (const action of plan.actions) {
-  const result = await this.executeAction(action);
-  results.push(result);
-
-  if (!result.success && plan.rollbackRequired) {
-    await this.rollback(results);
-    break;
-  }
-}
-```
-
-#### Parallel Execution
-
-```typescript
-// For independent operations
-const promises = plan.actions.map((action) => this.executeAction(action));
-const results = await Promise.allSettled(promises);
-```
-
-#### Batch Execution
-
-```typescript
-// For high-throughput scenarios
-const batches = this.createBatches(plan.actions, batchSize);
-for (const batch of batches) {
-  await this.executeBatch(batch);
-}
+    
+    Orchestrator-->>UnifiedSDK: orchestrationResult
+    UnifiedSDK-->>Client: unifiedResponse
 ```
 
 ## Error Handling Architecture
 
-### 1. Error Categories
+### Hierarchical Error Handling
 
 ```typescript
-enum ErrorCategory {
-  VALIDATION = 'validation', // Bad input data
-  CONFIGURATION = 'config', // SDK misconfiguration
-  NETWORK = 'network', // Network/connectivity issues
-  SERVICE = 'service', // External service errors
-  INTERNAL = 'internal', // SDK internal errors
+// Layer 1: API Surface Errors
+class UnifiedSDKError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public component: string,
+    public recoverable: boolean = false,
+    public originalError?: Error
+  );
+}
+
+// Layer 2: Validation Errors
+class ValidationError extends UnifiedSDKError {
+  constructor(
+    message: string,
+    public validationErrors: z.ZodError
+  );
 }
 ```
 
-### 2. Error Propagation Strategy
+### Fallback Mechanisms
+
+1. **Activity SDK Unavailable**: Falls back to DDC storage only
+2. **DDC Storage Failure**: Returns error but preserves Activity SDK indexing
+3. **Partial Success**: Returns status with successful operations noted
 
 ```typescript
-┌─────────────────┐
-│ Application     │ ← UnifiedSDKError (user-friendly)
-└─────────────────┘
-         ↑
-┌─────────────────┐
-│ UnifiedSDK      │ ← Catches & wraps all errors
-└─────────────────┘
-         ↑
-┌─────────────────┐
-│ Components      │ ← Throw specific error types
-└─────────────────┘
-         ↑
-┌─────────────────┐
-│ External APIs   │ ← Raw errors (network, service, etc.)
-└─────────────────┘
-```
-
-### 3. Fallback Mechanisms
-
-```typescript
-// Activity SDK → DDC fallback
-if (activityResult.failed && action.options.writeToDataCloud) {
-  const fallbackResult = await this.executeDDCAction({
-    target: 'ddc-client',
-    method: 'store',
-    payload: action.payload,
-    options: { fallback: true },
-  });
-
+// Activity SDK fallback implementation
+if (!this.activityClient) {
+  // Return mock response to maintain workflow continuity
   return {
-    status: 'fallback_to_ddc',
-    originalError: activityResult.error,
-    ddcResult: fallbackResult,
+    eventId: this.generateEventId(),
+    status: 'skipped',
+    reason: 'Activity SDK not initialized',
+    timestamp: new Date().toISOString(),
   };
 }
 ```
 
 ## Configuration Architecture
 
-### 1. Hierarchical Configuration
+### Unified Configuration Interface
 
 ```typescript
 interface UnifiedSDKConfig {
-  // Required: DDC configuration
+  // DDC Client configuration
   ddcConfig: {
-    signer: string;
+    signer: string; // Substrate URI or mnemonic phrase
     bucketId: bigint;
-    network: 'mainnet' | 'testnet';
-    clusterId?: string;
+    clusterId?: bigint;
+    network?: 'testnet' | 'devnet' | 'mainnet';
   };
 
-  // Optional: Activity SDK configuration
+  // Activity SDK configuration (optional)
   activityConfig?: {
-    keyringUri: string;
-    appId: string;
-    endpoint: string;
-    appPubKey: string;
-    dataServicePubKey: string;
+    endpoint?: string;
+    keyringUri?: string;
+    appId?: string;
+    connectionId?: string;
+    sessionId?: string;
+    appPubKey?: string;
+    dataServicePubKey?: string;
   };
 
-  // Optional: Processing defaults
-  processing?: {
+  // Processing options
+  processing: {
     enableBatching: boolean;
     defaultBatchSize: number;
     defaultBatchTimeout: number;
@@ -280,157 +440,133 @@ interface UnifiedSDKConfig {
     retryDelay: number;
   };
 
-  // Optional: Logging configuration
-  logging?: {
+  // Logging and monitoring
+  logging: {
     level: 'debug' | 'info' | 'warn' | 'error';
     enableMetrics: boolean;
   };
 }
 ```
 
-### 2. Configuration Validation
-
-```typescript
-// Validation happens at multiple levels:
-// 1. TypeScript compile-time validation
-// 2. Runtime Zod schema validation
-// 3. Business logic validation (e.g., network connectivity)
-
-const configSchema = z.object({
-  ddcConfig: DDCConfigSchema,
-  activityConfig: ActivityConfigSchema.optional(),
-  processing: ProcessingConfigSchema.optional(),
-  logging: LoggingConfigSchema.optional(),
-});
-```
-
 ## Performance Architecture
 
-### 1. Batching Strategy
+### Optimization Strategies
+
+1. **Intelligent Batching**: Automatic batching based on payload size and timing
+2. **Parallel Execution**: Concurrent operations when dependencies allow
+3. **Resource Pooling**: Reuse of connections and clients
+4. **Lazy Initialization**: Services initialized only when needed
+
+### Payload Size Optimization
 
 ```typescript
-interface BatchingConfig {
-  maxSize: number; // Maximum items per batch
-  maxWaitTime: number; // Maximum wait time before processing
-  dynamicSizing: boolean; // Adjust batch size based on payload size
-}
-
-// Dynamic batch sizing
-if (payloadSize > LARGE_PAYLOAD_THRESHOLD) {
-  batchConfig.maxSize = Math.floor(batchConfig.maxSize / 2);
-  batchConfig.maxWaitTime = Math.floor(batchConfig.maxWaitTime * 1.5);
-}
-```
-
-### 2. Resource Management
-
-```typescript
-class ResourceManager {
-  private ddcClient?: DdcClient;
-  private activityDispatcher?: EventDispatcher;
-  private connectionPool: Map<string, Connection>;
-
-  async initialize() {
-    // Lazy initialization of expensive resources
-    this.ddcClient = await DdcClient.create(config);
-    this.activityDispatcher = new EventDispatcher(signer, cipher, config);
-  }
-
-  async cleanup() {
-    // Proper cleanup to prevent resource leaks
-    await this.ddcClient?.disconnect();
-    this.connectionPool.clear();
+// Automatic batch size optimization based on payload size
+if (context?.payloadSize && rules.batchingRequired) {
+  const payloadSize = context.payloadSize;
+  if (payloadSize > 1024 * 1024) { // 1MB
+    optimizedRules.additionalParams.batchOptions = {
+      maxSize: Math.max(1, Math.floor(1000 / (payloadSize / (1024 * 1024)))),
+      maxWaitTime: rules.additionalParams.batchOptions?.maxWaitTime || 5000,
+    };
   }
 }
 ```
 
-### 3. Monitoring & Observability
+## Monitoring and Observability
+
+### Built-in Logging
+
+Each component includes structured logging:
 
 ```typescript
-interface ExecutionMetrics {
-  transactionId: string;
-  startTime: number;
-  endTime: number;
-  totalExecutionTime: number;
-  actionsExecuted: string[];
-  payloadSize: number;
-  status: 'success' | 'partial' | 'failed';
-}
+private createLogger(): (level: string, message: string, ...args: any[]) => void {
+  const logLevel = this.config.logging.level;
+  const enableMetrics = this.config.logging.enableMetrics;
 
-// Built-in metrics collection
-const metrics: ExecutionMetrics = {
-  transactionId: this.generateTransactionId(),
-  startTime: Date.now(),
-  // ... execution happens
-  endTime: Date.now(),
-  totalExecutionTime: endTime - startTime,
-  actionsExecuted: results.map((r) => r.target),
-  payloadSize: this.estimatePayloadSize(payload),
-  status: this.determineOverallStatus(results),
-};
-```
-
-## Security Architecture
-
-### 1. Data Sanitization
-
-```typescript
-// Configuration sanitization for logging
-private sanitizeConfig(config: UnifiedSDKConfig) {
-  return {
-    ...config,
-    ddcConfig: {
-      ...config.ddcConfig,
-      signer: undefined  // Remove sensitive signing keys
-    },
-    activityConfig: config.activityConfig ? {
-      ...config.activityConfig,
-      keyringUri: undefined  // Remove sensitive keys
-    } : undefined
+  return (level: string, message: string, ...args: any[]) => {
+    const messageLevel = logLevels[level as keyof typeof logLevels] || 1;
+    
+    if (messageLevel >= currentLevel) {
+      const timestamp = new Date().toISOString();
+      const logMessage = `[${timestamp}] [UnifiedSDK:${level.toUpperCase()}] ${message}`;
+      
+      // Log to appropriate console method
+      if (level === 'error') {
+        console.error(logMessage, ...args);
+      } else if (level === 'warn') {
+        console.warn(logMessage, ...args);
+      } else {
+        console.log(logMessage, ...args);
+      }
+    }
   };
 }
 ```
 
-### 2. Encryption Support
+### Metrics Collection
 
 ```typescript
-// Encryption is handled at the action level
-if (action.options.encryption) {
-  action.payload = await this.encrypt(action.payload);
+// Response metadata includes performance metrics
+metadata: {
+  processedAt: new Date(),
+  processingTime: Date.now() - startTime,
+  actionsExecuted: orchestrationResult.results.map(r => r.target),
 }
 ```
 
-## Extensibility Architecture
+## Security Architecture
 
-### 1. Plugin System (Future)
+### Data Protection
 
-```typescript
-interface Plugin {
-  name: string;
-  version: string;
-  initialize(sdk: UnifiedSDK): Promise<void>;
-  beforeAction?(action: Action): Promise<Action>;
-  afterAction?(action: Action, result: any): Promise<any>;
-}
+1. **Encryption Support**: Optional encryption for sensitive data
+2. **Secure Configuration**: Sensitive values (signers, keys) are sanitized in logs
+3. **Access Control**: Component-level access restrictions
 
-// Plugin registration
-sdk.registerPlugin(new TelegramAnalyticsPlugin());
-sdk.registerPlugin(new CustomValidationPlugin());
-```
-
-### 2. Custom Action Targets
+### Configuration Sanitization
 
 ```typescript
-// The system is designed to be extended with new targets
-interface ActionTarget {
-  name: string;
-  execute(action: Action): Promise<any>;
-  healthCheck(): Promise<boolean>;
+private sanitizeConfig(config: UnifiedSDKConfig): any {
+  return {
+    ddcConfig: {
+      bucketId: config.ddcConfig.bucketId.toString(),
+      clusterId: config.ddcConfig.clusterId?.toString(),
+      network: config.ddcConfig.network,
+      // Don't log the signer for security
+    },
+    activityConfig: config.activityConfig ? {
+      endpoint: config.activityConfig.endpoint,
+      // Don't log sensitive keys
+    } : undefined,
+    processing: config.processing,
+    logging: config.logging,
+  };
 }
-
-// Register custom targets
-orchestrator.registerTarget('webhook', new WebhookTarget());
-orchestrator.registerTarget('database', new DatabaseTarget());
 ```
 
-This architecture provides a solid foundation for the Unified SDK while maintaining flexibility for future enhancements and customizations.
+## Testing Architecture
+
+The SDK includes comprehensive test coverage across all layers:
+
+- **Unit Tests**: Individual component testing
+- **Integration Tests**: Cross-component interaction testing
+- **Mock Support**: Complete mocking infrastructure for external services
+- **Real Integration**: Actual DDC and Activity SDK integration tests
+
+## Design Benefits
+
+### For Developers
+- **🎯 Extreme Simplicity**: One method for all use cases
+- **🔒 Type Safety**: Full TypeScript support with Zod validation
+- **📊 Comprehensive Monitoring**: Built-in observability
+
+### For Operations
+- **🔄 Graceful Degradation**: Services can fail independently
+- **📈 Performance**: Intelligent batching and parallel execution
+- **🔧 Maintainability**: Clear separation of concerns
+
+### For Business
+- **⚡ Fast Development**: Reduced complexity means faster implementation
+- **💰 Cost Effective**: Efficient resource usage through optimization
+- **📊 Rich Analytics**: Automatic event tracking and indexing
+
+This architecture achieves the perfect balance of simplicity for developers while maintaining enterprise-grade reliability and performance.

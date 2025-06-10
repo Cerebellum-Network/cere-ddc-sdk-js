@@ -11,9 +11,9 @@ The Unified Data Ingestion SDK is built using a modular architecture with four m
 │                      UnifiedSDK                             │
 │  ┌─────────────────────────────────────────────────────────┐│
 │  │              Public API Layer                           ││
-│  │  • writeTelegramEvent()  • writeTelegramMessage()       ││
-│  │  • writeData()           • getStatus()                  ││
+│  │  • writeData() - SINGLE ENTRY POINT                     ││
 │  │  • initialize()          • cleanup()                    ││
+│  │  • getStatus()           • Auto-detection               ││
 │  └─────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────┘
                               │
@@ -98,18 +98,57 @@ async initialize(): Promise<void> {
 }
 ```
 
-#### writeTelegramEvent()
+#### writeData()
 
 ```typescript
-async writeTelegramEvent(
-  eventData: TelegramEventData,
-  options?: TelegramOptions
+async writeData(
+  payload: any,
+  options?: WriteOptions
 ): Promise<UnifiedResponse> {
-  // 1. Create Telegram-specific metadata
-  const metadata = this.createTelegramEventMetadata(eventData, options);
+  // 1. Detect data type automatically
+  const dataType = this.detectDataType(payload);
+  
+  // 2. Create appropriate metadata based on data type and options
+  const metadata = this.createMetadataForPayload(payload, options);
+  
+  // 3. Validate metadata
+  const validatedMetadata = this.rulesInterpreter.validateMetadata(metadata);
+  
+  // 4. Extract processing rules
+  const rules = this.rulesInterpreter.extractProcessingRules(validatedMetadata);
+  
+  // 5. Create dispatch plan
+  const plan = this.dispatcher.routeRequest(payload, rules);
+  
+  // 6. Execute the plan
+  const result = await this.orchestrator.execute(plan);
+  
+  // 7. Return unified response
+  return this.createUnifiedResponse(result);
+}
+```
 
-  // 2. Delegate to generic writeData method
-  return this.writeData(eventData, metadata);
+#### Data Type Detection
+
+```typescript
+private detectDataType(payload: any): string {
+  // Telegram Event Detection
+  if (payload.eventType && payload.userId && payload.timestamp) {
+    return 'telegram_event';
+  }
+  
+  // Telegram Message Detection  
+  if (payload.messageId && payload.chatId && payload.userId && payload.messageType) {
+    return 'telegram_message';
+  }
+  
+  // Drone Telemetry Detection
+  if (payload.droneId && payload.telemetry && (payload.latitude || payload.longitude)) {
+    return 'drone_telemetry';
+  }
+  
+  // Generic data fallback
+  return 'generic';
 }
 ```
 

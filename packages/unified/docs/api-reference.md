@@ -1,116 +1,134 @@
-# API Reference
+# Unified SDK API Reference
 
-## UnifiedSDK
+## Table of Contents
 
-The main entry point for the Unified Data Ingestion SDK.
+- [Classes](#classes)
+  - [UnifiedSDK](#unifiedsdk)
+  - [RulesInterpreter](#rulesinterpreter)
+  - [Dispatcher](#dispatcher)
+  - [Orchestrator](#orchestrator)
+- [Interfaces](#interfaces)
+  - [UnifiedSDKConfig](#unifiedsdkconfig)
+  - [UnifiedResponse](#unifiedresponse)
+  - [ProcessingMetadata](#processingmetadata)
+  - [TelegramEventData](#telegrameventdata)
+  - [TelegramMessageData](#telegrammessagedata)
+- [Error Classes](#error-classes)
+  - [UnifiedSDKError](#unifiedsdkerror)
+  - [ValidationError](#validationerror)
+- [Schema Validators](#schema-validators)
 
-### Constructor
+## Classes
+
+### UnifiedSDK
+
+The main entry point for all data ingestion operations. **Provides a single `writeData()` method** that automatically detects data types and routes appropriately.
+
+#### Constructor
 
 ```typescript
 constructor(config: UnifiedSDKConfig)
 ```
 
-Creates a new instance of the UnifiedSDK.
+Creates a new instance of the Unified SDK with the provided configuration.
 
 **Parameters:**
-
-- `config` - Configuration object (see [Configuration](#configuration))
+- `config`: Configuration object containing DDC, Activity SDK, processing, and logging settings
 
 **Example:**
-
 ```typescript
 const sdk = new UnifiedSDK({
   ddcConfig: {
-    signer: '//Alice',
-    bucketId: BigInt(12345),
+    signer: 'your mnemonic phrase here',
+    bucketId: BigInt(573409),
     network: 'testnet',
   },
   activityConfig: {
-    keyringUri: '//Alice',
-    appId: 'my-telegram-bot',
     endpoint: 'https://api.stats.cere.network',
-    appPubKey: 'your-app-key',
-    dataServicePubKey: 'service-key',
+    keyringUri: '//Alice',
+    appId: 'my-app',
+  },
+  processing: {
+    enableBatching: true,
+    defaultBatchSize: 100,
+    defaultBatchTimeout: 5000,
+    maxRetries: 3,
+    retryDelay: 1000,
+  },
+  logging: {
+    level: 'info',
+    enableMetrics: true,
   },
 });
 ```
 
-### Methods
+#### Methods
 
-#### initialize()
+##### `initialize(): Promise<void>`
 
-```typescript
-async initialize(): Promise<void>
-```
+Initializes the SDK and all its backend components (DDC Client, Activity SDK).
 
-Initializes the SDK and its dependencies. Must be called before using other methods.
+**Returns:** Promise that resolves when initialization is complete
 
 **Throws:**
-
-- `UnifiedSDKError` - If initialization fails
+- `UnifiedSDKError` if initialization fails
 
 **Example:**
-
 ```typescript
 await sdk.initialize();
 ```
 
-#### writeData() ⭐
+##### `writeData(payload: any, options?: WriteOptions): Promise<UnifiedResponse>`
 
-```typescript
-async writeData(
-  payload: any,
-  options?: WriteOptions
-): Promise<UnifiedResponse>
-```
+**🎯 THE SINGLE ENTRY POINT** - The only data ingestion method that automatically detects data types and routes appropriately.
 
-**🎯 The ONE method for all data ingestion needs.** Automatically detects data types and routes to appropriate storage and indexing systems.
-
-**Automatic Data Type Detection:**
-
-- **Telegram Events**: Detected by `eventType`, `userId`, `timestamp` fields
-- **Telegram Messages**: Detected by `messageId`, `chatId`, `userId`, `messageType` fields
-- **Drone Telemetry**: Detected by `droneId`, `telemetry`, location data
-- **Drone Video**: Detected by `droneId`, video data
-- **Generic Data**: Fallback for all other data types
+**This is the ONLY method you need** - it replaces all individual methods by automatically detecting:
+- Telegram Events (by `eventType` + `userId` + `timestamp` fields)
+- Telegram Messages (by `messageId` + `chatId` + `userId` + `messageType` fields)  
+- Drone Telemetry (by `droneId` + `telemetry` + location fields)
+- Generic data (fallback for any other structure)
 
 **Parameters:**
+- `payload`: The data to ingest (any structure - automatically detected)
+- `options`: Optional configuration for this specific write operation
 
-- `payload` - Data to be stored/indexed (any structure)
-- `options` - Optional routing and processing configuration (see [WriteOptions](#writeoptions))
+**Returns:** `UnifiedResponse` with transaction details and storage references
 
-**Returns:**
-
-- `Promise<UnifiedResponse>` - Unified response with results from all targets
-
-**Examples:**
-
+**WriteOptions Interface:**
 ```typescript
-// ✨ Telegram Event - Auto-detected by structure
-const response1 = await sdk.writeData({
+interface WriteOptions {
+  priority?: 'low' | 'normal' | 'high';
+  encryption?: boolean;
+  writeMode?: 'realtime' | 'batch';
+  metadata?: Partial<UnifiedMetadata>;
+}
+```
+
+**Example:**
+```typescript
+// ✨ Automatic detection for Telegram event
+const result1 = await sdk.writeData({
   eventType: 'quest_completed',
   userId: 'user123',
-  chatId: 'chat456',
-  eventData: { questId: 'daily_checkin', points: 100 },
+  eventData: { questId: 'daily', points: 100 },
   timestamp: new Date(),
 });
 
-// ✨ Telegram Message - Auto-detected by structure
-const response2 = await sdk.writeData({
+// ✨ Automatic detection for Telegram message
+const result2 = await sdk.writeData({
   messageId: 'msg123',
   chatId: 'chat456',
   userId: 'user789',
-  messageText: 'Hello from mini-app!',
+  messageText: 'Hello world!',
   messageType: 'text',
   timestamp: new Date(),
 });
 
-// ✨ Custom Data with options
-const response3 = await sdk.writeData(
-  { customAnalytics: 'value', userId: 'user123' },
+// ✨ Custom options
+const result3 = await sdk.writeData(
+  { customData: 'important info' },
   {
     priority: 'high',
-    writeMode: 'direct',
     encryption: true,
     metadata: {
       processing: {
@@ -118,277 +136,262 @@ const response3 = await sdk.writeData(
         indexWriteMode: 'realtime',
       },
     },
-  },
+  }
 );
-
-// ✨ Drone Telemetry - Auto-detected
-const response4 = await sdk.writeData({
-  droneId: 'drone_001',
-  telemetry: {
-    latitude: 37.7749,
-    longitude: -122.4194,
-    altitude: 100,
-    speed: 15.5,
-  },
-  timestamp: new Date(),
-});
 ```
 
-#### getStatus()
-
-```typescript
-getStatus(): SDKStatus
-```
+##### `getStatus(): object`
 
 Returns the current status of the SDK and its components.
 
-**Returns:**
+**Returns:** Status object with component states
 
-- `SDKStatus` - Current SDK status (see [SDKStatus](#sdkstatus))
-
-**Example:**
-
+**Response Format:**
 ```typescript
-const status = sdk.getStatus();
-console.log('SDK initialized:', status.initialized);
-console.log('DDC available:', status.ddcAvailable);
-console.log('Activity SDK available:', status.activitySdkAvailable);
-```
-
-#### cleanup()
-
-```typescript
-async cleanup(): Promise<void>
-```
-
-Cleans up resources and connections. Should be called when the SDK is no longer needed.
-
-**Example:**
-
-```typescript
-await sdk.cleanup();
-```
-
----
-
-## Types and Interfaces
-
-### UnifiedSDKConfig
-
-Configuration object for initializing the SDK.
-
-```typescript
-interface UnifiedSDKConfig {
-  ddcConfig: DDCConfig;
-  activityConfig?: ActivityConfig;
-  processing?: ProcessingConfig;
-  logging?: LoggingConfig;
-}
-```
-
-#### DDCConfig
-
-```typescript
-interface DDCConfig {
-  signer: string; // Substrate signer (//Alice or mnemonic)
-  bucketId: bigint; // DDC bucket ID
-  network: 'mainnet' | 'testnet'; // Network to connect to
-  clusterId?: string; // Optional cluster ID
-}
-```
-
-#### ActivityConfig
-
-```typescript
-interface ActivityConfig {
-  keyringUri: string; // Substrate URI for signing
-  appId: string; // Application identifier
-  endpoint: string; // Activity SDK endpoint
-  appPubKey: string; // Application public key
-  dataServicePubKey: string; // Data service public key
-  connectionId?: string; // Optional connection ID
-  sessionId?: string; // Optional session ID
-}
-```
-
-#### ProcessingConfig
-
-```typescript
-interface ProcessingConfig {
-  enableBatching: boolean; // Enable automatic batching
-  defaultBatchSize: number; // Default batch size
-  defaultBatchTimeout: number; // Batch timeout in milliseconds
-  maxRetries: number; // Maximum retry attempts
-  retryDelay: number; // Delay between retries in milliseconds
-}
-```
-
-#### LoggingConfig
-
-```typescript
-interface LoggingConfig {
-  level: 'debug' | 'info' | 'warn' | 'error'; // Logging level
-  enableMetrics: boolean; // Enable metrics collection
-}
-```
-
-### WriteOptions
-
-Optional configuration for the unified `writeData()` method.
-
-```typescript
-interface WriteOptions {
-  // Simple options (most common)
-  priority?: 'low' | 'normal' | 'high'; // Processing priority
-  writeMode?: 'direct' | 'batch' | 'viaIndex'; // How to write data
-  encryption?: boolean; // Whether to encrypt data
-  ttl?: number; // Time-to-live in seconds
-
-  // Advanced metadata (when you need fine control)
-  metadata?: {
-    processing: ProcessingMetadata;
-    user_context?: any;
-    trace_id?: string;
+{
+  initialized: boolean;
+  config: any; // Sanitized configuration
+  components: {
+    rulesInterpreter: boolean;
+    dispatcher: boolean;
+    orchestrator: boolean;
   };
 }
 ```
 
+**Example:**
+```typescript
+const status = sdk.getStatus();
+console.log('SDK initialized:', status.initialized);
+console.log('Components ready:', status.components);
+```
+
+##### `cleanup(): Promise<void>`
+
+Cleans up resources and disconnects from backend services.
+
+**Returns:** Promise that resolves when cleanup is complete
+
+**Example:**
+```typescript
+await sdk.cleanup();
+```
+
+### RulesInterpreter
+
+Handles metadata validation and processing rule extraction. Typically used internally by UnifiedSDK.
+
+#### Constructor
+
+```typescript
+constructor(logger?: (level: string, message: string, ...args: any[]) => void)
+```
+
+#### Methods
+
+##### `validateMetadata(metadata: any): UnifiedMetadata`
+
+Validates metadata against the schema using Zod validation.
+
+**Parameters:**
+- `metadata`: Raw metadata object to validate
+
+**Returns:** Validated UnifiedMetadata object
+
+**Throws:**
+- `ValidationError` if metadata is invalid
+- `UnifiedSDKError` for unexpected validation errors
+
+##### `extractProcessingRules(metadata: UnifiedMetadata): ProcessingRules`
+
+Extracts processing rules from validated metadata.
+
+**Returns:** ProcessingRules object with routing decisions
+
+##### `optimizeProcessingRules(rules: ProcessingRules, context?: any): ProcessingRules`
+
+Optimizes processing rules based on context (e.g., payload size).
+
+### Dispatcher
+
+Creates execution plans from processing rules. Typically used internally by UnifiedSDK.
+
+#### Constructor
+
+```typescript
+constructor(logger?: (level: string, message: string, ...args: any[]) => void)
+```
+
+#### Methods
+
+##### `routeRequest(payload: any, rules: ProcessingRules): DispatchPlan`
+
+Routes request based on processing rules and creates execution plan.
+
+**Returns:** DispatchPlan with actions to execute
+
+### Orchestrator
+
+Executes actions and manages backend integrations. Typically used internally by UnifiedSDK.
+
+#### Constructor
+
+```typescript
+constructor(config: UnifiedSDKConfig, logger?: (level: string, message: string, ...args: any[]) => void)
+```
+
+#### Methods
+
+##### `initialize(): Promise<void>`
+
+Initializes backend clients (DDC Client, Activity SDK).
+
+##### `execute(plan: DispatchPlan): Promise<OrchestrationResult>`
+
+Executes actions according to the dispatch plan.
+
+##### `cleanup(): Promise<void>`
+
+Cleans up resources and disconnects from backends.
+
+## Interfaces
+
+### UnifiedSDKConfig
+
+Main configuration interface for the SDK.
+
+```typescript
+interface UnifiedSDKConfig {
+  // DDC Client configuration
+  ddcConfig: {
+    signer: string; // Substrate URI or mnemonic phrase
+    bucketId: bigint;
+    clusterId?: bigint;
+    network?: 'testnet' | 'devnet' | 'mainnet';
+  };
+
+  // Activity SDK configuration (optional)
+  activityConfig?: {
+    endpoint?: string;
+    keyringUri?: string; // Substrate URI for signing
+    appId?: string;
+    connectionId?: string;
+    sessionId?: string;
+    appPubKey?: string;
+    dataServicePubKey?: string;
+  };
+
+  // Processing options
+  processing: {
+    enableBatching: boolean;
+    defaultBatchSize: number;
+    defaultBatchTimeout: number; // in milliseconds
+    maxRetries: number;
+    retryDelay: number; // in milliseconds
+  };
+
+  // Logging and monitoring
+  logging: {
+    level: 'debug' | 'info' | 'warn' | 'error';
+    enableMetrics: boolean;
+  };
+}
+```
+
+### UnifiedResponse
+
+Response format returned by `writeData()`.
+
+```typescript
+interface UnifiedResponse {
+  transactionId: string;
+  status: 'success' | 'partial' | 'failed';
+
+  /**
+   * DDC Content Identifier (CID) for data stored in Data Cloud
+   * This CID can be used to reference the original data source
+   */
+  dataCloudHash?: string;
+
+  /**
+   * Activity SDK event identifier for indexed data
+   * Useful for tracking and querying analytics events
+   */
+  indexId?: string;
+
+  errors?: Array<{
+    component: string;
+    error: string;
+    recoverable: boolean;
+  }>;
+  
+  metadata: {
+    processedAt: Date;
+    processingTime: number; // in milliseconds
+    actionsExecuted: string[];
+  };
+}
+```
+
+### ProcessingMetadata
+
+Controls how data is processed and routed.
+
+```typescript
+interface ProcessingMetadata {
+  dataCloudWriteMode: 'direct' | 'batch' | 'viaIndex' | 'skip';
+  indexWriteMode: 'realtime' | 'skip';
+  priority?: 'low' | 'normal' | 'high';
+  ttl?: number; // Time to live in seconds
+  encryption?: boolean;
+  batchOptions?: {
+    maxSize?: number;
+    maxWaitTime?: number; // in milliseconds
+  };
+}
+```
+
+**Data Cloud Write Modes:**
+- `direct`: Write immediately to DDC (bypassing indexing)
+- `batch`: Buffer and write to DDC in batches
+- `viaIndex`: Let Activity SDK handle DDC storage
+- `skip`: Don't store in DDC
+
+**Index Write Modes:**
+- `realtime`: Write to Activity SDK immediately
+- `skip`: Don't index this data
+
 ### TelegramEventData
 
-**Auto-detected data structure** for Telegram events (user actions, interactions, etc.).
+Structure for Telegram events (automatically detected).
 
 ```typescript
 interface TelegramEventData {
-  eventType: string; // Type of event
-  userId: string; // Telegram user ID
-  chatId?: string; // Optional chat ID
-  eventData: any; // Event-specific data
-  timestamp: Date; // Event timestamp
-  messageId?: string; // Optional related message ID
-  botId?: string; // Optional bot identifier
-  miniAppId?: string; // Optional mini-app identifier
+  eventType: 'quest_completed' | 'user_action' | 'mini_app_interaction';
+  userId: string;
+  chatId?: string;
+  eventData: Record<string, any>;
+  timestamp: Date;
 }
 ```
 
 ### TelegramMessageData
 
-**Auto-detected data structure** for Telegram messages.
+Structure for Telegram messages (automatically detected).
 
 ```typescript
 interface TelegramMessageData {
-  messageId: string; // Unique message identifier
-  chatId: string; // Chat ID
-  userId: string; // User ID who sent the message
-  messageText?: string; // Text content (for text messages)
-  messageType: TelegramMessageType; // Type of message
-  timestamp: Date; // Message timestamp
-  replyToMessageId?: string; // ID of message being replied to
-  metadata?: any; // Additional metadata
-}
-
-type TelegramMessageType = 'text' | 'photo' | 'video' | 'document' | 'sticker' | 'voice' | 'location' | 'contact';
-```
-
-### ProcessingMetadata
-
-Generic metadata for controlling data processing.
-
-```typescript
-interface ProcessingMetadata {
-  dataCloudWriteMode: DataCloudWriteMode;
-  indexWriteMode: IndexWriteMode;
-  priority?: Priority;
-  encryption?: boolean;
-  ttl?: number;
-  batchOptions?: BatchOptions;
-}
-
-type DataCloudWriteMode = 'direct' | 'batch' | 'viaIndex' | 'skip';
-type IndexWriteMode = 'realtime' | 'skip';
-type Priority = 'low' | 'normal' | 'high';
-```
-
-### UnifiedResponse
-
-Response object returned by all write operations.
-
-```typescript
-interface UnifiedResponse {
-  success: boolean; // Overall success status
-  transactionId: string; // Unique transaction identifier
-  results: ActionResult[]; // Results from individual actions
-  metadata: ResponseMetadata; // Response metadata
-
-  /**
-   * DDC Content Identifier (CID) - returned when data is stored in DDC
-   * This CID can be used to:
-   * - Reference original data sources in conversation streams
-   * - Link data across different systems and databases
-   * - Verify data integrity and immutability
-   * - Build audit trails and data provenance systems
-   */
-  dataCloudHash?: string;
-
-  activityEventId?: string; // Activity SDK event ID (if indexed)
-}
-
-interface ActionResult {
-  target: string; // Target system ('ddc-client', 'activity-sdk', etc.)
-  success: boolean; // Whether this action succeeded
-  response?: any; // Response data from the target
-  error?: string; // Error message if failed
-  executionTime: number; // Execution time in milliseconds
-}
-
-interface ResponseMetadata {
-  processingTime: number; // Total processing time
-  routingDecisions: string[]; // Routing decisions made
-  fallbacksUsed: string[]; // Any fallbacks that were used
+  messageId: string;
+  chatId: string;
+  userId: string;
+  messageText?: string;
+  messageType: 'text' | 'photo' | 'video' | 'document' | 'sticker';
+  timestamp: Date;
+  metadata?: Record<string, any>;
 }
 ```
 
-**CID Usage Examples:**
-
-```typescript
-// Store data and get CID for future reference
-const response = await sdk.writeTelegramMessage(messageData, {
-  writeMode: 'direct', // Ensures DDC storage and CID return
-});
-
-if (response.dataCloudHash) {
-  // Use CID in conversation streams
-  await conversationDB.addMessage({
-    messageId: messageData.messageId,
-    originalDataCID: response.dataCloudHash, // Link to immutable data
-    timestamp: new Date(),
-  });
-
-  // Reference in external systems
-  await notifyOtherSystem({
-    dataReference: response.dataCloudHash,
-    network: 'cere-ddc',
-  });
-}
-```
-
-### SDKStatus
-
-Current status of the SDK and its components.
-
-```typescript
-interface SDKStatus {
-  initialized: boolean; // Whether SDK is initialized
-  ddcAvailable: boolean; // Whether DDC client is available
-  activitySdkAvailable: boolean; // Whether Activity SDK is available
-  version: string; // SDK version
-  lastHealthCheck: Date; // Last health check timestamp
-  errors: string[]; // Any current errors
-}
-```
-
----
-
-## Error Types
+## Error Classes
 
 ### UnifiedSDKError
 
@@ -400,171 +403,203 @@ class UnifiedSDKError extends Error {
     message: string,
     public code: string,
     public component: string,
-    public cause?: Error
+    public recoverable: boolean = false,
+    public originalError?: Error
   );
 }
 ```
 
-**Error Codes:**
+**Common Error Codes:**
+- `NOT_INITIALIZED`: SDK not initialized before use
+- `INGESTION_ERROR`: Data ingestion failed
+- `INITIALIZATION_ERROR`: SDK initialization failed
+- `EXECUTION_ERROR`: Action execution failed
+- `UNKNOWN_TARGET`: Unknown action target
+- `UNKNOWN_METHOD`: Unknown method for target
 
-- `CONFIG_INVALID` - Invalid configuration
-- `INIT_FAILED` - Initialization failed
-- `VALIDATION_FAILED` - Data validation failed
-- `NETWORK_ERROR` - Network connectivity issue
-- `SERVICE_UNAVAILABLE` - External service unavailable
-- `PROCESSING_FAILED` - Data processing failed
+**Example:**
+```typescript
+try {
+  await sdk.writeData(data);
+} catch (error) {
+  if (error instanceof UnifiedSDKError) {
+    console.log('Error code:', error.code);
+    console.log('Component:', error.component);
+    console.log('Recoverable:', error.recoverable);
+  }
+}
+```
 
 ### ValidationError
 
-Specific error for validation failures.
+Specialized error for metadata validation failures.
 
 ```typescript
 class ValidationError extends UnifiedSDKError {
   constructor(
     message: string,
-    public field: string,
-    public value: any
+    public validationErrors: z.ZodError
   );
 }
 ```
 
----
+## Schema Validators
 
-## Constants
+The SDK exports Zod schemas for validation:
 
-### Default Values
-
-```typescript
-const DEFAULT_CONFIG = {
-  processing: {
-    enableBatching: true,
-    defaultBatchSize: 50,
-    defaultBatchTimeout: 5000,
-    maxRetries: 3,
-    retryDelay: 1000,
-  },
-  logging: {
-    level: 'info',
-    enableMetrics: true,
-  },
-};
-```
-
-### Network Endpoints
+### DataCloudWriteModeSchema
 
 ```typescript
-const NETWORKS = {
-  mainnet: {
-    blockchain: 'wss://rpc.mainnet.cere.network/ws',
-    activityEndpoint: 'https://api.stats.cere.network',
-  },
-  testnet: {
-    blockchain: 'wss://rpc.testnet.cere.network/ws',
-    activityEndpoint: 'https://api.stats.testnet.cere.network',
-  },
-};
+const DataCloudWriteModeSchema = z.enum(['direct', 'batch', 'viaIndex', 'skip']);
 ```
 
----
+### IndexWriteModeSchema
 
-## Usage Patterns
+```typescript
+const IndexWriteModeSchema = z.enum(['realtime', 'skip']);
+```
 
-### Basic Telegram Bot
+### ProcessingMetadataSchema
+
+```typescript
+const ProcessingMetadataSchema = z.object({
+  dataCloudWriteMode: DataCloudWriteModeSchema,
+  indexWriteMode: IndexWriteModeSchema,
+  priority: z.enum(['low', 'normal', 'high']).optional(),
+  ttl: z.number().min(0).optional(),
+  encryption: z.boolean().optional(),
+  batchOptions: z.object({
+    maxSize: z.number().min(1).optional(),
+    maxWaitTime: z.number().min(0).optional(),
+  }).optional(),
+});
+```
+
+### MetadataSchema
+
+```typescript
+const MetadataSchema = z.object({
+  processing: ProcessingMetadataSchema,
+  userContext: z.record(z.any()).optional(),
+  traceId: z.string().optional(),
+});
+```
+
+## Usage Examples
+
+### Basic Usage
 
 ```typescript
 import { UnifiedSDK } from '@cere-ddc-sdk/unified';
 
-const sdk = new UnifiedSDK({
-  ddcConfig: {
-    signer: process.env.SIGNER_KEY!,
-    bucketId: BigInt(process.env.BUCKET_ID!),
-    network: 'testnet',
-  },
-  activityConfig: {
-    keyringUri: process.env.ACTIVITY_SIGNER!,
-    appId: 'telegram-bot',
-    endpoint: 'https://api.stats.testnet.cere.network',
-    appPubKey: process.env.APP_PUB_KEY!,
-    dataServicePubKey: process.env.SERVICE_PUB_KEY!,
-  },
-});
-
+const sdk = new UnifiedSDK(config);
 await sdk.initialize();
 
-// ✨ ONE method for all Telegram data - auto-detects type and routes
-bot.on('callback_query', async (query) => {
-  await sdk.writeData({
-    eventType: 'button_click', // Auto-detected as Telegram Event
-    userId: query.from.id.toString(),
-    chatId: query.message?.chat.id.toString(),
-    eventData: {
-      buttonData: query.data,
-      messageId: query.message?.message_id,
-    },
-    timestamp: new Date(),
-  });
+// Simple data ingestion
+const result = await sdk.writeData({
+  eventType: 'user_action',
+  userId: 'user123',
+  eventData: { action: 'click', target: 'button' },
+  timestamp: new Date(),
 });
 
-bot.on('message', async (msg) => {
-  await sdk.writeData({
-    messageId: msg.message_id.toString(), // Auto-detected as Telegram Message
-    chatId: msg.chat.id.toString(),
-    userId: msg.from?.id.toString() || 'unknown',
-    messageText: msg.text,
-    messageType: 'text',
-    timestamp: new Date(msg.date * 1000),
-  });
-});
+console.log('Transaction ID:', result.transactionId);
+console.log('Status:', result.status);
 ```
 
-### High-Volume Processing
+### Error Handling
 
 ```typescript
-// Configure for high-volume scenarios
-const sdk = new UnifiedSDK({
-  ddcConfig: {
-    /* ... */
-  },
-  activityConfig: {
-    /* ... */
-  },
-  processing: {
-    enableBatching: true,
-    defaultBatchSize: 100, // Larger batches
-    defaultBatchTimeout: 2000, // Shorter timeout
-    maxRetries: 5,
-    retryDelay: 500,
-  },
-});
-
-// Process multiple events efficiently - all auto-detected
-const events = await getEventsFromQueue();
-for (const event of events) {
-  // These will be automatically batched and routed
-  sdk.writeData(event, { writeMode: 'batch' });
+try {
+  const result = await sdk.writeData(payload);
+  
+  if (result.status === 'partial') {
+    console.warn('Partial success:', result.errors);
+  }
+  
+} catch (error) {
+  if (error instanceof ValidationError) {
+    console.error('Invalid metadata:', error.validationErrors);
+  } else if (error instanceof UnifiedSDKError) {
+    console.error('SDK error:', error.code, error.message);
+    
+    if (error.recoverable) {
+      // Retry logic here
+    }
+  } else {
+    console.error('Unexpected error:', error);
+  }
 }
 ```
 
-### Custom Data Processing
+### Advanced Configuration
 
 ```typescript
-// Use writeData for any custom scenarios - ultimate flexibility
-await sdk.writeData(
-  {
-    type: 'custom_analytics',
-    data: analyticsData,
-    userId: 'user123', // Any structure you want
+const result = await sdk.writeData(
+  { 
+    complexData: { nested: 'structure' },
+    important: true 
   },
   {
-    priority: 'low',
+    priority: 'high',
+    encryption: true,
     metadata: {
       processing: {
-        dataCloudWriteMode: 'skip', // Don't store in DDC
-        indexWriteMode: 'realtime', // Only index for analytics
+        dataCloudWriteMode: 'direct',
+        indexWriteMode: 'realtime',
+        ttl: 3600, // 1 hour
       },
+      userContext: {
+        source: 'admin-panel',
+        userId: 'admin123',
+      },
+      traceId: 'trace-abc-123',
     },
-  },
+  }
 );
 ```
 
-This API reference provides comprehensive documentation for the unified `writeData()` method that simplifies all data ingestion operations into a single, intelligent entry point.
+## Type Exports
+
+All types and interfaces are exported from the main module:
+
+```typescript
+import type {
+  UnifiedSDKConfig,
+  UnifiedResponse,
+  ProcessingMetadata,
+  TelegramEventData,
+  TelegramMessageData,
+  ProcessingRules,
+  Action,
+  DispatchPlan,
+  ExecutionResult,
+  OrchestrationResult,
+} from '@cere-ddc-sdk/unified';
+```
+
+## Migration from Individual SDKs
+
+If migrating from direct DDC Client or Activity SDK usage:
+
+```typescript
+// Before (DDC Client)
+const { cid } = await ddcClient.store(bucketId, data);
+
+// After (Unified SDK)
+const result = await sdk.writeData(data);
+const cid = result.dataCloudHash;
+
+// Before (Activity SDK)
+await eventDispatcher.dispatchEvent(event);
+
+// After (Unified SDK) 
+const result = await sdk.writeData({
+  eventType: 'user_action',
+  userId: 'user123',
+  eventData: event.payload,
+  timestamp: new Date(),
+});
+```
+
+The Unified SDK provides a simpler interface while maintaining all the functionality of the individual SDKs with added benefits like automatic routing, fallback mechanisms, and unified error handling.

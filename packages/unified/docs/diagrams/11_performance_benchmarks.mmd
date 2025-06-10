@@ -1,0 +1,196 @@
+flowchart TD
+    %% Enhanced styling for better visual hierarchy
+    classDef metrics fill:#e1f5fe,stroke:#0277bd,stroke-width:1px
+    classDef sla fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px
+    classDef scaling fill:#fff9c4,stroke:#f57f17,stroke-width:1px
+    classDef warn fill:#ffcdd2,stroke:#c62828,stroke-width:1px
+    classDef title fill:#ede7f6,stroke:#4527a0,stroke-width:2px
+    classDef section fill:#f3e5f5,stroke:#6a1b9a,stroke-width:1px
+    classDef workload fill:#fff3e0,stroke:#ef6c00,stroke-width:1px
+    classDef testing fill:#e0f2f1,stroke:#00796b,stroke-width:1px
+    
+    %% Main Title - Central Organizing Element
+    MainTitle["Unified SDK/API Performance Framework"]:::title
+    
+    %% Main Categories
+    MainTitle --> SLASection
+    MainTitle --> TestingSection
+    MainTitle --> OperationalSection
+    
+    %% SLA Specifications Section
+    subgraph SLASection["Performance SLAs & Requirements"]
+        direction LR
+        
+        %% Service Level Agreements by Category
+        subgraph PerformanceSLAs["Core Performance SLAs"]
+            direction TB
+            
+            %% Latency & Throughput Metrics with SLAs
+            subgraph LatencyThroughput["Response Time & Throughput"]
+                direction TB
+                IngestLatency["Ingest Latency (P95)"]:::metrics
+                MaxThroughput["Max Throughput"]:::metrics
+                ConcurrentReqs["Concurrent Requests"]:::metrics
+                BatchPerf["Batch Processing Rate"]:::metrics
+                
+                IngestLatency --> LatencySLA["SLA: <200ms standard<br><500ms video streams<br><5s batch mode"]:::sla
+                MaxThroughput --> ThroughputSLA["SLA: 1,000 req/sec per instance<br>50MB/sec for video streams"]:::sla
+                ConcurrentReqs --> ConcurrentSLA["SLA: 500 concurrent requests<br>per instance"]:::sla
+                BatchPerf --> BatchPerfSLA["SLA: 10,000 records per batch<br>processed within 30s"]:::sla
+            end
+            
+            %% Reliability Metrics with SLAs
+            subgraph ReliabilitySLAs["Reliability & Availability"]
+                direction TB
+                Availability["Service Availability"]:::metrics
+                ErrorRate["Error Rate"]:::metrics
+                FailedWrites["Failed Writes"]:::metrics
+                RecoveryTime["Recovery Time"]:::metrics
+                
+                Availability --> AvailabilitySLA["SLA: 99.95% uptime<br>(~22 min downtime/month)"]:::sla
+                ErrorRate --> ErrorRateSLA["SLA: <0.1% of requests"]:::sla
+                FailedWrites --> FailedWritesSLA["SLA: <0.01% of writes with<br>permanent failure"]:::sla
+                RecoveryTime --> RecoveryTimeSLA["SLA: <5 minutes for<br>automatic recovery"]:::sla
+            end
+        end
+        
+        %% Resource Requirements
+        subgraph ResourceSLAs["Resource Requirements"]
+            direction TB
+            
+            %% Resource Utilization Metrics with SLAs
+            subgraph ResourceUtilization["Infrastructure Utilization Limits"]
+                direction TB
+                CPUUsage["CPU Usage"]:::metrics
+                MemoryUsage["Memory Usage"]:::metrics
+                NetworkIO["Network I/O"]:::metrics
+                DiskIO["Disk I/O (Batching)"]:::metrics
+                
+                CPUUsage --> CPUSageSLA["SLA: <70% average<br><90% peak"]:::sla
+                MemoryUsage --> MemoryUsageSLA["SLA: <2GB per instance"]:::sla
+                NetworkIO --> NetworkIOSLA["SLA: <70% of available<br>bandwidth"]:::sla
+                DiskIO --> DiskIOSLA["SLA: <200 IOPS average"]:::sla
+            end
+            
+            %% Scalability Metrics with SLAs
+            subgraph ScalabilitySLAs["Scaling Capabilities"]
+                direction TB
+                LinearScaling["Linear Scaling Factor"]:::metrics
+                MaxInstances["Max Instances"]:::metrics
+                ScaleUpTime["Scale-up Time"]:::metrics
+                
+                LinearScaling --> ScalingSLA["SLA: 0.7 efficiency factor<br>(70% linear scaling)"]:::sla
+                MaxInstances --> InstancesSLA["SLA: 100 instances max"]:::sla
+                ScaleUpTime --> ScaleTimeSLA["SLA: <2 minutes to scale<br>to handle 2x load"]:::sla
+            end
+        end
+    end
+    
+    %% Testing & Profiling Section
+    subgraph TestingSection["Performance Testing & Workload Profiling"]
+        direction TB
+        
+        %% Workload Profile Definitions
+        subgraph WorkloadProfiles["Workload Profiles"]
+            direction TB
+            
+            subgraph StandardProfile["Standard Profile"]
+                direction LR
+                StandardWorkload["Standard Workload:<br>Telegram events, messages"]:::workload
+                StandardProps["Characteristics:<br>• Small payloads (<100KB)<br>• High concurrency<br>• Low latency requirements"]
+                StandardWorkload --- StandardProps
+            end
+            
+            subgraph StreamProfile["Streaming Profile"]
+                direction LR
+                StreamWorkload["Stream Workload:<br>Video streams, telemetry"]:::workload
+                StreamProps["Characteristics:<br>• Large payloads (1MB-50MB)<br>• High throughput<br>• Moderate latency tolerance"]
+                StreamWorkload --- StreamProps
+            end
+            
+            subgraph BatchProfile["Batch Profile"]
+                direction LR
+                BatchWorkload["Batch Workload:<br>Accumulated records"]:::workload
+                BatchProps["Characteristics:<br>• 10,000+ records per batch<br>• High throughput<br>• High latency tolerance"]
+                BatchWorkload --- BatchProps
+            end
+        end
+        
+        %% Load Testing Methodology
+        subgraph TestingMethodology["Load Testing Scenarios"]
+            direction TB
+            
+            subgraph EnduranceTests["Endurance Tests"]
+                direction LR
+                SteadyState["Steady State Test:<br>50% capacity, 24 hours"]:::testing
+                Soak["Soak Test:<br>70% capacity, 72 hours"]:::testing
+            end
+            
+            subgraph CapacityTests["Capacity Tests"]
+                direction LR
+                PeakLoad["Peak Load Test:<br>90% capacity, 30 minutes"]:::testing
+                Spike["Spike Test:<br>200% normal load, 5 minutes"]:::testing
+            end
+        end
+        
+        %% Workload Optimization Targets
+        WorkloadTargets["Workload-Specific Optimization Targets"]
+        StandardWorkload -. "Optimized for<br>Concurrency" .-> ConcurrentSLA
+        StreamWorkload -. "Optimized for<br>Throughput" .-> ThroughputSLA
+        BatchWorkload -. "Optimized for<br>Batch Processing" .-> BatchPerfSLA
+    end
+    
+    %% Operational Management Section
+    subgraph OperationalSection["Operational Management"]
+        direction TB
+        
+        %% Thresholds & Alerting
+        subgraph ThresholdsSection["Operational Thresholds"]
+            direction TB
+            
+            %% Auto-Scaling Triggers
+            subgraph ScalingThresholds["Auto-Scaling Triggers"]
+                direction TB
+                ScaleOutCPU["Scale Out: >80% CPU<br>for >3 minutes"]:::scaling
+                ScaleInCPU["Scale In: <30% CPU<br>for >5 minutes"]:::scaling
+                ScaleOutReqs["Scale Out: >400 concurrent<br>requests for >2 minutes"]:::scaling
+                ScaleOutLatency["Scale Out: >150ms P95 latency<br>for >3 minutes"]:::scaling
+            end
+            
+            %% Alert Thresholds
+            subgraph DegradationThresholds["Performance Degradation Alerts"]
+                direction TB
+                LatencyWarning[">300ms P95 latency"]:::warn
+                ErrorRateWarning[">0.05% Error Rate"]:::warn
+                CPUWarning[">85% CPU Usage"]:::warn
+                MemoryWarning[">1.8GB Memory Usage"]:::warn
+            end
+        end
+        
+        %% Monitoring & Recovery
+        subgraph RecoverySection["Monitoring & Recovery"]
+            direction TB
+            
+            %% Monitoring Tools
+            subgraph MonitoringTools["Observability Stack"]
+                direction LR
+                Dashboards["Real-time Dashboards:<br>Grafana, Prometheus"]:::section
+                Alerts["Alert Management"]:::section
+                APM["Application Performance<br>Monitoring"]:::section
+            end
+            
+            %% Failure Handling
+            subgraph FailureModes["Failure Mode Responses"]
+                direction TB
+                CircuitBreaker["Circuit Breaker:<br>• Trips at 10% errors<br>• 1 minute evaluation window"]:::section
+                Retry["Retry Strategy:<br>• Exponential backoff<br>• Maximum 3 retries"]:::section
+                Fallback["Fallback Mechanism:<br>• Emergency queuing<br>• Persistent failure handling"]:::section
+            end
+        end
+    end
+    
+    %% Cross-section relationships
+    TestingMethodology --> MonitoringTools
+    ScalingThresholds --> ScalabilitySLAs
+    DegradationThresholds --> ReliabilitySLAs
+    FailureModes --> RecoveryTimeSLA 

@@ -1,0 +1,33 @@
+
+sequenceDiagram
+    participant Client as Telegram Mini-App
+    participant UnifiedAPI as Unified SDK/API
+    participant Rules as Rules Interpreter
+    participant Dispatcher
+    participant Orchestrator
+    participant ActivitySDK
+    participant IndexLayer as Indexing Layer
+    participant DataCloud as Data Cloud
+    
+    Note over Client,DataCloud: Telegram Mini-App Quests/Events Flow
+    
+    Client->>+UnifiedAPI: writeData(payload, {<br/>  "processing": {<br/>    "dataCloudWriteMode": "viaIndex",<br/>    "indexWriteMode": "realtime"<br/>  }<br/>})
+    UnifiedAPI->>+Rules: Parse metadata.processing
+    Rules-->>-UnifiedAPI: routing instructions
+    
+    UnifiedAPI->>+Dispatcher: route(payload, instructions)
+    Dispatcher->>+Orchestrator: execute(payload, instructions)
+    Orchestrator->>+ActivitySDK: write(payload)
+    ActivitySDK->>+IndexLayer: store(payload)
+    IndexLayer-->>-ActivitySDK: success
+    
+    Note right of IndexLayer: Indexing Layer copies<br/>data to Data Cloud<br/>(existing behavior preserved)
+    IndexLayer->>+DataCloud: store(payload)
+    DataCloud-->>-IndexLayer: hash
+    
+    ActivitySDK-->>-Orchestrator: success + metadata
+    Orchestrator-->>-Dispatcher: success + metadata
+    Dispatcher-->>-UnifiedAPI: success + metadata
+    UnifiedAPI-->>-Client: success + transaction ID + Data Cloud hash
+    
+    Note over Client,DataCloud: Current pattern: Activity SDK → Index → Data Cloud<br/>New pattern: Unified SDK with viaIndex + realtime metadata

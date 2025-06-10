@@ -1,0 +1,41 @@
+sequenceDiagram
+    participant Client as Drone Client
+    participant UnifiedAPI as Unified SDK/API
+    participant Rules as Rules Interpreter
+    participant Dispatcher
+    participant Orchestrator
+    participant DataCloudSDK as Data Cloud SDK
+    participant ActivitySDK
+    participant DataCloud as Data Cloud
+    participant IndexLayer as Indexing Layer
+    
+    Note over Client,IndexLayer: Drone Telemetry Flow
+    
+    Client->>+UnifiedAPI: writeData(payload, {<br/>  "processing": {<br/>    "dataCloudWriteMode": "direct",<br/>    "indexWriteMode": "realtime"<br/>  }<br/>})
+    UnifiedAPI->>+Rules: Parse metadata.processing
+    Rules-->>-UnifiedAPI: routing instructions
+    
+    UnifiedAPI->>+Dispatcher: route(payload, instructions)
+    Dispatcher->>+Orchestrator: execute(payload, instructions)
+    
+    par Write to Data Cloud
+        Orchestrator->>+DataCloudSDK: write(payload)
+        DataCloudSDK->>+DataCloud: store(payload)
+        DataCloud-->>-DataCloudSDK: hash
+        DataCloudSDK-->>-Orchestrator: success + hash
+    and Write to Index Layer
+        Orchestrator->>+ActivitySDK: write(payload)
+        ActivitySDK->>+IndexLayer: store(payload)
+        IndexLayer-->>-ActivitySDK: success
+        ActivitySDK-->>-Orchestrator: success
+    end
+    
+    Orchestrator-->>-Dispatcher: success + metadata (with hash)
+    Dispatcher-->>-UnifiedAPI: success + metadata (with hash)
+    UnifiedAPI-->>-Client: success + transaction ID + Data Cloud hash
+    
+    Note over Client,IndexLayer: Current pattern: Dual writes to Data Cloud & Index<br/>New pattern: Unified SDK with direct + realtime metadata
+    
+    Note right of Orchestrator: ❓ How to handle partial failures?<br/>❓ Is atomicity required?
+    
+    Note right of UnifiedAPI: Alternative:<br/>If batching is enabled:<br/>"dataCloudWriteMode": "batch"

@@ -2,716 +2,585 @@
 
 ## Overview
 
-The Unified Data Ingestion SDK uses a hierarchical configuration system that balances simplicity for basic use cases with flexibility for advanced scenarios. This guide covers all configuration options, best practices, and production considerations.
+The Unified SDK uses a comprehensive configuration system that provides sensible defaults while allowing fine-tuned control over all aspects of data ingestion and processing. The configuration is strictly typed and validated at runtime using Zod schemas.
 
-## Configuration Structure
-
-### Basic Configuration
+## Complete Configuration Interface
 
 ```typescript
-import { UnifiedSDK } from '@cere-ddc-sdk/unified';
-
-const sdk = new UnifiedSDK({
-  // Required: DDC configuration
+interface UnifiedSDKConfig {
+  // DDC Client configuration (required)
   ddcConfig: {
-    signer: '//Alice',
-    bucketId: BigInt(12345),
-    network: 'testnet',
-  },
+    signer: string; // Substrate URI or mnemonic phrase
+    bucketId: bigint;
+    clusterId?: bigint;
+    network?: 'testnet' | 'devnet' | 'mainnet';
+  };
 
-  // Optional: Activity SDK configuration
-  activityConfig: {
-    keyringUri: '//Alice',
-    appId: 'my-telegram-bot',
-    endpoint: 'https://api.stats.testnet.cere.network',
-    appPubKey: 'your-app-public-key',
-    dataServicePubKey: 'data-service-public-key',
-  },
-});
-```
+  // Activity SDK configuration (optional)
+  activityConfig?: {
+    endpoint?: string;
+    keyringUri?: string; // Substrate URI for signing
+    appId?: string;
+    connectionId?: string;
+    sessionId?: string;
+    appPubKey?: string;
+    dataServicePubKey?: string;
+  };
 
-### Full Configuration
-
-```typescript
-const sdk = new UnifiedSDK({
-  ddcConfig: {
-    signer: process.env.DDC_SIGNER!,
-    bucketId: BigInt(process.env.DDC_BUCKET_ID!),
-    network: 'mainnet',
-    clusterId: 'premium-cluster-01',
-  },
-
-  activityConfig: {
-    keyringUri: process.env.ACTIVITY_KEYRING_URI!,
-    appId: 'production-telegram-bot',
-    endpoint: 'https://api.stats.cere.network',
-    appPubKey: process.env.APP_PUBLIC_KEY!,
-    dataServicePubKey: process.env.DATA_SERVICE_PUBLIC_KEY!,
-    connectionId: 'persistent-connection-01',
-    sessionId: `session-${Date.now()}`,
-  },
-
+  // Processing options (required)
   processing: {
-    enableBatching: true,
-    defaultBatchSize: 100,
-    defaultBatchTimeout: 2000,
-    maxRetries: 5,
-    retryDelay: 1000,
-  },
+    enableBatching: boolean;
+    defaultBatchSize: number;
+    defaultBatchTimeout: number; // in milliseconds
+    maxRetries: number;
+    retryDelay: number; // in milliseconds
+  };
 
+  // Logging and monitoring (required)
   logging: {
-    level: 'info',
-    enableMetrics: true,
-  },
-});
-```
-
-## Configuration Sections
-
-### 1. DDC Configuration (Required)
-
-The DDC configuration is required for all SDK operations.
-
-```typescript
-interface DDCConfig {
-  signer: string; // Substrate signer
-  bucketId: bigint; // DDC bucket ID
-  network: 'mainnet' | 'testnet'; // Network
-  clusterId?: string; // Optional cluster ID
+    level: 'debug' | 'info' | 'warn' | 'error';
+    enableMetrics: boolean;
+  };
 }
 ```
 
-#### Parameters
+## DDC Configuration (Required)
 
-- **`signer`** (required): Substrate account for signing transactions
-
-  - Can be a mnemonic phrase, seed phrase, or URI format
-  - Examples: `'//Alice'`, `'word1 word2 ... word12'`, `'0x1234...'`
-
-- **`bucketId`** (required): DDC bucket identifier
-
-  - Must be a valid bucket you have access to
-  - Use `BigInt()` for large numbers: `BigInt(12345)`
-
-- **`network`** (required): Blockchain network
-
-  - `'mainnet'`: Production Cere network
-  - `'testnet'`: Test network for development
-
-- **`clusterId`** (optional): Specific cluster for data storage
-  - Useful for performance optimization or data locality
-  - Contact Cere team for available cluster IDs
-
-#### Network Endpoints
+### Basic DDC Setup
 
 ```typescript
-const NETWORK_ENDPOINTS = {
-  mainnet: {
-    blockchain: 'wss://rpc.mainnet.cere.network/ws',
-    gateway: 'https://ddc.mainnet.cere.network',
-  },
-  testnet: {
-    blockchain: 'wss://rpc.testnet.cere.network/ws',
-    gateway: 'https://ddc.testnet.cere.network',
-  },
+const ddcConfig = {
+  signer: 'your twelve word mnemonic phrase here', // or Substrate URI like '//Alice'
+  bucketId: BigInt(573409), // Your DDC bucket ID
+  network: 'testnet', // or 'devnet', 'mainnet'
 };
 ```
 
-### 2. Activity SDK Configuration (Optional)
+### DDC Network Options
 
-Activity SDK configuration enables event indexing and analytics.
+The SDK automatically configures network endpoints based on the `network` setting:
 
 ```typescript
-interface ActivityConfig {
-  keyringUri: string; // Signing key for events
-  appId: string; // Application identifier
-  endpoint: string; // Activity SDK endpoint
-  appPubKey: string; // Application public key
-  dataServicePubKey: string; // Data service public key
-  connectionId?: string; // Optional connection ID
-  sessionId?: string; // Optional session ID
-}
+// Network endpoint mapping (handled internally)
+const networkEndpoints = {
+  devnet: 'wss://archive.devnet.cere.network/ws',
+  testnet: 'wss://rpc.testnet.cere.network/ws',
+  mainnet: 'wss://rpc.mainnet.cere.network/ws', // default for production
+};
 ```
 
-#### Parameters
-
-- **`keyringUri`** (required): Substrate URI for event signing
-
-  - Same format as DDC signer: `'//Alice'`, mnemonic, or hex
-
-- **`appId`** (required): Unique application identifier
-
-  - Use descriptive names: `'telegram-quest-bot'`, `'cere-wallet'`
-  - Should be consistent across deployments
-
-- **`endpoint`** (required): Activity SDK API endpoint
-
-  - Mainnet: `'https://api.stats.cere.network'`
-  - Testnet: `'https://api.stats.testnet.cere.network'`
-
-- **`appPubKey`** (required): Your application's public key
-
-  - Obtained during app registration with Cere
-  - Used for authentication and encryption
-
-- **`dataServicePubKey`** (required): Cere's data service public key
-
-  - Provided by Cere team
-  - Used for data encryption and verification
-
-- **`connectionId`** (optional): Persistent connection identifier
-
-  - Useful for connection pooling and monitoring
-  - Auto-generated if not provided
-
-- **`sessionId`** (optional): Session tracking identifier
-  - Helps with debugging and analytics
-  - Auto-generated if not provided
-
-### 3. Processing Configuration (Optional)
-
-Controls batching, retries, and performance optimizations.
+### DDC Cluster Configuration
 
 ```typescript
-interface ProcessingConfig {
-  enableBatching: boolean; // Enable automatic batching
-  defaultBatchSize: number; // Items per batch
-  defaultBatchTimeout: number; // Max wait time (ms)
-  maxRetries: number; // Max retry attempts
-  retryDelay: number; // Delay between retries (ms)
-}
+const ddcConfig = {
+  signer: 'your mnemonic',
+  bucketId: BigInt(573409),
+  clusterId: BigInt('0x825c4b2352850de9986d9d28568db6f0c023a1e3'), // Optional cluster ID
+  network: 'testnet',
+};
 ```
 
-#### Default Values
+### Signer Options
 
 ```typescript
-const DEFAULT_PROCESSING_CONFIG = {
+// Mnemonic phrase (recommended for production)
+signer: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+
+// Substrate URI (good for development)
+signer: '//Alice'  // Built-in test account
+signer: '//Bob'    // Built-in test account
+signer: '//Charlie' // Built-in test account
+
+// Environment variable (recommended)
+signer: process.env.DDC_SIGNER
+```
+
+## Activity SDK Configuration (Optional)
+
+If not provided, the SDK operates in DDC-only mode with graceful fallback.
+
+### Basic Activity SDK Setup
+
+```typescript
+const activityConfig = {
+  endpoint: 'https://api.stats.cere.network', // Activity SDK endpoint
+  keyringUri: 'your twelve word mnemonic phrase here', // or Substrate URI
+  appId: 'your-app-id',
+  appPubKey: 'your-app-public-key',
+  dataServicePubKey: 'your-data-service-public-key',
+};
+```
+
+### Activity SDK Endpoints
+
+```typescript
+// Environment-specific endpoints
+const endpoints = {
+  production: 'https://api.stats.cere.network',
+  staging: 'https://api.stats.testnet.cere.network',
+  development: 'http://localhost:3000', // Local development
+};
+```
+
+### Session Management
+
+```typescript
+const activityConfig = {
+  endpoint: 'https://api.stats.cere.network',
+  keyringUri: process.env.ACTIVITY_KEYRING_URI,
+  appId: 'telegram-bot-v1',
+  
+  // Session management (optional, auto-generated if not provided)
+  connectionId: 'conn_' + Date.now(),
+  sessionId: 'sess_' + Date.now(),
+  
+  // Application keys
+  appPubKey: process.env.APP_PUBLIC_KEY,
+  dataServicePubKey: process.env.DATA_SERVICE_PUBLIC_KEY,
+};
+```
+
+## Processing Configuration (Required)
+
+Controls batching, retries, and performance optimization.
+
+### Production Settings
+
+```typescript
+const processing = {
   enableBatching: true,
-  defaultBatchSize: 50,
+  defaultBatchSize: 100,
   defaultBatchTimeout: 5000, // 5 seconds
   maxRetries: 3,
   retryDelay: 1000, // 1 second
 };
 ```
 
-#### Tuning Guidelines
-
-**High-Volume Bots (1000+ events/minute):**
+### High-Volume Settings
 
 ```typescript
-processing: {
+const processing = {
   enableBatching: true,
-  defaultBatchSize: 100,      // Larger batches
-  defaultBatchTimeout: 2000,  // Shorter timeout
+  defaultBatchSize: 200, // Larger batches
+  defaultBatchTimeout: 2000, // Faster processing
   maxRetries: 5,
-  retryDelay: 500,           // Faster retries
-}
+  retryDelay: 500, // Shorter delay
+};
 ```
 
-**Low-Latency Applications:**
+### Real-Time Settings
 
 ```typescript
-processing: {
-  enableBatching: false,      // Disable batching
+const processing = {
+  enableBatching: false, // Disable batching for immediate processing
   defaultBatchSize: 1,
-  defaultBatchTimeout: 0,
-  maxRetries: 2,             // Fewer retries
-  retryDelay: 200,           // Very fast retries
-}
+  defaultBatchTimeout: 100,
+  maxRetries: 3,
+  retryDelay: 1000,
+};
 ```
 
-**Reliable Background Processing:**
+### Low-Resource Settings
 
 ```typescript
-processing: {
+const processing = {
   enableBatching: true,
-  defaultBatchSize: 25,      // Smaller, reliable batches
+  defaultBatchSize: 25, // Smaller batches
   defaultBatchTimeout: 10000, // Longer timeout
-  maxRetries: 10,            // Many retries
-  retryDelay: 2000,          // Conservative retry delay
-}
+  maxRetries: 2,
+  retryDelay: 2000, // Longer delays
+};
 ```
 
-### 4. Logging Configuration (Optional)
+## Logging Configuration (Required)
 
-Controls logging level and metrics collection.
+### Production Logging
 
 ```typescript
-interface LoggingConfig {
-  level: 'debug' | 'info' | 'warn' | 'error';
-  enableMetrics: boolean;
-}
+const logging = {
+  level: 'warn', // Only warnings and errors
+  enableMetrics: true, // Enable performance metrics
+};
 ```
 
-#### Log Levels
-
-- **`debug`**: Verbose logging for development
-- **`info`**: General operational information
-- **`warn`**: Warning messages and fallbacks
-- **`error`**: Error conditions only
-
-#### Production Logging
+### Development Logging
 
 ```typescript
-logging: {
-  level: 'warn',          // Reduce log noise in production
-  enableMetrics: true,    // Keep metrics for monitoring
-}
+const logging = {
+  level: 'debug', // All log messages
+  enableMetrics: true, // Enable metrics for debugging
+};
 ```
 
-#### Development Logging
+### Minimal Logging
 
 ```typescript
-logging: {
-  level: 'debug',         // Verbose logging for debugging
-  enableMetrics: true,    // Full observability
-}
+const logging = {
+  level: 'error', // Only errors
+  enableMetrics: false, // Disable metrics for performance
+};
 ```
 
-## Environment-Based Configuration
+## Complete Configuration Examples
 
-### Using Environment Variables
-
-```typescript
-// .env file
-DDC_SIGNER=//Alice
-DDC_BUCKET_ID=12345
-DDC_NETWORK=testnet
-
-ACTIVITY_KEYRING_URI=//Alice
-ACTIVITY_APP_ID=telegram-bot
-ACTIVITY_ENDPOINT=https://api.stats.testnet.cere.network
-APP_PUBLIC_KEY=your-app-key
-DATA_SERVICE_PUBLIC_KEY=service-key
-
-ENABLE_BATCHING=true
-BATCH_SIZE=50
-LOG_LEVEL=info
-```
+### Telegram Bot Configuration
 
 ```typescript
-// Configuration from environment
+import { UnifiedSDK } from '@cere-ddc-sdk/unified';
+
 const config = {
   ddcConfig: {
     signer: process.env.DDC_SIGNER!,
     bucketId: BigInt(process.env.DDC_BUCKET_ID!),
-    network: process.env.DDC_NETWORK as 'mainnet' | 'testnet',
+    network: 'testnet' as const,
   },
-
-  activityConfig: process.env.ACTIVITY_KEYRING_URI
-    ? {
-        keyringUri: process.env.ACTIVITY_KEYRING_URI,
-        appId: process.env.ACTIVITY_APP_ID!,
-        endpoint: process.env.ACTIVITY_ENDPOINT!,
-        appPubKey: process.env.APP_PUBLIC_KEY!,
-        dataServicePubKey: process.env.DATA_SERVICE_PUBLIC_KEY!,
-      }
-    : undefined,
-
+  activityConfig: {
+    endpoint: 'https://api.stats.cere.network',
+    keyringUri: process.env.ACTIVITY_KEYRING_URI!,
+    appId: process.env.TELEGRAM_APP_ID!,
+    connectionId: `tg_bot_${Date.now()}`,
+    sessionId: `session_${Date.now()}`,
+    appPubKey: process.env.APP_PUBLIC_KEY!,
+    dataServicePubKey: process.env.DATA_SERVICE_PUBLIC_KEY!,
+  },
   processing: {
-    enableBatching: process.env.ENABLE_BATCHING === 'true',
-    defaultBatchSize: parseInt(process.env.BATCH_SIZE || '50'),
+    enableBatching: true,
+    defaultBatchSize: 50, // Moderate batching for bots
+    defaultBatchTimeout: 3000,
+    maxRetries: 3,
+    retryDelay: 1000,
+  },
+  logging: {
+    level: 'info' as const,
+    enableMetrics: true,
+  },
+};
+
+const sdk = new UnifiedSDK(config);
+```
+
+### High-Volume Analytics Configuration
+
+```typescript
+const config = {
+  ddcConfig: {
+    signer: process.env.DDC_SIGNER!,
+    bucketId: BigInt(process.env.DDC_BUCKET_ID!),
+    clusterId: BigInt(process.env.DDC_CLUSTER_ID!),
+    network: 'mainnet' as const,
+  },
+  activityConfig: {
+    endpoint: 'https://api.stats.cere.network',
+    keyringUri: process.env.ACTIVITY_KEYRING_URI!,
+    appId: 'analytics-system',
+    appPubKey: process.env.APP_PUBLIC_KEY!,
+    dataServicePubKey: process.env.DATA_SERVICE_PUBLIC_KEY!,
+  },
+  processing: {
+    enableBatching: true,
+    defaultBatchSize: 500, // Large batches for high volume
+    defaultBatchTimeout: 1000, // Quick processing
+    maxRetries: 5,
+    retryDelay: 500,
+  },
+  logging: {
+    level: 'warn' as const, // Reduce log noise
+    enableMetrics: true,
+  },
+};
+```
+
+### Development Configuration
+
+```typescript
+const config = {
+  ddcConfig: {
+    signer: '//Alice', // Built-in test account
+    bucketId: BigInt(12345), // Test bucket
+    network: 'devnet' as const,
+  },
+  activityConfig: {
+    endpoint: 'http://localhost:3000', // Local development
+    keyringUri: '//Alice',
+    appId: 'dev-app',
+    appPubKey: 'dev-key',
+    dataServicePubKey: 'dev-service-key',
+  },
+  processing: {
+    enableBatching: false, // Real-time for development
+    defaultBatchSize: 1,
+    defaultBatchTimeout: 100,
+    maxRetries: 1, // Fail fast in development
+    retryDelay: 500,
+  },
+  logging: {
+    level: 'debug' as const, // Verbose logging
+    enableMetrics: true,
+  },
+};
+```
+
+### DDC-Only Configuration
+
+```typescript
+const config = {
+  ddcConfig: {
+    signer: process.env.DDC_SIGNER!,
+    bucketId: BigInt(process.env.DDC_BUCKET_ID!),
+    network: 'testnet' as const,
+  },
+  // No activityConfig - SDK will operate in DDC-only mode
+  processing: {
+    enableBatching: true,
+    defaultBatchSize: 100,
+    defaultBatchTimeout: 5000,
+    maxRetries: 3,
+    retryDelay: 1000,
+  },
+  logging: {
+    level: 'info' as const,
+    enableMetrics: false,
+  },
+};
+```
+
+## Environment Variable Configuration
+
+### .env File Setup
+
+```bash
+# DDC Configuration
+DDC_SIGNER=your twelve word mnemonic phrase here
+DDC_BUCKET_ID=573409
+DDC_CLUSTER_ID=0x825c4b2352850de9986d9d28568db6f0c023a1e3
+DDC_NETWORK=testnet
+
+# Activity SDK Configuration
+ACTIVITY_ENDPOINT=https://api.stats.cere.network
+ACTIVITY_KEYRING_URI=your twelve word mnemonic phrase here
+ACTIVITY_APP_ID=your-app-id
+APP_PUBLIC_KEY=your-app-public-key
+DATA_SERVICE_PUBLIC_KEY=your-data-service-public-key
+
+# Optional Session IDs (auto-generated if not provided)
+CONNECTION_ID=conn_unique_id
+SESSION_ID=sess_unique_id
+```
+
+### Environment-Based Configuration
+
+```typescript
+const config = {
+  ddcConfig: {
+    signer: process.env.DDC_SIGNER!,
+    bucketId: BigInt(process.env.DDC_BUCKET_ID!),
+    clusterId: process.env.DDC_CLUSTER_ID ? BigInt(process.env.DDC_CLUSTER_ID) : undefined,
+    network: (process.env.DDC_NETWORK as 'testnet' | 'devnet' | 'mainnet') || 'testnet',
+  },
+  activityConfig: process.env.ACTIVITY_ENDPOINT ? {
+    endpoint: process.env.ACTIVITY_ENDPOINT,
+    keyringUri: process.env.ACTIVITY_KEYRING_URI!,
+    appId: process.env.ACTIVITY_APP_ID!,
+    connectionId: process.env.CONNECTION_ID || `conn_${Date.now()}`,
+    sessionId: process.env.SESSION_ID || `sess_${Date.now()}`,
+    appPubKey: process.env.APP_PUBLIC_KEY!,
+    dataServicePubKey: process.env.DATA_SERVICE_PUBLIC_KEY!,
+  } : undefined,
+  processing: {
+    enableBatching: process.env.ENABLE_BATCHING !== 'false',
+    defaultBatchSize: parseInt(process.env.BATCH_SIZE || '100'),
     defaultBatchTimeout: parseInt(process.env.BATCH_TIMEOUT || '5000'),
     maxRetries: parseInt(process.env.MAX_RETRIES || '3'),
     retryDelay: parseInt(process.env.RETRY_DELAY || '1000'),
   },
-
   logging: {
-    level: (process.env.LOG_LEVEL as any) || 'info',
+    level: (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || 'info',
     enableMetrics: process.env.ENABLE_METRICS !== 'false',
   },
 };
 ```
 
-### Configuration Factory
+## Configuration Validation
+
+The SDK validates configuration at runtime using Zod schemas:
 
 ```typescript
-// config/index.ts
-export function createSDKConfig(environment: 'development' | 'staging' | 'production') {
-  const baseConfig = {
-    ddcConfig: {
-      signer: process.env.DDC_SIGNER!,
-      bucketId: BigInt(process.env.DDC_BUCKET_ID!),
-      network: environment === 'production' ? 'mainnet' : 'testnet',
-    },
-  };
-
-  switch (environment) {
-    case 'development':
-      return {
-        ...baseConfig,
-        processing: {
-          enableBatching: false, // Immediate processing for debugging
-          maxRetries: 1,
-          retryDelay: 100,
-        },
-        logging: {
-          level: 'debug',
-          enableMetrics: true,
-        },
-      };
-
-    case 'staging':
-      return {
-        ...baseConfig,
-        processing: {
-          enableBatching: true,
-          defaultBatchSize: 25, // Conservative batching
-          maxRetries: 5,
-        },
-        logging: {
-          level: 'info',
-          enableMetrics: true,
-        },
-      };
-
-    case 'production':
-      return {
-        ...baseConfig,
-        activityConfig: {
-          keyringUri: process.env.ACTIVITY_KEYRING_URI!,
-          appId: process.env.ACTIVITY_APP_ID!,
-          endpoint: 'https://api.stats.cere.network',
-          appPubKey: process.env.APP_PUBLIC_KEY!,
-          dataServicePubKey: process.env.DATA_SERVICE_PUBLIC_KEY!,
-        },
-        processing: {
-          enableBatching: true,
-          defaultBatchSize: 100, // Optimized for performance
-          defaultBatchTimeout: 2000,
-          maxRetries: 5,
-          retryDelay: 1000,
-        },
-        logging: {
-          level: 'warn', // Reduce log noise
-          enableMetrics: true,
-        },
-      };
+// This happens automatically when creating UnifiedSDK
+try {
+  const sdk = new UnifiedSDK(config);
+  await sdk.initialize();
+} catch (error) {
+  if (error instanceof ValidationError) {
+    console.error('Configuration validation failed:', error.validationErrors);
   }
 }
 ```
 
-## Security Best Practices
+## Dynamic Configuration Updates
 
-### 1. Key Management
-
-**DO:**
-
-- Store signing keys in environment variables or secure key management systems
-- Use different keys for different environments
-- Rotate keys regularly
-
-**DON'T:**
-
-- Hardcode keys in source code
-- Share keys across applications
-- Use production keys in development
-
-### 2. Network Security
+While the SDK doesn't support hot-reloading configuration, you can implement dynamic updates:
 
 ```typescript
-// Use secure endpoints
+class ConfigurableSDK {
+  private sdk?: UnifiedSDK;
+  
+  async updateConfig(newConfig: UnifiedSDKConfig) {
+    // Cleanup existing SDK
+    if (this.sdk) {
+      await this.sdk.cleanup();
+    }
+    
+    // Initialize with new config
+    this.sdk = new UnifiedSDK(newConfig);
+    await this.sdk.initialize();
+  }
+  
+  async writeData(payload: any, options?: any) {
+    if (!this.sdk) {
+      throw new Error('SDK not initialized');
+    }
+    return this.sdk.writeData(payload, options);
+  }
+}
+```
+
+## Performance Tuning
+
+### Batch Size Optimization
+
+```typescript
+// For small payloads (< 1KB each)
+defaultBatchSize: 200
+
+// For medium payloads (1-10KB each)
+defaultBatchSize: 100
+
+// For large payloads (> 10KB each)
+defaultBatchSize: 25
+
+// For very large payloads (> 100KB each)
+defaultBatchSize: 5
+```
+
+### Timeout Optimization
+
+```typescript
+// For real-time requirements
+defaultBatchTimeout: 500 // 0.5 seconds
+
+// For balanced performance
+defaultBatchTimeout: 2000 // 2 seconds
+
+// For maximum throughput
+defaultBatchTimeout: 10000 // 10 seconds
+```
+
+### Retry Strategy
+
+```typescript
+// For reliable networks
+maxRetries: 2
+retryDelay: 500
+
+// For unreliable networks
+maxRetries: 5
+retryDelay: 2000
+
+// For critical data
+maxRetries: 10
+retryDelay: 1000
+```
+
+## Security Considerations
+
+### Sensitive Data Protection
+
+```typescript
+// ❌ Never hardcode sensitive values
 const config = {
   ddcConfig: {
-    network: 'mainnet', // Use appropriate network
-    // ... other config
-  },
-  activityConfig: {
-    endpoint: 'https://api.stats.cere.network', // Always use HTTPS
-    // ... other config
-  },
-};
-```
-
-### 3. Data Encryption
-
-```typescript
-// Enable encryption for sensitive data
-await sdk.writeTelegramEvent(eventData, {
-  encryption: true, // Encrypt sensitive events
-  priority: 'high',
-});
-```
-
-## Performance Optimization
-
-### 1. Batching Configuration
-
-```typescript
-// For high-throughput applications
-const highThroughputConfig = {
-  processing: {
-    enableBatching: true,
-    defaultBatchSize: 100, // Process more items at once
-    defaultBatchTimeout: 1000, // Shorter timeout for responsiveness
-  },
+    signer: 'abandon abandon abandon...', // Don't do this!
+  }
 };
 
-// For low-latency applications
-const lowLatencyConfig = {
-  processing: {
-    enableBatching: false, // Immediate processing
-    maxRetries: 2, // Fewer retries for speed
-    retryDelay: 200, // Fast retries
-  },
-};
-```
-
-### 2. Connection Optimization
-
-```typescript
-// Persistent connections for long-running applications
+// ✅ Always use environment variables
 const config = {
-  activityConfig: {
-    // ... other config
-    connectionId: 'persistent-bot-connection',
-    sessionId: `session-${process.pid}-${Date.now()}`,
-  },
-};
-```
-
-### 3. Resource Management
-
-```typescript
-// Proper cleanup for resource management
-process.on('SIGTERM', async () => {
-  console.log('Shutting down gracefully...');
-  await sdk.cleanup();
-  process.exit(0);
-});
-
-process.on('SIGINT', async () => {
-  console.log('Received SIGINT, shutting down...');
-  await sdk.cleanup();
-  process.exit(0);
-});
-```
-
-## Monitoring and Observability
-
-### 1. Health Checking
-
-```typescript
-// Periodic health checks
-setInterval(async () => {
-  const status = sdk.getStatus();
-
-  if (!status.initialized) {
-    console.error('SDK not initialized');
-    // Alert monitoring system
-  }
-
-  if (!status.ddcAvailable) {
-    console.warn('DDC not available');
-    // Check network connectivity
-  }
-
-  if (!status.activitySdkAvailable) {
-    console.warn('Activity SDK not available');
-    // May be expected if not configured
-  }
-}, 30000); // Check every 30 seconds
-```
-
-### 2. Metrics Collection
-
-```typescript
-// Enable metrics for monitoring
-const config = {
-  logging: {
-    level: 'info',
-    enableMetrics: true, // Collect performance metrics
-  },
-};
-
-// Access metrics (example integration)
-sdk.on('metrics', (metrics) => {
-  // Send to monitoring system (Prometheus, DataDog, etc.)
-  sendToMonitoring(metrics);
-});
-```
-
-### 3. Error Tracking
-
-```typescript
-// Global error handling
-sdk.on('error', (error) => {
-  console.error('SDK Error:', error);
-
-  // Send to error tracking service
-  errorTracker.captureException(error, {
-    component: error.component,
-    code: error.code,
-    // ... additional context
-  });
-});
-```
-
-## Common Configuration Patterns
-
-### 1. Telegram Bot Configuration
-
-```typescript
-const telegramBotConfig = {
   ddcConfig: {
-    signer: process.env.BOT_SIGNER!,
-    bucketId: BigInt(process.env.BOT_BUCKET_ID!),
-    network: 'mainnet',
-  },
-
-  activityConfig: {
-    keyringUri: process.env.BOT_ACTIVITY_KEY!,
-    appId: 'telegram-quest-bot',
-    endpoint: 'https://api.stats.cere.network',
-    appPubKey: process.env.BOT_APP_KEY!,
-    dataServicePubKey: process.env.DATA_SERVICE_KEY!,
-  },
-
-  processing: {
-    enableBatching: true,
-    defaultBatchSize: 50, // Good for moderate traffic
-    defaultBatchTimeout: 3000,
-    maxRetries: 3,
-    retryDelay: 1000,
-  },
-
-  logging: {
-    level: 'info',
-    enableMetrics: true,
-  },
+    signer: process.env.DDC_SIGNER!,
+  }
 };
 ```
 
-### 2. Mini-App Configuration
+### Configuration Sanitization
+
+The SDK automatically sanitizes sensitive data in logs:
 
 ```typescript
-const miniAppConfig = {
+// Logs will show:
+{
   ddcConfig: {
-    signer: process.env.MINIAPP_SIGNER!,
-    bucketId: BigInt(process.env.MINIAPP_BUCKET_ID!),
-    network: 'mainnet',
+    bucketId: "573409",
+    network: "testnet"
+    // signer is omitted for security
   },
-
   activityConfig: {
-    keyringUri: process.env.MINIAPP_ACTIVITY_KEY!,
-    appId: 'cere-wallet-miniapp',
-    endpoint: 'https://api.stats.cere.network',
-    appPubKey: process.env.MINIAPP_APP_KEY!,
-    dataServicePubKey: process.env.DATA_SERVICE_KEY!,
-    sessionId: `miniapp-${userId}-${Date.now()}`,
-  },
-
-  processing: {
-    enableBatching: false, // Real-time for better UX
-    maxRetries: 2, // Fast failure for responsiveness
-    retryDelay: 500,
-  },
-
-  logging: {
-    level: 'warn', // Minimal logging for performance
-    enableMetrics: true,
-  },
-};
-```
-
-### 3. Analytics Service Configuration
-
-```typescript
-const analyticsConfig = {
-  ddcConfig: {
-    signer: process.env.ANALYTICS_SIGNER!,
-    bucketId: BigInt(process.env.ANALYTICS_BUCKET_ID!),
-    network: 'mainnet',
-    clusterId: 'analytics-cluster', // Dedicated cluster
-  },
-
-  activityConfig: {
-    keyringUri: process.env.ANALYTICS_ACTIVITY_KEY!,
-    appId: 'cere-analytics-service',
-    endpoint: 'https://api.stats.cere.network',
-    appPubKey: process.env.ANALYTICS_APP_KEY!,
-    dataServicePubKey: process.env.DATA_SERVICE_KEY!,
-    connectionId: 'analytics-persistent',
-  },
-
-  processing: {
-    enableBatching: true,
-    defaultBatchSize: 200, // Large batches for efficiency
-    defaultBatchTimeout: 5000,
-    maxRetries: 10, // High reliability
-    retryDelay: 2000,
-  },
-
-  logging: {
-    level: 'info',
-    enableMetrics: true,
-  },
-};
+    endpoint: "https://api.stats.cere.network"
+    // keys are omitted for security
+  }
+}
 ```
 
 ## Troubleshooting Configuration
 
 ### Common Issues
 
-1. **Invalid Signer Format**
-
+1. **Invalid BigInt format**:
    ```typescript
    // ❌ Wrong
-   signer: 'alice';
-
+   bucketId: 573409
+   
    // ✅ Correct
-   signer: '//Alice'; // URI format
-   signer: 'word1 word2 ... word12'; // Mnemonic
-   signer: '0x1234...'; // Hex format
+   bucketId: BigInt(573409)
    ```
 
-2. **Bucket ID Type Error**
-
+2. **Network endpoint issues**:
    ```typescript
-   // ❌ Wrong
-   bucketId: 12345;
-
-   // ✅ Correct
-   bucketId: BigInt(12345);
+   // The SDK handles endpoints automatically based on network
+   // No need to specify blockchain URLs manually
    ```
 
-3. **Missing Activity Config**
-
+3. **Missing required fields**:
    ```typescript
-   // Activity SDK features will be disabled without config
-   // This is expected and handled gracefully
+   // processing and logging are required fields
+   const config = {
+     ddcConfig: { /* ... */ },
+     // activityConfig is optional
+     processing: { /* required */ },
+     logging: { /* required */ },
+   };
    ```
 
-4. **Network Mismatch**
-   ```typescript
-   // Ensure bucket exists on the specified network
-   network: 'testnet'; // Bucket must exist on testnet
-   ```
-
-### Validation
+### Configuration Debugging
 
 ```typescript
-// Configuration validation utility
-function validateConfig(config: UnifiedSDKConfig): void {
-  // Check required fields
-  if (!config.ddcConfig?.signer) {
-    throw new Error('DDC signer is required');
-  }
+// Check configuration before initialization
+const sdk = new UnifiedSDK(config);
+const status = sdk.getStatus();
+console.log('Configuration loaded:', status.config);
 
-  if (!config.ddcConfig?.bucketId) {
-    throw new Error('DDC bucket ID is required');
-  }
-
-  // Validate network
-  if (!['mainnet', 'testnet'].includes(config.ddcConfig.network)) {
-    throw new Error('Network must be mainnet or testnet');
-  }
-
-  // Validate bucket ID format
-  if (typeof config.ddcConfig.bucketId !== 'bigint') {
-    throw new Error('Bucket ID must be a BigInt');
-  }
-}
+// Check component initialization
+await sdk.initialize();
+const postInitStatus = sdk.getStatus();
+console.log('Components initialized:', postInitStatus.components);
 ```
 
-This configuration guide provides comprehensive coverage of all configuration options and best practices for deploying the Unified Data Ingestion SDK in various environments and use cases.
+## Best Practices
+
+1. **Use Environment Variables**: Keep sensitive data in environment variables
+2. **Validate Early**: Check configuration validity before deployment
+3. **Monitor Resource Usage**: Adjust batch sizes based on memory/CPU usage
+4. **Log Appropriately**: Use appropriate log levels for each environment
+5. **Test Configurations**: Validate configurations in staging environments
+6. **Document Settings**: Document custom configurations for your team
+
+This configuration system provides maximum flexibility while maintaining security and performance best practices.

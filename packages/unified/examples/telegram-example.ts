@@ -1,5 +1,5 @@
 import { UnifiedSDK } from '../src/UnifiedSDK';
-import { ProcessingMetadata, TelegramEventData, TelegramMessageData } from '../src/types';
+import { TelegramEventData, TelegramMessageData } from '../src/types';
 
 /**
  * Telegram Use Case Example
@@ -65,13 +65,17 @@ async function telegramExample() {
       timestamp: new Date(),
     };
 
-    const questMetadata: ProcessingMetadata = {
-      dataCloudWriteMode: 'direct',
-      indexWriteMode: 'realtime',
+    // ✨ Using writeData() with automatic detection
+    const questResult = await sdk.writeData(questEvent, {
       priority: 'high',
-    };
-
-    const questResult = await sdk.writeTelegramEvent(questEvent, questMetadata);
+      metadata: {
+        processing: {
+          dataCloudWriteMode: 'direct',
+          indexWriteMode: 'realtime',
+          priority: 'high',
+        },
+      },
+    });
     console.log('Quest completion result:', questResult);
 
     // Example 2: Telegram message with intelligent routing
@@ -90,17 +94,21 @@ async function telegramExample() {
       },
     };
 
-    const messageMetadata: ProcessingMetadata = {
-      dataCloudWriteMode: 'batch',
-      indexWriteMode: 'realtime',
+    // ✨ Using writeData() with automatic detection
+    const messageResult = await sdk.writeData(message, {
       priority: 'normal',
-      batchOptions: {
-        maxSize: 5,
-        maxWaitTime: 3000,
+      metadata: {
+        processing: {
+          dataCloudWriteMode: 'batch',
+          indexWriteMode: 'realtime',
+          priority: 'normal',
+          batchOptions: {
+            maxSize: 5,
+            maxWaitTime: 3000,
+          },
+        },
       },
-    };
-
-    const messageResult = await sdk.writeTelegramMessage(message, messageMetadata);
+    });
     console.log('Message storage result:', messageResult);
 
     // Example 3: High-priority event with encryption
@@ -118,15 +126,20 @@ async function telegramExample() {
       timestamp: new Date(),
     };
 
-    const secureMetadata: ProcessingMetadata = {
-      dataCloudWriteMode: 'direct',
-      indexWriteMode: 'realtime',
+    // ✨ Using writeData() with automatic detection
+    const secureResult = await sdk.writeData(sensitiveEvent, {
       priority: 'high',
       encryption: true,
-      ttl: 86400, // 24 hours
-    };
-
-    const secureResult = await sdk.writeTelegramEvent(sensitiveEvent, secureMetadata);
+      metadata: {
+        processing: {
+          dataCloudWriteMode: 'direct',
+          indexWriteMode: 'realtime',
+          priority: 'high',
+          encryption: true,
+          ttl: 86400, // 24 hours
+        },
+      },
+    });
     console.log('Secure event result:', secureResult);
 
     // Example 4: Fallback scenario demonstration
@@ -145,12 +158,15 @@ async function telegramExample() {
       timestamp: new Date(),
     };
 
-    const fallbackMetadata: ProcessingMetadata = {
-      dataCloudWriteMode: 'direct',
-      indexWriteMode: 'skip', // Only store in DDC as fallback
-    };
-
-    const fallbackResult = await sdk.writeTelegramEvent(fallbackEvent, fallbackMetadata);
+    // ✨ Using writeData() with automatic detection
+    const fallbackResult = await sdk.writeData(fallbackEvent, {
+      metadata: {
+        processing: {
+          dataCloudWriteMode: 'direct',
+          indexWriteMode: 'skip', // Only store in DDC as fallback
+        },
+      },
+    });
     console.log('Fallback result:', fallbackResult);
 
     console.log('\n✨ All examples completed successfully!');
