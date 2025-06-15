@@ -13,6 +13,7 @@
   - [ProcessingMetadata](#processingmetadata)
   - [TelegramEventData](#telegrameventdata)
   - [TelegramMessageData](#telegrammessagedata)
+  - [BullishCampaignEvent](#bullishcampaignevent)
 - [Error Classes](#error-classes)
   - [UnifiedSDKError](#unifiedsdkerror)
   - [ValidationError](#validationerror)
@@ -85,6 +86,7 @@ await sdk.initialize();
 **This is the ONLY method you need** - it replaces all individual methods by automatically detecting:
 - Telegram Events (by `eventType` + `userId` + `timestamp` fields)
 - Telegram Messages (by `messageId` + `chatId` + `userId` + `messageType` fields)  
+- Bullish Campaign Events (by `eventType` + `campaignId` + `accountId` fields)
 - Drone Telemetry (by `droneId` + `telemetry` + location fields)
 - Generic data (fallback for any other structure)
 
@@ -124,8 +126,21 @@ const result2 = await sdk.writeData({
   timestamp: new Date(),
 });
 
+// ✨ Automatic detection for Bullish campaign event
+const result3 = await sdk.writeData({
+  eventType: 'SEGMENT_WATCHED',
+  campaignId: 'bullish_education_2024',
+  accountId: 'user_12345',
+  eventData: {
+    segmentId: 'trading_basics_001',
+    completionPercentage: 100,
+  },
+  questId: 'education_quest_001',
+  timestamp: new Date(),
+});
+
 // ✨ Custom options
-const result3 = await sdk.writeData(
+const result4 = await sdk.writeData(
   { customData: 'important info' },
   {
     priority: 'high',
@@ -389,6 +404,47 @@ interface TelegramMessageData {
   timestamp: Date;
   metadata?: Record<string, any>;
 }
+```
+
+### BullishCampaignEvent
+
+Structure for Bullish campaign events (automatically detected).
+
+```typescript
+interface BullishCampaignEvent {
+  eventType: 'SEGMENT_WATCHED' | 'QUESTION_ANSWERED' | 'JOIN_CAMPAIGN' | 'CUSTOM_EVENTS';
+  campaignId: string;
+  accountId: string;
+  timestamp: Date;
+  eventData: Record<string, any>;
+  questId?: string; // Optional quest identifier
+  metadata?: Record<string, any>; // Additional campaign metadata
+}
+```
+
+**Automatic Detection:** The SDK detects Bullish campaign events when payload contains `eventType`, `campaignId`, and `accountId` fields.
+
+**Supported Event Types:**
+- `SEGMENT_WATCHED`: Video segment completion tracking
+- `QUESTION_ANSWERED`: Quiz and question answering
+- `JOIN_CAMPAIGN`: Campaign participation events
+- `CUSTOM_EVENTS`: Custom campaign-specific events
+
+**Example Usage:**
+```typescript
+// ✨ Automatically detected as Bullish Campaign Event
+const result = await sdk.writeData({
+  eventType: 'SEGMENT_WATCHED',
+  campaignId: 'bullish_education_2024',
+  accountId: 'user_12345',
+  eventData: {
+    segmentId: 'trading_basics_001',
+    completionPercentage: 100,
+    watchDuration: 300000,
+  },
+  questId: 'education_quest_001',
+  timestamp: new Date(),
+});
 ```
 
 ## Error Classes

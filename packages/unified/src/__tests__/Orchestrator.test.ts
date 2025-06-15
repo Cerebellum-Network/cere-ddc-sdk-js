@@ -75,7 +75,7 @@ describe('Orchestrator', () => {
 
       await orchestrator.initialize();
 
-      expect(UriSigner).toHaveBeenCalledWith('//Alice');
+      expect(UriSigner).toHaveBeenCalledWith('//Alice', { type: 'ed25519' });
       expect(NoOpCipher).toHaveBeenCalled();
       expect(EventDispatcher).toHaveBeenCalledWith(mockSigner, mockCipher, {
         baseUrl: 'https://api.stats.cere.network',

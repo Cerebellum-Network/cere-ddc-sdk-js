@@ -130,6 +130,245 @@ export interface TelegramMessageData {
   metadata?: Record<string, any>;
 }
 
+// Use case specific types for Bullish Campaigns
+export interface BullishCampaignEvent {
+  eventType: 'SEGMENT_WATCHED' | 'QUESTION_ANSWERED' | 'JOIN_CAMPAIGN' | 'CUSTOM_EVENTS';
+  accountId: string;
+  campaignId: string;
+  timestamp: Date;
+  payload: Record<string, any>;
+}
+
+// Schema validation for Bullish campaigns
+export const BullishCampaignEventSchema = z.object({
+  eventType: z.enum(['SEGMENT_WATCHED', 'QUESTION_ANSWERED', 'JOIN_CAMPAIGN', 'CUSTOM_EVENTS']),
+  accountId: z.string(),
+  campaignId: z.string(),
+  timestamp: z.date(),
+  payload: z.record(z.any()),
+});
+
+export type BullishCampaignEventType = z.infer<typeof BullishCampaignEventSchema>;
+
+// Use case specific types for Nightingale Drone Data
+export interface NightingaleVideoStream {
+  droneId: string;
+  streamId: string;
+  timestamp: Date;
+  videoMetadata: {
+    duration: number;
+    fps: number;
+    resolution: string;
+    codec: string;
+    streamType?: 'thermal' | 'rgb';
+  };
+  chunks: Array<{
+    chunkId: string;
+    startTime: number;
+    endTime: number;
+    data: Buffer | string;
+    offset?: number;
+    size?: number;
+  }>;
+}
+
+export interface NightingaleKLVData {
+  droneId: string;
+  streamId: string;
+  chunkCid?: string;
+  timestamp: Date;
+  pts: number; // Presentation timestamp
+  klvMetadata: {
+    type: string; // e.g., "ST 0601"
+    missionId?: string;
+    platform: {
+      headingAngle: number;
+      pitchAngle: number;
+      rollAngle: number;
+    };
+    sensor: {
+      latitude: number;
+      longitude: number;
+      trueAltitude: number;
+      horizontalFieldOfView: number;
+      verticalFieldOfView: number;
+      relativeAzimuth: number;
+      relativeElevation: number;
+      relativeRoll: number;
+    };
+    frameCenter: {
+      latitude: number;
+      longitude: number;
+      elevation: number;
+    };
+    offsetCorners?: Array<{
+      latitude: number;
+      longitude: number;
+    }>;
+    fields: Record<string, any>; // Additional KLV fields
+  };
+}
+
+export interface NightingaleTelemetry {
+  droneId: string;
+  timestamp: Date;
+  telemetryData: {
+    gps: { lat: number; lng: number; alt: number };
+    orientation: { pitch: number; roll: number; yaw: number };
+    velocity: { x: number; y: number; z: number };
+    battery: number;
+    signalStrength: number;
+  };
+  coordinates: {
+    latitude: number;
+    longitude: number;
+    altitude: number;
+  };
+  missionId?: string;
+  platformData?: Record<string, any>;
+}
+
+export interface NightingaleFrameAnalysis {
+  droneId: string;
+  streamId: string;
+  frameId: string;
+  chunkCid?: string;
+  timestamp: Date;
+  pts: number; // Presentation timestamp
+  frameData: {
+    base64EncodedData: string;
+    metadata: {
+      width: number;
+      height: number;
+      format: string;
+    };
+  };
+  analysisResults: {
+    objects: Array<{
+      type: string;
+      confidence: number;
+      boundingBox: [number, number, number, number];
+    }>;
+    features: Record<string, any>;
+  };
+}
+
+// Schema validation for Nightingale data types
+export const NightingaleVideoStreamSchema = z.object({
+  droneId: z.string(),
+  streamId: z.string(),
+  timestamp: z.date(),
+  videoMetadata: z.object({
+    duration: z.number(),
+    fps: z.number(),
+    resolution: z.string(),
+    codec: z.string(),
+    streamType: z.enum(['thermal', 'rgb']).optional(),
+  }),
+  chunks: z.array(
+    z.object({
+      chunkId: z.string(),
+      startTime: z.number(),
+      endTime: z.number(),
+      data: z.union([z.instanceof(Buffer), z.string()]),
+      offset: z.number().optional(),
+      size: z.number().optional(),
+    }),
+  ),
+});
+
+export const NightingaleKLVDataSchema = z.object({
+  droneId: z.string(),
+  streamId: z.string(),
+  chunkCid: z.string().optional(),
+  timestamp: z.date(),
+  pts: z.number(),
+  klvMetadata: z.object({
+    type: z.string(),
+    missionId: z.string().optional(),
+    platform: z.object({
+      headingAngle: z.number(),
+      pitchAngle: z.number(),
+      rollAngle: z.number(),
+    }),
+    sensor: z.object({
+      latitude: z.number(),
+      longitude: z.number(),
+      trueAltitude: z.number(),
+      horizontalFieldOfView: z.number(),
+      verticalFieldOfView: z.number(),
+      relativeAzimuth: z.number(),
+      relativeElevation: z.number(),
+      relativeRoll: z.number(),
+    }),
+    frameCenter: z.object({
+      latitude: z.number(),
+      longitude: z.number(),
+      elevation: z.number(),
+    }),
+    offsetCorners: z
+      .array(
+        z.object({
+          latitude: z.number(),
+          longitude: z.number(),
+        }),
+      )
+      .optional(),
+    fields: z.record(z.any()),
+  }),
+});
+
+export const NightingaleTelemetrySchema = z.object({
+  droneId: z.string(),
+  timestamp: z.date(),
+  telemetryData: z.object({
+    gps: z.object({ lat: z.number(), lng: z.number(), alt: z.number() }),
+    orientation: z.object({ pitch: z.number(), roll: z.number(), yaw: z.number() }),
+    velocity: z.object({ x: z.number(), y: z.number(), z: z.number() }),
+    battery: z.number(),
+    signalStrength: z.number(),
+  }),
+  coordinates: z.object({
+    latitude: z.number(),
+    longitude: z.number(),
+    altitude: z.number(),
+  }),
+  missionId: z.string().optional(),
+  platformData: z.record(z.any()).optional(),
+});
+
+export const NightingaleFrameAnalysisSchema = z.object({
+  droneId: z.string(),
+  streamId: z.string(),
+  frameId: z.string(),
+  chunkCid: z.string().optional(),
+  timestamp: z.date(),
+  pts: z.number(),
+  frameData: z.object({
+    base64EncodedData: z.string(),
+    metadata: z.object({
+      width: z.number(),
+      height: z.number(),
+      format: z.string(),
+    }),
+  }),
+  analysisResults: z.object({
+    objects: z.array(
+      z.object({
+        type: z.string(),
+        confidence: z.number(),
+        boundingBox: z.tuple([z.number(), z.number(), z.number(), z.number()]),
+      }),
+    ),
+    features: z.record(z.any()),
+  }),
+});
+
+export type NightingaleVideoStreamType = z.infer<typeof NightingaleVideoStreamSchema>;
+export type NightingaleKLVDataType = z.infer<typeof NightingaleKLVDataSchema>;
+export type NightingaleTelemetryType = z.infer<typeof NightingaleTelemetrySchema>;
+export type NightingaleFrameAnalysisType = z.infer<typeof NightingaleFrameAnalysisSchema>;
+
 // Configuration types
 export interface UnifiedSDKConfig {
   // DDC Client configuration
@@ -149,6 +388,23 @@ export interface UnifiedSDKConfig {
     sessionId?: string;
     appPubKey?: string;
     dataServicePubKey?: string;
+  };
+
+  // Nightingale-specific configuration
+  nightingaleConfig?: {
+    videoProcessing?: {
+      chunkSize?: number; // Default chunk size for video processing
+      timelinePreservation?: boolean;
+      compression?: boolean;
+    };
+    klvProcessing?: {
+      coordinateIndexing?: boolean;
+      metadataValidation?: boolean;
+    };
+    telemetryProcessing?: {
+      timeSeries?: boolean;
+      coordinateTracking?: boolean;
+    };
   };
 
   // Processing options

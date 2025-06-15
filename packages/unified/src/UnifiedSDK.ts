@@ -8,6 +8,11 @@ import {
   UnifiedSDKError,
   TelegramEventData,
   TelegramMessageData,
+  BullishCampaignEvent,
+  NightingaleVideoStream,
+  NightingaleKLVData,
+  NightingaleTelemetry,
+  NightingaleFrameAnalysis,
 } from './types';
 
 /**
@@ -175,27 +180,104 @@ export class UnifiedSDK {
       return 'generic';
     }
 
-    // Telegram Event Detection
+    // ✅ PRESERVE: Existing Telegram Event Detection (CRITICAL - MUST NOT BREAK)
     if (payload.eventType && payload.userId && (payload.timestamp || payload.createdAt)) {
       return 'telegram_event';
     }
 
-    // Telegram Message Detection
+    // ✅ PRESERVE: Existing Telegram Message Detection (CRITICAL - MUST NOT BREAK)
     if (payload.messageId && payload.chatId && payload.userId && payload.messageType) {
       return 'telegram_message';
     }
 
-    // Drone Telemetry Detection
+    // 🔄 ADD: Bullish Campaign Event Detection (NEW - COPY TELEGRAM PATTERN)
+    if (payload.eventType && payload.campaignId && payload.accountId) {
+      const bullishEventTypes = ['SEGMENT_WATCHED', 'QUESTION_ANSWERED', 'JOIN_CAMPAIGN', 'CUSTOM_EVENTS'];
+      if (bullishEventTypes.includes(payload.eventType)) {
+        return 'bullish_campaign';
+      }
+    }
+
+    // 🔄 ENHANCED: Nightingale-specific detection patterns (NEW)
+    if (this.isNightingaleVideoStream(payload)) {
+      return 'nightingale_video_stream';
+    }
+
+    if (this.isNightingaleKLVData(payload)) {
+      return 'nightingale_klv_data';
+    }
+
+    if (this.isNightingaleTelemetry(payload)) {
+      return 'nightingale_telemetry';
+    }
+
+    if (this.isNightingaleFrameAnalysis(payload)) {
+      return 'nightingale_frame_analysis';
+    }
+
+    // ✅ PRESERVE: Existing Drone Telemetry Detection (CRITICAL - MUST NOT BREAK)
     if (payload.droneId && payload.telemetry && (payload.latitude || payload.longitude)) {
       return 'drone_telemetry';
     }
 
-    // Drone Video Detection
+    // ✅ PRESERVE: Existing Drone Video Detection (CRITICAL - MUST NOT BREAK)
     if (payload.droneId && (payload.videoChunk || payload.frameData)) {
       return 'drone_video';
     }
 
     return 'generic';
+  }
+
+  /**
+   * Nightingale-specific type guards for enhanced detection
+   */
+  private isNightingaleVideoStream(payload: any): boolean {
+    return !!(
+      payload.droneId &&
+      payload.streamId &&
+      payload.videoMetadata &&
+      payload.chunks &&
+      Array.isArray(payload.chunks) &&
+      payload.chunks.length > 0 &&
+      payload.chunks[0].chunkId
+    );
+  }
+
+  private isNightingaleKLVData(payload: any): boolean {
+    return !!(
+      payload.droneId &&
+      payload.streamId &&
+      payload.klvMetadata &&
+      payload.klvMetadata.platform &&
+      payload.klvMetadata.sensor &&
+      payload.klvMetadata.frameCenter &&
+      typeof payload.pts === 'number'
+    );
+  }
+
+  private isNightingaleTelemetry(payload: any): boolean {
+    return !!(
+      payload.droneId &&
+      payload.telemetryData &&
+      payload.coordinates &&
+      payload.coordinates.latitude !== undefined &&
+      payload.coordinates.longitude !== undefined &&
+      payload.telemetryData.gps &&
+      payload.telemetryData.orientation
+    );
+  }
+
+  private isNightingaleFrameAnalysis(payload: any): boolean {
+    return !!(
+      payload.droneId &&
+      payload.streamId &&
+      payload.frameId &&
+      payload.frameData &&
+      payload.frameData.base64EncodedData &&
+      payload.analysisResults &&
+      payload.analysisResults.objects &&
+      typeof payload.pts === 'number'
+    );
   }
 
   /**
@@ -245,6 +327,24 @@ export class UnifiedSDK {
         };
         break;
 
+      case 'bullish_campaign':
+        // eslint-disable-next-line no-case-declarations
+        const campaignData = payload as BullishCampaignEvent;
+        baseMetadata.userContext = {
+          source: 'bullish',
+          eventType: campaignData.eventType,
+          accountId: campaignData.accountId,
+          campaignId: campaignData.campaignId,
+        };
+        // Set campaign-specific defaults
+        baseMetadata.processing = {
+          ...baseMetadata.processing,
+          dataCloudWriteMode: 'direct', // CID tracking for quests
+          indexWriteMode: 'realtime', // Real-time analytics
+          priority: 'high', // Campaign events are important
+        };
+        break;
+
       case 'drone_telemetry':
         baseMetadata.userContext = {
           source: 'drone',
@@ -258,6 +358,81 @@ export class UnifiedSDK {
           source: 'drone',
           dataType: 'video',
           droneId: payload.droneId,
+        };
+        break;
+
+      case 'nightingale_video_stream':
+        // eslint-disable-next-line no-case-declarations
+        const videoStreamData = payload as NightingaleVideoStream;
+        baseMetadata.userContext = {
+          source: 'nightingale',
+          dataType: 'video_stream',
+          droneId: videoStreamData.droneId,
+          streamId: videoStreamData.streamId,
+          streamType: videoStreamData.videoMetadata.streamType,
+        };
+        // Set video stream-specific defaults
+        baseMetadata.processing = {
+          ...baseMetadata.processing,
+          dataCloudWriteMode: 'direct', // Direct storage for video chunks
+          indexWriteMode: 'skip', // Skip indexing for large video data
+          priority: 'normal', // Normal priority for video chunks
+        };
+        break;
+
+      case 'nightingale_klv_data':
+        // eslint-disable-next-line no-case-declarations
+        const klvData = payload as NightingaleKLVData;
+        baseMetadata.userContext = {
+          source: 'nightingale',
+          dataType: 'klv_metadata',
+          droneId: klvData.droneId,
+          streamId: klvData.streamId,
+          missionId: klvData.klvMetadata.missionId,
+        };
+        // Set KLV-specific defaults
+        baseMetadata.processing = {
+          ...baseMetadata.processing,
+          dataCloudWriteMode: 'skip', // Skip data cloud for metadata
+          indexWriteMode: 'realtime', // Real-time indexing for searchability
+          priority: 'high', // High priority for metadata
+        };
+        break;
+
+      case 'nightingale_telemetry':
+        // eslint-disable-next-line no-case-declarations
+        const telemetryData = payload as NightingaleTelemetry;
+        baseMetadata.userContext = {
+          source: 'nightingale',
+          dataType: 'telemetry',
+          droneId: telemetryData.droneId,
+          missionId: telemetryData.missionId,
+        };
+        // Set telemetry-specific defaults
+        baseMetadata.processing = {
+          ...baseMetadata.processing,
+          dataCloudWriteMode: 'direct', // Direct storage for compliance
+          indexWriteMode: 'realtime', // Real-time indexing for monitoring
+          priority: 'high', // High priority for telemetry
+        };
+        break;
+
+      case 'nightingale_frame_analysis':
+        // eslint-disable-next-line no-case-declarations
+        const frameAnalysisData = payload as NightingaleFrameAnalysis;
+        baseMetadata.userContext = {
+          source: 'nightingale',
+          dataType: 'frame_analysis',
+          droneId: frameAnalysisData.droneId,
+          streamId: frameAnalysisData.streamId,
+          frameId: frameAnalysisData.frameId,
+        };
+        // Set frame analysis-specific defaults
+        baseMetadata.processing = {
+          ...baseMetadata.processing,
+          dataCloudWriteMode: 'direct', // Direct storage for analysis results
+          indexWriteMode: 'realtime', // Real-time indexing for searchability
+          priority: 'normal', // Normal priority for analysis
         };
         break;
 
@@ -298,10 +473,20 @@ export class UnifiedSDK {
         return `telegram_event_${payload.userId}_${timestamp}`;
       case 'telegram_message':
         return `telegram_message_${payload.messageId}_${timestamp}`;
+      case 'bullish_campaign':
+        return `bullish_campaign_${payload.accountId}_${payload.campaignId}_${timestamp}`;
       case 'drone_telemetry':
         return `drone_telemetry_${payload.droneId}_${timestamp}`;
       case 'drone_video':
         return `drone_video_${payload.droneId}_${timestamp}`;
+      case 'nightingale_video_stream':
+        return `nightingale_video_${payload.droneId}_${payload.streamId}_${timestamp}`;
+      case 'nightingale_klv_data':
+        return `nightingale_klv_${payload.droneId}_${payload.streamId}_${timestamp}`;
+      case 'nightingale_telemetry':
+        return `nightingale_telemetry_${payload.droneId}_${timestamp}`;
+      case 'nightingale_frame_analysis':
+        return `nightingale_frame_${payload.droneId}_${payload.frameId}_${timestamp}`;
       default:
         return `generic_data_${timestamp}`;
     }

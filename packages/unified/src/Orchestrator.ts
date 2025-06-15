@@ -199,7 +199,15 @@ export class Orchestrator {
   private async executeAction(action: Action): Promise<ExecutionResult> {
     const startTime = Date.now();
 
-    this.logger('debug', 'Executing action', action);
+    this.logger('debug', 'Executing action', {
+      target: action.target,
+      method: action.method,
+      priority: action.priority,
+      // Add campaign-specific logging
+      isCampaign: action.options?.campaignTracking || false,
+      campaignId: action.options?.campaignId,
+      questId: action.options?.questId,
+    });
 
     try {
       let response: any;
@@ -221,6 +229,11 @@ export class Orchestrator {
           throw new UnifiedSDKError(`Unknown action target: ${action.target}`, 'UNKNOWN_TARGET', 'Orchestrator');
       }
 
+      // Add campaign-specific post-processing
+      if (this.isCampaignAction(action)) {
+        await this.processCampaignSpecificLogic(action, response);
+      }
+
       const executionTime = Date.now() - startTime;
 
       return {
@@ -235,6 +248,9 @@ export class Orchestrator {
       this.logger('error', 'Action execution failed', {
         action: action.target,
         error,
+        // Add campaign-specific error context
+        campaignId: action.options?.campaignId || 'unknown',
+        questId: action.options?.questId || 'unknown',
       });
 
       return {
@@ -290,9 +306,25 @@ export class Orchestrator {
         };
       }
 
-      case 'storeBatch':
-        // TODO: Implement batch storage when available
-        throw new UnifiedSDKError('Batch storage not yet implemented', 'NOT_IMPLEMENTED', 'Orchestrator');
+      case 'storeBatch': {
+        // Route batch requests through Activity SDK with batch metadata
+        const batchAction: Action = {
+          target: 'activity-sdk',
+          method: 'sendEvent',
+          payload: {
+            ...action.payload,
+            _batchMode: true,
+            _batchOptions: action.options.batchOptions,
+          },
+          options: {
+            ...action.options,
+            writeToDataCloud: false, // ETL service will handle DDC writes
+          },
+          priority: action.priority,
+        };
+
+        return await this.executeActivityAction(batchAction);
+      }
 
       default:
         throw new UnifiedSDKError(`Unknown DDC method: ${action.method}`, 'UNKNOWN_METHOD', 'Orchestrator');
@@ -438,20 +470,88 @@ export class Orchestrator {
   }
 
   /**
-   * Cleanup resources
+   * Cleanup resources and disconnect
    */
   async cleanup(): Promise<void> {
-    this.logger('info', 'Cleaning up Orchestrator resources');
+    this.logger('info', 'Cleaning up Orchestrator');
 
     if (this.ddcClient) {
-      await this.ddcClient.disconnect();
+      // DDC Client cleanup - disconnect from the network
+      try {
+        await this.ddcClient.disconnect();
+        this.logger('debug', 'DDC client disconnected successfully');
+      } catch (error) {
+        this.logger('warn', 'Failed to disconnect DDC client', error);
+      }
     }
 
-    // Cleanup Activity SDK if needed
     if (this.activityClient) {
-      // Most Activity SDK clients don't require explicit cleanup,
-      // but if they do, it would go here
+      // Activity SDK cleanup if needed
+      // Note: EventDispatcher doesn't have a cleanup method in current version
       this.logger('debug', 'Activity SDK cleanup completed');
     }
+
+    this.logger('info', 'Orchestrator cleanup completed');
+  }
+
+  /**
+   * Check if action is campaign-related
+   */
+  private isCampaignAction(action: Action): boolean {
+    return action.options?.campaignTracking || action.options?.questTracking || action.options?.campaignId;
+  }
+
+  /**
+   * Process campaign-specific logic after action execution
+   */
+  private async processCampaignSpecificLogic(action: Action, response: any): Promise<void> {
+    try {
+      // Quest-specific processing
+      if (action.options?.questTracking && action.payload?.payload?.questId) {
+        await this.processQuestUpdate(action.payload, response);
+      }
+
+      // Campaign-specific processing
+      if (action.options?.campaignTracking && action.options?.campaignId) {
+        await this.updateCampaignMetrics(action.payload, response);
+      }
+    } catch (error) {
+      // Log error but don't fail the main action
+      this.logger('warn', 'Campaign-specific processing failed', {
+        campaignId: action.options?.campaignId,
+        questId: action.payload?.payload?.questId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  /**
+   * Process quest update logic
+   */
+  private async processQuestUpdate(payload: any, response: any): Promise<void> {
+    this.logger('info', 'Processing quest update', {
+      questId: payload.payload?.questId,
+      points: payload.payload?.points,
+      accountId: payload.accountId,
+      responseId: response?.eventId || response?.cid,
+    });
+
+    // Future enhancement: Could integrate with external quest service
+    // For now, just log the quest activity (following existing patterns)
+  }
+
+  /**
+   * Update campaign metrics
+   */
+  private async updateCampaignMetrics(payload: any, response: any): Promise<void> {
+    this.logger('info', 'Updating campaign metrics', {
+      campaignId: payload.campaignId,
+      eventType: payload.eventType,
+      accountId: payload.accountId,
+      responseId: response?.eventId || response?.cid,
+    });
+
+    // Future enhancement: Could update analytics dashboard
+    // For now, just log the campaign activity (following existing patterns)
   }
 }
