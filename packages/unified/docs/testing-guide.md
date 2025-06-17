@@ -1,252 +1,201 @@
-# Testing Guide: Unified Data Ingestion SDK
+# Unified SDK Testing Guide
 
 ## Overview
 
-This guide provides comprehensive instructions for testing the `@cere-ddc-sdk/unified` package, including unit tests, integration tests, and real-world testing with credentials.
+The Unified SDK includes comprehensive testing infrastructure covering unit tests, integration tests, and end-to-end testing scenarios. This guide covers testing strategies, patterns, and how to write tests for new features.
 
-## Table of Contents
-
-1. [Quick Start Testing](#quick-start-testing)
-2. [Unit Tests](#unit-tests)
-3. [Integration Testing](#integration-testing)
-4. [Real-world Testing with Credentials](#real-world-testing-with-credentials)
-5. [Test Environment Setup](#test-environment-setup)
-6. [Common Test Scenarios](#common-test-scenarios)
-7. [Troubleshooting Tests](#troubleshooting-tests)
-8. [Continuous Integration](#continuous-integration)
-
-## Quick Start Testing
-
-### Prerequisites
-
-```bash
-# Install dependencies
-npm install
-
-# Install global testing tools (if needed)
-npm install -g jest npm-run-all microbundle
-```
-
-### Run All Tests
-
-```bash
-# Run unit tests
-npm test
-
-# Build the package
-npm run build
-
-# Run integration tests (requires credentials)
-node test-credentials.js
-```
-
-## Unit Tests
+## Testing Architecture
 
 ### Test Structure
 
-The package includes comprehensive unit tests covering all components:
-
 ```
 src/__tests__/
-├── UnifiedSDK.test.ts          # Main SDK functionality (18 tests)
-├── RulesInterpreter.test.ts    # Metadata validation (8 tests)
-├── Dispatcher.test.ts          # Action routing (14 tests)
-├── Orchestrator.test.ts        # Execution engine (14 tests)
-├── types.test.ts              # Schema validation (14 tests)
-├── setup.ts                   # Test configuration
-└── __mocks__/                 # Mock dependencies
-    ├── ddc-client.ts
-    ├── activity-events.ts
-    ├── activity-signers.ts
-    └── activity-ciphers.ts
+├── unit/                          # Unit tests for individual components
+│   ├── UnifiedSDK.test.ts        # Main SDK functionality
+│   ├── UnifiedSDK.autoDetection.test.ts  # Data type detection
+│   ├── UnifiedSDK.nightingale.test.ts    # Nightingale data types
+│   ├── RulesInterpreter.test.ts  # Metadata validation and rules
+│   ├── Dispatcher.test.ts        # Request routing and actions
+│   └── Orchestrator.test.ts      # Action execution
+├── integration/                   # Integration tests
+│   ├── ddc-integration.test.ts   # DDC Client integration
+│   ├── activity-integration.test.ts  # Activity SDK integration
+│   └── end-to-end.test.ts        # Complete workflows
+├── helpers/                       # Test utilities and fixtures
+│   ├── test-fixtures.ts          # Mock data and fixtures
+│   ├── test-utils.ts             # Test utility functions
+│   └── mock-implementations.ts   # Mock service implementations
+└── __mocks__/                     # Jest mocks
+    ├── ddc-client.ts             # DDC Client mocks
+    └── activity-sdk.ts           # Activity SDK mocks
 ```
 
-### Running Unit Tests
+### Test Categories
 
+1. **Unit Tests**: Test individual components in isolation
+2. **Integration Tests**: Test component interactions
+3. **End-to-End Tests**: Test complete workflows
+4. **Performance Tests**: Test performance characteristics
+5. **Error Handling Tests**: Test error scenarios and recovery
+
+## Running Tests
+
+### All Tests
 ```bash
-# Run all unit tests
 npm test
+```
 
-# Run tests with coverage
+### Specific Test Suites
+```bash
+# Unit tests only
+npm test -- --testPathPattern=unit
+
+# Integration tests only
+npm test -- --testPathPattern=integration
+
+# Specific component tests
+npm test -- --testPathPattern=UnifiedSDK
+
+# Nightingale-specific tests
+npm test -- --testPathPattern=nightingale
+
+# Watch mode for development
+npm run test:watch
+```
+
+### Test Coverage
+```bash
+# Generate coverage report
 npm test -- --coverage
 
-# Run tests in watch mode
-npm test -- --watch
-
-# Run specific test file
-npm test -- UnifiedSDK.test.ts
-
-# Run tests with verbose output
-npm test -- --verbose
+# View coverage in browser
+npm test -- --coverage --coverageReporters=html
+open coverage/lcov-report/index.html
 ```
 
-### Unit Test Examples
+## Unit Testing Patterns
 
-#### Testing UnifiedSDK
+### Component Testing with Mocks
 
 ```typescript
+// Example: UnifiedSDK unit test
+import { UnifiedSDK } from '../../UnifiedSDK';
+import { mockTelegramEvent, createMockConfig } from '../helpers/test-fixtures';
+
+// Mock all dependencies
+jest.mock('../../RulesInterpreter');
+jest.mock('../../Dispatcher');
+jest.mock('../../Orchestrator');
+
 describe('UnifiedSDK', () => {
-  test('should initialize successfully', async () => {
-    const sdk = new UnifiedSDK(mockConfig);
+  let sdk: UnifiedSDK;
+  let mockConfig: any;
+
+  beforeEach(async () => {
+    mockConfig = createMockConfig();
+    sdk = new UnifiedSDK(mockConfig);
+
+    // Setup successful initialization
+    const mockOrchestrator = (sdk as any).orchestrator;
+    mockOrchestrator.initialize = jest.fn().mockResolvedValue(undefined);
     await sdk.initialize();
-    expect(sdk.getStatus().initialized).toBe(true);
+
+    jest.clearAllMocks();
   });
 
-  test('should process data successfully', async () => {
-    const sdk = new UnifiedSDK(mockConfig);
-    await sdk.initialize();
+  afterEach(async () => {
+    await sdk.cleanup();
+  });
 
-    const result = await sdk.writeData(
-      { test: 'data' },
-      {
-        priority: 'high',
-        metadata: {
-          processing: {
-            dataCloudWriteMode: 'direct',
-            indexWriteMode: 'realtime',
-          },
+  describe('Data Type Detection', () => {
+    it('should detect Telegram events correctly', async () => {
+      const eventData = mockTelegramEvent();
+      
+      // Setup component mocks
+      const mockRulesInterpreter = (sdk as any).rulesInterpreter;
+      const mockDispatcher = (sdk as any).dispatcher;
+      const mockOrchestrator = (sdk as any).orchestrator;
+
+      mockRulesInterpreter.validateMetadata = jest.fn().mockReturnValue({
+        processing: {
+          dataCloudWriteMode: 'viaIndex',
+          indexWriteMode: 'realtime',
         },
-      },
-    );
+      });
+      
+      mockRulesInterpreter.extractProcessingRules = jest.fn().mockReturnValue({
+        dataCloudAction: 'write_via_index',
+        indexAction: 'write_realtime',
+        batchingRequired: false,
+      });
+      
+      mockDispatcher.routeRequest = jest.fn().mockReturnValue({
+        actions: [{ target: 'activity-sdk', method: 'sendEvent' }],
+        executionMode: 'sequential',
+      });
+      
+      mockOrchestrator.execute = jest.fn().mockResolvedValue({
+        results: [{ target: 'activity-sdk', success: true, response: { eventId: 'evt_123' } }],
+        overallStatus: 'success',
+        transactionId: 'txn_123',
+      });
 
-    expect(result.success).toBe(true);
-    expect(result.transactionId).toBeDefined();
+      const result = await sdk.writeData(eventData);
+
+      expect(result.status).toBe('success');
+      expect(result.indexId).toBe('evt_123');
+      
+      // Verify correct metadata was generated
+      expect(mockRulesInterpreter.validateMetadata).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userContext: expect.objectContaining({
+            source: 'telegram',
+            eventType: eventData.eventType,
+            userId: eventData.userId,
+          }),
+        })
+      );
+    });
   });
+});
+```
 
-  test('should auto-detect Telegram events', async () => {
-    const sdk = new UnifiedSDK(mockConfig);
-    await sdk.initialize();
+### Data Type-Specific Testing
 
-    const telegramEvent = {
+#### Telegram Event Testing
+```typescript
+describe('Telegram Event Processing', () => {
+  it('should process quest completion events', async () => {
+    const questEvent = {
       eventType: 'quest_completed',
       userId: 'user123',
+      chatId: 'chat456',
+      eventData: {
+        questId: 'daily-check-in',
+        points: 100,
+        level: 5,
+      },
       timestamp: new Date(),
-      eventData: { questId: 'daily', points: 100 },
     };
 
-    const result = await sdk.writeData(telegramEvent);
-
-    expect(result.success).toBe(true);
-    expect(result.metadata.routingDecisions).toContain('telegram_event_detected');
+    const result = await sdk.writeData(questEvent);
+    
+    expect(result.status).toBe('success');
+    expect(result.metadata.dataType).toBe('telegram_event');
   });
 
-  test('should auto-detect Telegram messages', async () => {
-    const sdk = new UnifiedSDK(mockConfig);
-    await sdk.initialize();
-
-    const telegramMessage = {
-      messageId: 'msg123',
+  it('should process message storage', async () => {
+    const message = {
+      messageId: 'msg789',
       chatId: 'chat456',
       userId: 'user123',
-      messageType: 'text',
       messageText: 'Hello world!',
+      messageType: 'text',
       timestamp: new Date(),
     };
 
-    const result = await sdk.writeData(telegramMessage);
-
-    expect(result.success).toBe(true);
-    expect(result.metadata.routingDecisions).toContain('telegram_message_detected');
-  });
-});
-```
-
-#### Testing RulesInterpreter
-
-```typescript
-describe('RulesInterpreter', () => {
-  test('should detect data types correctly', () => {
-    const interpreter = new RulesInterpreter();
-
-    const telegramEvent = {
-      eventType: 'button_click',
-      userId: 'user123',
-      timestamp: new Date(),
-    };
-
-    const dataType = interpreter.detectDataType(telegramEvent);
-    expect(dataType).toBe('telegram_event');
-  });
-
-  test('should validate metadata correctly', () => {
-    const interpreter = new RulesInterpreter();
-    const metadata = {
-      processing: {
-        dataCloudWriteMode: 'viaIndex',
-        indexWriteMode: 'realtime',
-      },
-    };
-
-    expect(() => interpreter.validateMetadata(metadata)).not.toThrow();
-  });
-
-  test('should extract processing rules', () => {
-    const interpreter = new RulesInterpreter();
-    const rules = interpreter.extractProcessingRules(validMetadata);
-
-    expect(rules.dataCloudAction).toBe('write_via_index');
-    expect(rules.indexAction).toBe('write_realtime');
-  });
-});
-```
-
-### Test Configuration
-
-The Jest configuration includes:
-
-```typescript
-// jest.config.ts
-export default {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  testTimeout: 30_000,
-  moduleNameMapping: {
-    '@cere-ddc-sdk/ddc-client': '<rootDir>/src/__tests__/__mocks__/ddc-client.ts',
-    '@cere-activity-sdk/events': '<rootDir>/src/__tests__/__mocks__/activity-events.ts',
-    // ... other mocks
-  },
-};
-```
-
-## Integration Testing
-
-### Integration Test Setup
-
-Integration tests verify the SDK works with real external services but use mocked dependencies to ensure reliability.
-
-### Mocked Dependencies
-
-The test suite uses comprehensive mocks:
-
-```typescript
-// __mocks__/ddc-client.ts
-export const mockDdcClient = {
-  store: jest.fn().mockResolvedValue(mockCid),
-  disconnect: jest.fn().mockResolvedValue(undefined),
-};
-
-// __mocks__/activity-events.ts
-export const mockActivityEvent = {
-  id: 'test-event-id',
-  dispatchEvent: jest.fn().mockResolvedValue(true),
-};
-```
-
-### Integration Test Examples
-
-```typescript
-describe('Integration Tests', () => {
-  test('should handle DDC and Activity SDK together', async () => {
-    const sdk = new UnifiedSDK(testConfig);
-    await sdk.initialize();
-
-    const result = await sdk.writeData(testPayload, {
-      processing: {
-        dataCloudWriteMode: 'direct',
-        indexWriteMode: 'realtime',
-      },
-    });
-
+    const result = await sdk.writeData(message);
+    
     expect(result.status).toBe('success');
     expect(result.dataCloudHash).toBeDefined();
     expect(result.indexId).toBeDefined();
@@ -254,472 +203,1053 @@ describe('Integration Tests', () => {
 });
 ```
 
-## Real-world Testing with Credentials
-
-### Credentials Setup
-
-1. **Copy the test template:**
-
-```bash
-cp test-credentials.js my-test-credentials.js
-```
-
-2. **Replace placeholders with your credentials:**
-
-```javascript
-const config = {
-  ddcConfig: {
-    signer: 'your twelve word mnemonic phrase here',
-    bucketId: BigInt(573409), // Your bucket ID
-    clusterId: BigInt('0x825c4b2352850de9986d9d28568db6f0c023a1e3'), // Your cluster ID
-    network: 'testnet',
-  },
-  activityConfig: {
-    endpoint: 'https://ai-event.stage.cere.io', // Your endpoint
-    keyringUri: 'your twelve word mnemonic phrase here', // Same as signer
-    appId: '2621', // Your app ID
-    appPubKey: '0x367bd16b9fa69acc8d769add1652799683d68273eae126d2d4bae4d7b8e75bb6',
-    dataServicePubKey: '0x8225bda7fc68c17407e933ba8a44a3cbb31ce933ef002fb60337ff63c952b932',
-  },
-  // ... rest of config
-};
-```
-
-### Credential Sources
-
-**DDC Access:**
-
-- Mnemonic: Your 12-word recovery phrase
-- Bucket ID: Provided by Cere team
-- Cluster ID: Provided by Cere team
-- Network: `'testnet'` for testing
-
-**Activity SDK Access:**
-
-- App ID: Provided by Cere team
-- Endpoint: Activity service URL
-- Public Keys: App and data service keys
-
-### Running Real-world Tests
-
-```bash
-# Build first
-npm run build
-
-# Run with your credentials
-node my-test-credentials.js
-
-# Expected output:
-# 🚀 Testing Unified SDK with testnet credentials
-# 📋 Initializing SDK...
-# ✅ SDK initialized successfully
-# 📝 Test 1: Simple data ingestion to DDC
-# ✅ Test 1 Result: { transactionId: 'txn_...', status: 'success', ... }
-# ...
-# 🎉 All tests completed successfully!
-```
-
-## Test Environment Setup
-
-### Development Environment
-
-```bash
-# Clone repository
-git clone <repository-url>
-cd cere-ddc-sdk-js/packages/unified
-
-# Install dependencies
-npm install
-
-# Run tests
-npm test
-```
-
-### CI/CD Environment
-
-```yaml
-# .github/workflows/test.yml
-name: Test
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm install
-      - run: npm test
-      - run: npm run build
-```
-
-### Docker Environment
-
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-RUN npm run build
-RUN npm test
-
-CMD ["node", "test-credentials.js"]
-```
-
-## Common Test Scenarios
-
-### 1. Automatic Data Type Detection Testing
-
+#### Bullish Campaign Testing
 ```typescript
-describe('Data Type Detection', () => {
-  test('should detect all supported data types', async () => {
-    const sdk = new UnifiedSDK(testConfig);
-    await sdk.initialize();
-
-    const testCases = [
-      {
-        name: 'Telegram Event',
-        data: { eventType: 'test', userId: 'user1', timestamp: new Date() },
-        expectedType: 'telegram_event',
+describe('Bullish Campaign Processing', () => {
+  it('should process video segment completion', async () => {
+    const segmentEvent = {
+      eventType: 'SEGMENT_WATCHED',
+      campaignId: 'bullish_education_2024',
+      accountId: 'user_12345',
+      payload: {
+        segmentId: 'trading_basics_001',
+        watchDuration: 300000,
+        completionPercentage: 100,
       },
-      {
-        name: 'Telegram Message',
-        data: { messageId: 'msg1', chatId: 'chat1', userId: 'user1', messageType: 'text' },
-        expectedType: 'telegram_message',
-      },
-      {
-        name: 'Drone Telemetry',
-        data: { droneId: 'drone1', telemetry: { lat: 1, lng: 2 }, timestamp: new Date() },
-        expectedType: 'drone_telemetry',
-      },
-      {
-        name: 'Generic Data',
-        data: { customField: 'value', arbitrary: 'data' },
-        expectedType: 'generic',
-      },
-    ];
-
-    for (const testCase of testCases) {
-      const result = await sdk.writeData(testCase.data);
-      expect(result.metadata.detectedDataType).toBe(testCase.expectedType);
-    }
-  });
-});
-```
-
-### 2. Routing Logic Testing
-
-```typescript
-describe('Intelligent Routing', () => {
-  test('should route based on data type and options', async () => {
-    const sdk = new UnifiedSDK(testConfig);
-    await sdk.initialize();
-
-    const ddcOnlyResult = await sdk.writeData(
-      { test: 'data' },
-      {
-        metadata: {
-          processing: {
-            dataCloudWriteMode: 'direct',
-            indexWriteMode: 'skip',
-          },
-        },
-      },
-    );
-
-    expect(ddcOnlyResult.dataCloudHash).toBeDefined();
-    expect(ddcOnlyResult.activityEventId).toBeUndefined();
-
-    const activityOnlyResult = await sdk.writeData(
-      { eventType: 'test', userId: 'user1', timestamp: new Date() },
-      {
-        metadata: {
-          processing: {
-            dataCloudWriteMode: 'skip',
-            indexWriteMode: 'realtime',
-          },
-        },
-      },
-    );
-
-    expect(activityOnlyResult.dataCloudHash).toBeUndefined();
-    expect(activityOnlyResult.activityEventId).toBeDefined();
-  });
-});
-```
-
-### 3. Error Handling and Fallbacks
-
-```typescript
-describe('Error Handling', () => {
-  test('should handle graceful fallbacks', async () => {
-    const sdk = new UnifiedSDK(testConfigWithFailures);
-    await sdk.initialize();
-
-    mockActivitySDK.dispatchEvent.mockRejectedValue(new Error('Service unavailable'));
-
-    const result = await sdk.writeData({
-      eventType: 'test_event',
-      userId: 'user123',
+      questId: 'education_quest_001',
       timestamp: new Date(),
+    };
+
+    const result = await sdk.writeData(segmentEvent);
+    
+    expect(result.status).toBe('success');
+    expect(result.metadata.campaignContext).toEqual({
+      campaignId: 'bullish_education_2024',
+      questId: 'education_quest_001',
+    });
+  });
+
+  it('should process quiz answers with scoring', async () => {
+    const quizEvent = {
+      eventType: 'QUESTION_ANSWERED',
+      campaignId: 'bullish_quiz_challenge',
+      accountId: 'user_67890',
+      payload: {
+        questionId: 'q_trading_001',
+        selectedAnswer: 'A market with rising prices',
+        isCorrect: true,
+        timeToAnswer: 15000,
+        points: 10,
+      },
+      timestamp: new Date(),
+    };
+
+    const result = await sdk.writeData(quizEvent);
+    
+    expect(result.status).toBe('success');
+    expect(result.metadata.questTracking).toBe(true);
+  });
+});
+```
+
+#### Nightingale Data Testing
+```typescript
+describe('Nightingale Data Processing', () => {
+  it('should process RGB video streams', async () => {
+    const videoStream = {
+      droneId: 'drone_001',
+      streamId: 'stream_video_123',
+      timestamp: new Date(),
+      videoMetadata: {
+        duration: 300000,
+        fps: 30,
+        resolution: '1920x1080',
+        codec: 'h264',
+        streamType: 'rgb',
+      },
+      chunks: [
+        {
+          chunkId: 'chunk_001',
+          startTime: 0,
+          endTime: 10000,
+          data: Buffer.from('video_chunk_data'),
+          size: 2048000,
+        },
+      ],
+    };
+
+    const result = await sdk.writeData(videoStream);
+    
+    expect(result.status).toBe('success');
+    expect(result.dataCloudHash).toBeDefined();
+    expect(result.metadata.droneContext).toEqual({
+      droneId: 'drone_001',
+      streamId: 'stream_video_123',
+      streamType: 'rgb',
+    });
+  });
+
+  it('should process thermal video streams', async () => {
+    const thermalVideo = {
+      droneId: 'drone_thermal_001',
+      streamId: 'stream_thermal_456',
+      timestamp: new Date(),
+      videoMetadata: {
+        duration: 180000,
+        fps: 60,
+        resolution: '640x480',
+        codec: 'flir',
+        streamType: 'thermal',
+      },
+      chunks: [
+        {
+          chunkId: 'thermal_chunk_001',
+          startTime: 0,
+          endTime: 5000,
+          data: Buffer.from('thermal_data'),
+          size: 1024000,
+        },
+      ],
+    };
+
+    const result = await sdk.writeData(thermalVideo);
+    
+    expect(result.status).toBe('success');
+    expect(result.metadata.droneContext.streamType).toBe('thermal');
+  });
+
+  it('should process KLV metadata', async () => {
+    const klvData = {
+      droneId: 'drone_001',
+      streamId: 'stream_video_123',
+      timestamp: new Date(),
+      pts: 1000,
+      klvMetadata: {
+        type: 'ST 0601',
+        missionId: 'mission_alpha_001',
+        platform: {
+          headingAngle: 45.5,
+          pitchAngle: -2.1,
+          rollAngle: 1.3,
+        },
+        sensor: {
+          latitude: 40.7128,
+          longitude: -74.0060,
+          trueAltitude: 1500.0,
+          horizontalFieldOfView: 60.0,
+          verticalFieldOfView: 45.0,
+          relativeAzimuth: 90.0,
+          relativeElevation: 15.0,
+          relativeRoll: 0.5,
+        },
+        frameCenter: {
+          latitude: 40.7129,
+          longitude: -74.0061,
+          elevation: 100.0,
+        },
+        fields: {
+          timestamp: new Date().toISOString(),
+          securityClassification: 'UNCLASSIFIED',
+        },
+      },
+    };
+
+    const result = await sdk.writeData(klvData);
+    
+    expect(result.status).toBe('success');
+    expect(result.indexId).toBeDefined();
+    expect(result.metadata.coordinateIndexing).toBe(true);
+  });
+
+  it('should process telemetry data', async () => {
+    const telemetry = {
+      droneId: 'drone_001',
+      timestamp: new Date(),
+      telemetryData: {
+        gps: { lat: 40.7128, lng: -74.0060, alt: 150.5 },
+        orientation: { pitch: 2.1, roll: -1.3, yaw: 45.5 },
+        velocity: { x: 10.5, y: 2.3, z: 0.1 },
+        battery: 85,
+        signalStrength: 92,
+      },
+      coordinates: {
+        latitude: 40.7128,
+        longitude: -74.0060,
+        altitude: 150.5,
+      },
+      missionId: 'mission_alpha_001',
+    };
+
+    const result = await sdk.writeData(telemetry);
+    
+    expect(result.status).toBe('success');
+    expect(result.dataCloudHash).toBeDefined();
+    expect(result.indexId).toBeDefined();
+  });
+
+  it('should process frame analysis results', async () => {
+    const frameAnalysis = {
+      droneId: 'drone_001',
+      streamId: 'stream_video_123',
+      frameId: 'frame_001_1000',
+      timestamp: new Date(),
+      pts: 1000,
+      frameData: {
+        base64EncodedData: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+        metadata: {
+          width: 1920,
+          height: 1080,
+          format: 'jpeg',
+        },
+      },
+      analysisResults: {
+        objects: [
+          {
+            type: 'person',
+            confidence: 0.95,
+            boundingBox: [100, 200, 150, 300],
+          },
+          {
+            type: 'vehicle',
+            confidence: 0.87,
+            boundingBox: [500, 400, 200, 100],
+          },
+        ],
+        features: {
+          sceneType: 'urban',
+          lightingConditions: 'daylight',
+        },
+      },
+    };
+
+    const result = await sdk.writeData(frameAnalysis);
+    
+    expect(result.status).toBe('success');
+    expect(result.dataCloudHash).toBeDefined();
+    expect(result.indexId).toBeDefined();
+  });
+});
+```
+
+### Component Testing
+
+#### RulesInterpreter Testing
+```typescript
+describe('RulesInterpreter', () => {
+  let interpreter: RulesInterpreter;
+
+  beforeEach(() => {
+    interpreter = new RulesInterpreter();
+  });
+
+  describe('Metadata Validation', () => {
+    it('should validate correct metadata', () => {
+      const metadata = {
+        processing: {
+          dataCloudWriteMode: 'direct',
+          indexWriteMode: 'realtime',
+          priority: 'high',
+        },
+        userContext: {
+          source: 'telegram',
+          userId: 'user123',
+        },
+      };
+
+      const result = interpreter.validateMetadata(metadata);
+      expect(result).toEqual(metadata);
     });
 
-    expect(result.success).toBe(true);
-    expect(result.metadata.fallbacksUsed).toContain('ddc_fallback');
+    it('should reject invalid metadata', () => {
+      const invalidMetadata = {
+        processing: {
+          dataCloudWriteMode: 'invalid_mode',
+          indexWriteMode: 'realtime',
+        },
+      };
+
+      expect(() => {
+        interpreter.validateMetadata(invalidMetadata);
+      }).toThrow(ValidationError);
+    });
+
+    it('should enforce business rules', () => {
+      const invalidRules = {
+        processing: {
+          dataCloudWriteMode: 'skip',
+          indexWriteMode: 'skip', // Both cannot be skip
+        },
+      };
+
+      expect(() => {
+        interpreter.validateMetadata(invalidRules);
+      }).toThrow('Both data cloud and index actions cannot be skip');
+    });
+  });
+
+  describe('Rule Extraction', () => {
+    it('should extract processing rules correctly', () => {
+      const metadata = {
+        processing: {
+          dataCloudWriteMode: 'direct',
+          indexWriteMode: 'realtime',
+          priority: 'high',
+          encryption: true,
+        },
+      };
+
+      const rules = interpreter.extractProcessingRules(metadata);
+      
+      expect(rules).toEqual({
+        dataCloudAction: 'write_direct',
+        indexAction: 'write_realtime',
+        batchingRequired: false,
+        additionalParams: {
+          priority: 'high',
+          encryption: true,
+        },
+      });
+    });
+  });
+
+  describe('Rule Optimization', () => {
+    it('should optimize for large payloads', () => {
+      const rules = {
+        dataCloudAction: 'write_batch',
+        indexAction: 'write_realtime',
+        batchingRequired: true,
+        additionalParams: {
+          priority: 'normal',
+          encryption: false,
+          batchOptions: {
+            maxSize: 1000,
+            maxWaitTime: 5000,
+          },
+        },
+      };
+
+      const context = { payloadSize: 5 * 1024 * 1024 }; // 5MB
+      const optimized = interpreter.optimizeProcessingRules(rules, context);
+      
+      expect(optimized.additionalParams.batchOptions.maxSize).toBeLessThan(1000);
+    });
+
+    it('should optimize for high priority', () => {
+      const rules = {
+        dataCloudAction: 'write_batch',
+        indexAction: 'write_realtime',
+        batchingRequired: true,
+        additionalParams: {
+          priority: 'high',
+          encryption: false,
+          batchOptions: {
+            maxSize: 1000,
+            maxWaitTime: 5000,
+          },
+        },
+      };
+
+      const optimized = interpreter.optimizeProcessingRules(rules);
+      
+      expect(optimized.additionalParams.batchOptions.maxWaitTime).toBeLessThan(5000);
+    });
+  });
+});
+```
+
+#### Dispatcher Testing
+```typescript
+describe('Dispatcher', () => {
+  let dispatcher: Dispatcher;
+
+  beforeEach(() => {
+    dispatcher = new Dispatcher();
+  });
+
+  describe('Request Routing', () => {
+    it('should create correct actions for direct storage', () => {
+      const payload = { data: 'test data' };
+      const rules = {
+        dataCloudAction: 'write_direct',
+        indexAction: 'write_realtime',
+        batchingRequired: false,
+        additionalParams: {
+          priority: 'normal',
+          encryption: false,
+        },
+      };
+
+      const plan = dispatcher.routeRequest(payload, rules);
+      
+      expect(plan.actions).toHaveLength(2);
+      expect(plan.actions[0].target).toBe('ddc-client');
+      expect(plan.actions[0].method).toBe('store');
+      expect(plan.actions[1].target).toBe('activity-sdk');
+      expect(plan.actions[1].method).toBe('sendEvent');
+      expect(plan.executionMode).toBe('parallel');
+    });
+
+    it('should handle batch processing', () => {
+      const payload = { data: 'batch data' };
+      const rules = {
+        dataCloudAction: 'write_batch',
+        indexAction: 'write_realtime',
+        batchingRequired: true,
+        additionalParams: {
+          priority: 'normal',
+          encryption: false,
+          batchOptions: {
+            maxSize: 100,
+            maxWaitTime: 3000,
+          },
+        },
+      };
+
+      const plan = dispatcher.routeRequest(payload, rules);
+      
+      expect(plan.actions).toHaveLength(1);
+      expect(plan.actions[0].target).toBe('ddc-client');
+      expect(plan.actions[0].method).toBe('storeBatch');
+    });
+
+    it('should handle via-index routing', () => {
+      const payload = { data: 'index data' };
+      const rules = {
+        dataCloudAction: 'write_via_index',
+        indexAction: 'write_realtime',
+        batchingRequired: false,
+        additionalParams: {
+          priority: 'normal',
+          encryption: false,
+        },
+      };
+
+      const plan = dispatcher.routeRequest(payload, rules);
+      
+      expect(plan.actions).toHaveLength(1);
+      expect(plan.actions[0].target).toBe('activity-sdk');
+      expect(plan.actions[0].method).toBe('sendEvent');
+      expect(plan.executionMode).toBe('sequential');
+    });
+  });
+
+  describe('Payload Transformation', () => {
+    it('should transform Telegram events for Activity SDK', () => {
+      const telegramEvent = {
+        eventType: 'quest_completed',
+        userId: 'user123',
+        eventData: { questId: 'daily', points: 100 },
+        timestamp: new Date(),
+      };
+
+      const transformed = dispatcher.transformPayloadForActivity(telegramEvent);
+      
+      expect(transformed.type).toBe('telegram.event');
+      expect(transformed.userId).toBe('user123');
+      expect(transformed.data).toEqual(telegramEvent.eventData);
+    });
+
+    it('should transform Bullish campaigns for Activity SDK', () => {
+      const campaignEvent = {
+        eventType: 'SEGMENT_WATCHED',
+        campaignId: 'bullish_education_2024',
+        accountId: 'user_12345',
+        payload: {
+          segmentId: 'trading_basics_001',
+          completionPercentage: 100,
+        },
+        timestamp: new Date(),
+      };
+
+      const transformed = dispatcher.transformPayloadForActivity(campaignEvent);
+      
+      expect(transformed.type).toBe('bullish.campaign');
+      expect(transformed.userId).toBe('user_12345');
+      expect(transformed.campaignId).toBe('bullish_education_2024');
+      expect(transformed.eventType).toBe('SEGMENT_WATCHED');
+    });
+  });
+});
+```
+
+## Integration Testing
+
+### DDC Integration Testing
+```typescript
+describe('DDC Integration', () => {
+  let sdk: UnifiedSDK;
+  let realConfig: UnifiedSDKConfig;
+
+  beforeAll(() => {
+    // Use real DDC configuration for integration tests
+    realConfig = {
+      ddcConfig: {
+        signer: process.env.TEST_DDC_SIGNER || '//Alice',
+        bucketId: BigInt(process.env.TEST_DDC_BUCKET_ID || '12345'),
+        network: 'devnet',
+      },
+      processing: {
+        enableBatching: false,
+        defaultBatchSize: 1,
+        defaultBatchTimeout: 1000,
+        maxRetries: 1,
+        retryDelay: 500,
+      },
+      logging: {
+        level: 'error', // Reduce noise in tests
+        enableMetrics: false,
+      },
+    };
+  });
+
+  beforeEach(async () => {
+    sdk = new UnifiedSDK(realConfig);
+    await sdk.initialize();
+  });
+
+  afterEach(async () => {
+    await sdk.cleanup();
+  });
+
+  it('should store data in DDC and return CID', async () => {
+    const testData = {
+      message: 'Integration test data',
+      timestamp: new Date().toISOString(),
+    };
+
+    const result = await sdk.writeData(testData, {
+      metadata: {
+        processing: {
+          dataCloudWriteMode: 'direct',
+          indexWriteMode: 'skip', // Skip Activity SDK for DDC-only test
+        },
+      },
+    });
+
+    expect(result.status).toBe('success');
+    expect(result.dataCloudHash).toBeDefined();
+    expect(result.dataCloudHash).toMatch(/^0x[a-fA-F0-9]+$/); // CID format
+  });
+
+  it('should handle large payloads', async () => {
+    const largeData = {
+      content: 'x'.repeat(1024 * 1024), // 1MB of data
+      timestamp: new Date().toISOString(),
+    };
+
+    const result = await sdk.writeData(largeData, {
+      metadata: {
+        processing: {
+          dataCloudWriteMode: 'direct',
+          indexWriteMode: 'skip',
+        },
+      },
+    });
+
+    expect(result.status).toBe('success');
     expect(result.dataCloudHash).toBeDefined();
   });
 });
 ```
 
-## Troubleshooting Tests
+### Activity SDK Integration Testing
+```typescript
+describe('Activity SDK Integration', () => {
+  let sdk: UnifiedSDK;
+  let realConfig: UnifiedSDKConfig;
 
-### Common Test Issues
+  beforeAll(() => {
+    realConfig = {
+      ddcConfig: {
+        signer: process.env.TEST_DDC_SIGNER || '//Alice',
+        bucketId: BigInt(process.env.TEST_DDC_BUCKET_ID || '12345'),
+        network: 'devnet',
+      },
+      activityConfig: {
+        endpoint: process.env.TEST_ACTIVITY_ENDPOINT || 'https://api.stats.testnet.cere.network',
+        keyringUri: process.env.TEST_ACTIVITY_KEYRING_URI || '//Alice',
+        appId: 'unified-sdk-integration-test',
+        appPubKey: 'test-app-key',
+        dataServicePubKey: 'test-service-key',
+      },
+      processing: {
+        enableBatching: false,
+        defaultBatchSize: 1,
+        defaultBatchTimeout: 1000,
+        maxRetries: 1,
+        retryDelay: 500,
+      },
+      logging: {
+        level: 'error',
+        enableMetrics: false,
+      },
+    };
+  });
 
-#### 1. Module Resolution Errors
+  beforeEach(async () => {
+    sdk = new UnifiedSDK(realConfig);
+    await sdk.initialize();
+  });
 
-**Error:** `Cannot find module '@cere-ddc-sdk/ddc-client'`
-
-**Solution:**
-
-```bash
-# Install missing dependencies
-npm install
-
-# Check if dependencies are built
-cd ../ddc-client && npm run build
-cd ../unified
-```
-
-#### 2. Network Connection Issues
-
-**Error:** `Failed to connect to testnet`
-
-**Solution:**
-
-```javascript
-const testConnection = async () => {
-  try {
-    const response = await fetch('https://rpc.testnet.cere.network/health');
-    console.log('Network accessible:', response.ok);
-  } catch (error) {
-    console.log('Network issue:', error.message);
-  }
-};
-```
-
-#### 3. Credential Issues
-
-**Error:** `Invalid signer or authentication failed`
-
-**Solution:**
-
-```javascript
-const validateCredentials = (config) => {
-  console.log('Signer format:', typeof config.ddcConfig.signer);
-  console.log('Bucket ID type:', typeof config.ddcConfig.bucketId);
-  console.log('Cluster ID type:', typeof config.ddcConfig.clusterId);
-};
-```
-
-#### 4. Test Timeout Issues
-
-**Error:** `Test exceeded 30000ms timeout`
-
-**Solution:**
-
-```javascript
-jest.setTimeout(60000);
-
-test('long running test', async () => {
-  const result = await longRunningOperation();
-  expect(result).toBeDefined();
-}, 60000);
-```
-
-### Debug Mode
-
-Enable debug logging:
-
-```javascript
-const config = {
-  logging: {
-    level: 'debug',
-    enableMetrics: true,
-  },
-};
-```
-
-### Test Data Cleanup
-
-```javascript
-afterEach(async () => {
-  if (sdk) {
+  afterEach(async () => {
     await sdk.cleanup();
-  }
+  });
+
+  it('should send events to Activity SDK', async () => {
+    const eventData = {
+      eventType: 'integration_test',
+      userId: 'test_user_123',
+      eventData: {
+        testId: 'integration_' + Date.now(),
+        action: 'test_action',
+      },
+      timestamp: new Date(),
+    };
+
+    const result = await sdk.writeData(eventData, {
+      metadata: {
+        processing: {
+          dataCloudWriteMode: 'skip', // Skip DDC for Activity-only test
+          indexWriteMode: 'realtime',
+        },
+      },
+    });
+
+    expect(result.status).toBe('success');
+    expect(result.indexId).toBeDefined();
+    expect(result.indexId).toMatch(/^evt_/); // Event ID format
+  });
 });
 ```
 
-## Continuous Integration
+## Error Handling Testing
 
-### GitHub Actions
+### Error Scenario Testing
+```typescript
+describe('Error Handling', () => {
+  let sdk: UnifiedSDK;
 
-```yaml
-name: Unified SDK Tests
-on: [push, pull_request]
+  beforeEach(async () => {
+    const config = createMockConfig();
+    sdk = new UnifiedSDK(config);
+    await sdk.initialize();
+  });
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  describe('Validation Errors', () => {
+    it('should handle invalid metadata gracefully', async () => {
+      const invalidData = { invalid: 'data' };
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
+      await expect(
+        sdk.writeData(invalidData, {
+          metadata: {
+            processing: {
+              dataCloudWriteMode: 'invalid_mode' as any,
+              indexWriteMode: 'realtime',
+            },
+          },
+        })
+      ).rejects.toThrow(ValidationError);
+    });
 
-      - name: Install dependencies
-        run: npm ci
+    it('should provide detailed validation error information', async () => {
+      const invalidData = { test: 'data' };
 
-      - name: Run linting
-        run: npm run lint
+      try {
+        await sdk.writeData(invalidData, {
+          metadata: {
+            processing: {
+              dataCloudWriteMode: 'skip',
+              indexWriteMode: 'skip', // Both cannot be skip
+            },
+          },
+        });
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnifiedSDKError);
+        expect(error.code).toBe('INVALID_RULE_COMBINATION');
+        expect(error.component).toBe('RulesInterpreter');
+      }
+    });
+  });
 
-      - name: Run unit tests
-        run: npm test
+  describe('Service Failures', () => {
+    it('should handle DDC service failure with fallback', async () => {
+      const mockOrchestrator = (sdk as any).orchestrator;
+      mockOrchestrator.execute = jest.fn().mockResolvedValue({
+        results: [
+          {
+            target: 'ddc-client',
+            success: false,
+            error: 'DDC service unavailable',
+          },
+          {
+            target: 'activity-sdk',
+            success: true,
+            response: { eventId: 'evt_123' },
+          },
+        ],
+        overallStatus: 'partial',
+        transactionId: 'txn_123',
+      });
 
-      - name: Build package
-        run: npm run build
+      const testData = { test: 'data' };
+      const result = await sdk.writeData(testData);
 
-      - name: Run integration tests
-        run: npm run test:integration
-        env:
-          TEST_MNEMONIC: ${{ secrets.TEST_MNEMONIC }}
-          TEST_BUCKET_ID: ${{ secrets.TEST_BUCKET_ID }}
-```
+      expect(result.status).toBe('partial');
+      expect(result.indexId).toBe('evt_123');
+      expect(result.dataCloudHash).toBeUndefined();
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].component).toBe('ddc-client');
+    });
 
-### Test Scripts
+    it('should handle Activity SDK failure with fallback', async () => {
+      const mockOrchestrator = (sdk as any).orchestrator;
+      mockOrchestrator.execute = jest.fn().mockResolvedValue({
+        results: [
+          {
+            target: 'ddc-client',
+            success: true,
+            response: { cid: '0xabc123' },
+          },
+          {
+            target: 'activity-sdk',
+            success: false,
+            error: 'Activity SDK unavailable',
+          },
+        ],
+        overallStatus: 'partial',
+        transactionId: 'txn_123',
+      });
 
-Add to `package.json`:
+      const testData = { test: 'data' };
+      const result = await sdk.writeData(testData);
 
-```json
-{
-  "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:integration": "node test-credentials.js",
-    "test:ci": "npm run lint && npm test && npm run build"
-  }
-}
+      expect(result.status).toBe('partial');
+      expect(result.dataCloudHash).toBe('0xabc123');
+      expect(result.indexId).toBeUndefined();
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].component).toBe('activity-sdk');
+    });
+  });
+
+  describe('Recovery Mechanisms', () => {
+    it('should retry recoverable errors', async () => {
+      const mockOrchestrator = (sdk as any).orchestrator;
+      let attemptCount = 0;
+      
+      mockOrchestrator.execute = jest.fn().mockImplementation(() => {
+        attemptCount++;
+        if (attemptCount < 3) {
+          throw new UnifiedSDKError('Temporary failure', 'NETWORK_ERROR', 'Orchestrator', true);
+        }
+        return {
+          results: [{ target: 'ddc-client', success: true, response: { cid: '0xabc123' } }],
+          overallStatus: 'success',
+          transactionId: 'txn_123',
+        };
+      });
+
+      const testData = { test: 'data' };
+      const result = await sdk.writeData(testData);
+
+      expect(result.status).toBe('success');
+      expect(attemptCount).toBe(3); // Should have retried twice
+    });
+  });
+});
 ```
 
 ## Performance Testing
 
-### Load Testing
+### Performance Benchmarks
+```typescript
+describe('Performance Tests', () => {
+  let sdk: UnifiedSDK;
 
-```javascript
-const loadTest = async () => {
-  const sdk = new UnifiedSDK(config);
-  await sdk.initialize();
-
-  const startTime = Date.now();
-  const promises = [];
-
-  for (let i = 0; i < 100; i++) {
-    promises.push(
-      sdk.writeData(
-        { testId: i, timestamp: Date.now() },
-        { processing: { dataCloudWriteMode: 'direct', indexWriteMode: 'skip' } },
-      ),
-    );
-  }
-
-  const results = await Promise.allSettled(promises);
-  const endTime = Date.now();
-
-  console.log(`Processed ${results.length} requests in ${endTime - startTime}ms`);
-  console.log(`Success rate: ${(results.filter((r) => r.status === 'fulfilled').length / results.length) * 100}%`);
-};
-```
-
-### Memory Usage Testing
-
-```javascript
-const memoryTest = async () => {
-  const memoryBefore = process.memoryUsage();
-
-  const sdk = new UnifiedSDK(config);
-  await sdk.initialize();
-
-  for (let i = 0; i < 1000; i++) {
-    await sdk.writeData({ data: `test-${i}` }, metadata);
-  }
-
-  await sdk.cleanup();
-
-  const memoryAfter = process.memoryUsage();
-  console.log('Memory usage delta:', {
-    heapUsed: memoryAfter.heapUsed - memoryBefore.heapUsed,
-    external: memoryAfter.external - memoryBefore.external,
+  beforeEach(async () => {
+    const config = createMockConfig();
+    sdk = new UnifiedSDK(config);
+    await sdk.initialize();
   });
-};
+
+  describe('Throughput Testing', () => {
+    it('should handle high-volume data ingestion', async () => {
+      const testData = Array.from({ length: 1000 }, (_, i) => ({
+        eventType: 'performance_test',
+        userId: `user_${i}`,
+        eventData: { testId: i },
+        timestamp: new Date(),
+      }));
+
+      const startTime = Date.now();
+      
+      const results = await Promise.all(
+        testData.map(data => sdk.writeData(data))
+      );
+
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      const throughput = testData.length / (duration / 1000); // events per second
+
+      expect(results).toHaveLength(1000);
+      expect(results.every(r => r.status === 'success')).toBe(true);
+      expect(throughput).toBeGreaterThan(100); // Should process at least 100 events/sec
+    });
+
+    it('should optimize batch processing for large payloads', async () => {
+      const largePayload = {
+        data: 'x'.repeat(1024 * 1024), // 1MB
+        timestamp: new Date(),
+      };
+
+      const startTime = Date.now();
+      const result = await sdk.writeData(largePayload);
+      const endTime = Date.now();
+
+      expect(result.status).toBe('success');
+      expect(endTime - startTime).toBeLessThan(5000); // Should complete within 5 seconds
+    });
+  });
+
+  describe('Memory Usage', () => {
+    it('should not leak memory during repeated operations', async () => {
+      const initialMemory = process.memoryUsage().heapUsed;
+
+      // Perform many operations
+      for (let i = 0; i < 100; i++) {
+        await sdk.writeData({
+          eventType: 'memory_test',
+          userId: `user_${i}`,
+          eventData: { iteration: i },
+          timestamp: new Date(),
+        });
+      }
+
+      // Force garbage collection if available
+      if (global.gc) {
+        global.gc();
+      }
+
+      const finalMemory = process.memoryUsage().heapUsed;
+      const memoryIncrease = finalMemory - initialMemory;
+
+      // Memory increase should be reasonable (less than 10MB)
+      expect(memoryIncrease).toBeLessThan(10 * 1024 * 1024);
+    });
+  });
+});
 ```
 
-## Test Metrics and Reporting
+## Test Utilities and Fixtures
 
-### Coverage Reports
+### Mock Data Generation
+```typescript
+// test-fixtures.ts
+export function mockTelegramEvent(): TelegramEventData {
+  return {
+    eventType: 'quest_completed',
+    userId: 'user_' + Math.random().toString(36).substr(2, 9),
+    chatId: 'chat_' + Math.random().toString(36).substr(2, 9),
+    eventData: {
+      questId: 'daily-check-in',
+      points: Math.floor(Math.random() * 100) + 1,
+      level: Math.floor(Math.random() * 10) + 1,
+    },
+    timestamp: new Date(),
+  };
+}
 
-```bash
-# Generate coverage report
-npm test -- --coverage
+export function mockTelegramMessage(): TelegramMessageData {
+  return {
+    messageId: 'msg_' + Math.random().toString(36).substr(2, 9),
+    chatId: 'chat_' + Math.random().toString(36).substr(2, 9),
+    userId: 'user_' + Math.random().toString(36).substr(2, 9),
+    messageText: 'Test message ' + Date.now(),
+    messageType: 'text',
+    timestamp: new Date(),
+    metadata: {
+      miniAppName: 'Test App',
+      actionContext: 'test',
+    },
+  };
+}
 
-# View coverage in browser
-open coverage/lcov-report/index.html
+export function mockBullishEvent(): BullishCampaignEvent {
+  return {
+    eventType: 'SEGMENT_WATCHED',
+    campaignId: 'test_campaign_' + Date.now(),
+    accountId: 'account_' + Math.random().toString(36).substr(2, 9),
+    payload: {
+      segmentId: 'segment_001',
+      watchDuration: Math.floor(Math.random() * 300000),
+      completionPercentage: Math.floor(Math.random() * 100),
+    },
+    questId: 'quest_' + Math.random().toString(36).substr(2, 9),
+    timestamp: new Date(),
+  };
+}
+
+export function mockNightingaleVideoStream(): NightingaleVideoStream {
+  return {
+    droneId: 'drone_' + Math.random().toString(36).substr(2, 9),
+    streamId: 'stream_' + Math.now(),
+    timestamp: new Date(),
+    videoMetadata: {
+      duration: 300000,
+      fps: 30,
+      resolution: '1920x1080',
+      codec: 'h264',
+      streamType: 'rgb',
+    },
+    chunks: [
+      {
+        chunkId: 'chunk_001',
+        startTime: 0,
+        endTime: 10000,
+        data: Buffer.from('mock_video_data'),
+        size: 1024000,
+      },
+    ],
+  };
+}
+
+export function createMockConfig(): UnifiedSDKConfig {
+  return {
+    ddcConfig: {
+      signer: '//Alice',
+      bucketId: BigInt(12345),
+      network: 'devnet',
+    },
+    processing: {
+      enableBatching: false,
+      defaultBatchSize: 1,
+      defaultBatchTimeout: 1000,
+      maxRetries: 1,
+      retryDelay: 500,
+    },
+    logging: {
+      level: 'error',
+      enableMetrics: false,
+    },
+  };
+}
 ```
 
-### Test Results
+### Test Utilities
+```typescript
+// test-utils.ts
+export async function createInitializedSDK(config?: Partial<UnifiedSDKConfig>): Promise<UnifiedSDK> {
+  const mockConfig = { ...createMockConfig(), ...config };
+  const sdk = new UnifiedSDK(mockConfig);
+  
+  // Mock the orchestrator initialization
+  const mockOrchestrator = (sdk as any).orchestrator;
+  mockOrchestrator.initialize = jest.fn().mockResolvedValue(undefined);
+  
+  await sdk.initialize();
+  return sdk;
+}
 
-Current test metrics:
+export function setupMockComponents(sdk: UnifiedSDK) {
+  const mockRulesInterpreter = (sdk as any).rulesInterpreter;
+  const mockDispatcher = (sdk as any).dispatcher;
+  const mockOrchestrator = (sdk as any).orchestrator;
 
-- **Total Tests:** 68
-- **Pass Rate:** 100%
-- **Coverage:** >90% (estimated)
-- **Test Files:** 5
-- **Average Execution Time:** ~14 seconds
+  return {
+    mockRulesInterpreter,
+    mockDispatcher,
+    mockOrchestrator,
+  };
+}
+
+export function expectSuccessfulResult(result: UnifiedResponse) {
+  expect(result.status).toBe('success');
+  expect(result.transactionId).toBeDefined();
+  expect(result.metadata.processedAt).toBeInstanceOf(Date);
+  expect(result.metadata.processingTime).toBeGreaterThan(0);
+}
+
+export function expectPartialResult(result: UnifiedResponse) {
+  expect(result.status).toBe('partial');
+  expect(result.errors).toBeDefined();
+  expect(result.errors.length).toBeGreaterThan(0);
+}
+```
+
+## Continuous Integration
+
+### GitHub Actions Test Configuration
+```yaml
+# .github/workflows/test.yml
+name: Test Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run unit tests
+        run: npm test -- --testPathPattern=unit --coverage
+      
+      - name: Run integration tests
+        run: npm test -- --testPathPattern=integration
+        env:
+          TEST_DDC_SIGNER: ${{ secrets.TEST_DDC_SIGNER }}
+          TEST_DDC_BUCKET_ID: ${{ secrets.TEST_DDC_BUCKET_ID }}
+          TEST_ACTIVITY_ENDPOINT: ${{ secrets.TEST_ACTIVITY_ENDPOINT }}
+          TEST_ACTIVITY_KEYRING_URI: ${{ secrets.TEST_ACTIVITY_KEYRING_URI }}
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+```
 
 ## Best Practices
 
-### Writing Tests
+### 1. Test Organization
+- **Separate Concerns**: Unit tests for components, integration tests for workflows
+- **Mock External Dependencies**: Use mocks for external services in unit tests
+- **Real Integration**: Use real services for integration tests with test credentials
 
-1. **Use descriptive test names**
-2. **Test both success and failure scenarios**
-3. **Mock external dependencies**
-4. **Clean up resources after tests**
-5. **Use proper async/await patterns**
+### 2. Test Data Management
+- **Consistent Fixtures**: Use standardized test data generators
+- **Isolated Tests**: Each test should be independent and not rely on others
+- **Cleanup**: Always clean up resources after tests
 
-### Test Organization
+### 3. Error Testing
+- **Test All Error Paths**: Ensure all error scenarios are covered
+- **Validate Error Messages**: Check that error messages are helpful
+- **Test Recovery**: Verify that recovery mechanisms work correctly
 
-1. **Group related tests in describe blocks**
-2. **Use setup and teardown hooks**
-3. **Keep tests isolated and independent**
-4. **Use meaningful test data**
+### 4. Performance Testing
+- **Set Realistic Expectations**: Performance tests should reflect real-world usage
+- **Monitor Resource Usage**: Track memory and CPU usage during tests
+- **Benchmark Regularly**: Run performance tests in CI to catch regressions
 
-### Debugging Tests
+### 5. Maintenance
+- **Keep Tests Updated**: Update tests when adding new features
+- **Review Test Coverage**: Regularly review coverage reports
+- **Refactor Test Code**: Keep test code clean and maintainable
 
-1. **Use console.log for debugging**
-2. **Run tests in isolation**
-3. **Check network connectivity**
-4. **Validate configuration**
-5. **Monitor resource usage**
-
-## Conclusion
-
-This testing guide provides comprehensive coverage for testing the Unified Data Ingestion SDK. Follow the unit tests for development, integration tests for component verification, and real-world tests for end-to-end validation.
-
-For questions or issues, refer to the troubleshooting section or consult the main documentation.
+This comprehensive testing guide ensures the Unified SDK maintains high quality and reliability across all supported data types and use cases.

@@ -69,8 +69,8 @@ describe('UnifiedSDK - Auto-Detection', () => {
           }),
           userContext: expect.objectContaining({
             source: 'telegram',
+            eventType: eventData.eventType,
             userId: eventData.userId,
-            chatId: eventData.chatId,
           }),
         }),
       );
@@ -86,12 +86,12 @@ describe('UnifiedSDK - Auto-Detection', () => {
 
       mockRulesInterpreter.validateMetadata = jest.fn().mockReturnValue({
         processing: {
-          dataCloudWriteMode: 'direct',
+          dataCloudWriteMode: 'viaIndex',
           indexWriteMode: 'realtime',
         },
       });
       mockRulesInterpreter.extractProcessingRules = jest.fn().mockReturnValue({
-        dataCloudAction: 'write_direct',
+        dataCloudAction: 'write_via_index',
         indexAction: 'write_realtime',
         batchingRequired: false,
         additionalParams: { priority: 'normal', encryption: false },
@@ -124,7 +124,7 @@ describe('UnifiedSDK - Auto-Detection', () => {
       expect(mockRulesInterpreter.validateMetadata).toHaveBeenCalledWith(
         expect.objectContaining({
           processing: expect.objectContaining({
-            dataCloudWriteMode: 'direct',
+            dataCloudWriteMode: 'viaIndex',
             indexWriteMode: 'realtime',
           }),
           userContext: expect.objectContaining({
@@ -149,12 +149,13 @@ describe('UnifiedSDK - Auto-Detection', () => {
 
       mockRulesInterpreter.validateMetadata = jest.fn().mockReturnValue({
         processing: {
-          dataCloudWriteMode: 'viaIndex',
+          dataCloudWriteMode: 'direct',
           indexWriteMode: 'realtime',
+          priority: 'high',
         },
       });
       mockRulesInterpreter.extractProcessingRules = jest.fn().mockReturnValue({
-        dataCloudAction: 'write_via_index',
+        dataCloudAction: 'write_direct',
         indexAction: 'write_realtime',
         batchingRequired: false,
         additionalParams: { priority: 'high', encryption: false },
@@ -180,8 +181,9 @@ describe('UnifiedSDK - Auto-Detection', () => {
       expect(mockRulesInterpreter.validateMetadata).toHaveBeenCalledWith(
         expect.objectContaining({
           processing: expect.objectContaining({
-            dataCloudWriteMode: 'viaIndex',
+            dataCloudWriteMode: 'direct',
             indexWriteMode: 'realtime',
+            priority: 'high',
           }),
           userContext: expect.objectContaining({
             source: 'bullish',
@@ -209,23 +211,23 @@ describe('UnifiedSDK - Auto-Detection', () => {
 
       mockRulesInterpreter.validateMetadata = jest.fn().mockReturnValue({
         processing: {
-          dataCloudWriteMode: 'direct',
-          indexWriteMode: 'skip',
+          dataCloudWriteMode: 'viaIndex',
+          indexWriteMode: 'realtime',
         },
       });
       mockRulesInterpreter.extractProcessingRules = jest.fn().mockReturnValue({
-        dataCloudAction: 'write_direct',
-        indexAction: 'skip',
+        dataCloudAction: 'write_via_index',
+        indexAction: 'write_realtime',
         batchingRequired: false,
         additionalParams: { priority: 'normal', encryption: false },
       });
       mockDispatcher.routeRequest = jest.fn().mockReturnValue({
-        actions: [{ target: 'ddc-client', method: 'store' }],
+        actions: [{ target: 'activity-sdk', method: 'sendEvent' }],
         executionMode: 'sequential',
         rollbackRequired: false,
       });
       mockOrchestrator.execute = jest.fn().mockResolvedValue({
-        results: [{ target: 'ddc-client', success: true, response: { cid: '0xgeneric123' } }],
+        results: [{ target: 'activity-sdk', success: true, response: { eventId: 'evt_generic_123' } }],
         overallStatus: 'success',
         transactionId: 'txn_generic_123',
       });
@@ -234,15 +236,15 @@ describe('UnifiedSDK - Auto-Detection', () => {
 
       expect(result.status).toBe('success');
       expect(result.transactionId).toBe('txn_generic_123');
-      expect(result.dataCloudHash).toBe('0xgeneric123');
-      expect(result.indexId).toBeUndefined();
+      expect(result.dataCloudHash).toBeUndefined(); // Activity SDK actions don't return CID
+      expect(result.indexId).toBe('evt_generic_123');
 
       // Verify that generic processing metadata was used
       expect(mockRulesInterpreter.validateMetadata).toHaveBeenCalledWith(
         expect.objectContaining({
           processing: expect.objectContaining({
-            dataCloudWriteMode: 'direct',
-            indexWriteMode: 'skip',
+            dataCloudWriteMode: 'viaIndex',
+            indexWriteMode: 'realtime',
           }),
         }),
       );
@@ -264,23 +266,23 @@ describe('UnifiedSDK - Auto-Detection', () => {
 
       mockRulesInterpreter.validateMetadata = jest.fn().mockReturnValue({
         processing: {
-          dataCloudWriteMode: 'direct',
-          indexWriteMode: 'skip',
+          dataCloudWriteMode: 'viaIndex',
+          indexWriteMode: 'realtime',
         },
       });
       mockRulesInterpreter.extractProcessingRules = jest.fn().mockReturnValue({
-        dataCloudAction: 'write_direct',
-        indexAction: 'skip',
+        dataCloudAction: 'write_via_index',
+        indexAction: 'write_realtime',
         batchingRequired: false,
         additionalParams: { priority: 'normal', encryption: false },
       });
       mockDispatcher.routeRequest = jest.fn().mockReturnValue({
-        actions: [{ target: 'ddc-client', method: 'store' }],
+        actions: [{ target: 'activity-sdk', method: 'sendEvent' }],
         executionMode: 'sequential',
         rollbackRequired: false,
       });
       mockOrchestrator.execute = jest.fn().mockResolvedValue({
-        results: [{ target: 'ddc-client', success: true, response: { cid: '0xmalformed123' } }],
+        results: [{ target: 'activity-sdk', success: true, response: { eventId: 'evt_malformed_123' } }],
         overallStatus: 'success',
         transactionId: 'txn_malformed_123',
       });
@@ -289,14 +291,14 @@ describe('UnifiedSDK - Auto-Detection', () => {
 
       expect(result.status).toBe('success');
       expect(result.transactionId).toBe('txn_malformed_123');
-      expect(result.dataCloudHash).toBe('0xmalformed123');
+      expect(result.dataCloudHash).toBeUndefined(); // Activity SDK actions don't return CID
 
       // Should not have user context for malformed data
       expect(mockRulesInterpreter.validateMetadata).toHaveBeenCalledWith(
         expect.objectContaining({
           processing: expect.objectContaining({
-            dataCloudWriteMode: 'direct',
-            indexWriteMode: 'skip',
+            dataCloudWriteMode: 'viaIndex',
+            indexWriteMode: 'realtime',
           }),
         }),
       );

@@ -41,18 +41,20 @@ jest.mock('@cere-ddc-sdk/ddc-client', () => ({
 
 // Mock Activity SDK modules
 jest.mock('@cere-activity-sdk/events', () => {
-  const ActivityEventMock = jest.fn().mockImplementation((type: any, data: any, options: any = {}) => {
-    return {
-      id: 'evt_123',
-      type,
-      payload: data,
-      time: options.time || new Date('2023-01-01T00:00:00.000Z'),
-    };
-  });
-  
+  function ActivityEvent(type: any, data: any, options: any) {
+    // @ts-ignore - Mock constructor
+    this.id = 'evt_123';
+    // @ts-ignore - Mock constructor
+    this.type = type;
+    // @ts-ignore - Mock constructor
+    this.payload = data;
+    // @ts-ignore - Mock constructor
+    this.time = options?.time || new Date('2023-01-01T00:00:00.000Z');
+  }
+
   return {
     EventDispatcher: jest.fn(),
-    ActivityEvent: ActivityEventMock,
+    ActivityEvent,
   };
 });
 
@@ -195,16 +197,6 @@ describe('Orchestrator', () => {
       };
 
       const result = await orchestrator.execute(parallelPlan);
-
-      // Debug the actual results to understand the failure
-      console.log('Parallel execution results:', {
-        overallStatus: result.overallStatus,
-        results: result.results.map((r) => ({
-          target: r.target,
-          success: r.success,
-          error: r.error,
-        })),
-      });
 
       expect(result.results).toHaveLength(2);
       expect(result.overallStatus).toBe('success');

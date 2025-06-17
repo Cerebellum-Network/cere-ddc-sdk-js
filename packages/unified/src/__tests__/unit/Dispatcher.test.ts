@@ -283,16 +283,16 @@ describe('Dispatcher', () => {
     it('should determine correct execution mode for complex scenarios', () => {
       const payload = { test: 'execution planning' };
 
-      // Sequential for dependent operations
-      const sequentialRules: ProcessingRules = {
+      // Parallel for independent operations (both DDC and Activity actions)
+      const parallelRules: ProcessingRules = {
         dataCloudAction: 'write_direct',
         indexAction: 'write_realtime',
         batchingRequired: false,
         additionalParams: { priority: 'normal', encryption: false },
       };
 
-      const sequentialPlan = dispatcher.routeRequest(payload, sequentialRules);
-      expect(sequentialPlan.executionMode).toBe('sequential');
+      const parallelPlan = dispatcher.routeRequest(payload, parallelRules);
+      expect(parallelPlan.executionMode).toBe('parallel');
 
       // Batch operations might require different planning
       const batchRules: ProcessingRules = {

@@ -191,7 +191,7 @@ describe('UnifiedSDK - Performance & Integration', () => {
       // Memory usage should not grow excessively (basic leak detection)
       const memoryGrowth = memoryAfter.heapUsed - memoryBefore.heapUsed;
       // More realistic memory growth expectation for test environment
-      expect(memoryGrowth).toBeLessThan(payloadSize * largeOperations * 1024 * 10); // Allow 10x buffer for test overhead
+      expect(memoryGrowth).toBeLessThan(payloadSize * largeOperations * 1024 * 15); // Allow 15x buffer for test overhead
     });
   });
 

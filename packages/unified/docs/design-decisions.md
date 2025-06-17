@@ -1,528 +1,561 @@
-# Design Decisions
+# Unified SDK Design Decisions
 
 ## Overview
 
-This document captures the key architectural and design decisions made during the development of the Unified Data Ingestion SDK. Each decision includes the context, alternatives considered, and rationale for the chosen approach.
+This document outlines the key design decisions made during the development of the Unified SDK, including the rationale behind architectural choices, trade-offs considered, and the benefits achieved. These decisions were made to support multiple data ecosystems while maintaining simplicity and performance.
 
-## 1. Metadata-Driven Architecture
+## Core Design Decisions
 
-### Decision
+### 1. Single Entry Point Architecture
 
-Use a flexible metadata schema to drive routing decisions instead of hardcoded logic.
+**Decision**: Provide a single `writeData()` method that automatically detects data types and routes appropriately.
 
-### Context
+**Rationale**:
+- **Developer Experience**: Eliminates the need to learn multiple APIs for different data types
+- **Consistency**: Ensures consistent behavior across all data types
+- **Maintainability**: Centralizes data ingestion logic in one place
+- **Extensibility**: New data types can be added without changing the public API
 
-The SDK needs to handle diverse data types and routing requirements while remaining flexible for future extensions.
+**Trade-offs**:
+- **Pros**: Extreme simplicity, unified interface, automatic optimization
+- **Cons**: Less explicit control over routing decisions
+- **Alternative Considered**: Separate methods for each data type (rejected due to complexity)
 
-### Alternatives Considered
+**Implementation**:
+```typescript
+// Single method handles all data types
+async writeData(payload: any, options?: WriteOptions): Promise<UnifiedResponse>
 
-1. **Hardcoded routing logic**: Simple but inflexible
-2. **Configuration-based routing**: Better than hardcoded but still rigid
-3. **Metadata-driven routing**: Most flexible and extensible
+// Automatic detection based on payload structure
+private detectDataType(payload: any): string {
+  if (payload.eventType && payload.campaignId && payload.accountId) {
+    return 'bullish_campaign';
+  }
+  if (payload.droneId && payload.streamId && payload.videoMetadata) {
+    return 'nightingale_video_stream';
+  }
+  // ... other detections
+}
+```
 
-### Rationale
+### 2. Metadata-Driven Processing
 
-- **Flexibility**: Users can change behavior without code changes
-- **Extensibility**: New routing patterns can be added via metadata
-- **Testability**: Easy to test different scenarios with different metadata
-- **Future-proofing**: Can evolve without breaking changes
+**Decision**: Use metadata schemas to drive all processing decisions rather than hardcoded logic.
 
-### Implementation
+**Rationale**:
+- **Flexibility**: Processing behavior can be customized per request
+- **Consistency**: Same metadata schema applies to all data types
+- **Validation**: Runtime validation ensures data integrity
+- **Optimization**: Rules can be optimized based on context
 
+**Trade-offs**:
+- **Pros**: Highly configurable, type-safe validation, consistent behavior
+- **Cons**: Additional complexity in metadata management
+- **Alternative Considered**: Hardcoded routing logic (rejected due to inflexibility)
+
+**Implementation**:
 ```typescript
 interface ProcessingMetadata {
   dataCloudWriteMode: 'direct' | 'batch' | 'viaIndex' | 'skip';
   indexWriteMode: 'realtime' | 'skip';
   priority?: 'low' | 'normal' | 'high';
-  encryption?: boolean;
   ttl?: number;
-  batchOptions?: BatchOptions;
+  encryption?: boolean;
+  batchOptions?: {
+    maxSize?: number;
+    maxWaitTime?: number;
+  };
 }
 ```
 
-### Trade-offs
+### 3. Multi-Backend Orchestration
 
-- **Pro**: Maximum flexibility and extensibility
-- **Con**: More complex validation and processing logic
-- **Pro**: User-friendly configuration
-- **Con**: Potential for user configuration errors
+**Decision**: Support multiple backend systems (DDC, Activity SDK, HTTP APIs) with intelligent routing.
 
----
+**Rationale**:
+- **Ecosystem Support**: Different data types have different optimal storage patterns
+- **Redundancy**: Fallback mechanisms ensure reliability
+- **Performance**: Parallel execution when possible
+- **Future-Proofing**: Easy to add new backends
 
-## 2. Component Separation Architecture
+**Trade-offs**:
+- **Pros**: Optimal performance per data type, redundancy, extensibility
+- **Cons**: Increased complexity in orchestration
+- **Alternative Considered**: Single backend (rejected due to performance limitations)
 
-### Decision
-
-Separate concerns into distinct components: RulesInterpreter, Dispatcher, Orchestrator, and UnifiedSDK.
-
-### Context
-
-Need to balance single responsibility principle with maintainability and testability.
-
-### Alternatives Considered
-
-1. **Monolithic design**: Single class handling everything
-2. **Two-layer design**: SDK + Backend
-3. **Four-layer design**: SDK + Rules + Dispatcher + Orchestrator
-4. **Micro-services approach**: Separate services for each concern
-
-### Rationale
-
-- **Single Responsibility**: Each component has a clear, focused purpose
-- **Testability**: Can unit test each component independently
-- **Maintainability**: Changes to one component don't affect others
-- **Reusability**: Components can be used independently if needed
-
-### Implementation
-
+**Implementation**:
 ```typescript
-class UnifiedSDK {
-  private rulesInterpreter: RulesInterpreter;
-  private dispatcher: Dispatcher;
-  private orchestrator: Orchestrator;
-
-  // Coordinates between components
+// Parallel execution for independent operations
+if (plan.executionMode === 'parallel') {
+  results = await Promise.all(actions.map(action => this.executeAction(action)));
+} else {
+  // Sequential execution for dependent operations
+  for (const action of actions) {
+    const result = await this.executeAction(action);
+    results.push(result);
+  }
 }
 ```
 
-### Trade-offs
+### 4. Component-Based Architecture
 
-- **Pro**: Excellent separation of concerns and testability
-- **Con**: More complex internal architecture
-- **Pro**: Easy to extend individual components
-- **Con**: Potential for over-engineering
+**Decision**: Implement a 4-layer component architecture with clear separation of concerns.
 
----
+**Rationale**:
+- **Maintainability**: Each component has a single responsibility
+- **Testability**: Components can be tested in isolation
+- **Reusability**: Components can be used independently
+- **Extensibility**: New components can be added easily
 
-## 3. Zod for Validation
+**Architecture Layers**:
+1. **API Surface**: UnifiedSDK (single entry point)
+2. **Business Logic**: RulesInterpreter, Dispatcher (validation and routing)
+3. **Execution**: Orchestrator (multi-backend coordination)
+4. **Integration**: DDC Client, Activity SDK, HTTP APIs
 
-### Decision
+**Trade-offs**:
+- **Pros**: Clear separation, easy testing, maintainable
+- **Cons**: More files and interfaces to manage
+- **Alternative Considered**: Monolithic design (rejected due to maintainability concerns)
 
-Use Zod for runtime schema validation instead of TypeScript-only validation.
+### 5. Automatic Data Type Detection
 
-### Context
+**Decision**: Automatically detect data types based on payload structure rather than requiring explicit type parameters.
 
-Need robust runtime validation for user-provided metadata and configuration.
+**Rationale**:
+- **User Experience**: No need to specify data types manually
+- **Error Reduction**: Eliminates possibility of type mismatches
+- **Consistency**: Same detection logic applies everywhere
+- **Backward Compatibility**: Existing payloads continue to work
 
-### Alternatives Considered
-
-1. **TypeScript only**: Compile-time validation only
-2. **Joi**: Popular validation library
-3. **Yup**: Alternative validation library
-4. **Zod**: TypeScript-first validation library
-5. **Custom validation**: Build our own
-
-### Rationale
-
-- **Type Safety**: Zod provides compile-time and runtime type safety
-- **Schema Inference**: Can infer TypeScript types from schemas
-- **Comprehensive**: Supports complex validation rules
-- **Error Messages**: Provides detailed, user-friendly error messages
-- **Ecosystem**: Good TypeScript ecosystem integration
-
-### Implementation
-
+**Detection Patterns**:
 ```typescript
-const ProcessingMetadataSchema = z
-  .object({
-    dataCloudWriteMode: DataCloudWriteModeSchema,
-    indexWriteMode: IndexWriteModeSchema,
-    priority: z.enum(['low', 'normal', 'high']).default('normal'),
-    encryption: z.boolean().default(false),
-  })
-  .refine((data) => {
-    // Custom business logic validation
-    if (data.dataCloudWriteMode === 'skip' && data.indexWriteMode === 'skip') {
-      throw new z.ZodError([
-        /* ... */
-      ]);
-    }
-    return true;
-  });
+const detectionPatterns = {
+  telegram_event: (payload) => 
+    payload.eventType && payload.userId && payload.timestamp,
+  
+  bullish_campaign: (payload) => 
+    payload.eventType && payload.campaignId && payload.accountId &&
+    ['SEGMENT_WATCHED', 'QUESTION_ANSWERED', 'JOIN_CAMPAIGN', 'CUSTOM_EVENTS']
+      .includes(payload.eventType),
+  
+  nightingale_video_stream: (payload) => 
+    payload.droneId && payload.streamId && payload.videoMetadata && 
+    Array.isArray(payload.chunks),
+};
 ```
 
-### Trade-offs
+**Trade-offs**:
+- **Pros**: Automatic, error-free, simple to use
+- **Cons**: Potential ambiguity with similar payload structures
+- **Alternative Considered**: Explicit type parameters (rejected due to complexity)
 
-- **Pro**: Excellent TypeScript integration and type safety
-- **Con**: Additional runtime dependency
-- **Pro**: Comprehensive validation features
-- **Con**: Learning curve for team members
+## Data Type-Specific Design Decisions
 
----
+### 6. Bullish Campaign Event Handling
 
-## 4. Error Handling Strategy
+**Decision**: Implement campaign-specific processing with quest tracking and CID management.
 
-### Decision
+**Rationale**:
+- **Quest Integration**: Automatic quest progression tracking
+- **CID Tracking**: Content identifiers for quest verification
+- **Performance**: High-priority processing for campaign events
+- **Analytics**: Real-time indexing for campaign metrics
 
-Implement a layered error handling approach with custom error types and graceful degradation.
+**Implementation Choices**:
+- **Direct DDC Storage**: For CID tracking and quest verification
+- **Real-time Indexing**: For immediate analytics and leaderboards
+- **High Priority**: Campaign events processed with elevated priority
+- **Post-processing**: Automatic quest updates and campaign metrics
 
-### Context
+```typescript
+case 'bullish_campaign':
+  baseMetadata.processing = {
+    dataCloudWriteMode: 'direct', // CID tracking for quests
+    indexWriteMode: 'realtime',   // Real-time analytics
+    priority: 'high',             // Campaign events are important
+  };
+  
+  // Campaign-specific post-processing
+  if (this.isCampaignAction(action)) {
+    await this.processCampaignSpecificLogic(action, response);
+  }
+```
 
-Need to handle errors from multiple external services while providing good user experience.
+### 7. Nightingale Drone Data Architecture
 
-### Alternatives Considered
+**Decision**: Implement specialized handling for different types of drone data with optimized routing.
 
-1. **Basic try/catch**: Simple but limited
-2. **Error codes**: Traditional but not very TypeScript-friendly
-3. **Custom error classes**: Type-safe and informative
-4. **Result pattern**: Functional approach
-5. **Either pattern**: More functional approach
+**Rationale**:
+- **Performance**: Different data types have different performance characteristics
+- **Storage Optimization**: Large video data vs. small metadata require different approaches
+- **Geospatial Features**: KLV metadata needs coordinate indexing
+- **Timeline Preservation**: Video streams require temporal relationship maintenance
 
-### Rationale
+**Data Type Optimizations**:
 
-- **Type Safety**: Custom error classes provide compile-time safety
-- **User Experience**: Graceful degradation keeps applications working
-- **Debugging**: Rich error information helps with troubleshooting
-- **Monitoring**: Structured errors enable better monitoring
+#### Video Streams
+- **Direct DDC Storage**: Large video chunks bypass indexing for performance
+- **Chunked Processing**: Split large streams into manageable chunks
+- **Timeline Preservation**: Maintain temporal relationships between chunks
 
-### Implementation
+#### KLV Metadata
+- **Index-Only Processing**: Skip DDC storage for metadata (performance)
+- **Coordinate Indexing**: Enable geospatial search capabilities
+- **Real-time Processing**: Immediate indexing for operational awareness
 
+#### Telemetry Data
+- **Dual Storage**: Both DDC and indexing for compliance and analytics
+- **Time Series**: Enable temporal analysis of drone operations
+- **High Priority**: Critical for operational monitoring
+
+#### Frame Analysis
+- **Direct Storage**: Analysis results stored for later retrieval
+- **Real-time Indexing**: Enable search by detected objects
+- **CID Linking**: Link analysis results to source video chunks
+
+```typescript
+case 'nightingale_video_stream':
+  baseMetadata.processing = {
+    dataCloudWriteMode: 'direct', // Direct storage for video chunks
+    indexWriteMode: 'skip',       // Skip indexing for large video data
+    priority: 'normal',
+  };
+
+case 'nightingale_klv_data':
+  baseMetadata.processing = {
+    dataCloudWriteMode: 'skip',   // Skip data cloud for metadata
+    indexWriteMode: 'realtime',   // Real-time indexing for searchability
+    priority: 'high',             // High priority for metadata
+  };
+```
+
+### 8. Telegram Data Handling
+
+**Decision**: Maintain backward compatibility while optimizing for mini-app and bot interactions.
+
+**Rationale**:
+- **Backward Compatibility**: Existing Telegram integrations continue to work
+- **Performance**: Optimized routing for different message types
+- **Analytics**: Real-time indexing for user behavior analysis
+- **Storage**: Appropriate storage patterns for events vs. messages
+
+**Routing Decisions**:
+- **Events**: Via index routing for analytics pipeline integration
+- **Messages**: Direct DDC storage with parallel indexing
+- **Real-time Processing**: Immediate indexing for bot responses
+
+## Backend Integration Decisions
+
+### 9. DDC Client Integration
+
+**Decision**: Use different DDC storage patterns based on data type and structure.
+
+**Storage Pattern Selection**:
+```typescript
+if (action.payload.data && typeof action.payload.data === 'string') {
+  // DagNode for structured data (events, metadata)
+  const dagNode = new DagNode(action.payload.data, action.payload.links || []);
+  cid = await this.ddcClient.store(bucketId, dagNode);
+} else if (Buffer.isBuffer(action.payload.data)) {
+  // File for binary data (video chunks, images)
+  const file = new File(action.payload.data, action.payload.metadata || {});
+  cid = await this.ddcClient.store(bucketId, file);
+}
+```
+
+**Trade-offs**:
+- **Pros**: Optimal storage format per data type, efficient retrieval
+- **Cons**: More complex storage logic
+- **Alternative Considered**: Single storage format (rejected due to performance)
+
+### 10. Activity SDK Integration
+
+**Decision**: Use UriSigner with ed25519 signatures for Event Service compatibility.
+
+**Rationale**:
+- **Compatibility**: Event Service expects ed25519 signatures
+- **Security**: Strong cryptographic signatures
+- **Flexibility**: Supports both mnemonic phrases and Substrate URIs
+- **Fallback**: Graceful degradation if Activity SDK unavailable
+
+**Implementation**:
+```typescript
+const signer = new UriSigner(this.config.activityConfig.keyringUri || '//Alice', {
+  type: 'ed25519', // Event Service compatibility
+});
+
+this.activityClient = new EventDispatcher(signer, cipher, {
+  baseUrl: this.config.activityConfig.endpoint,
+  appId: this.config.activityConfig.appId,
+  // ... other configuration
+});
+```
+
+**Fallback Strategy**:
+```typescript
+if (!this.activityClient) {
+  // Return mock response to maintain workflow continuity
+  return {
+    eventId: this.generateEventId(),
+    status: 'skipped',
+    reason: 'Activity SDK not initialized',
+    timestamp: new Date().toISOString(),
+  };
+}
+```
+
+## Error Handling Design Decisions
+
+### 11. Hierarchical Error Handling
+
+**Decision**: Implement multi-level error handling with specific error types and recovery strategies.
+
+**Error Hierarchy**:
 ```typescript
 class UnifiedSDKError extends Error {
   constructor(
     message: string,
     public code: string,
     public component: string,
-    public cause?: Error,
-  ) {
-    super(message);
-    this.name = 'UnifiedSDKError';
+    public recoverable: boolean = false,
+    public originalError?: Error,
+  );
+}
+
+class ValidationError extends UnifiedSDKError {
+  constructor(message: string, public validationErrors: z.ZodError);
+}
+```
+
+**Recovery Strategies**:
+- **Validation Errors**: Immediate failure with detailed error information
+- **Recoverable Errors**: Automatic retry with exponential backoff
+- **Non-Recoverable Errors**: Fail fast with clear error messages
+- **Partial Success**: Continue processing and report what succeeded
+
+### 12. Graceful Degradation
+
+**Decision**: Implement fallback mechanisms that allow partial functionality when services are unavailable.
+
+**Fallback Patterns**:
+1. **Activity SDK Unavailable**: Continue with DDC storage only
+2. **DDC Storage Failure**: Continue with Activity SDK indexing only
+3. **Batch Processing Failure**: Fall back to individual processing
+4. **Network Issues**: Retry with alternative endpoints
+
+**Trade-offs**:
+- **Pros**: High availability, partial functionality better than no functionality
+- **Cons**: Complex fallback logic, potential data inconsistency
+- **Alternative Considered**: Fail-fast approach (rejected due to availability requirements)
+
+## Performance Design Decisions
+
+### 13. Intelligent Batching
+
+**Decision**: Implement context-aware batching that adjusts based on payload size and priority.
+
+**Batching Logic**:
+```typescript
+// Adjust batch sizes for large payloads
+if (context?.payloadSize > 1024 * 1024) { // 1MB
+  optimizedRules.additionalParams.batchOptions = {
+    maxSize: Math.max(1, Math.floor(1000 / (payloadSize / (1024 * 1024)))),
+    maxWaitTime: rules.additionalParams.batchOptions?.maxWaitTime || 5000,
+  };
+}
+
+// Reduce timeout for high-priority operations
+if (rules.additionalParams.priority === 'high') {
+  optimizedRules.additionalParams.batchOptions.maxWaitTime = 
+    Math.floor(originalTimeout * 0.5);
+}
+```
+
+**Trade-offs**:
+- **Pros**: Optimal performance per use case, automatic optimization
+- **Cons**: Complex batching logic
+- **Alternative Considered**: Fixed batch sizes (rejected due to performance limitations)
+
+### 14. Parallel vs Sequential Execution
+
+**Decision**: Automatically determine execution mode based on data dependencies.
+
+**Execution Mode Selection**:
+```typescript
+private determineExecutionMode(rules: ProcessingRules): 'sequential' | 'parallel' {
+  // If writing via index, data cloud write is handled by index, so sequential
+  if (rules.dataCloudAction === 'write_via_index') {
+    return 'sequential';
   }
-}
 
-// Fallback mechanism
-if (activityResult.failed && action.options.writeToDataCloud) {
-  return await this.executeDDCAction(fallbackAction);
-}
-```
+  // If both data cloud and index actions are present, execute in parallel
+  if (rules.dataCloudAction !== 'skip' && rules.indexAction !== 'skip') {
+    return 'parallel';
+  }
 
-### Trade-offs
-
-- **Pro**: Excellent error information and type safety
-- **Con**: More complex error handling logic
-- **Pro**: Graceful degradation improves reliability
-- **Con**: May mask underlying issues if not monitored
-
----
-
-## 5. Telegram-First Design
-
-### Decision
-
-Design the SDK with Telegram use cases as the primary focus while maintaining generic capabilities.
-
-### Context
-
-The SDK was specifically requested for Telegram bot and mini-app development.
-
-### Alternatives Considered
-
-1. **Generic only**: No Telegram-specific features
-2. **Telegram only**: Specialized for Telegram use cases only
-3. **Telegram-first with generic base**: Primary focus on Telegram but extensible
-4. **Plugin-based**: Generic core with Telegram plugin
-
-### Rationale
-
-- **User Experience**: Specialized methods make Telegram development easier
-- **Type Safety**: Telegram-specific types provide better development experience
-- **Performance**: Optimized routing for common Telegram patterns
-- **Future-proofing**: Generic base allows for other use cases
-
-### Implementation
-
-```typescript
-// Telegram-specific methods
-async writeTelegramEvent(eventData: TelegramEventData, options?: TelegramOptions) {
-  const metadata = this.createTelegramEventMetadata(eventData, options);
-  return this.writeData(eventData, metadata);
-}
-
-// Generic method still available
-async writeData(payload: any, metadata: Metadata) {
-  // Generic implementation
+  return 'sequential';
 }
 ```
 
-### Trade-offs
+**Trade-offs**:
+- **Pros**: Optimal performance, automatic optimization
+- **Cons**: Complex dependency analysis
+- **Alternative Considered**: Always parallel (rejected due to data consistency requirements)
 
-- **Pro**: Excellent developer experience for Telegram use cases
-- **Con**: May seem over-specialized to non-Telegram users
-- **Pro**: Performance optimizations for common patterns
-- **Con**: Additional maintenance complexity
+## Configuration Design Decisions
 
----
+### 15. Hierarchical Configuration
 
-## 6. Activity SDK Integration Strategy
+**Decision**: Implement layered configuration with ecosystem-specific options.
 
-### Decision
-
-Import and use the real Activity SDK instead of copying or reimplementing its functionality.
-
-### Context
-
-Need to integrate with the existing Activity SDK for event indexing.
-
-### Alternatives Considered
-
-1. **Copy Activity SDK code**: Include source code directly
-2. **Reimplement functionality**: Build our own Activity SDK features
-3. **HTTP API calls**: Use Activity SDK's HTTP endpoints
-4. **Import as dependency**: Use Activity SDK as npm dependency
-5. **Optional dependency**: Make Activity SDK optional
-
-### Rationale
-
-- **Consistency**: Uses the official, maintained Activity SDK
-- **Updates**: Automatically gets Activity SDK improvements
-- **Support**: Official support from Activity SDK team
-- **Reliability**: Battle-tested Activity SDK implementation
-
-### Implementation
-
-```typescript
-import { EventDispatcher, ActivityEvent } from '@cere-activity-sdk/events';
-import { UriSigner } from '@cere-activity-sdk/signers';
-import { NoOpCipher } from '@cere-activity-sdk/ciphers';
-
-// Real Activity SDK usage
-const signer = new UriSigner(config.keyringUri);
-const cipher = new NoOpCipher();
-const dispatcher = new EventDispatcher(signer, cipher, config);
-```
-
-### Trade-offs
-
-- **Pro**: Always uses latest, official Activity SDK
-- **Con**: Additional dependencies and potential version conflicts
-- **Pro**: Professional, supported implementation
-- **Con**: Less control over Activity SDK behavior
-
----
-
-## 7. Batching Implementation
-
-### Decision
-
-Implement automatic batching based on payload size and user configuration.
-
-### Context
-
-Need to handle high-throughput scenarios efficiently while maintaining good performance.
-
-### Alternatives Considered
-
-1. **No batching**: Process everything individually
-2. **Manual batching**: Require users to implement batching
-3. **Automatic batching**: SDK handles batching transparently
-4. **Hybrid approach**: Automatic with manual override options
-
-### Rationale
-
-- **Performance**: Batching improves throughput for high-volume scenarios
-- **User Experience**: Automatic batching is transparent to developers
-- **Flexibility**: Configuration allows tuning for specific use cases
-- **Resource Efficiency**: Reduces network calls and resource usage
-
-### Implementation
-
-```typescript
-interface BatchingConfig {
-  maxSize: number;
-  maxWaitTime: number;
-  dynamicSizing: boolean;
-}
-
-// Dynamic batch size adjustment
-if (payloadSize > LARGE_PAYLOAD_THRESHOLD) {
-  batchConfig.maxSize = Math.floor(batchConfig.maxSize / 2);
-}
-```
-
-### Trade-offs
-
-- **Pro**: Significant performance improvements for high-volume use cases
-- **Con**: Additional complexity in the SDK
-- **Pro**: Transparent to users in most cases
-- **Con**: May delay processing in low-volume scenarios
-
----
-
-## 8. Configuration Design
-
-### Decision
-
-Use a hierarchical configuration with required DDC config and optional Activity SDK config.
-
-### Context
-
-Need to support different deployment scenarios while maintaining simplicity.
-
-### Alternatives Considered
-
-1. **All required**: Require both DDC and Activity SDK configuration
-2. **All optional**: Make everything optional with defaults
-3. **Hierarchical**: Required core + optional features
-4. **Environment-based**: Different configs for different environments
-
-### Rationale
-
-- **Flexibility**: Supports DDC-only and full-featured deployments
-- **Simplicity**: Minimal required configuration for basic use
-- **Growth**: Easy to add new optional features
-- **Production**: Clear separation between required and optional features
-
-### Implementation
-
+**Configuration Structure**:
 ```typescript
 interface UnifiedSDKConfig {
-  ddcConfig: DDCConfig; // Required
-  activityConfig?: ActivityConfig; // Optional
-  processing?: ProcessingConfig; // Optional with defaults
-  logging?: LoggingConfig; // Optional with defaults
+  // Core required configuration
+  ddcConfig: DDCConfig;
+  processing: ProcessingConfig;
+  logging: LoggingConfig;
+  
+  // Optional ecosystem configurations
+  activityConfig?: ActivityConfig;
+  nightingaleConfig?: NightingaleConfig;
+  
+  // Optional advanced configurations
+  performance?: PerformanceConfig;
+  errorHandling?: ErrorHandlingConfig;
 }
 ```
 
-### Trade-offs
+**Benefits**:
+- **Modularity**: Only configure what you use
+- **Extensibility**: Easy to add new ecosystem configurations
+- **Validation**: Each section has its own validation schema
+- **Defaults**: Sensible defaults for all optional configurations
 
-- **Pro**: Very flexible for different deployment scenarios
-- **Con**: Configuration validation complexity
-- **Pro**: Easy to get started with minimal config
-- **Con**: May be confusing which features require which config
+### 16. Environment-Based Defaults
 
----
+**Decision**: Provide different default configurations for different environments.
 
-## 9. Testing Strategy
+**Environment Patterns**:
+- **Development**: Debug logging, mock backends, reduced batch sizes
+- **Testing**: Isolated environments, comprehensive logging
+- **Production**: Optimized performance, minimal logging, robust error handling
 
-### Decision
+**Trade-offs**:
+- **Pros**: Optimal defaults per environment, reduced configuration burden
+- **Cons**: Environment detection complexity
+- **Alternative Considered**: Single configuration (rejected due to operational requirements)
 
-Implement comprehensive unit tests with real module imports and proper mocking.
+## Security Design Decisions
 
-### Context
+### 17. Configuration Sanitization
 
-Need to ensure reliability and maintainability while enabling confident refactoring.
+**Decision**: Automatically sanitize sensitive configuration data in logs and responses.
 
-### Alternatives Considered
-
-1. **Integration tests only**: Test the whole system together
-2. **Unit tests only**: Test components in isolation
-3. **Mixed approach**: Both unit and integration tests
-4. **Mock everything**: Mock all external dependencies
-5. **Real imports with mocking**: Use real modules but mock their behavior
-
-### Rationale
-
-- **Confidence**: Unit tests provide fast feedback and high confidence
-- **Maintainability**: Easy to identify and fix issues
-- **Documentation**: Tests serve as executable documentation
-- **Refactoring**: Safe refactoring with comprehensive test coverage
-
-### Implementation
-
+**Sanitization Logic**:
 ```typescript
-// Real imports with Jest mocking
-jest.mock('@cere-ddc-sdk/ddc-client');
-jest.mock('@cere-activity-sdk/events');
-
-// Comprehensive test coverage
-describe('UnifiedSDK', () => {
-  // 17 test cases covering all major scenarios
-});
-```
-
-### Trade-offs
-
-- **Pro**: High confidence in code correctness
-- **Con**: Significant time investment in test writing
-- **Pro**: Easy to catch regressions
-- **Con**: Tests need maintenance when code changes
-
----
-
-## 10. Logging and Observability
-
-### Decision
-
-Implement structured logging with configurable levels and built-in metrics collection.
-
-### Context
-
-Need visibility into SDK behavior for debugging and monitoring in production.
-
-### Alternatives Considered
-
-1. **No logging**: Minimal approach
-2. **Console only**: Simple console.log statements
-3. **Structured logging**: Formal logging with levels and metadata
-4. **External logging library**: Use winston, pino, etc.
-5. **Custom logging**: Build our own logging system
-
-### Rationale
-
-- **Debugging**: Essential for troubleshooting production issues
-- **Monitoring**: Enables proactive monitoring and alerting
-- **Performance**: Built-in metrics help optimize performance
-- **Simplicity**: No external logging dependencies
-
-### Implementation
-
-```typescript
-private logger(level: string, message: string, ...args: any[]) {
-  const timestamp = new Date().toISOString();
-  const logMessage = `[${timestamp}] [${this.constructor.name}:${level.toUpperCase()}] ${message}`;
-
-  if (level === 'error') {
-    console.error(logMessage, ...args);
-  } else if (level === 'warn') {
-    console.warn(logMessage, ...args);
-  } else {
-    console.log(logMessage, ...args);
-  }
+private sanitizeConfig(config: UnifiedSDKConfig): any {
+  return {
+    ddcConfig: {
+      bucketId: config.ddcConfig.bucketId.toString(),
+      network: config.ddcConfig.network,
+      // Don't log the signer for security
+    },
+    activityConfig: config.activityConfig ? {
+      endpoint: config.activityConfig.endpoint,
+      // Don't log sensitive keys
+    } : undefined,
+    // ... other safe fields
+  };
 }
 ```
 
-### Trade-offs
+### 18. Optional Encryption
 
-- **Pro**: Excellent visibility into SDK behavior
-- **Con**: Additional code complexity and potential performance impact
-- **Pro**: No external dependencies
-- **Con**: Less features than dedicated logging libraries
+**Decision**: Provide optional payload encryption without requiring it by default.
 
----
+**Rationale**:
+- **Flexibility**: Users can choose when to encrypt
+- **Performance**: Encryption only when needed
+- **Compliance**: Supports regulatory requirements
+- **Transparency**: Clear indication when encryption is active
 
-## Future Design Considerations
+## Testing Design Decisions
 
-### 1. Plugin System
+### 19. Comprehensive Mock Infrastructure
 
-Consider implementing a plugin architecture for extensibility:
+**Decision**: Implement complete mocking infrastructure for all external dependencies.
 
-- Custom action targets
-- Custom validation rules
-- Custom routing logic
-- Analytics plugins
+**Mock Strategy**:
+- **Unit Tests**: Mock all external dependencies
+- **Integration Tests**: Use real services in controlled environments
+- **Performance Tests**: Measure actual performance characteristics
+- **End-to-End Tests**: Full workflow validation
 
-### 2. Caching Layer
+**Benefits**:
+- **Reliability**: Tests don't depend on external services
+- **Speed**: Fast test execution
+- **Isolation**: Tests don't interfere with each other
+- **Coverage**: Can test error scenarios easily
 
-Consider adding caching for:
+### 20. Type Safety Throughout
 
-- Configuration data
-- Frequently accessed data
-- Connection pooling
+**Decision**: Use TypeScript with strict typing and runtime validation.
 
-### 3. Async/Queue Processing
+**Type Safety Strategy**:
+- **Compile-time**: TypeScript interfaces and strict mode
+- **Runtime**: Zod schema validation
+- **Documentation**: Types serve as documentation
+- **IDE Support**: Full IntelliSense and error detection
 
-Consider adding:
+**Trade-offs**:
+- **Pros**: Fewer runtime errors, better developer experience, self-documenting
+- **Cons**: Additional development overhead
+- **Alternative Considered**: JavaScript with JSDoc (rejected due to runtime safety requirements)
 
-- Background processing queues
-- Retry mechanisms with exponential backoff
-- Dead letter queues for failed operations
+## Future-Proofing Decisions
 
-### 4. Multi-tenancy
+### 21. Extensible Data Type System
 
-Consider supporting:
+**Decision**: Design the data type system to easily accommodate new data types.
 
-- Multiple bucket configurations
-- Tenant isolation
-- Per-tenant configuration
+**Extension Pattern**:
+1. Define TypeScript interface and Zod schema
+2. Add type guard function
+3. Update detection logic
+4. Configure default routing
+5. Add payload transformations
 
-These design decisions provide a solid foundation for the Unified SDK while maintaining flexibility for future enhancements and adaptations.
+**Benefits**:
+- **Scalability**: Easy to add new ecosystems
+- **Consistency**: Same patterns for all data types
+- **Maintainability**: Clear extension points
+- **Backward Compatibility**: New types don't affect existing ones
+
+### 22. Plugin Architecture Foundation
+
+**Decision**: Design components to support future plugin architecture.
+
+**Plugin Points**:
+- **Data Type Detection**: Custom detection logic
+- **Processing Rules**: Custom routing logic
+- **Backend Integration**: Custom backend adapters
+- **Transformation**: Custom payload transformations
+
+**Trade-offs**:
+- **Pros**: Maximum extensibility, ecosystem growth
+- **Cons**: Additional architectural complexity
+- **Alternative Considered**: Closed architecture (rejected due to ecosystem requirements)
+
+## Conclusion
+
+These design decisions collectively create a unified data ingestion system that:
+
+1. **Prioritizes Developer Experience**: Single method, automatic detection, sensible defaults
+2. **Ensures Performance**: Intelligent routing, parallel execution, context-aware optimization
+3. **Maintains Reliability**: Fallback mechanisms, comprehensive error handling, graceful degradation
+4. **Supports Multiple Ecosystems**: Specialized handling for Telegram, Bullish, and Nightingale data
+5. **Enables Future Growth**: Extensible architecture, plugin foundations, backward compatibility
+
+Each decision was made with careful consideration of trade-offs and alternatives, resulting in a system that balances simplicity with power, performance with reliability, and current needs with future extensibility.

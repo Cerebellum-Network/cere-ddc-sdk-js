@@ -1,572 +1,538 @@
-# Unified SDK Architecture Guide
+# Unified SDK Architecture
 
 ## Overview
 
-The Unified Data Ingestion SDK implements a **4-layer architecture** designed around the principle of **extreme simplicity** with **maximum reliability**. The architecture follows clean separation of concerns with each layer having distinct responsibilities.
+The Unified SDK implements a sophisticated data ingestion architecture that provides a single entry point for multiple data ecosystems while maintaining optimal performance, reliability, and extensibility. The system automatically detects data types and routes them through appropriate processing pipelines.
 
 ## Core Architectural Principles
 
-### 1. **Single Entry Point Philosophy**
-- **ONE method**: `writeData()` handles all data types and routing decisions
-- **Automatic detection**: Data type detection based on payload structure
-- **Zero configuration**: Smart defaults with metadata-driven customization
+### 1. **Single Responsibility with Composability**
+Each component has a single, well-defined responsibility while being composable with others:
+- **UnifiedSDK**: Entry point and orchestration
+- **RulesInterpreter**: Metadata validation and rule extraction
+- **Dispatcher**: Request routing and action planning
+- **Orchestrator**: Multi-backend execution and coordination
 
-### 2. **Metadata-Driven Architecture**
-- Processing rules derived from metadata, not hardcoded logic
-- Flexible routing decisions configurable per request
-- Validation using Zod schemas for type safety
+### 2. **Metadata-Driven Processing**
+All processing decisions are driven by metadata schemas, enabling:
+- Consistent processing across different data types
+- Flexible routing configurations
+- Runtime optimization based on context
 
-### 3. **Graceful Degradation**
-- Fallback mechanisms when services are unavailable
-- Partial success handling (some operations succeed, others fail)
-- Non-blocking error handling to maintain service availability
+### 3. **Multi-Backend Orchestration**
+The system coordinates multiple backend services:
+- **DDC (Decentralized Data Cloud)**: Content storage and retrieval
+- **Activity SDK**: Event indexing and analytics
+- **HTTP APIs**: External service integration
 
-## 4-Layer Architecture
+## System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Layer 1: API Surface                    │
-│                     (UnifiedSDK)                            │
-├─────────────────────────────────────────────────────────────┤
-│  • Single writeData() method                               │
-│  • Automatic data type detection                           │
-│  • Initialization and cleanup management                   │
-│  • Status reporting and health checks                      │
-└─────────────────┬───────────────────────────┬───────────────┘
-                  │                           │
-        ┌─────────▼──────────┐      ┌─────────▼──────────┐
-        │    Layer 2:        │      │    Layer 2:        │
-        │ Business Logic     │      │ Route Planning     │
-        │(RulesInterpreter)  │      │  (Dispatcher)      │
-        ├────────────────────┤      ├────────────────────┤
-        │ • Metadata         │      │ • Action Creation  │
-        │   Validation       │      │ • Target Selection │
-        │ • Rules Extraction │      │ • Execution Plans  │
-        │ • Optimization     │      │ • Priority Mgmt    │
-        └─────────┬──────────┘      └─────────┬──────────┘
-                  │                           │
-                  └─────────┬─────────────────┘
-                            │
-                  ┌─────────▼──────────┐
-                  │      Layer 3:      │
-                  │ Execution Engine   │
-                  │   (Orchestrator)   │
-                  ├────────────────────┤
-                  │ • Resource Mgmt    │
-                  │ • Error Handling   │
-                  │ • Fallback Logic   │
-                  │ • Service Init     │
-                  └─────────┬──────────┘
-                            │
-           ┌────────────────┼────────────────┐
-           │                │                │
-    ┌──────▼──────┐  ┌──────▼──────┐  ┌──────▼──────┐
-    │   Layer 4:  │  │   Layer 4:  │  │   Layer 4:  │
-    │ DDC Client  │  │Activity SDK │  │ HTTP APIs   │
-    │             │  │             │  │ (Future)    │
-    │ • Data      │  │ • Events    │  │             │
-    │   Storage   │  │ • Analytics │  │ • Webhooks  │
-    │ • Files     │  │ • Indexing  │  │ • External  │
-    │ • DagNodes  │  │ • Fallback  │  │   Services  │
-    └─────────────┘  └─────────────┘  └─────────────┘
+```mermaid
+graph TB
+    Client[Client Application] --> SDK[UnifiedSDK]
+    
+    SDK --> RI[RulesInterpreter]
+    SDK --> DIS[Dispatcher]
+    SDK --> ORC[Orchestrator]
+    
+    RI --> |Validates| META[Metadata Schema]
+    RI --> |Extracts| RULES[Processing Rules]
+    
+    DIS --> |Creates| PLAN[Dispatch Plan]
+    DIS --> |Routes| ACTIONS[Actions]
+    
+    ORC --> |Executes| DDC[DDC Client]
+    ORC --> |Executes| ACT[Activity SDK]
+    ORC --> |Executes| HTTP[HTTP APIs]
+    
+    DDC --> |Stores| CLOUD[Data Cloud]
+    ACT --> |Indexes| INDEX[Indexing Layer]
+    HTTP --> |Integrates| EXT[External Services]
+    
+    subgraph "Data Types"
+        TG[Telegram Events/Messages]
+        BC[Bullish Campaigns]
+        NG[Nightingale Drone Data]
+        GEN[Generic Data]
+    end
+    
+    Client --> TG
+    Client --> BC
+    Client --> NG
+    Client --> GEN
 ```
 
-## Layer 1: API Surface (UnifiedSDK)
+## Component Architecture
 
-**File**: `UnifiedSDK.ts` (421 lines)
+### UnifiedSDK (Main Entry Point)
 
-### Responsibilities
-- **Single Entry Point**: Provides the unified `writeData()` method
-- **Data Type Detection**: Automatically detects Telegram events, messages, drone telemetry
-- **Component Orchestration**: Manages interaction between all layers
-- **Lifecycle Management**: Initialization, cleanup, and health monitoring
-
-### Key Methods
+The central orchestrator that provides the unified interface:
 
 ```typescript
 class UnifiedSDK {
-  // Main entry point - ONE method for all data types
+  // Core components
+  private rulesInterpreter: RulesInterpreter;
+  private dispatcher: Dispatcher;
+  private orchestrator: Orchestrator;
+  
+  // Main data ingestion method
   async writeData(payload: any, options?: WriteOptions): Promise<UnifiedResponse>
-  
-  // Lifecycle management
-  async initialize(): Promise<void>
-  async cleanup(): Promise<void>
-  getStatus(): object
-  
-  // Internal detection and routing
-  private detectDataType(payload: any): string
-  private createMetadataForPayload(payload: any, options?: WriteOptions): UnifiedMetadata
-  private generateTraceId(dataType: string, payload: any): string
 }
 ```
 
-### Data Type Detection Logic
+**Key Responsibilities:**
+- Data type auto-detection
+- Component coordination
+- Response aggregation
+- Error handling and recovery
+- Lifecycle management
 
-The SDK automatically detects data types based on payload structure:
+**Auto-Detection Algorithm:**
+1. Analyze payload structure
+2. Match against known patterns
+3. Apply type-specific metadata defaults
+4. Generate trace ID for tracking
 
-```typescript
-private detectDataType(payload: any): string {
-  // Telegram Event Detection
-  if (payload.eventType && payload.userId && payload.timestamp) {
-    return 'telegram_event';
-  }
-  
-  // Telegram Message Detection  
-  if (payload.messageId && payload.chatId && payload.userId && payload.messageType) {
-    return 'telegram_message';
-  }
-  
-  // Drone Telemetry Detection
-  if (payload.droneId && payload.telemetry && (payload.latitude || payload.longitude)) {
-    return 'drone_telemetry';
-  }
-  
-  // Drone Video Detection
-  if (payload.droneId && (payload.videoChunk || payload.frameData)) {
-    return 'drone_video';
-  }
-  
-  return 'generic';
-}
-```
+### RulesInterpreter (Business Logic Engine)
 
-## Layer 2A: Business Logic (RulesInterpreter)
-
-**File**: `RulesInterpreter.ts` (208 lines)
-
-### Responsibilities
-- **Metadata Validation**: Validate input metadata using Zod schemas
-- **Rule Extraction**: Convert metadata into actionable processing rules
-- **Business Logic**: Apply routing decisions and optimization logic
-
-### Key Methods
+Translates client intentions into actionable processing rules:
 
 ```typescript
 class RulesInterpreter {
-  // Core validation and rule extraction
-  validateMetadata(metadata: any): UnifiedMetadata
-  extractProcessingRules(metadata: UnifiedMetadata): ProcessingRules
-  optimizeProcessingRules(rules: ProcessingRules, context?: any): ProcessingRules
-  
-  // Internal mapping logic
-  private mapDataCloudWriteMode(mode: string): ProcessingRules['dataCloudAction']
-  private mapIndexWriteMode(mode: string): ProcessingRules['indexAction']
-  private determineBatchingRequirement(processing: ProcessingMetadata): boolean
-  private validateRuleConsistency(rules: ProcessingRules): void
+  validateMetadata(metadata: any): UnifiedMetadata;
+  extractProcessingRules(metadata: UnifiedMetadata): ProcessingRules;
+  optimizeProcessingRules(rules: ProcessingRules, context?: any): ProcessingRules;
 }
 ```
 
-### Processing Rules Interface
+**Key Responsibilities:**
+- Metadata validation using Zod schemas
+- Business rule enforcement
+- Processing rule extraction
+- Context-based optimization
 
-```typescript
-interface ProcessingRules {
-  dataCloudAction: 'write_direct' | 'write_batch' | 'write_via_index' | 'skip';
-  indexAction: 'write_realtime' | 'skip';
-  batchingRequired: boolean;
-  additionalParams: {
-    priority: 'low' | 'normal' | 'high';
-    ttl?: number;
-    encryption: boolean;
-    batchOptions?: {
-      maxSize: number;
-      maxWaitTime: number;
-    };
-  };
-}
-```
+**Rule Optimization Strategies:**
+- Payload size-based batch adjustment
+- Priority-based timeout reduction
+- Execution mode selection
+- Resource allocation optimization
 
-## Layer 2B: Route Planning (Dispatcher)
+### Dispatcher (Command Pattern Implementation)
 
-**File**: `Dispatcher.ts` (261 lines)
-
-### Responsibilities
-- **Action Creation**: Transform processing rules into concrete actions
-- **Target Selection**: Route to appropriate backend services
-- **Execution Planning**: Determine parallel vs sequential execution
-- **Data Transformation**: Adapt payloads for specific backend APIs
-
-### Key Methods
+Converts processing rules into concrete actions:
 
 ```typescript
 class Dispatcher {
-  // Main routing method
-  routeRequest(payload: any, rules: ProcessingRules): DispatchPlan
-  
-  // Action creation
-  private createDataCloudAction(payload: any, rules: ProcessingRules): Action | null
-  private createIndexAction(payload: any, rules: ProcessingRules): Action | null
-  
-  // Data transformation
-  private transformPayloadForDDC(payload: any): any
-  private transformPayloadForActivity(payload: any): any
-  
-  // Type detection
-  private isTelegramEvent(payload: any): boolean
-  private isTelegramMessage(payload: any): boolean
+  routeRequest(payload: any, rules: ProcessingRules): DispatchPlan;
 }
 ```
 
-### Action and DispatchPlan Interfaces
+**Key Responsibilities:**
+- Action creation and configuration
+- Payload transformation for different backends
+- Execution mode determination
+- Rollback planning
 
-```typescript
-interface Action {
-  target: 'ddc-client' | 'activity-sdk' | 'http-api';
-  method: string;
-  payload: any;
-  options: Record<string, any>;
-  priority: 'low' | 'normal' | 'high';
-}
+**Routing Logic:**
+- **Direct Storage**: Immediate DDC writes
+- **Batch Processing**: Aggregated writes via Activity SDK
+- **Index-First**: Activity SDK with DDC fallback
+- **Parallel Execution**: Independent DDC + Activity SDK operations
 
-interface DispatchPlan {
-  actions: Action[];
-  executionMode: 'sequential' | 'parallel';
-  rollbackRequired: boolean;
-}
-```
+### Orchestrator (Execution Engine)
 
-## Layer 3: Execution Engine (Orchestrator)
-
-**File**: `Orchestrator.ts` (458 lines)
-
-### Responsibilities
-- **Resource Management**: Initialize and manage backend clients
-- **Execution Control**: Execute actions in parallel or sequential mode
-- **Error Handling**: Comprehensive error handling with fallbacks
-- **Service Integration**: Manage DDC Client and Activity SDK connections
-
-### Key Methods
+Manages complex workflows across multiple systems:
 
 ```typescript
 class Orchestrator {
-  // Lifecycle management
-  async initialize(): Promise<void>
-  async cleanup(): Promise<void>
-  
-  // Execution engine
-  async execute(plan: DispatchPlan): Promise<OrchestrationResult>
-  
-  // Execution modes
-  private async executeParallel(actions: Action[]): Promise<ExecutionResult[]>
-  private async executeSequential(actions: Action[]): Promise<ExecutionResult[]>
-  
-  // Backend integrations
-  private async executeDDCAction(action: Action): Promise<any>
-  private async executeActivityAction(action: Action): Promise<any>
-  private async executeHTTPAction(action: Action): Promise<any>
+  async initialize(): Promise<void>;
+  async execute(plan: DispatchPlan): Promise<OrchestrationResult>;
+  async cleanup(): Promise<void>;
 }
 ```
 
-### Execution Results
+**Key Responsibilities:**
+- Backend client management
+- Action execution (parallel/sequential)
+- Error recovery and fallback
+- Resource cleanup
 
-```typescript
-interface ExecutionResult {
-  target: string;
-  success: boolean;
-  response: any;
-  error?: any;
-  executionTime: number;
-}
-
-interface OrchestrationResult {
-  results: ExecutionResult[];
-  overallStatus: 'success' | 'partial' | 'failed';
-  totalExecutionTime: number;
-  transactionId: string;
-}
-```
-
-## Layer 4: External Services
-
-### DDC Client Integration
-
-The Orchestrator manages DDC Client initialization and operations:
-
-```typescript
-// DDC Client initialization with network presets
-const networkConfig = this.config.ddcConfig.network === 'devnet'
-  ? 'wss://archive.devnet.cere.network/ws'
-  : 'wss://rpc.testnet.cere.network/ws';
-
-this.ddcClient = await DdcClient.create(this.config.ddcConfig.signer, {
-  blockchain: networkConfig,
-  logLevel: this.config.logging.level === 'debug' ? 'debug' : 'silent',
-});
-```
-
-### Activity SDK Integration
-
-Activity SDK integration with UriSigner approach and fallback mechanisms:
-
-```typescript
-// Activity SDK initialization with UriSigner
-const signer = new UriSigner(this.config.activityConfig.keyringUri || '//Alice', {
-  type: 'ed25519', // Use ed25519 signatures for Event Service compatibility
-});
-
-this.activityClient = new EventDispatcher(signer, cipher, {
-  baseUrl: this.config.activityConfig.endpoint || 'https://api.stats.cere.network',
-  appId: this.config.activityConfig.appId || 'unified-sdk',
-  // ... additional configuration
-});
-```
+**Execution Patterns:**
+- **Sequential**: Dependencies between actions
+- **Parallel**: Independent operations
+- **Fallback**: Automatic recovery mechanisms
 
 ## Data Flow Architecture
 
-### Complete Request Flow
+### 1. **Ingestion Flow**
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant UnifiedSDK
-    participant RulesInterpreter
-    participant Dispatcher
-    participant Orchestrator
+    participant C as Client
+    participant SDK as UnifiedSDK
+    participant RI as RulesInterpreter
+    participant D as Dispatcher
+    participant O as Orchestrator
     participant DDC as DDC Client
-    participant Activity as Activity SDK
-
-    Client->>UnifiedSDK: writeData(payload, options)
+    participant ACT as Activity SDK
     
-    UnifiedSDK->>UnifiedSDK: detectDataType(payload)
-    UnifiedSDK->>UnifiedSDK: createMetadataForPayload()
-    
-    UnifiedSDK->>RulesInterpreter: validateMetadata(metadata)
-    RulesInterpreter-->>UnifiedSDK: validatedMetadata
-    
-    UnifiedSDK->>RulesInterpreter: extractProcessingRules(metadata)
-    RulesInterpreter-->>UnifiedSDK: processingRules
-    
-    UnifiedSDK->>RulesInterpreter: optimizeProcessingRules(rules)
-    RulesInterpreter-->>UnifiedSDK: optimizedRules
-    
-    UnifiedSDK->>Dispatcher: routeRequest(payload, rules)
-    Dispatcher-->>UnifiedSDK: dispatchPlan
-    
-    UnifiedSDK->>Orchestrator: execute(plan)
+    C->>SDK: writeData(payload, options)
+    SDK->>SDK: detectDataType(payload)
+    SDK->>SDK: createMetadataForPayload()
+    SDK->>RI: validateMetadata(metadata)
+    RI->>RI: extractProcessingRules()
+    RI->>RI: optimizeProcessingRules()
+    RI->>SDK: ProcessingRules
+    SDK->>D: routeRequest(payload, rules)
+    D->>D: createActions()
+    D->>SDK: DispatchPlan
+    SDK->>O: execute(plan)
     
     alt Parallel Execution
-        Orchestrator->>DDC: executeDDCAction()
-        Orchestrator->>Activity: executeActivityAction()
         par
-            DDC-->>Orchestrator: ddcResult
+            O->>DDC: store(data)
+            DDC->>O: CID
         and
-            Activity-->>Orchestrator: activityResult
+            O->>ACT: sendEvent(event)
+            ACT->>O: EventID
         end
     else Sequential Execution
-        Orchestrator->>DDC: executeDDCAction()
-        DDC-->>Orchestrator: ddcResult
-        Orchestrator->>Activity: executeActivityAction()
-        Activity-->>Orchestrator: activityResult
+        O->>ACT: sendEvent(event)
+        ACT->>DDC: store(data)
+        DDC->>O: CID
     end
     
-    Orchestrator-->>UnifiedSDK: orchestrationResult
-    UnifiedSDK-->>Client: unifiedResponse
+    O->>SDK: OrchestrationResult
+    SDK->>C: UnifiedResponse
 ```
 
-## Error Handling Architecture
+### 2. **Data Type Detection Flow**
 
-### Hierarchical Error Handling
+The system uses pattern matching to automatically detect data types:
 
 ```typescript
-// Layer 1: API Surface Errors
-class UnifiedSDKError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public component: string,
-    public recoverable: boolean = false,
-    public originalError?: Error
-  );
-}
-
-// Layer 2: Validation Errors
-class ValidationError extends UnifiedSDKError {
-  constructor(
-    message: string,
-    public validationErrors: z.ZodError
-  );
-}
+// Detection patterns
+const detectionPatterns = {
+  telegram_event: (payload) => 
+    payload.eventType && payload.userId && payload.timestamp,
+  
+  telegram_message: (payload) => 
+    payload.messageId && payload.chatId && payload.userId && payload.messageType,
+  
+  bullish_campaign: (payload) => 
+    payload.eventType && payload.campaignId && payload.accountId &&
+    ['SEGMENT_WATCHED', 'QUESTION_ANSWERED', 'JOIN_CAMPAIGN', 'CUSTOM_EVENTS']
+      .includes(payload.eventType),
+  
+  nightingale_video_stream: (payload) => 
+    payload.droneId && payload.streamId && payload.videoMetadata && 
+    Array.isArray(payload.chunks),
+  
+  nightingale_klv_data: (payload) => 
+    payload.droneId && payload.streamId && payload.klvMetadata && 
+    typeof payload.pts === 'number',
+  
+  nightingale_telemetry: (payload) => 
+    payload.droneId && payload.telemetryData && payload.coordinates,
+  
+  nightingale_frame_analysis: (payload) => 
+    payload.droneId && payload.streamId && payload.frameId && 
+    payload.frameData && payload.analysisResults
+};
 ```
 
-### Fallback Mechanisms
+## Supported Data Ecosystems
 
-1. **Activity SDK Unavailable**: Falls back to DDC storage only
-2. **DDC Storage Failure**: Returns error but preserves Activity SDK indexing
-3. **Partial Success**: Returns status with successful operations noted
+### 1. **Telegram Ecosystem**
 
-```typescript
-// Activity SDK fallback implementation
-if (!this.activityClient) {
-  // Return mock response to maintain workflow continuity
-  return {
-    eventId: this.generateEventId(),
-    status: 'skipped',
-    reason: 'Activity SDK not initialized',
-    timestamp: new Date().toISOString(),
-  };
-}
-```
+**Data Types:**
+- **Events**: Quest completions, user actions, mini-app interactions
+- **Messages**: Text, media, documents with metadata
 
-## Configuration Architecture
+**Processing Characteristics:**
+- Real-time indexing for analytics
+- Moderate volume with burst patterns
+- User-centric data organization
 
-### Unified Configuration Interface
+**Default Routing:**
+- Events: Activity SDK → DDC (via index)
+- Messages: DDC direct storage + Activity SDK indexing
 
-```typescript
-interface UnifiedSDKConfig {
-  // DDC Client configuration
-  ddcConfig: {
-    signer: string; // Substrate URI or mnemonic phrase
-    bucketId: bigint;
-    clusterId?: bigint;
-    network?: 'testnet' | 'devnet' | 'mainnet';
-  };
+### 2. **Bullish Campaign Ecosystem**
 
-  // Activity SDK configuration (optional)
-  activityConfig?: {
-    endpoint?: string;
-    keyringUri?: string;
-    appId?: string;
-    connectionId?: string;
-    sessionId?: string;
-    appPubKey?: string;
-    dataServicePubKey?: string;
-  };
+**Data Types:**
+- **SEGMENT_WATCHED**: Video education progress
+- **QUESTION_ANSWERED**: Quiz and assessment results
+- **JOIN_CAMPAIGN**: Campaign participation tracking
+- **CUSTOM_EVENTS**: Trading simulations and custom interactions
 
-  // Processing options
-  processing: {
-    enableBatching: boolean;
-    defaultBatchSize: number;
-    defaultBatchTimeout: number;
-    maxRetries: number;
-    retryDelay: number;
-  };
+**Processing Characteristics:**
+- High-priority processing for quest tracking
+- Campaign-specific metadata enrichment
+- Quest progression and reward calculations
 
-  // Logging and monitoring
-  logging: {
-    level: 'debug' | 'info' | 'warn' | 'error';
-    enableMetrics: boolean;
-  };
-}
-```
+**Default Routing:**
+- Direct DDC storage for CID tracking
+- Real-time Activity SDK indexing
+- Campaign-specific post-processing
 
-## Performance Architecture
+### 3. **Nightingale Drone Ecosystem**
 
-### Optimization Strategies
+**Data Types:**
+- **Video Streams**: RGB and thermal video with chunked storage
+- **KLV Metadata**: Geospatial and sensor metadata
+- **Telemetry**: Real-time drone status and positioning
+- **Frame Analysis**: AI-processed frame data with object detection
 
-1. **Intelligent Batching**: Automatic batching based on payload size and timing
-2. **Parallel Execution**: Concurrent operations when dependencies allow
-3. **Resource Pooling**: Reuse of connections and clients
-4. **Lazy Initialization**: Services initialized only when needed
+**Processing Characteristics:**
+- High-volume data with different priorities
+- Geospatial indexing and coordinate tracking
+- Timeline preservation for video analysis
+- Specialized compression and chunking
 
-### Payload Size Optimization
+**Default Routing:**
+- Video Streams: Direct DDC storage (skip indexing for performance)
+- KLV Data: Activity SDK indexing only (skip DDC for metadata)
+- Telemetry: Direct DDC + real-time indexing
+- Frame Analysis: Direct DDC + real-time indexing
+
+## Backend Integration Architecture
+
+### DDC (Decentralized Data Cloud) Integration
 
 ```typescript
-// Automatic batch size optimization based on payload size
-if (context?.payloadSize && rules.batchingRequired) {
-  const payloadSize = context.payloadSize;
-  if (payloadSize > 1024 * 1024) { // 1MB
-    optimizedRules.additionalParams.batchOptions = {
-      maxSize: Math.max(1, Math.floor(1000 / (payloadSize / (1024 * 1024)))),
-      maxWaitTime: rules.additionalParams.batchOptions?.maxWaitTime || 5000,
-    };
+// DDC Client Integration
+class Orchestrator {
+  private async executeDDCAction(action: Action): Promise<any> {
+    switch (action.method) {
+      case 'store':
+        // Determine storage format based on payload
+        if (action.payload.data && typeof action.payload.data === 'string') {
+          // DagNode for structured data
+          const dagNode = new DagNode(action.payload.data, action.payload.links || []);
+          return await this.ddcClient.store(bucketId, dagNode);
+        } else if (Buffer.isBuffer(action.payload.data)) {
+          // File for binary data
+          const file = new File(action.payload.data, action.payload.metadata || {});
+          return await this.ddcClient.store(bucketId, file);
+        }
+        break;
+      
+      case 'storeBatch':
+        // Route through Activity SDK for batch processing
+        return await this.executeActivityAction(batchAction);
+    }
   }
 }
 ```
 
-## Monitoring and Observability
+**Storage Patterns:**
+- **DagNode**: Structured data with links (events, metadata)
+- **File**: Binary data (video chunks, images)
+- **Batch**: High-volume data via Activity SDK routing
 
-### Built-in Logging
-
-Each component includes structured logging:
+### Activity SDK Integration
 
 ```typescript
-private createLogger(): (level: string, message: string, ...args: any[]) => void {
-  const logLevel = this.config.logging.level;
-  const enableMetrics = this.config.logging.enableMetrics;
-
-  return (level: string, message: string, ...args: any[]) => {
-    const messageLevel = logLevels[level as keyof typeof logLevels] || 1;
+// Activity SDK Integration with UriSigner
+class Orchestrator {
+  async initialize(): Promise<void> {
+    const { EventDispatcher } = await import('@cere-activity-sdk/events');
+    const { UriSigner } = await import('@cere-activity-sdk/signers');
+    const { NoOpCipher } = await import('@cere-activity-sdk/ciphers');
     
-    if (messageLevel >= currentLevel) {
-      const timestamp = new Date().toISOString();
-      const logMessage = `[${timestamp}] [UnifiedSDK:${level.toUpperCase()}] ${message}`;
-      
-      // Log to appropriate console method
-      if (level === 'error') {
-        console.error(logMessage, ...args);
-      } else if (level === 'warn') {
-        console.warn(logMessage, ...args);
-      } else {
-        console.log(logMessage, ...args);
-      }
-    }
-  };
+    // Create signer with ed25519 for Event Service compatibility
+    const signer = new UriSigner(this.config.activityConfig.keyringUri || '//Alice', {
+      type: 'ed25519'
+    });
+    
+    // Initialize EventDispatcher
+    this.activityClient = new EventDispatcher(signer, cipher, {
+      baseUrl: this.config.activityConfig.endpoint,
+      appId: this.config.activityConfig.appId,
+      // ... other config
+    });
+  }
 }
 ```
 
-### Metrics Collection
+**Event Transformation:**
+- Telegram events → `telegram.event` type
+- Bullish campaigns → `bullish.campaign` type
+- Nightingale data → `nightingale.*` types
+- Generic data → `generic.event` type
+
+## Error Handling and Resilience
+
+### Multi-Level Error Handling
 
 ```typescript
-// Response metadata includes performance metrics
-metadata: {
-  processedAt: new Date(),
-  processingTime: Date.now() - startTime,
-  actionsExecuted: orchestrationResult.results.map(r => r.target),
+// Error handling hierarchy
+try {
+  const result = await sdk.writeData(payload);
+} catch (error) {
+  if (error instanceof ValidationError) {
+    // Handle validation errors
+  } else if (error instanceof UnifiedSDKError && error.recoverable) {
+    // Retry recoverable errors
+  } else {
+    // Handle non-recoverable errors
+  }
 }
 ```
+
+**Error Categories:**
+- **Validation Errors**: Schema validation failures
+- **Recoverable Errors**: Network timeouts, temporary service unavailability
+- **Non-Recoverable Errors**: Authentication failures, invalid configuration
+
+### Fallback Mechanisms
+
+1. **Activity SDK Fallback**: DDC storage if Activity SDK fails
+2. **Network Fallback**: Alternative endpoints for connectivity issues
+3. **Batch Fallback**: Individual processing if batch operations fail
+
+## Performance Optimization
+
+### Batch Processing Architecture
+
+```mermaid
+graph LR
+    Input[Input Data] --> Detector[Type Detector]
+    Detector --> Batcher[Batch Aggregator]
+    Batcher --> Processor[Batch Processor]
+    Processor --> DDC[DDC Storage]
+    Processor --> Index[Activity Indexing]
+```
+
+**Optimization Strategies:**
+- **Size-Based Batching**: Adjust batch sizes based on payload size
+- **Priority-Based Processing**: Reduce timeouts for high-priority data
+- **Parallel Execution**: Independent DDC and Activity SDK operations
+- **Connection Pooling**: Reuse connections across operations
+
+### Memory Management
+
+- **Streaming**: Process large payloads without loading entirely into memory
+- **Chunking**: Split large video streams into manageable chunks
+- **Garbage Collection**: Automatic cleanup of temporary resources
 
 ## Security Architecture
 
 ### Data Protection
 
-1. **Encryption Support**: Optional encryption for sensitive data
-2. **Secure Configuration**: Sensitive values (signers, keys) are sanitized in logs
-3. **Access Control**: Component-level access restrictions
+1. **Encryption**: Optional payload encryption before storage
+2. **Access Control**: Bucket-level and application-level permissions
+3. **Audit Trails**: Comprehensive logging and tracing
+4. **Key Management**: Secure handling of signing keys and credentials
 
-### Configuration Sanitization
+### Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant SDK as UnifiedSDK
+    participant DDC as DDC Client
+    participant ACT as Activity SDK
+    participant BC as Blockchain
+    
+    SDK->>DDC: Initialize with signer
+    DDC->>BC: Authenticate signer
+    BC->>DDC: Authentication success
+    
+    SDK->>ACT: Initialize with UriSigner
+    ACT->>BC: Authenticate with ed25519
+    BC->>ACT: Authentication success
+    
+    SDK->>SDK: Ready for operations
+```
+
+## Extensibility Architecture
+
+### Adding New Data Types
+
+1. **Define Interface**: Create TypeScript interface and Zod schema
+2. **Add Detection**: Implement type guard function
+3. **Configure Routing**: Define default processing metadata
+4. **Add Transformations**: Implement payload transformations for backends
+5. **Update Tests**: Add comprehensive test coverage
+
+### Adding New Backends
+
+1. **Implement Client**: Create backend client integration
+2. **Add Actions**: Define supported actions and methods
+3. **Update Orchestrator**: Add execution logic
+4. **Configure Routing**: Update dispatcher routing logic
+
+## Monitoring and Observability
+
+### Metrics Collection
 
 ```typescript
-private sanitizeConfig(config: UnifiedSDKConfig): any {
-  return {
-    ddcConfig: {
-      bucketId: config.ddcConfig.bucketId.toString(),
-      clusterId: config.ddcConfig.clusterId?.toString(),
-      network: config.ddcConfig.network,
-      // Don't log the signer for security
-    },
-    activityConfig: config.activityConfig ? {
-      endpoint: config.activityConfig.endpoint,
-      // Don't log sensitive keys
-    } : undefined,
-    processing: config.processing,
-    logging: config.logging,
-  };
+interface Metrics {
+  // Performance metrics
+  processingTime: number;
+  payloadSize: number;
+  batchSize: number;
+  
+  // Success metrics
+  successRate: number;
+  errorRate: number;
+  fallbackRate: number;
+  
+  // Business metrics
+  dataTypeDistribution: Record<string, number>;
+  backendUtilization: Record<string, number>;
 }
 ```
 
-## Testing Architecture
+### Tracing
 
-The SDK includes comprehensive test coverage across all layers:
+Each operation generates a unique trace ID for end-to-end tracking:
+- Request ingestion
+- Component processing
+- Backend operations
+- Response generation
 
-- **Unit Tests**: Individual component testing
-- **Integration Tests**: Cross-component interaction testing
-- **Mock Support**: Complete mocking infrastructure for external services
-- **Real Integration**: Actual DDC and Activity SDK integration tests
+## Configuration Architecture
 
-## Design Benefits
+### Hierarchical Configuration
 
-### For Developers
-- **🎯 Extreme Simplicity**: One method for all use cases
-- **🔒 Type Safety**: Full TypeScript support with Zod validation
-- **📊 Comprehensive Monitoring**: Built-in observability
+```typescript
+interface UnifiedSDKConfig {
+  // Required core configuration
+  ddcConfig: DDCConfig;
+  processing: ProcessingConfig;
+  logging: LoggingConfig;
+  
+  // Optional ecosystem configurations
+  activityConfig?: ActivityConfig;
+  nightingaleConfig?: NightingaleConfig;
+  
+  // Optional advanced configurations
+  performance?: PerformanceConfig;
+  errorHandling?: ErrorHandlingConfig;
+}
+```
 
-### For Operations
-- **🔄 Graceful Degradation**: Services can fail independently
-- **📈 Performance**: Intelligent batching and parallel execution
-- **🔧 Maintainability**: Clear separation of concerns
+### Environment-Based Configuration
 
-### For Business
-- **⚡ Fast Development**: Reduced complexity means faster implementation
-- **💰 Cost Effective**: Efficient resource usage through optimization
-- **📊 Rich Analytics**: Automatic event tracking and indexing
+- **Development**: Debug logging, mock backends, reduced batch sizes
+- **Testing**: Isolated environments, comprehensive logging
+- **Production**: Optimized performance, minimal logging, robust error handling
 
-This architecture achieves the perfect balance of simplicity for developers while maintaining enterprise-grade reliability and performance.
+## Migration and Compatibility
+
+### Backward Compatibility
+
+The architecture maintains backward compatibility while adding new features:
+- Existing Telegram and generic data processing unchanged
+- New data types added without breaking existing functionality
+- Configuration extensions maintain default values
+
+### Migration Strategies
+
+1. **Gradual Migration**: Migrate data types one at a time
+2. **Parallel Operation**: Run old and new systems simultaneously
+3. **Rollback Support**: Maintain ability to revert to previous versions
+
+This architecture provides a robust, scalable, and extensible foundation for unified data ingestion across multiple ecosystems while maintaining simplicity from the client perspective.

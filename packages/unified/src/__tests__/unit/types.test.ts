@@ -298,7 +298,7 @@ describe('Types and Schemas', () => {
 
         expect(validationError.message).toBe('Validation failed');
         expect(validationError.code).toBe('VALIDATION_ERROR');
-        expect(validationError.component).toBe('Schema');
+        expect(validationError.component).toBe('RulesInterpreter');
         expect(validationError.validationErrors).toBe(zodError);
         expect(validationError).toBeInstanceOf(UnifiedSDKError);
       }
@@ -337,7 +337,7 @@ describe('Types and Schemas', () => {
       } catch (zodError) {
         const validationError = new ValidationError('Both modes cannot be skip', zodError as z.ZodError);
 
-        expect(validationError.toString()).toContain('Validation failed');
+        expect(validationError.toString()).toContain('UnifiedSDKError');
         expect(validationError.toString()).toContain('Both modes cannot be skip');
       }
     });

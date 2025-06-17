@@ -14,6 +14,10 @@
   - [TelegramEventData](#telegrameventdata)
   - [TelegramMessageData](#telegrammessagedata)
   - [BullishCampaignEvent](#bullishcampaignevent)
+  - [NightingaleVideoStream](#nightingalevideostream)
+  - [NightingaleKLVData](#nightingaleklvdata)
+  - [NightingaleTelemetry](#nightingaletelemetry)
+  - [NightingaleFrameAnalysis](#nightingaleframeanalysis)
 - [Error Classes](#error-classes)
   - [UnifiedSDKError](#unifiedsdkerror)
   - [ValidationError](#validationerror)
@@ -23,7 +27,7 @@
 
 ### UnifiedSDK
 
-The main entry point for all data ingestion operations. **Provides a single `writeData()` method** that automatically detects data types and routes appropriately.
+The main entry point for all data ingestion operations. **Provides a single `writeData()` method** that automatically detects data types and routes appropriately across **7 different data types**.
 
 #### Constructor
 
@@ -34,7 +38,7 @@ constructor(config: UnifiedSDKConfig)
 Creates a new instance of the Unified SDK with the provided configuration.
 
 **Parameters:**
-- `config`: Configuration object containing DDC, Activity SDK, processing, and logging settings
+- `config`: Configuration object containing DDC, Activity SDK, Nightingale, processing, and logging settings
 
 **Example:**
 ```typescript
@@ -42,12 +46,32 @@ const sdk = new UnifiedSDK({
   ddcConfig: {
     signer: 'your mnemonic phrase here',
     bucketId: BigInt(573409),
+    clusterId: BigInt('0x825c4b2352850de9986d9d28568db6f0c023a1e3'),
     network: 'testnet',
   },
   activityConfig: {
     endpoint: 'https://api.stats.cere.network',
-    keyringUri: '//Alice',
+    keyringUri: 'your mnemonic phrase here', // UriSigner compatible
     appId: 'my-app',
+    connectionId: 'conn_' + Date.now(),
+    sessionId: 'sess_' + Date.now(),
+    appPubKey: 'your-app-public-key',
+    dataServicePubKey: 'your-data-service-public-key',
+  },
+  nightingaleConfig: {
+    videoProcessing: {
+      chunkSize: 1024 * 1024, // 1MB chunks
+      timelinePreservation: true,
+      compression: true,
+    },
+    klvProcessing: {
+      coordinateIndexing: true,
+      metadataValidation: true,
+    },
+    telemetryProcessing: {
+      timeSeries: true,
+      coordinateTracking: true,
+    },
   },
   processing: {
     enableBatching: true,
@@ -67,12 +91,17 @@ const sdk = new UnifiedSDK({
 
 ##### `initialize(): Promise<void>`
 
-Initializes the SDK and all its backend components (DDC Client, Activity SDK).
+Initializes the SDK and all its backend components (DDC Client, Activity SDK with UriSigner).
 
 **Returns:** Promise that resolves when initialization is complete
 
 **Throws:**
 - `UnifiedSDKError` if initialization fails
+
+**Implementation Details:**
+- Initializes DDC Client with network-specific endpoints
+- Sets up Activity SDK with UriSigner and ed25519 signatures for Event Service compatibility
+- Includes intelligent fallback if Activity SDK initialization fails
 
 **Example:**
 ```typescript
@@ -81,14 +110,18 @@ await sdk.initialize();
 
 ##### `writeData(payload: any, options?: WriteOptions): Promise<UnifiedResponse>`
 
-**🎯 THE SINGLE ENTRY POINT** - The only data ingestion method that automatically detects data types and routes appropriately.
+**🎯 THE SINGLE ENTRY POINT** - The only data ingestion method that automatically detects **7 different data types** and routes appropriately.
 
-**This is the ONLY method you need** - it replaces all individual methods by automatically detecting:
-- Telegram Events (by `eventType` + `userId` + `timestamp` fields)
-- Telegram Messages (by `messageId` + `chatId` + `userId` + `messageType` fields)  
-- Bullish Campaign Events (by `eventType` + `campaignId` + `accountId` fields)
-- Drone Telemetry (by `droneId` + `telemetry` + location fields)
-- Generic data (fallback for any other structure)
+**This is the ONLY method you need** - it automatically detects and processes:
+
+1. **Telegram Events** (by `eventType` + `userId` + `timestamp` fields)
+2. **Telegram Messages** (by `messageId` + `chatId` + `userId` + `messageType` fields)  
+3. **Bullish Campaign Events** (by `eventType` + `campaignId` + `accountId` fields with specific event types)
+4. **Nightingale Video Streams** (by `droneId` + `streamId` + `chunks` + `videoMetadata` fields)
+5. **Nightingale KLV Data** (by `droneId` + `streamId` + `klvMetadata` fields)
+6. **Nightingale Telemetry** (by `droneId` + `telemetryData` + `coordinates` fields)
+7. **Nightingale Frame Analysis** (by `droneId` + `streamId` + `frameId` + `analysisResults` fields)
+8. **Generic data** (fallback for any other structure)
 
 **Parameters:**
 - `payload`: The data to ingest (any structure - automatically detected)
@@ -106,9 +139,9 @@ interface WriteOptions {
 }
 ```
 
-**Example:**
+**Example - Automatic Detection:**
 ```typescript
-// ✨ Automatic detection for Telegram event
+// ✨ Telegram Event - Auto-detected
 const result1 = await sdk.writeData({
   eventType: 'quest_completed',
   userId: 'user123',
@@ -116,31 +149,62 @@ const result1 = await sdk.writeData({
   timestamp: new Date(),
 });
 
-// ✨ Automatic detection for Telegram message
+// ✨ Bullish Campaign Event - Auto-detected
 const result2 = await sdk.writeData({
-  messageId: 'msg123',
-  chatId: 'chat456',
-  userId: 'user789',
-  messageText: 'Hello world!',
-  messageType: 'text',
-  timestamp: new Date(),
-});
-
-// ✨ Automatic detection for Bullish campaign event
-const result3 = await sdk.writeData({
   eventType: 'SEGMENT_WATCHED',
   campaignId: 'bullish_education_2024',
   accountId: 'user_12345',
-  eventData: {
+  payload: {
     segmentId: 'trading_basics_001',
     completionPercentage: 100,
   },
-  questId: 'education_quest_001',
   timestamp: new Date(),
 });
 
-// ✨ Custom options
-const result4 = await sdk.writeData(
+// ✨ Nightingale Video Stream - Auto-detected
+const result3 = await sdk.writeData({
+  droneId: 'drone_001',
+  streamId: 'stream_123',
+  timestamp: new Date(),
+  videoMetadata: {
+    duration: 30000,
+    fps: 30,
+    resolution: '1920x1080',
+    codec: 'h264',
+    streamType: 'rgb',
+  },
+  chunks: [
+    {
+      chunkId: 'chunk_001',
+      startTime: 0,
+      endTime: 5000,
+      data: videoBuffer,
+      size: 1024000,
+    },
+  ],
+});
+
+// ✨ Nightingale Telemetry - Auto-detected
+const result4 = await sdk.writeData({
+  droneId: 'drone_001',
+  timestamp: new Date(),
+  telemetryData: {
+    gps: { lat: 37.7749, lng: -122.4194, alt: 100 },
+    orientation: { pitch: 0, roll: 0, yaw: 45 },
+    velocity: { x: 10, y: 0, z: 0 },
+    battery: 85,
+    signalStrength: 90,
+  },
+  coordinates: {
+    latitude: 37.7749,
+    longitude: -122.4194,
+    altitude: 100,
+  },
+  missionId: 'mission_001',
+});
+
+// ✨ Custom options for high-priority data
+const result5 = await sdk.writeData(
   { customData: 'important info' },
   {
     priority: 'high',
@@ -165,7 +229,7 @@ Returns the current status of the SDK and its components.
 ```typescript
 {
   initialized: boolean;
-  config: any; // Sanitized configuration
+  config: any; // Sanitized configuration (sensitive data removed)
   components: {
     rulesInterpreter: boolean;
     dispatcher: boolean;
@@ -174,27 +238,15 @@ Returns the current status of the SDK and its components.
 }
 ```
 
-**Example:**
-```typescript
-const status = sdk.getStatus();
-console.log('SDK initialized:', status.initialized);
-console.log('Components ready:', status.components);
-```
-
 ##### `cleanup(): Promise<void>`
 
 Cleans up resources and disconnects from backend services.
 
 **Returns:** Promise that resolves when cleanup is complete
 
-**Example:**
-```typescript
-await sdk.cleanup();
-```
-
 ### RulesInterpreter
 
-Handles metadata validation and processing rule extraction. Typically used internally by UnifiedSDK.
+Handles metadata validation and processing rule extraction using Zod schemas.
 
 #### Constructor
 
@@ -206,7 +258,7 @@ constructor(logger?: (level: string, message: string, ...args: any[]) => void)
 
 ##### `validateMetadata(metadata: any): UnifiedMetadata`
 
-Validates metadata against the schema using Zod validation.
+Validates metadata against the schema using Zod validation with business rule enforcement.
 
 **Parameters:**
 - `metadata`: Raw metadata object to validate
@@ -217,6 +269,11 @@ Validates metadata against the schema using Zod validation.
 - `ValidationError` if metadata is invalid
 - `UnifiedSDKError` for unexpected validation errors
 
+**Business Rules Enforced:**
+- At least one action must be enabled (cannot skip both data cloud and index)
+- Validates rule consistency for batching and encryption
+- Provides optimization warnings for suboptimal configurations
+
 ##### `extractProcessingRules(metadata: UnifiedMetadata): ProcessingRules`
 
 Extracts processing rules from validated metadata.
@@ -225,11 +282,16 @@ Extracts processing rules from validated metadata.
 
 ##### `optimizeProcessingRules(rules: ProcessingRules, context?: any): ProcessingRules`
 
-Optimizes processing rules based on context (e.g., payload size).
+Optimizes processing rules based on context (e.g., payload size, priority).
+
+**Context-Based Optimizations:**
+- Adjusts batch sizes for large payloads (>1MB)
+- Reduces timeout for high-priority operations by 50%
+- Optimizes execution mode based on data type
 
 ### Dispatcher
 
-Creates execution plans from processing rules. Typically used internally by UnifiedSDK.
+Creates execution plans from processing rules with enhanced support for campaign and drone data.
 
 #### Constructor
 
@@ -241,13 +303,18 @@ constructor(logger?: (level: string, message: string, ...args: any[]) => void)
 
 ##### `routeRequest(payload: any, rules: ProcessingRules): DispatchPlan`
 
-Routes request based on processing rules and creates execution plan.
+Routes request based on processing rules and creates execution plan with data-type-specific optimizations.
+
+**Enhanced Features:**
+- **Campaign Tracking**: Automatic campaign and quest tracking for Bullish events
+- **Drone Data Optimization**: Specialized handling for video streams and telemetry
+- **Intelligent Execution**: Chooses parallel vs sequential based on data dependencies
 
 **Returns:** DispatchPlan with actions to execute
 
 ### Orchestrator
 
-Executes actions and manages backend integrations. Typically used internally by UnifiedSDK.
+Executes actions and manages backend integrations with enhanced error handling and fallback mechanisms.
 
 #### Constructor
 
@@ -259,11 +326,17 @@ constructor(config: UnifiedSDKConfig, logger?: (level: string, message: string, 
 
 ##### `initialize(): Promise<void>`
 
-Initializes backend clients (DDC Client, Activity SDK).
+Initializes backend clients with network-specific configurations:
+- **DDC Client**: Network-aware endpoint selection (devnet/testnet/mainnet)
+- **Activity SDK**: UriSigner with ed25519 signatures for Event Service compatibility
+- **Intelligent Fallback**: Graceful degradation if Activity SDK initialization fails
 
 ##### `execute(plan: DispatchPlan): Promise<OrchestrationResult>`
 
-Executes actions according to the dispatch plan.
+Executes actions with enhanced features:
+- **Parallel/Sequential Execution**: Based on data dependencies and processing rules
+- **Campaign-Specific Logic**: Automatic quest updates and campaign metrics
+- **Error Recovery**: Intelligent retry and fallback mechanisms
 
 ##### `cleanup(): Promise<void>`
 
@@ -273,11 +346,11 @@ Cleans up resources and disconnects from backends.
 
 ### UnifiedSDKConfig
 
-Main configuration interface for the SDK.
+Enhanced configuration interface supporting multiple use cases.
 
 ```typescript
 interface UnifiedSDKConfig {
-  // DDC Client configuration
+  // DDC Client configuration (required)
   ddcConfig: {
     signer: string; // Substrate URI or mnemonic phrase
     bucketId: bigint;
@@ -288,7 +361,7 @@ interface UnifiedSDKConfig {
   // Activity SDK configuration (optional)
   activityConfig?: {
     endpoint?: string;
-    keyringUri?: string; // Substrate URI for signing
+    keyringUri?: string; // Substrate URI for UriSigner
     appId?: string;
     connectionId?: string;
     sessionId?: string;
@@ -296,7 +369,24 @@ interface UnifiedSDKConfig {
     dataServicePubKey?: string;
   };
 
-  // Processing options
+  // Nightingale-specific configuration (optional)
+  nightingaleConfig?: {
+    videoProcessing?: {
+      chunkSize?: number; // Default chunk size for video processing
+      timelinePreservation?: boolean; // Maintain temporal relationships
+      compression?: boolean; // Enable video compression
+    };
+    klvProcessing?: {
+      coordinateIndexing?: boolean; // Index coordinate data
+      metadataValidation?: boolean; // Validate KLV metadata
+    };
+    telemetryProcessing?: {
+      timeSeries?: boolean; // Enable time series processing
+      coordinateTracking?: boolean; // Track coordinate changes
+    };
+  };
+
+  // Processing options (required)
   processing: {
     enableBatching: boolean;
     defaultBatchSize: number;
@@ -305,7 +395,7 @@ interface UnifiedSDKConfig {
     retryDelay: number; // in milliseconds
   };
 
-  // Logging and monitoring
+  // Logging and monitoring (required)
   logging: {
     level: 'debug' | 'info' | 'warn' | 'error';
     enableMetrics: boolean;
@@ -315,7 +405,7 @@ interface UnifiedSDKConfig {
 
 ### UnifiedResponse
 
-Response format returned by `writeData()`.
+Enhanced response format with comprehensive metadata.
 
 ```typescript
 interface UnifiedResponse {
@@ -324,7 +414,7 @@ interface UnifiedResponse {
 
   /**
    * DDC Content Identifier (CID) for data stored in Data Cloud
-   * This CID can be used to reference the original data source
+   * Available for all data types when stored in DDC
    */
   dataCloudHash?: string;
 
@@ -343,14 +433,14 @@ interface UnifiedResponse {
   metadata: {
     processedAt: Date;
     processingTime: number; // in milliseconds
-    actionsExecuted: string[];
+    actionsExecuted: string[]; // Which services were used
   };
 }
 ```
 
 ### ProcessingMetadata
 
-Controls how data is processed and routed.
+Controls how data is processed and routed with enhanced options.
 
 ```typescript
 interface ProcessingMetadata {
@@ -365,16 +455,6 @@ interface ProcessingMetadata {
   };
 }
 ```
-
-**Data Cloud Write Modes:**
-- `direct`: Write immediately to DDC (bypassing indexing)
-- `batch`: Buffer and write to DDC in batches
-- `viaIndex`: Let Activity SDK handle DDC storage
-- `skip`: Don't store in DDC
-
-**Index Write Modes:**
-- `realtime`: Write to Activity SDK immediately
-- `skip`: Don't index this data
 
 ### TelegramEventData
 
@@ -416,42 +496,151 @@ interface BullishCampaignEvent {
   campaignId: string;
   accountId: string;
   timestamp: Date;
-  eventData: Record<string, any>;
-  questId?: string; // Optional quest identifier
-  metadata?: Record<string, any>; // Additional campaign metadata
+  payload: Record<string, any>; // Campaign-specific data
 }
 ```
 
-**Automatic Detection:** The SDK detects Bullish campaign events when payload contains `eventType`, `campaignId`, and `accountId` fields.
+**Auto-Detection:** Detected when payload contains `eventType` (with valid campaign event type), `campaignId`, and `accountId` fields.
 
-**Supported Event Types:**
-- `SEGMENT_WATCHED`: Video segment completion tracking
-- `QUESTION_ANSWERED`: Quiz and question answering
-- `JOIN_CAMPAIGN`: Campaign participation events
-- `CUSTOM_EVENTS`: Custom campaign-specific events
+### NightingaleVideoStream
 
-**Example Usage:**
+Structure for Nightingale video stream data (automatically detected).
+
 ```typescript
-// ✨ Automatically detected as Bullish Campaign Event
-const result = await sdk.writeData({
-  eventType: 'SEGMENT_WATCHED',
-  campaignId: 'bullish_education_2024',
-  accountId: 'user_12345',
-  eventData: {
-    segmentId: 'trading_basics_001',
-    completionPercentage: 100,
-    watchDuration: 300000,
-  },
-  questId: 'education_quest_001',
-  timestamp: new Date(),
-});
+interface NightingaleVideoStream {
+  droneId: string;
+  streamId: string;
+  timestamp: Date;
+  videoMetadata: {
+    duration: number; // Duration in milliseconds
+    fps: number;
+    resolution: string; // e.g., "1920x1080"
+    codec: string; // e.g., "h264"
+    streamType?: 'thermal' | 'rgb';
+  };
+  chunks: Array<{
+    chunkId: string;
+    startTime: number; // Start time in milliseconds
+    endTime: number; // End time in milliseconds
+    data: Buffer | string; // Video chunk data
+    offset?: number; // Byte offset in stream
+    size?: number; // Chunk size in bytes
+  }>;
+}
 ```
+
+**Auto-Detection:** Detected when payload contains `droneId`, `streamId`, `chunks`, and `videoMetadata` fields.
+
+### NightingaleKLVData
+
+Structure for Nightingale Key-Length-Value metadata (automatically detected).
+
+```typescript
+interface NightingaleKLVData {
+  droneId: string;
+  streamId: string;
+  chunkCid?: string; // Reference to associated video chunk
+  timestamp: Date;
+  pts: number; // Presentation timestamp
+  klvMetadata: {
+    type: string; // e.g., "ST 0601"
+    missionId?: string;
+    platform: {
+      headingAngle: number;
+      pitchAngle: number;
+      rollAngle: number;
+    };
+    sensor: {
+      latitude: number;
+      longitude: number;
+      trueAltitude: number;
+      horizontalFieldOfView: number;
+      verticalFieldOfView: number;
+      relativeAzimuth: number;
+      relativeElevation: number;
+      relativeRoll: number;
+    };
+    frameCenter: {
+      latitude: number;
+      longitude: number;
+      elevation: number;
+    };
+    offsetCorners?: Array<{
+      latitude: number;
+      longitude: number;
+    }>;
+    fields: Record<string, any>; // Additional KLV fields
+  };
+}
+```
+
+**Auto-Detection:** Detected when payload contains `droneId`, `streamId`, and `klvMetadata` fields.
+
+### NightingaleTelemetry
+
+Structure for Nightingale telemetry data (automatically detected).
+
+```typescript
+interface NightingaleTelemetry {
+  droneId: string;
+  timestamp: Date;
+  telemetryData: {
+    gps: { lat: number; lng: number; alt: number };
+    orientation: { pitch: number; roll: number; yaw: number };
+    velocity: { x: number; y: number; z: number };
+    battery: number; // Battery percentage (0-100)
+    signalStrength: number; // Signal strength percentage (0-100)
+  };
+  coordinates: {
+    latitude: number;
+    longitude: number;
+    altitude: number;
+  };
+  missionId?: string;
+  platformData?: Record<string, any>;
+}
+```
+
+**Auto-Detection:** Detected when payload contains `droneId`, `telemetryData`, and `coordinates` fields.
+
+### NightingaleFrameAnalysis
+
+Structure for Nightingale frame analysis results (automatically detected).
+
+```typescript
+interface NightingaleFrameAnalysis {
+  droneId: string;
+  streamId: string;
+  frameId: string;
+  chunkCid?: string; // Reference to source video chunk
+  timestamp: Date;
+  pts: number; // Presentation timestamp
+  frameData: {
+    base64EncodedData: string; // Base64 encoded frame image
+    metadata: {
+      width: number;
+      height: number;
+      format: string; // e.g., "jpeg", "png"
+    };
+  };
+  analysisResults: {
+    objects: Array<{
+      type: string; // Object type (e.g., "person", "vehicle")
+      confidence: number; // Confidence score (0-1)
+      boundingBox: [number, number, number, number]; // [x, y, width, height]
+    }>;
+    features: Record<string, any>; // Additional analysis features
+  };
+}
+```
+
+**Auto-Detection:** Detected when payload contains `droneId`, `streamId`, `frameId`, and `analysisResults` fields.
 
 ## Error Classes
 
 ### UnifiedSDKError
 
-Base error class for all SDK errors.
+Base error class for all SDK errors with enhanced error categorization.
 
 ```typescript
 class UnifiedSDKError extends Error {
@@ -465,26 +654,18 @@ class UnifiedSDKError extends Error {
 }
 ```
 
-**Common Error Codes:**
+**Enhanced Error Codes:**
 - `NOT_INITIALIZED`: SDK not initialized before use
 - `INGESTION_ERROR`: Data ingestion failed
 - `INITIALIZATION_ERROR`: SDK initialization failed
 - `EXECUTION_ERROR`: Action execution failed
+- `VALIDATION_UNEXPECTED`: Unexpected validation error
+- `INVALID_DATA_CLOUD_MODE`: Invalid data cloud write mode
+- `INVALID_INDEX_MODE`: Invalid index write mode
+- `INVALID_RULE_COMBINATION`: Invalid processing rule combination
+- `UNKNOWN_DATA_CLOUD_ACTION`: Unknown data cloud action
+- `UNKNOWN_INDEX_ACTION`: Unknown index action
 - `UNKNOWN_TARGET`: Unknown action target
-- `UNKNOWN_METHOD`: Unknown method for target
-
-**Example:**
-```typescript
-try {
-  await sdk.writeData(data);
-} catch (error) {
-  if (error instanceof UnifiedSDKError) {
-    console.log('Error code:', error.code);
-    console.log('Component:', error.component);
-    console.log('Recoverable:', error.recoverable);
-  }
-}
-```
 
 ### ValidationError
 
@@ -501,123 +682,97 @@ class ValidationError extends UnifiedSDKError {
 
 ## Schema Validators
 
-The SDK exports Zod schemas for validation:
+Enhanced Zod schemas for all data types:
 
-### DataCloudWriteModeSchema
+### Core Schemas
 
 ```typescript
 const DataCloudWriteModeSchema = z.enum(['direct', 'batch', 'viaIndex', 'skip']);
-```
-
-### IndexWriteModeSchema
-
-```typescript
 const IndexWriteModeSchema = z.enum(['realtime', 'skip']);
+const ProcessingMetadataSchema = z.object({...});
+const MetadataSchema = z.object({...});
 ```
 
-### ProcessingMetadataSchema
+### Bullish Campaign Schemas
 
 ```typescript
-const ProcessingMetadataSchema = z.object({
-  dataCloudWriteMode: DataCloudWriteModeSchema,
-  indexWriteMode: IndexWriteModeSchema,
-  priority: z.enum(['low', 'normal', 'high']).optional(),
-  ttl: z.number().min(0).optional(),
-  encryption: z.boolean().optional(),
-  batchOptions: z.object({
-    maxSize: z.number().min(1).optional(),
-    maxWaitTime: z.number().min(0).optional(),
-  }).optional(),
+const BullishCampaignEventSchema = z.object({
+  eventType: z.enum(['SEGMENT_WATCHED', 'QUESTION_ANSWERED', 'JOIN_CAMPAIGN', 'CUSTOM_EVENTS']),
+  campaignId: z.string(),
+  accountId: z.string(),
+  timestamp: z.date(),
+  payload: z.record(z.any()),
 });
 ```
 
-### MetadataSchema
+### Nightingale Schemas
 
 ```typescript
-const MetadataSchema = z.object({
-  processing: ProcessingMetadataSchema,
-  userContext: z.record(z.any()).optional(),
-  traceId: z.string().optional(),
-});
+const NightingaleVideoStreamSchema = z.object({...});
+const NightingaleKLVDataSchema = z.object({...});
+const NightingaleTelemetrySchema = z.object({...});
+const NightingaleFrameAnalysisSchema = z.object({...});
 ```
 
 ## Usage Examples
 
-### Basic Usage
+### Auto-Detection Examples
 
 ```typescript
-import { UnifiedSDK } from '@cere-ddc-sdk/unified';
+// ✨ All examples use writeData() with automatic detection
 
-const sdk = new UnifiedSDK(config);
-await sdk.initialize();
-
-// Simple data ingestion
-const result = await sdk.writeData({
-  eventType: 'user_action',
+// Telegram Quest
+await sdk.writeData({
+  eventType: 'quest_completed',
   userId: 'user123',
-  eventData: { action: 'click', target: 'button' },
+  eventData: { questId: 'daily', points: 100 },
   timestamp: new Date(),
 });
 
-console.log('Transaction ID:', result.transactionId);
-console.log('Status:', result.status);
-```
+// Bullish Campaign
+await sdk.writeData({
+  eventType: 'SEGMENT_WATCHED',
+  campaignId: 'education_2024',
+  accountId: 'user_456',
+  payload: { segmentId: 'basics_001', completion: 100 },
+  timestamp: new Date(),
+});
 
-### Error Handling
-
-```typescript
-try {
-  const result = await sdk.writeData(payload);
-  
-  if (result.status === 'partial') {
-    console.warn('Partial success:', result.errors);
-  }
-  
-} catch (error) {
-  if (error instanceof ValidationError) {
-    console.error('Invalid metadata:', error.validationErrors);
-  } else if (error instanceof UnifiedSDKError) {
-    console.error('SDK error:', error.code, error.message);
-    
-    if (error.recoverable) {
-      // Retry logic here
-    }
-  } else {
-    console.error('Unexpected error:', error);
-  }
-}
-```
-
-### Advanced Configuration
-
-```typescript
-const result = await sdk.writeData(
-  { 
-    complexData: { nested: 'structure' },
-    important: true 
+// Nightingale Telemetry
+await sdk.writeData({
+  droneId: 'drone_001',
+  telemetryData: {
+    gps: { lat: 37.7749, lng: -122.4194, alt: 100 },
+    orientation: { pitch: 0, roll: 0, yaw: 45 },
+    velocity: { x: 10, y: 0, z: 0 },
+    battery: 85,
+    signalStrength: 90,
   },
-  {
-    priority: 'high',
-    encryption: true,
-    metadata: {
-      processing: {
-        dataCloudWriteMode: 'direct',
-        indexWriteMode: 'realtime',
-        ttl: 3600, // 1 hour
-      },
-      userContext: {
-        source: 'admin-panel',
-        userId: 'admin123',
-      },
-      traceId: 'trace-abc-123',
-    },
-  }
-);
+  coordinates: { latitude: 37.7749, longitude: -122.4194, altitude: 100 },
+  timestamp: new Date(),
+});
+```
+
+## Migration Guide
+
+### From Previous Versions
+
+The enhanced SDK maintains backward compatibility while adding powerful new features:
+
+```typescript
+// ❌ Old: Multiple methods
+await sdk.writeTelegramEvent(telegramData);
+await sdk.writeBullishCampaign(campaignData);
+
+// ✅ New: Single method with auto-detection
+await sdk.writeData(telegramData); // Auto-detected
+await sdk.writeData(campaignData); // Auto-detected
+await sdk.writeData(droneData); // Auto-detected - NEW!
 ```
 
 ## Type Exports
 
-All types and interfaces are exported from the main module:
+All types are exported for TypeScript development:
 
 ```typescript
 import type {
@@ -626,6 +781,11 @@ import type {
   ProcessingMetadata,
   TelegramEventData,
   TelegramMessageData,
+  BullishCampaignEvent,
+  NightingaleVideoStream,
+  NightingaleKLVData,
+  NightingaleTelemetry,
+  NightingaleFrameAnalysis,
   ProcessingRules,
   Action,
   DispatchPlan,
@@ -634,28 +794,4 @@ import type {
 } from '@cere-ddc-sdk/unified';
 ```
 
-## Migration from Individual SDKs
-
-If migrating from direct DDC Client or Activity SDK usage:
-
-```typescript
-// Before (DDC Client)
-const { cid } = await ddcClient.store(bucketId, data);
-
-// After (Unified SDK)
-const result = await sdk.writeData(data);
-const cid = result.dataCloudHash;
-
-// Before (Activity SDK)
-await eventDispatcher.dispatchEvent(event);
-
-// After (Unified SDK) 
-const result = await sdk.writeData({
-  eventType: 'user_action',
-  userId: 'user123',
-  eventData: event.payload,
-  timestamp: new Date(),
-});
-```
-
-The Unified SDK provides a simpler interface while maintaining all the functionality of the individual SDKs with added benefits like automatic routing, fallback mechanisms, and unified error handling.
+The enhanced Unified SDK provides comprehensive support for multiple data ecosystems while maintaining the simplicity of a single `writeData()` method. All complexity is handled internally through intelligent auto-detection and optimized routing.

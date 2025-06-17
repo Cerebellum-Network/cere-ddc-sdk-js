@@ -202,6 +202,19 @@ export class RulesInterpreter {
       }
     }
 
+    // Optimization 3: Adjust timeout for high priority operations
+    if (rules.additionalParams.priority === 'high' && rules.batchingRequired && rules.additionalParams.batchOptions) {
+      optimizedRules.additionalParams.batchOptions = {
+        maxSize: optimizedRules.additionalParams.batchOptions?.maxSize || 1000,
+        maxWaitTime: Math.floor((rules.additionalParams.batchOptions.maxWaitTime || 5000) * 0.5), // Reduce wait time by 50% for high priority
+      };
+      this.logger(
+        'debug',
+        'Optimized timeout for high priority operation',
+        optimizedRules.additionalParams.batchOptions,
+      );
+    }
+
     return optimizedRules;
   }
 }

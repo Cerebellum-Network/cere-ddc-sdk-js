@@ -27,6 +27,23 @@ interface UnifiedSDKConfig {
     dataServicePubKey?: string;
   };
 
+  // Nightingale-specific configuration (optional)
+  nightingaleConfig?: {
+    videoProcessing?: {
+      chunkSize?: number; // Default chunk size for video processing
+      timelinePreservation?: boolean; // Maintain temporal relationships
+      compression?: boolean; // Enable video compression
+    };
+    klvProcessing?: {
+      coordinateIndexing?: boolean; // Index coordinate data
+      metadataValidation?: boolean; // Validate KLV metadata
+    };
+    telemetryProcessing?: {
+      timeSeries?: boolean; // Enable time series processing
+      coordinateTracking?: boolean; // Track coordinate changes
+    };
+  };
+
   // Processing options (required)
   processing: {
     enableBatching: boolean;
@@ -36,10 +53,25 @@ interface UnifiedSDKConfig {
     retryDelay: number; // in milliseconds
   };
 
+  // Performance tuning (optional)
+  performance?: {
+    connectionTimeout?: number; // Connection timeout in ms
+    requestTimeout?: number; // Request timeout in ms
+    maxConcurrentRequests?: number; // Max parallel requests
+  };
+
+  // Error handling (optional)
+  errorHandling?: {
+    enableFallbacks?: boolean; // Enable fallback mechanisms
+    circuitBreakerThreshold?: number; // Circuit breaker failure threshold
+    fallbackToDataCloud?: boolean; // Fallback to DDC when Activity SDK fails
+  };
+
   // Logging and monitoring (required)
   logging: {
     level: 'debug' | 'info' | 'warn' | 'error';
     enableMetrics: boolean;
+    logRequests?: boolean; // Log all requests (debug only)
   };
 }
 ```
@@ -140,6 +172,132 @@ const activityConfig = {
 };
 ```
 
+## Nightingale Configuration (Optional)
+
+The Nightingale configuration is specifically designed for drone video processing, KLV metadata handling, and telemetry data management.
+
+### Video Processing Configuration
+
+```typescript
+const nightingaleConfig = {
+  videoProcessing: {
+    chunkSize: 1024 * 1024, // 1MB chunks (default)
+    timelinePreservation: true, // Maintain temporal relationships
+    compression: true, // Enable video compression
+  },
+};
+```
+
+### KLV Processing Configuration
+
+```typescript
+const nightingaleConfig = {
+  klvProcessing: {
+    coordinateIndexing: true, // Index coordinate data for searchability
+    metadataValidation: true, // Validate KLV metadata structure
+  },
+};
+```
+
+### Telemetry Processing Configuration
+
+```typescript
+const nightingaleConfig = {
+  telemetryProcessing: {
+    timeSeries: true, // Enable time series processing
+    coordinateTracking: true, // Track coordinate changes over time
+  },
+};
+```
+
+### Complete Nightingale Configuration
+
+```typescript
+const nightingaleConfig = {
+  videoProcessing: {
+    chunkSize: 2 * 1024 * 1024, // 2MB chunks for high-quality video
+    timelinePreservation: true,
+    compression: false, // Disable compression for analysis
+  },
+  klvProcessing: {
+    coordinateIndexing: true,
+    metadataValidation: true,
+  },
+  telemetryProcessing: {
+    timeSeries: true,
+    coordinateTracking: true,
+  },
+};
+```
+
+## Performance Configuration (Optional)
+
+Advanced performance tuning options for high-throughput scenarios.
+
+### Connection and Timeout Settings
+
+```typescript
+const performance = {
+  connectionTimeout: 30000, // 30 seconds connection timeout
+  requestTimeout: 60000, // 60 seconds request timeout
+  maxConcurrentRequests: 10, // Maximum parallel requests
+};
+```
+
+### High-Performance Settings
+
+```typescript
+const performance = {
+  connectionTimeout: 15000, // Faster connection timeout
+  requestTimeout: 30000, // Faster request timeout
+  maxConcurrentRequests: 20, // More parallel requests
+};
+```
+
+### Conservative Settings
+
+```typescript
+const performance = {
+  connectionTimeout: 60000, // Longer connection timeout
+  requestTimeout: 120000, // Longer request timeout
+  maxConcurrentRequests: 5, // Fewer parallel requests
+};
+```
+
+## Error Handling Configuration (Optional)
+
+Advanced error handling and fallback mechanisms.
+
+### Basic Error Handling
+
+```typescript
+const errorHandling = {
+  enableFallbacks: true, // Enable fallback mechanisms
+  circuitBreakerThreshold: 5, // Fail-fast after 5 consecutive errors
+  fallbackToDataCloud: true, // Use DDC when Activity SDK fails
+};
+```
+
+### Production Error Handling
+
+```typescript
+const errorHandling = {
+  enableFallbacks: true,
+  circuitBreakerThreshold: 10, // More tolerance for errors
+  fallbackToDataCloud: true,
+};
+```
+
+### Development Error Handling
+
+```typescript
+const errorHandling = {
+  enableFallbacks: false, // Disable fallbacks to see all errors
+  circuitBreakerThreshold: 3, // Fail fast for debugging
+  fallbackToDataCloud: false, // Force Activity SDK usage
+};
+```
+
 ## Processing Configuration (Required)
 
 Controls batching, retries, and performance optimization.
@@ -209,6 +367,7 @@ const logging = {
 const logging = {
   level: 'debug', // All log messages
   enableMetrics: true, // Enable metrics for debugging
+  logRequests: true, // Log all requests for debugging
 };
 ```
 
@@ -218,6 +377,17 @@ const logging = {
 const logging = {
   level: 'error', // Only errors
   enableMetrics: false, // Disable metrics for performance
+  logRequests: false, // Disable request logging
+};
+```
+
+### Debug Logging
+
+```typescript
+const logging = {
+  level: 'debug',
+  enableMetrics: true,
+  logRequests: true, // Enable detailed request logging
 };
 ```
 
@@ -250,13 +420,81 @@ const config = {
     maxRetries: 3,
     retryDelay: 1000,
   },
+  performance: {
+    connectionTimeout: 30000,
+    requestTimeout: 60000,
+    maxConcurrentRequests: 10,
+  },
+  errorHandling: {
+    enableFallbacks: true,
+    circuitBreakerThreshold: 5,
+    fallbackToDataCloud: true,
+  },
   logging: {
     level: 'info' as const,
     enableMetrics: true,
+    logRequests: false,
   },
 };
 
 const sdk = new UnifiedSDK(config);
+```
+
+### Nightingale Drone Data Configuration
+
+```typescript
+const config = {
+  ddcConfig: {
+    signer: process.env.DDC_SIGNER!,
+    bucketId: BigInt(process.env.DDC_BUCKET_ID!),
+    clusterId: BigInt(process.env.DDC_CLUSTER_ID!),
+    network: 'mainnet' as const,
+  },
+  activityConfig: {
+    endpoint: 'https://api.stats.cere.network',
+    keyringUri: process.env.ACTIVITY_KEYRING_URI!,
+    appId: 'nightingale-drone-system',
+    appPubKey: process.env.APP_PUBLIC_KEY!,
+    dataServicePubKey: process.env.DATA_SERVICE_PUBLIC_KEY!,
+  },
+  nightingaleConfig: {
+    videoProcessing: {
+      chunkSize: 2 * 1024 * 1024, // 2MB chunks for high-quality video
+      timelinePreservation: true,
+      compression: false, // Keep original quality for analysis
+    },
+    klvProcessing: {
+      coordinateIndexing: true, // Enable GPS coordinate indexing
+      metadataValidation: true, // Validate all KLV metadata
+    },
+    telemetryProcessing: {
+      timeSeries: true, // Enable time series analysis
+      coordinateTracking: true, // Track drone movement
+    },
+  },
+  processing: {
+    enableBatching: true,
+    defaultBatchSize: 25, // Smaller batches for large video data
+    defaultBatchTimeout: 10000, // Longer timeout for video processing
+    maxRetries: 5,
+    retryDelay: 2000,
+  },
+  performance: {
+    connectionTimeout: 60000, // Longer timeout for video uploads
+    requestTimeout: 300000, // 5 minutes for large video chunks
+    maxConcurrentRequests: 5, // Limit concurrent video uploads
+  },
+  errorHandling: {
+    enableFallbacks: true,
+    circuitBreakerThreshold: 10, // More tolerance for video processing
+    fallbackToDataCloud: true,
+  },
+  logging: {
+    level: 'info' as const,
+    enableMetrics: true,
+    logRequests: false, // Disable to reduce log volume
+  },
+};
 ```
 
 ### High-Volume Analytics Configuration
@@ -283,9 +521,20 @@ const config = {
     maxRetries: 5,
     retryDelay: 500,
   },
+  performance: {
+    connectionTimeout: 15000, // Fast connection timeout
+    requestTimeout: 30000, // Fast request timeout
+    maxConcurrentRequests: 20, // High concurrency
+  },
+  errorHandling: {
+    enableFallbacks: true,
+    circuitBreakerThreshold: 15, // High tolerance for volume
+    fallbackToDataCloud: true,
+  },
   logging: {
     level: 'warn' as const, // Reduce log noise
     enableMetrics: true,
+    logRequests: false, // Disable to reduce overhead
   },
 };
 ```
@@ -313,9 +562,20 @@ const config = {
     maxRetries: 1, // Fail fast in development
     retryDelay: 500,
   },
+  performance: {
+    connectionTimeout: 10000, // Short timeout for dev
+    requestTimeout: 20000, // Short timeout for dev
+    maxConcurrentRequests: 5, // Limited concurrency
+  },
+  errorHandling: {
+    enableFallbacks: false, // Disable fallbacks to see all errors
+    circuitBreakerThreshold: 3, // Fail fast for debugging
+    fallbackToDataCloud: false, // Force Activity SDK usage
+  },
   logging: {
     level: 'debug' as const, // Verbose logging
     enableMetrics: true,
+    logRequests: true, // Enable request logging for debugging
   },
 };
 ```
@@ -365,6 +625,28 @@ DATA_SERVICE_PUBLIC_KEY=your-data-service-public-key
 # Optional Session IDs (auto-generated if not provided)
 CONNECTION_ID=conn_unique_id
 SESSION_ID=sess_unique_id
+
+# Nightingale Configuration (optional)
+NIGHTINGALE_VIDEO_CHUNK_SIZE=2097152
+NIGHTINGALE_TIMELINE_PRESERVATION=true
+NIGHTINGALE_COMPRESSION=false
+NIGHTINGALE_COORDINATE_INDEXING=true
+NIGHTINGALE_METADATA_VALIDATION=true
+NIGHTINGALE_TIME_SERIES=true
+NIGHTINGALE_COORDINATE_TRACKING=true
+
+# Performance Configuration (optional)
+CONNECTION_TIMEOUT=30000
+REQUEST_TIMEOUT=60000
+MAX_CONCURRENT_REQUESTS=10
+
+# Error Handling Configuration (optional)
+ENABLE_FALLBACKS=true
+CIRCUIT_BREAKER_THRESHOLD=5
+FALLBACK_TO_DATA_CLOUD=true
+
+# Logging Configuration (optional)
+LOG_REQUESTS=false
 ```
 
 ### Environment-Based Configuration
@@ -386,6 +668,21 @@ const config = {
     appPubKey: process.env.APP_PUBLIC_KEY!,
     dataServicePubKey: process.env.DATA_SERVICE_PUBLIC_KEY!,
   } : undefined,
+  nightingaleConfig: process.env.NIGHTINGALE_VIDEO_CHUNK_SIZE ? {
+    videoProcessing: {
+      chunkSize: parseInt(process.env.NIGHTINGALE_VIDEO_CHUNK_SIZE || '1048576'),
+      timelinePreservation: process.env.NIGHTINGALE_TIMELINE_PRESERVATION !== 'false',
+      compression: process.env.NIGHTINGALE_COMPRESSION !== 'false',
+    },
+    klvProcessing: {
+      coordinateIndexing: process.env.NIGHTINGALE_COORDINATE_INDEXING !== 'false',
+      metadataValidation: process.env.NIGHTINGALE_METADATA_VALIDATION !== 'false',
+    },
+    telemetryProcessing: {
+      timeSeries: process.env.NIGHTINGALE_TIME_SERIES !== 'false',
+      coordinateTracking: process.env.NIGHTINGALE_COORDINATE_TRACKING !== 'false',
+    },
+  } : undefined,
   processing: {
     enableBatching: process.env.ENABLE_BATCHING !== 'false',
     defaultBatchSize: parseInt(process.env.BATCH_SIZE || '100'),
@@ -393,9 +690,20 @@ const config = {
     maxRetries: parseInt(process.env.MAX_RETRIES || '3'),
     retryDelay: parseInt(process.env.RETRY_DELAY || '1000'),
   },
+  performance: process.env.CONNECTION_TIMEOUT ? {
+    connectionTimeout: parseInt(process.env.CONNECTION_TIMEOUT || '30000'),
+    requestTimeout: parseInt(process.env.REQUEST_TIMEOUT || '60000'),
+    maxConcurrentRequests: parseInt(process.env.MAX_CONCURRENT_REQUESTS || '10'),
+  } : undefined,
+  errorHandling: process.env.ENABLE_FALLBACKS ? {
+    enableFallbacks: process.env.ENABLE_FALLBACKS !== 'false',
+    circuitBreakerThreshold: parseInt(process.env.CIRCUIT_BREAKER_THRESHOLD || '5'),
+    fallbackToDataCloud: process.env.FALLBACK_TO_DATA_CLOUD !== 'false',
+  } : undefined,
   logging: {
     level: (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || 'info',
     enableMetrics: process.env.ENABLE_METRICS !== 'false',
+    logRequests: process.env.LOG_REQUESTS === 'true',
   },
 };
 ```
@@ -574,6 +882,171 @@ const postInitStatus = sdk.getStatus();
 console.log('Components initialized:', postInitStatus.components);
 ```
 
+## Use Case-Specific Configuration Patterns
+
+### Nightingale Drone Operations
+
+For drone video processing and telemetry data handling:
+
+```typescript
+// Real-time telemetry processing
+const realtimeTelemetryConfig = {
+  nightingaleConfig: {
+    telemetryProcessing: {
+      timeSeries: true,
+      coordinateTracking: true,
+    },
+  },
+  processing: {
+    enableBatching: false, // Real-time processing
+    maxRetries: 1, // Fail fast for real-time data
+  },
+  performance: {
+    maxConcurrentRequests: 15, // High concurrency for telemetry
+  },
+};
+
+// Video analysis and storage
+const videoAnalysisConfig = {
+  nightingaleConfig: {
+    videoProcessing: {
+      chunkSize: 4 * 1024 * 1024, // 4MB chunks for analysis
+      timelinePreservation: true,
+      compression: false, // Keep original quality
+    },
+    klvProcessing: {
+      coordinateIndexing: true,
+      metadataValidation: true,
+    },
+  },
+  processing: {
+    enableBatching: true,
+    defaultBatchSize: 10, // Small batches for large video data
+    defaultBatchTimeout: 30000, // 30 seconds for video processing
+  },
+  performance: {
+    requestTimeout: 600000, // 10 minutes for large video uploads
+    maxConcurrentRequests: 3, // Limit concurrent video processing
+  },
+};
+```
+
+### High-Frequency Data Ingestion
+
+For applications with high data volume:
+
+```typescript
+const highFrequencyConfig = {
+  processing: {
+    enableBatching: true,
+    defaultBatchSize: 1000, // Large batches
+    defaultBatchTimeout: 500, // Fast processing
+  },
+  performance: {
+    connectionTimeout: 5000, // Fast connections
+    requestTimeout: 15000, // Fast requests
+    maxConcurrentRequests: 25, // High concurrency
+  },
+  errorHandling: {
+    circuitBreakerThreshold: 20, // High tolerance
+    fallbackToDataCloud: true,
+  },
+  logging: {
+    level: 'warn', // Minimal logging for performance
+    enableMetrics: true,
+    logRequests: false,
+  },
+};
+```
+
+### Development and Testing
+
+For development environments with debugging needs:
+
+```typescript
+const developmentConfig = {
+  processing: {
+    enableBatching: false, // Process immediately
+    maxRetries: 1, // Fail fast
+  },
+  performance: {
+    connectionTimeout: 5000, // Short timeouts
+    requestTimeout: 10000,
+    maxConcurrentRequests: 3, // Limited concurrency
+  },
+  errorHandling: {
+    enableFallbacks: false, // See all errors
+    circuitBreakerThreshold: 1, // Immediate failure
+    fallbackToDataCloud: false,
+  },
+  logging: {
+    level: 'debug', // Verbose logging
+    enableMetrics: true,
+    logRequests: true, // Log all requests
+  },
+};
+```
+
+## Configuration Validation and Monitoring
+
+### Runtime Validation
+
+```typescript
+import { z } from 'zod';
+
+// Custom validation schema
+const customConfigSchema = z.object({
+  ddcConfig: z.object({
+    bucketId: z.bigint().min(BigInt(1)),
+    network: z.enum(['testnet', 'devnet', 'mainnet']),
+  }),
+  nightingaleConfig: z.object({
+    videoProcessing: z.object({
+      chunkSize: z.number().min(1024).max(10 * 1024 * 1024), // 1KB to 10MB
+    }),
+  }).optional(),
+});
+
+// Validate configuration before use
+try {
+  const validatedConfig = customConfigSchema.parse(config);
+  const sdk = new UnifiedSDK(validatedConfig);
+} catch (error) {
+  console.error('Configuration validation failed:', error);
+}
+```
+
+### Configuration Monitoring
+
+```typescript
+class ConfigurationMonitor {
+  private sdk: UnifiedSDK;
+  
+  constructor(config: UnifiedSDKConfig) {
+    this.sdk = new UnifiedSDK(config);
+  }
+  
+  async monitorPerformance() {
+    const status = this.sdk.getStatus();
+    
+    // Monitor batch processing efficiency
+    if (status.metrics?.batchEfficiency < 0.8) {
+      console.warn('Consider increasing batch size for better efficiency');
+    }
+    
+    // Monitor error rates
+    if (status.metrics?.errorRate > 0.1) {
+      console.warn('High error rate detected, check error handling configuration');
+    }
+    
+    // Monitor resource usage
+    if (status.metrics?.avgResponseTime > 5000) {
+      console.warn('High response times, consider adjusting performance settings');
+    }
+  }
+}
+```
+
 ## Best Practices
 
 1. **Use Environment Variables**: Keep sensitive data in environment variables
@@ -582,5 +1055,46 @@ console.log('Components initialized:', postInitStatus.components);
 4. **Log Appropriately**: Use appropriate log levels for each environment
 5. **Test Configurations**: Validate configurations in staging environments
 6. **Document Settings**: Document custom configurations for your team
+7. **Use Case-Specific Tuning**: Configure based on your specific data patterns
+8. **Monitor Performance**: Regularly check metrics and adjust settings
+9. **Fallback Planning**: Always configure appropriate fallback mechanisms
+10. **Security First**: Never hardcode sensitive values in configuration files
 
-This configuration system provides maximum flexibility while maintaining security and performance best practices.
+## Configuration Migration Guide
+
+When upgrading from older versions, follow this migration pattern:
+
+```typescript
+// Old configuration (v1.x)
+const oldConfig = {
+  ddcConfig: { /* ... */ },
+  activityConfig: { /* ... */ },
+  processing: { /* ... */ },
+  logging: { /* ... */ },
+};
+
+// New configuration (v2.x+) - backward compatible
+const newConfig = {
+  ...oldConfig,
+  // Add new optional configurations as needed
+  nightingaleConfig: {
+    videoProcessing: {
+      chunkSize: 1024 * 1024, // 1MB default
+      timelinePreservation: true,
+      compression: true,
+    },
+  },
+  performance: {
+    connectionTimeout: 30000,
+    requestTimeout: 60000,
+    maxConcurrentRequests: 10,
+  },
+  errorHandling: {
+    enableFallbacks: true,
+    circuitBreakerThreshold: 5,
+    fallbackToDataCloud: true,
+  },
+};
+```
+
+This comprehensive configuration system provides maximum flexibility while maintaining security and performance best practices across all supported use cases including Telegram bots, analytics systems, and Nightingale drone operations.
