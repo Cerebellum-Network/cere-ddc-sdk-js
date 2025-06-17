@@ -112,7 +112,7 @@ const message = {
   messageText: 'Hello from the mini app!',
   messageType: 'text',
   timestamp: new Date(),
-  metadata: {
+    metadata: {
     miniAppName: 'Cere Games',
     actionContext: 'game-chat',
   },
@@ -362,26 +362,26 @@ const config = {
 ```typescript
 // High-priority processing
 const result = await sdk.writeData(data, {
-  priority: 'high',
-  encryption: true,
-  metadata: {
-    processing: {
-      dataCloudWriteMode: 'direct',
-      indexWriteMode: 'realtime',
+    priority: 'high',
+    encryption: true,
+    metadata: {
+      processing: {
+        dataCloudWriteMode: 'direct',
+        indexWriteMode: 'realtime',
       priority: 'high',
-      ttl: 86400, // 24 hours
+        ttl: 86400, // 24 hours
+      },
     },
-  },
 });
 
 // Batch processing for high volume
 const batchResult = await sdk.writeData(data, {
-  metadata: {
-    processing: {
-      dataCloudWriteMode: 'batch',
-      indexWriteMode: 'realtime',
-      batchOptions: {
-        maxSize: 50,
+    metadata: {
+      processing: {
+        dataCloudWriteMode: 'batch',
+        indexWriteMode: 'realtime',
+        batchOptions: {
+          maxSize: 50,
         maxWaitTime: 3000,
       },
     },

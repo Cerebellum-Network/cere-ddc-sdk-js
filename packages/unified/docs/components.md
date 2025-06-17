@@ -133,7 +133,7 @@ private createMetadataForPayload(payload: any, options?: WriteOptions): UnifiedM
       
     case 'nightingale_video_stream':
       return {
-        processing: {
+    processing: {
           dataCloudWriteMode: 'direct', // Direct storage for video chunks
           indexWriteMode: 'skip',       // Skip indexing for large video data
           priority: 'normal',
@@ -185,7 +185,7 @@ interface ProcessingRules {
   dataCloudAction: 'write_direct' | 'write_batch' | 'write_via_index' | 'skip';
   indexAction: 'write_realtime' | 'skip';
   batchingRequired: boolean;
-  additionalParams: {
+    additionalParams: {
     priority: 'low' | 'normal' | 'high';
     ttl?: number;
     encryption: boolean;
@@ -211,7 +211,7 @@ optimizeProcessingRules(rules: ProcessingRules, context?: any): ProcessingRules 
       };
     }
   }
-  
+
   // Priority-based timeout optimization
   if (rules.additionalParams.priority === 'high' && rules.batchingRequired) {
     optimizedRules.additionalParams.batchOptions = {
@@ -311,18 +311,18 @@ private createDataCloudAction(payload: any, rules: ProcessingRules): Action | nu
             campaignId: payload.campaignId,
           }),
         },
-        priority: rules.additionalParams.priority,
-      };
-      
+      priority: rules.additionalParams.priority,
+  };
+
     case 'write_batch':
-      return {
+  return {
         target: 'ddc-client',
         method: 'storeBatch',
         payload: this.transformPayloadForDDC(payload),
-        options: {
+    options: {
           batchOptions: rules.additionalParams.batchOptions,
           encryption: rules.additionalParams.encryption,
-        },
+    },
         priority: rules.additionalParams.priority,
       };
       
@@ -457,13 +457,13 @@ async initialize(): Promise<void> {
     ? 'wss://archive.devnet.cere.network/ws'
     : 'wss://rpc.testnet.cere.network/ws';
 
-  this.ddcClient = await DdcClient.create(this.config.ddcConfig.signer, {
+    this.ddcClient = await DdcClient.create(this.config.ddcConfig.signer, {
     blockchain: networkConfig,
     logLevel: this.config.logging.level === 'debug' ? 'debug' : 'silent',
-  });
+    });
 
   // Activity SDK initialization with UriSigner
-  if (this.config.activityConfig) {
+    if (this.config.activityConfig) {
     const { EventDispatcher } = await import('@cere-activity-sdk/events');
     const { UriSigner } = await import('@cere-activity-sdk/signers');
     const { NoOpCipher } = await import('@cere-activity-sdk/ciphers');
@@ -490,11 +490,11 @@ async execute(plan: DispatchPlan): Promise<OrchestrationResult> {
   if (plan.executionMode === 'parallel') {
     results = await this.executeParallel(plan.actions);
   } else {
-    results = await this.executeSequential(plan.actions);
-  }
+      results = await this.executeSequential(plan.actions);
+    }
 
-  return {
-    results,
+    return {
+      results,
     overallStatus: this.determineOverallStatus(results),
     totalExecutionTime: Date.now() - startTime,
     transactionId: this.generateTransactionId(),
@@ -508,17 +508,17 @@ private async executeParallel(actions: Action[]): Promise<ExecutionResult[]> {
 
 private async executeSequential(actions: Action[]): Promise<ExecutionResult[]> {
   const results: ExecutionResult[] = [];
-  
+
   for (const action of actions) {
     const result = await this.executeAction(action);
     results.push(result);
     
     // Stop execution if a critical action fails
     if (!result.success && this.isCriticalAction(action)) {
-      break;
+        break;
     }
   }
-  
+
   return results;
 }
 ```
@@ -548,7 +548,7 @@ private async executeDDCAction(action: Action): Promise<any> {
         const dagNode = new DagNode(jsonData, []);
         cid = await this.ddcClient.store(this.config.ddcConfig.bucketId, dagNode);
       }
-      
+
       return {
         cid: cid.toString(),
         bucketId: this.config.ddcConfig.bucketId,
@@ -605,7 +605,7 @@ private async executeActivityAction(action: Action): Promise<any> {
       );
       
       const success = await this.activityClient.dispatchEvent(activityEvent);
-      
+
       return {
         eventId: activityEvent.id,
         status: success ? 'sent' : 'failed',
@@ -648,7 +648,7 @@ private async processCampaignSpecificLogic(action: Action, response: any): Promi
 
 Each data type has specific type guard functions:
 
-```typescript
+   ```typescript
 // Nightingale type guards
 private isNightingaleVideoStream(payload: any): boolean {
   return !!(
@@ -714,7 +714,7 @@ private isBullishCampaign(payload: any): boolean {
 
 ### Error Classes
 
-```typescript
+   ```typescript
 class UnifiedSDKError extends Error {
   constructor(
     message: string,
@@ -750,7 +750,7 @@ Each component implements graceful degradation:
 
 ### Configuration Schema Validation
 
-```typescript
+   ```typescript
 // Core schemas
 export const DataCloudWriteModeSchema = z.enum(['direct', 'batch', 'viaIndex', 'skip']);
 export const IndexWriteModeSchema = z.enum(['realtime', 'skip']);
@@ -802,7 +802,7 @@ export const NightingaleVideoStreamSchema = z.object({
 
 ### Logger Implementation
 
-```typescript
+   ```typescript
 private createLogger(): (level: string, message: string, ...args: any[]) => void {
   const logLevel = this.config.logging.level;
   const enableMetrics = this.config.logging.enableMetrics;
@@ -849,7 +849,7 @@ private createLogger(): (level: string, message: string, ...args: any[]) => void
 async initialize(): Promise<void> {
   if (this.initialized) return;
 
-  try {
+try {
     // Initialize orchestrator (which initializes backend clients)
     await this.orchestrator.initialize();
     
