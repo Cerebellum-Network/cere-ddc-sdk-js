@@ -32,23 +32,7 @@
   "dependencies": {
     "@cere-activity-sdk/ciphers": "^0.1.7",
     "@cere-activity-sdk/events": "^0.1.7",
-    "@cere-activity-sdk/signers": "^0.1.7",
-    "@cere-ddc-sdk/ddc-client": "^2.14.1",
-    "@polkadot/api": "^15.5.1",
-    "@polkadot/util": "^13.3.1",
-    "@polkadot/util-crypto": "^13.3.1",
-    "@types/node": "^18.17.1",
-    "clean-publish": "^4.2.0",
-    "eslint": "^8.56.0",
-    "lerna": "^8.0.1",
-    "microbundle": "^0.15.1",
-    "npm-run-all": "^4.1.5",
-    "prettier": "^3.1.1",
-    "rimraf": "^5.0.5",
-    "tsconfig-paths": "^4.2.0",
-    "typedoc": "^0.25.7",
-    "typescript": "^5.3.3",
-    "wait-port": "^1.1.0"
+    "@cere-activity-sdk/signers": "^0.1.7"
   },
   "workspaces": {
     "packages": [
@@ -62,6 +46,21 @@
     ]
   },
   "devDependencies": {
-    "ts-node": "^10.9.2"
+    "@polkadot/api": "^15.5.1",
+    "@polkadot/util": "^13.3.1",
+    "@polkadot/util-crypto": "^13.3.1",
+    "@types/node": "^18.17.1",
+    "clean-publish": "^4.2.0",
+    "eslint": "^8.56.0",
+    "lerna": "^8.0.1",
+    "microbundle": "^0.15.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typedoc": "^0.25.7",
+    "typescript": "5.4.5",
+    "wait-port": "^1.1.0"
   }
 }
