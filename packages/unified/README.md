@@ -4,7 +4,7 @@ Unified Data Ingestion SDK - Single entry point for all data ingestion operation
 
 ## Overview
 
-The Unified SDK provides a simplified, high-level interface for ingesting data into the Cere ecosystem. It automatically routes data to appropriate backend systems (Data Cloud, Activity SDK) based on configurable metadata, hiding the complexity of managing multiple SDKs and their interactions.
+The Unified SDK provides a simplified, high-level interface for ingesting data into the Cere ecosystem. It automatically routes data to appropriate backend systems (Data Cloud, Activity SDK, HTTP API) based on configurable metadata, hiding the complexity of managing multiple SDKs and their interactions.
 
 ## Key Features
 
@@ -12,7 +12,6 @@ The Unified SDK provides a simplified, high-level interface for ingesting data i
 - **Intelligent Routing**: Automatically routes data based on processing rules
 - **Flexible Metadata**: Rich metadata schema for controlling data processing
 - **Error Handling**: Comprehensive error handling and recovery mechanisms
-- **Telegram Optimized**: Built-in support for Telegram use cases
 - **Extensible**: Modular architecture for easy extension
 
 ## Architecture
