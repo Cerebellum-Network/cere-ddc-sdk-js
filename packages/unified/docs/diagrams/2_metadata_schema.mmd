@@ -1,0 +1,55 @@
+
+classDiagram
+    class MetadataProcessing {
+        +dataCloudWriteMode: String
+        +indexWriteMode: String
+        +correlationId: String [optional]
+        +priority: String [optional]
+        +timeToLiveInIndex: Number [optional]
+        +encryptionKeyAlias: String [optional]
+        +validateMetadata() bool
+        +extractProcessingRules()
+    }
+    
+    class DataCloudWriteMode {
+        <<enumeration>>
+        direct
+        batch
+        viaIndex
+        skip
+    }
+    
+    class IndexWriteMode {
+        <<enumeration>>
+        realtime
+        skip
+    }
+    
+    class ProcessingRulesMeaning {
+        +direct: "Write straight to Data Cloud now"
+        +batch: "Buffer then write to Data Cloud"
+        +viaIndex: "Let Indexing Layer copy to Data Cloud"
+        +skip: "Don't write to specified location"
+        +realtime: "Push to Indexing Layer immediately"
+    }
+
+    MetadataProcessing --> DataCloudWriteMode : uses
+    MetadataProcessing --> IndexWriteMode : uses
+    DataCloudWriteMode --> ProcessingRulesMeaning : explained in
+    IndexWriteMode --> ProcessingRulesMeaning : explained in
+    
+    note for MetadataProcessing "Every ingest request carries a small
+                                JSON block called metadata.processing
+                                This block tells the system what to do
+                                with the submitted data"
+    
+    note for DataCloudWriteMode "Determines how/if to
+                                write to Data Cloud"
+    
+    note for IndexWriteMode "Determines how/if to
+                            write to Indexing Layer"
+    
+    note for MetadataProcessing "❓ Are there any other optional
+                                metadata fields needed?"
+
+    MetadataProcessing .. OptionalFieldsQuestion

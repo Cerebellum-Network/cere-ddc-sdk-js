@@ -1,0 +1,63 @@
+
+flowchart TD
+    classDef test fill:#f9f9f9,stroke:#333,stroke-width:1px
+    classDef success fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px
+    classDef failure fill:#ffebee,stroke:#c62828,stroke-width:1px
+    
+    Start[Test Matrix] --> MetadataTests
+    
+    subgraph MetadataTests[Metadata Combinations Testing]
+        direction TB
+        
+        DCDirect_IRealtime["dataCloudWriteMode: direct<br>indexWriteMode: realtime"]:::test
+        DCDirect_ISkip["dataCloudWriteMode: direct<br>indexWriteMode: skip"]:::test
+        DCBatch_IRealtime["dataCloudWriteMode: batch<br>indexWriteMode: realtime"]:::test
+        DCBatch_ISkip["dataCloudWriteMode: batch<br>indexWriteMode: skip"]:::test
+        DCViaIndex_IRealtime["dataCloudWriteMode: viaIndex<br>indexWriteMode: realtime"]:::test
+        DCSkip_IRealtime["dataCloudWriteMode: skip<br>indexWriteMode: realtime"]:::test
+        DCSkip_ISkip["dataCloudWriteMode: skip<br>indexWriteMode: skip"]:::test
+    end
+    
+    MetadataTests --> OutcomeTests
+    
+    subgraph OutcomeTests[Outcome Testing]
+        direction TB
+        
+        Success["Success Path<br>(All Operations Succeed)"]:::success
+        
+        subgraph FailureScenarios[Failure Scenarios]
+            DCFailure["Data Cloud Failure<br>(Permanent)"]:::failure
+            IndexFailure["Indexing Layer Failure<br>(Permanent)"]:::failure
+            TransientDCFailure["Data Cloud Failure<br>(Transient)"]:::failure
+            TransientIndexFailure["Indexing Layer Failure<br>(Transient)"]:::failure
+            NetworkBlip["Network Interruption<br>(Brief)"]:::failure
+            Timeout["Request Timeout"]:::failure
+            ValidationFailure["Payload Validation<br>Failure"]:::failure
+        end
+    end
+    
+    OutcomeTests --> TestCases
+    
+    subgraph TestCases[Testing Approach]
+        UnitTests["Unit Tests:<br>- Rules Interpreter<br>- Dispatcher<br>- Error Handling"]
+        IntegrationTests["Integration Tests:<br>- End-to-end flows<br>- Backend system mocks<br>- Error simulation"]
+        PerformanceTests["Performance Tests:<br>- Throughput<br>- Latency<br>- Concurrency"]
+        SecurityTests["Security Tests:<br>- TLS configuration<br>- Payload validation<br>- Authentication"]
+    end
+    
+    %% Test Case Combinations
+    TestMatrix[Test Matrix Approach:<br>Each metadata combination must<br>be tested against each outcome]
+    
+    MetadataTests --- TestMatrix
+    OutcomeTests --- TestMatrix
+    
+    %% Additional Test Categories
+    IdempotencyTests["Idempotency Tests:<br>- Duplicate request handling<br>- Retry safety"]
+    BatchingTests["Batching Tests:<br>- Batch timing<br>- Size thresholds<br>- Batch failures"]
+    
+    TestCases --> IdempotencyTests & BatchingTests
+    
+    %% Open Questions
+    TestingQ["❓ Which failure modes are most critical?<br>❓ What's the expected recovery behavior?<br>❓ Performance requirements?"]
+    
+    TestCases --- TestingQ

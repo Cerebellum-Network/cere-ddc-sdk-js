@@ -1,0 +1,265 @@
+flowchart TD
+    classDef app fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px
+    classDef phase fill:#e3f2fd,stroke:#1565c0,stroke-width:1px
+    classDef strategy fill:#fff9c4,stroke:#f57f17,stroke-width:1px
+    classDef risk fill:#ffcdd2,stroke:#c62828,stroke-width:1px
+    classDef complete fill:#f5f5f5,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+    classDef sectionTitle fill:#ede7f6,stroke:#4527a0,stroke-width:2px
+    classDef timeline fill:#e0f2f1,stroke:#00796b,stroke-width:1px
+    classDef support fill:#f3e5f5,stroke:#6a1b9a,stroke-width:1px
+    classDef simplified fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#ffffff
+    
+    %% Main Title - Central Organizing Element
+    MigrationTitle["Unified SDK Migration Strategy<br/>SDK-Only Migration - Breaking Changes Acceptable"]:::sectionTitle
+    
+    %% Architecture States
+    subgraph ArchitectureStates["Architecture Transition (SDK Only)"]
+        direction TB
+        
+        %% Current State - More compact representation
+        subgraph CurrentState["Current State Architecture"]
+            direction TB
+            
+            %% Group applications together
+            subgraph CurrentApps["Client Applications (Team Controlled)"]
+                direction LR
+                TelegramApps["Telegram Mini Apps"]:::app
+                TelegramBots["Telegram Bot Services"]:::app
+                DroneClients["Drone Client Applications"]:::app
+                VideoProcessing["Video Processing Services"]:::app
+                OtherServices["Other Internal Services"]:::app
+            end
+            
+            %% Group SDKs together
+            subgraph CurrentSDKs["Current SDKs/APIs (To Be Replaced)"]
+                direction LR
+                DataCloudSDK["Data Cloud SDK"]
+                ActivitySDK["Activity SDK"]
+                HttpAPI["HTTP API"]
+            end
+            
+            %% Current connections - simplified
+            CurrentApps --> CurrentSDKs
+        end
+        
+        %% Add transition arrow
+        CurrentState -- "Direct SDK Replacement<br/>Breaking Changes OK" --> FutureState
+        
+        %% Future State - More compact representation
+        subgraph FutureState["Future State Architecture"]
+            direction TB
+            
+            %% Group applications together
+            subgraph FutureApps["Client Applications (Updated)"]
+                direction LR
+                TelegramAppsFuture["Telegram Mini Apps<br/>Updated to Unified SDK"]:::app
+                TelegramBotsFuture["Telegram Bot Services<br/>Updated to Unified SDK"]:::app
+                DroneClientsFuture["Drone Client Applications<br/>Updated to Unified SDK"]:::app
+                VideoProcessingFuture["Video Processing Services<br/>Updated to Unified SDK"]:::app
+                OtherServicesFuture["Other Internal Services<br/>Updated to Unified SDK"]:::app
+            end
+            
+            %% Unified SDK
+            UnifiedSDK["Unified SDK/API<br/>Single Integration Point"]:::simplified
+            
+            %% Future connections - simplified
+            FutureApps --> UnifiedSDK
+        end
+    end
+    
+    %% Connect to Main Title
+    MigrationTitle --> ArchitectureStates
+    
+    %% Simplified Migration Strategy Section
+    subgraph MigrationStrategySection["Simplified Migration Strategy"]
+        direction TB
+        
+        %% Migration Approach - Simplified
+        subgraph MigrationApproach["Migration Approach (Simplified)"]
+            direction TB
+            
+            ApproachTitle["SDK-Only Migration Strategy"]:::simplified
+            
+            BreakingChangesOK["BREAKING CHANGES ACCEPTABLE<br/>✓ Team controls all applications<br/>✓ No external dependencies<br/>✓ Coordinated updates possible<br/>✓ No backward compatibility required"]:::simplified
+            
+            NoDataMigration["NO DATA MIGRATION REQUIRED<br/>✓ Data remains in existing systems<br/>✓ Only SDK interface changes<br/>✓ Simplified testing approach<br/>✓ Reduced complexity and risk"]:::simplified
+            
+            ApproachTitle --> BreakingChangesOK
+            ApproachTitle --> NoDataMigration
+        end
+        
+        %% Migration Phases - Simplified Timeline
+        subgraph MigrationPhases["Simplified Migration Timeline"]
+            direction LR
+            Phase1["Phase 1: SDK Development<br/>& Testing<br/>(Weeks 1-4)"]:::phase
+            Phase2["Phase 2: Pilot Application<br/>Migration<br/>(Weeks 5-6)"]:::phase
+            Phase3["Phase 3: Batch Application<br/>Updates<br/>(Weeks 7-10)"]:::phase
+            Phase4["Phase 4: Legacy SDK<br/>Decommission<br/>(Week 11+)"]:::phase
+            
+            Phase1 --> Phase2 --> Phase3 --> Phase4
+        end
+        
+        %% Migration Strategy - Streamlined
+        subgraph MigrationStrategy["Migration Strategy (Streamlined)"]
+            direction TB
+            
+            StrategyTitle["Direct Replacement Strategy"]:::simplified
+            
+            BigBangApproach["BIG BANG REPLACEMENT<br/>✓ Update all applications simultaneously<br/>✓ Coordinated deployment<br/>✓ Single cutover event<br/>✓ Minimal transition period"]:::strategy
+            
+            StrategyTitle --> BigBangApproach
+        end
+    end
+    
+    %% Connect to Main Title
+    MigrationTitle --> MigrationStrategySection
+    
+    %% Simplified Application Migration Plans
+    subgraph AppMigrationPlans["Application Update Plans (Simplified)"]
+        direction TB
+        
+        %% Single coordinated migration approach
+        subgraph CoordinatedMigration["Coordinated Application Updates"]
+            direction TB
+            
+            %% Pilot Phase
+            subgraph PilotPhase["Pilot Phase (Week 5-6)"]
+                direction TB
+                PilotApp["Select Single Pilot Application<br/>• Lowest complexity<br/>• Good test coverage<br/>• Representative functionality"]:::phase
+                PilotValidation["Pilot Validation<br/>• SDK functionality verification<br/>• Performance validation<br/>• Integration testing<br/>• Developer experience feedback"]:::phase
+                PilotApp --> PilotValidation
+            end
+            
+            %% Batch Update Phase
+            subgraph BatchUpdate["Batch Application Updates (Week 7-10)"]
+                direction TB
+                
+                BatchGroup1["Week 7: Telegram Applications<br/>• Telegram Mini Apps<br/>• Telegram Bot Services"]:::phase
+                BatchGroup2["Week 8: Backend Services<br/>• Video Processing Services<br/>• Other Internal Services"]:::phase
+                BatchGroup3["Week 9: Drone Applications<br/>• Drone Client Applications"]:::phase
+                BatchValidation["Week 10: Final Validation<br/>• End-to-end testing<br/>• Performance verification<br/>• Complete system validation"]:::phase
+                
+                BatchGroup1 --> BatchGroup2 --> BatchGroup3 --> BatchValidation
+            end
+            
+            PilotPhase --> BatchUpdate
+        end
+    end
+    
+    %% Connect to Strategy Section
+    MigrationStrategySection --> AppMigrationPlans
+    
+    %% Simplified Risk Management
+    subgraph RiskManagement["Simplified Risk Management"]
+        direction TB
+        
+        %% Reduced Risk Factors
+        subgraph RiskFactors["Reduced Migration Risks"]
+            direction TB
+            
+            RiskTitle["Simplified Risk Profile"]:::simplified
+            
+            subgraph RemainingRisks["Remaining Risks (Minimal)"]
+                direction LR
+                
+                SDKBugs["Risk: SDK Bugs/Issues"]:::risk
+                SDKBugs -- "Mitigation" --> SDKTesting["Comprehensive SDK testing<br/>& pilot validation"]
+                
+                IntegrationIssues["Risk: Integration Problems"]:::risk
+                IntegrationIssues -- "Mitigation" --> IntegrationTesting["Thorough integration testing<br/>& staged rollout"]
+                
+                PerformanceRisk["Risk: Performance Issues"]:::risk
+                PerformanceRisk -- "Mitigation" --> PerformanceTesting["Performance benchmarking<br/>& optimization"]
+            end
+            
+            RiskTitle --> RemainingRisks
+        end
+        
+        %% Simplified Rollback Plan
+        subgraph RollbackPlan["Simplified Rollback Plan"]
+            direction TB
+            
+            RollbackTitle["Emergency Rollback Strategy"]
+            
+            RollbackStep1["1. Revert application code<br/>to previous SDK version"]
+            RollbackStep2["2. Redeploy applications<br/>with legacy SDK"]
+            RollbackStep3["3. Verify system functionality<br/>& performance"]
+            
+            RollbackTitle --> RollbackStep1 --> RollbackStep2 --> RollbackStep3
+        end
+    end
+    
+    %% Connect to Application Plans
+    AppMigrationPlans --> RiskManagement
+    
+    %% Simplified Timeline & Support
+    subgraph TimelineAndSupport["Timeline & Support (Streamlined)"]
+        direction TB
+        
+        %% SDK Lifecycle
+        subgraph SDKLifecycle["SDK Lifecycle Management"]
+            direction TB
+            
+            SDKDevelopment["Weeks 1-4: Unified SDK Development<br/>• Core functionality implementation<br/>• Testing & validation<br/>• Documentation creation"]:::timeline
+            
+            SDKDeployment["Weeks 5-10: SDK Deployment<br/>• Pilot application migration<br/>• Batch application updates<br/>• System validation"]:::timeline
+            
+            LegacyDecommission["Week 11+: Legacy SDK Decommission<br/>• Remove legacy SDK dependencies<br/>• Clean up old code<br/>• Archive documentation"]:::timeline
+            
+            SDKDevelopment --> SDKDeployment --> LegacyDecommission
+        end
+        
+        %% Support Structure
+        subgraph SupportStructure["Support Structure (Minimal)"]
+            direction TB
+            
+            Documentation["Updated Documentation<br/>• Migration guide<br/>• API reference<br/>• Code examples"]:::support
+            
+            TeamSupport["Internal Team Support<br/>• Developer assistance<br/>• Technical guidance<br/>• Issue resolution"]:::support
+            
+            Documentation --> TeamSupport
+        end
+    end
+    
+    %% Connect to Risk Management
+    RiskManagement --> TimelineAndSupport
+    
+    %% Implementation Decisions
+    subgraph ImplementationDecisions["Implementation Decisions (Finalized)"]
+        direction TB
+        
+        DecisionTitle["Key Migration Decisions"]:::simplified
+        
+        BreakingChangesDecision["BREAKING CHANGES STRATEGY<br/>✓ No backward compatibility required<br/>✓ Clean API design possible<br/>✓ Simplified implementation<br/>✓ Team coordination sufficient"]:::simplified
+        
+        NoDataMigrationDecision["NO DATA MIGRATION<br/>✓ Data stays in current systems<br/>✓ Only SDK interface changes<br/>✓ Reduced migration complexity<br/>✓ Lower risk profile"]:::simplified
+        
+        ControlledEnvironmentDecision["CONTROLLED ENVIRONMENT<br/>✓ Team controls all applications<br/>✓ Coordinated deployment possible<br/>✓ No external dependencies<br/>✓ Simplified rollback procedures"]:::simplified
+        
+        DecisionTitle --> BreakingChangesDecision
+        DecisionTitle --> NoDataMigrationDecision
+        DecisionTitle --> ControlledEnvironmentDecision
+    end
+    
+    %% Connect to Timeline & Support
+    TimelineAndSupport --> ImplementationDecisions
+    
+    %% Success Criteria
+    subgraph SuccessCriteria["Migration Success Criteria (Simplified)"]
+        direction TB
+        
+        SuccessTitle["Success Metrics"]:::simplified
+        
+        TechnicalSuccess["Technical Success<br/>• All applications using Unified SDK<br/>• No legacy SDK dependencies<br/>• Performance equal or better<br/>• Zero critical bugs"]:::complete
+        
+        OperationalSuccess["Operational Success<br/>• Smooth deployment process<br/>• Minimal downtime<br/>• Team productivity maintained<br/>• Documentation complete"]:::complete
+        
+        SuccessTitle --> TechnicalSuccess
+        SuccessTitle --> OperationalSuccess
+    end
+    
+    %% Connect to Implementation Decisions
+    ImplementationDecisions --> SuccessCriteria
+    
+    %% Connect back to main title for completeness
+    SuccessCriteria -.-> MigrationTitle 

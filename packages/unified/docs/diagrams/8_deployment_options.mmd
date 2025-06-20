@@ -1,0 +1,146 @@
+flowchart TD
+    classDef container fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px
+    classDef function fill:#e1f5fe,stroke:#0277bd,stroke-width:1px
+    classDef client fill:#fff3e0,stroke:#ef6c00,stroke-width:1px
+    classDef storage fill:#f3e5f5,stroke:#6a1b9a,stroke-width:1px
+    classDef option fill:#f9f9f9,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+    classDef recommended fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef question fill:#ffecb3,stroke:#ff6f00,stroke-width:1px,stroke-dasharray: 5 5
+    
+    %% Main Entry Point
+    DeploymentDecision[Unified Data Ingestion Deployment Options]
+    
+    %% Client Applications
+    subgraph ClientApps["Client Applications"]
+        direction LR
+        TelegramApp[Telegram Mini-App]:::client
+        DroneApp[Drone Client App]:::client
+        OtherClients[Other Client Apps]:::client
+    end
+    
+    %% Connect Clients to Decision Node
+    ClientApps --> DeploymentDecision
+    
+    %% Decision flows to options
+    DeploymentDecision --> Option1Approach
+    DeploymentDecision --> Option2Approach
+    DeploymentDecision --> Option3Approach
+    
+    %% Option 1: SDK-Only Approach
+    subgraph Option1Approach["Approach 1: Thin SDK in Every Client"]
+        direction TB
+        Option1["Option 1: SDK-Only Approach"]:::option
+        
+        subgraph Option1Detail["Implementation Details"]
+            direction TB
+            SDK1[Unified SDK]
+            SDK2[Unified SDK]
+            SDK3[Unified SDK]
+        end
+        
+        Option1 --- Option1Detail
+    end
+    
+    %% Option 2: Central Service Approach (Recommended)
+    subgraph Option2Approach["Approach 2: Central Service (Recommended)"]
+        direction TB
+        Option2["Option 2: Central Service Approach"]:::recommended
+        
+        subgraph Option2Detail["Implementation Details"]
+            direction TB
+            subgraph UnifiedService["Unified Ingestion Service"]
+                direction TB
+                ServiceAPI[REST API]
+                ServiceComponents[Rules Interpreter<br>Dispatcher<br>Orchestrator]
+                ServiceAPI --> ServiceComponents
+            end
+            
+            subgraph ClientSDKs["Client SDKs"]
+                direction LR
+                ThinSDK1[Thin Client SDK]
+                ThinSDK2[Thin Client SDK]
+                ThinSDK3[Thin Client SDK]
+            end
+            
+            ClientSDKs --> ServiceAPI
+        end
+        
+        Option2 --- Option2Detail
+    end
+    
+    %% Option 3: Serverless Approach
+    subgraph Option3Approach["Approach 3: Serverless/Functions"]
+        direction TB
+        Option3["Option 3: Serverless Functions Approach"]:::option
+        
+        subgraph Option3Detail["Implementation Details"]
+            direction TB
+            APIGateway[API Gateway]
+            IngestionFunction[Ingestion Function]:::function
+            BatchingFunction[Batching Function]:::function
+            
+            APIGateway --> IngestionFunction
+            IngestionFunction <--> BatchingFunction
+        end
+        
+        Option3 --- Option3Detail
+    end
+    
+    %% Data Storage Components
+    subgraph Storage["Backend Storage"]
+        direction LR
+        DataCloud[(Data Cloud)]:::storage
+        IndexingLayer[(Indexing Layer)]:::storage
+        Queue[(Message Queue)]:::storage
+    end
+    
+    %% Backend Connections
+    Option1Detail --> DataCloud & IndexingLayer
+    ServiceComponents --> DataCloud & IndexingLayer
+    IngestionFunction --> DataCloud & IndexingLayer
+    BatchingFunction --> DataCloud
+    
+    %% Queue Connections (for batching)
+    ServiceComponents -.-> Queue
+    Queue -.-> BatchingFunction
+    
+    %% Pros and Cons
+    subgraph ProsCons["Advantages and Disadvantages"]
+        direction TB
+        
+        subgraph Option1ProsCons["Option 1: SDK-Only"]
+            direction TB
+            Option1Pros["Advantages:<br>• Simple deployment<br>• No additional infrastructure"]
+            Option1Cons["Disadvantages:<br>• Multiple SDK versions in the wild<br>• Hard to update<br>• No centralized monitoring<br>• Limited batching options"]
+            Option1Pros --- Option1Cons
+        end
+        
+        subgraph Option2ProsCons["Option 2: Central Service"]
+            direction TB
+            Option2Pros["Advantages:<br>• Centralized rules & updates<br>• Unified monitoring<br>• Support for batching"]
+            Option2Cons["Disadvantages:<br>• Additional infrastructure<br>• Network hop"]
+            Option2Pros --- Option2Cons
+        end
+        
+        subgraph Option3ProsCons["Option 3: Serverless"]
+            direction TB
+            Option3Pros["Advantages:<br>• Highly scalable<br>• Cost-effective<br>• Auto-scaling"]
+            Option3Cons["Disadvantages:<br>• Cold start latency<br>• More complex setup"]
+            Option3Pros --- Option3Cons
+        end
+    end
+    
+    %% Connect Options to their Pros/Cons
+    Option1 -.- Option1ProsCons
+    Option2 -.- Option2ProsCons
+    Option3 -.- Option3ProsCons
+    
+    %% Questions
+    subgraph Questions["Implementation Questions"]
+        direction TB
+        DeploymentQ["❓ Preferred deployment topology?<br>❓ Container orchestrator?<br>❓ Cloud provider constraints?"]:::question
+        ScaleQ["❓ Expected throughput?<br>❓ Scaling requirements?"]:::question
+    end
+    
+    %% Position Questions
+    DeploymentDecision -.- Questions

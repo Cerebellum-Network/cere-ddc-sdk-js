@@ -1,0 +1,74 @@
+flowchart TD
+    classDef component fill:#f9f9f9,stroke:#333,stroke-width:1px
+    classDef storage fill:#e1f5fe,stroke:#0277bd,stroke-width:1px
+    classDef queue fill:#fff3e0,stroke:#ef6c00,stroke-width:1px
+    classDef service fill:#e8f5e8,stroke:#2e7d32,stroke-width:1px
+    classDef streaming fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px
+    
+    %% Main Flow
+    Client[Client Application] --> UnifiedSDK
+    UnifiedSDK["Unified SDK/API"] --> RulesInterpreter
+    RulesInterpreter[Rules Interpreter] --> Dispatcher
+    Dispatcher[Dispatcher] --> Orchestrator
+    
+    %% Batch Flow Decision
+    Orchestrator[Orchestrator] -->|"dataCloudWriteMode: batch"| BatchDecision{Is Batching<br>Enabled?}
+    BatchDecision -->|Yes| BatchIngestionService
+    BatchDecision -->|No| DirectWrite
+    
+    %% Batch Ingestion Service (Separate Service)
+    subgraph BatchIngestionService["Batch Ingestion Service (Part of Indexing Flow)"]
+        direction TB
+        
+        %% Streaming Engine with Persistence
+        subgraph StreamingEngine["Streaming Engine (Kafka/NATS)"]
+            MessageQueue[(Message Queue<br>Persistent Storage)]:::queue
+            StreamProcessor[Stream Processor<br>Modified Kafka Streams]:::streaming
+        end
+        
+        %% Batch Processing Logic
+        subgraph BatchLogic["Batch Processing Logic"]
+            BatchTrigger{Batch Trigger<br>Conditions}:::service
+            WindowSize[Window Size<br>Trigger]:::service
+            BatchSize[Batch Size<br>Trigger]:::service
+            BatchProcessor[Batch Processor]:::service
+        end
+        
+        %% Retry Mechanism
+        subgraph RetrySystem["Retry System"]
+            RetryLogic[Simple Retry Logic<br>1 Batch = 1 Payload = 1 Transaction]:::service
+            FailureHandler[Failure Handler]:::service
+        end
+        
+        %% Flow within service
+        MessageQueue --> StreamProcessor
+        StreamProcessor --> BatchTrigger
+        BatchTrigger --> WindowSize
+        BatchTrigger --> BatchSize
+        WindowSize --> BatchProcessor
+        BatchSize --> BatchProcessor
+        BatchProcessor --> RetryLogic
+        RetryLogic --> FailureHandler
+        FailureHandler -->|Retry| BatchProcessor
+        FailureHandler -->|Success| DataCloudSDK
+    end
+    
+    %% Direct Write Path
+    DirectWrite[Direct Write to Data Cloud] --> DataCloudSDK
+    
+    %% Final Destination
+    DataCloudSDK[Data Cloud SDK] --> DataCloud[(Data Cloud)]:::storage
+    
+    %% Configuration & Monitoring
+    subgraph Configuration["Batch Configuration"]
+        BatchConfig[Batch Parameters:<br>• Window Size: Time-based trigger<br>• Batch Size: Count/size-based trigger<br>• Queue Depth: ~10MB/15min per session<br>• Whichever reached first triggers flush]
+    end
+    
+    subgraph Monitoring["Monitoring & Alerting"]
+        BatchMonitoring[Standard Monitoring:<br>• Queue depth monitoring<br>• Processing latency<br>• Failure rates<br>• Throughput metrics]
+    end
+    
+    BatchIngestionService -..- BatchConfig
+    BatchIngestionService -..- BatchMonitoring
+    
+

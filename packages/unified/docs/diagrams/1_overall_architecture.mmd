@@ -1,0 +1,81 @@
+
+flowchart TD
+    classDef component fill:#f9f9f9,stroke:#333,stroke-width:1px
+    classDef storage fill:#e1f5fe,stroke:#0277bd,stroke-width:1px
+    classDef clientApp fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px
+    classDef question fill:#ffebee,stroke:#c62828,stroke-width:1px,stroke-dasharray: 5 5
+    
+    %% Client Applications
+    Client[Client Application] --> UnifiedSDK
+    class Client clientApp
+    
+    %% Main Components
+    subgraph UnifiedLayer["Unified Data Ingestion Layer"]
+        UnifiedSDK["Unified SDK/API
+                                    (Single Entry Point)"]
+        RulesInterpreter["Rules Interpreter
+                                    (Parses metadata.processing)"]
+        Dispatcher["Dispatcher
+                                (Routes to appropriate systems)"]
+        Orchestrator["Orchestrator / Error Handler"]
+        BatchingComponent["Batching Componen
+                                    (Optional/Feature-flagged)"]
+        ConfigMgmt["Configuration/Secrets Management"]
+        
+        UnifiedSDK --> RulesInterpreter
+        RulesInterpreter --> Dispatcher
+        Dispatcher --> Orchestrator
+        Orchestrator -.-> BatchingComponent
+        ConfigMgmt -.- UnifiedSDK
+        ConfigMgmt -.- BatchingComponent
+    end
+    
+    %% Downstream Systems
+    subgraph ExistingSystems["Existing Systems"]
+        DataCloudSDK["Data Cloud SDK"]
+        ActivitySDK["Activity SDK"]
+        HttpAPI["HTTP API
+                        (Indexing Layer)"]
+    end
+    
+    %% Storage Systems
+    DataCloud[(Data Cloud
+                        Storage)]
+    IndexingLayer[(Indexing Layer)]
+    
+    class DataCloud,IndexingLayer storage
+    
+    %% Connections to Downstream Systems
+    Orchestrator --> DataCloudSDK
+    Orchestrator --> ActivitySDK
+    Orchestrator --> HttpAPI
+    
+    %% Connections to Storage
+    DataCloudSDK --> DataCloud
+    ActivitySDK --> IndexingLayer
+    HttpAPI --> IndexingLayer
+    
+    %% Indexing Layer can write to Data Cloud
+    IndexingLayer -.-> DataCloud
+    
+    %% Open Questions
+    BatchingQ["❓ Is batching required for MVP?
+               ❓ What are batch size & interval?
+               ❓ Where should batching occur?"]
+    class BatchingQ question
+    BatchingComponent -.- BatchingQ
+    
+    AtomicityQ["❓ Partial success acceptable?
+                ❓ Need compensation/rollback?"]
+    class AtomicityQ question
+    Orchestrator -.- AtomicityQ
+    
+    ConfigQ["❓ How to manage credentials?
+             (env vars, config service, etc.)"]
+    class ConfigQ question
+    ConfigMgmt -.- ConfigQ
+    
+    TechStackQ["❓ SDK/Service Language? 
+                        (Go/Node/Python?)"]
+    class TechStackQ question
+    UnifiedSDK -.- TechStackQ

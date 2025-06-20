@@ -1,0 +1,131 @@
+flowchart TD
+    classDef client fill:#ffecb3,stroke:#ff8f00,stroke-width:2px
+    classDef sdk fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px
+    classDef storage fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef decision fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,stroke-dasharray: 5 5
+    classDef problem fill:#ffebee,stroke:#c62828,stroke-width:3px
+    classDef question fill:#fff3e0,stroke:#f57c00,stroke-width:2px,stroke-dasharray: 3 3
+    
+    %% Title
+    Title["Current State: Multiple SDK Complexity Problem"]:::problem
+    
+    %% Client Applications
+    subgraph ClientApps["Client Applications (Developers)"]
+        direction TB
+        TelegramApps["🤖 Telegram Mini-Apps<br/>📱 Telegram Bots"]:::client
+        DroneClients["🚁 Drone Flight Controllers<br/>📡 Drone Telemetry Systems"]:::client
+        VideoServices["🎥 Video Processing Services<br/>📺 Stream Management"]:::client
+        OtherApps["🔧 Other Internal Services<br/>⚙️ Third-party Integrations"]:::client
+    end
+    
+    %% Decision Complexity
+    subgraph DecisionLayer["❓ Developer Decision Complexity"]
+        direction TB
+        DecisionTitle["Which SDK Should I Use?"]:::decision
+        
+        Questions["❓ Is this real-time data?<br/>❓ Do I need immediate indexing?<br/>❓ Should data go to Data Cloud directly?<br/>❓ Do I need parallel writes?<br/>❓ What about batching for performance?<br/>❓ How do I handle errors across systems?<br/>❓ Which interface should I learn?"]:::question
+    end
+    
+    %% Current SDK Options
+    subgraph CurrentSDKs["Current SDK/API Options"]
+        direction LR
+        
+        subgraph SDKGroup1["Storage-First Approach"]
+            DataCloudSDK["📦 Data Cloud SDK<br/>• Direct storage writes<br/>• Returns data hash<br/>• High performance<br/>• Manual indexing needed"]:::sdk
+        end
+        
+        subgraph SDKGroup2["Event-Driven Approaches"]
+            ActivitySDK["⚡ Activity SDK<br/>• Event-driven writes<br/>• Auto-indexes to Data Cloud<br/>• Real-time processing<br/>• Event semantics"]:::sdk
+            
+            HttpAPI["🌐 HTTP API<br/>• REST interface<br/>• Also indexes to Data Cloud<br/>• Web-friendly<br/>• Different auth model"]:::sdk
+        end
+    end
+    
+    %% Complex Routing Patterns
+    subgraph ComplexPatterns["Current Complex Integration Patterns"]
+        direction TB
+        
+        Pattern1["🤖 Telegram Events:<br/>Activity SDK → Indexing → Data Cloud"]
+        Pattern2["📱 Telegram Messages:<br/>HTTP API → Indexing → Data Cloud"]
+        Pattern3["🚁 Drone Telemetry:<br/>PARALLEL: Data Cloud SDK + Activity SDK"]
+        Pattern4["🎥 Video Chunks:<br/>Data Cloud SDK (direct storage)"]
+        Pattern5["📺 Video Events:<br/>Activity SDK (with hash reference)"]
+        
+        Pattern1:::decision
+        Pattern2:::decision
+        Pattern3:::decision
+        Pattern4:::decision
+        Pattern5:::decision
+    end
+    
+    %% Storage Layer
+    subgraph StorageSystems["Storage Systems"]
+        direction LR
+        DataCloud["🔒 Data Cloud<br/>(Encrypted, Immutable<br/>Source of Truth)"]:::storage
+        IndexingLayer["🔍 Indexing Layer<br/>(Searchable, AI-Optimized<br/>Query Interface)"]:::storage
+    end
+    
+    %% Problem Indicators
+    subgraph ProblemIndicators["❌ Key Problems"]
+        direction TB
+        Problem1["👨‍💻 Developer Complexity:<br/>Must learn 3 different APIs"]
+        Problem2["🔄 Inconsistent Patterns:<br/>Different interfaces for similar operations"]
+        Problem3["⚙️ Client-Side Logic:<br/>Routing decisions embedded in apps"]
+        Problem4["🔧 Maintenance Burden:<br/>Updates require changing multiple apps"]
+        Problem5["❗ Error Handling:<br/>Different error patterns per SDK"]
+        Problem6["📊 Monitoring Gaps:<br/>No unified observability"]
+        
+        Problem1:::problem
+        Problem2:::problem
+        Problem3:::problem
+        Problem4:::problem
+        Problem5:::problem
+        Problem6:::problem
+    end
+    
+    %% Connections showing complexity
+    Title --> ClientApps
+    ClientApps --> DecisionLayer
+    DecisionLayer --> CurrentSDKs
+    CurrentSDKs --> ComplexPatterns
+    
+    %% Show how each app type connects to different SDKs
+    TelegramApps -.-> ActivitySDK
+    TelegramApps -.-> HttpAPI
+    DroneClients -.-> DataCloudSDK
+    DroneClients -.-> ActivitySDK
+    VideoServices -.-> DataCloudSDK
+    VideoServices -.-> ActivitySDK
+    OtherApps -.-> DataCloudSDK
+    OtherApps -.-> ActivitySDK
+    OtherApps -.-> HttpAPI
+    
+    %% Storage connections
+    DataCloudSDK --> DataCloud
+    ActivitySDK --> IndexingLayer
+    HttpAPI --> IndexingLayer
+    IndexingLayer -.-> DataCloud
+    
+    %% Problem connections
+    DecisionLayer --> ProblemIndicators
+    CurrentSDKs --> ProblemIndicators
+    ComplexPatterns --> ProblemIndicators
+    
+    %% Example Decision Flows (showing complexity)
+    subgraph ExampleDecisions["Example Developer Decision Tree"]
+        direction TB
+        StartDecision["I need to store data..."]:::question
+        
+        Q1["Is it real-time?"]:::question
+        Q2["Do I need indexing?"]:::question
+        Q3["What about Data Cloud?"]:::question
+        Q4["Parallel writes needed?"]:::question
+        
+        StartDecision --> Q1
+        Q1 --> Q2
+        Q2 --> Q3
+        Q3 --> Q4
+        Q4 --> DecisionTitle
+    end
+    
+    ExampleDecisions --> DecisionLayer 
