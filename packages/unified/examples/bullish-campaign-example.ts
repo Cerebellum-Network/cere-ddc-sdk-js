@@ -168,7 +168,7 @@ async function bullishCampaignExample() {
         symbol: 'BTC/USD',
         amount: 0.1,
         price: 45000,
-        profit: 250.50,
+        profit: 250.5,
         isSimulated: true,
         executedAt: new Date(),
       },
@@ -232,7 +232,7 @@ async function bullishCampaignExample() {
 
     // Process batch events with optimized settings
     const batchResults = await Promise.all(
-      batchEvents.map(event =>
+      batchEvents.map((event) =>
         sdk.writeData(event, {
           writeMode: 'batch',
           metadata: {
@@ -245,8 +245,8 @@ async function bullishCampaignExample() {
               },
             },
           },
-        })
-      )
+        }),
+      ),
     );
     console.log('Batch campaign events results:', batchResults.length, 'events processed');
 
@@ -392,4 +392,4 @@ if (require.main === module) {
   bullishCampaignExample().catch(console.error);
 }
 
-export { bullishCampaignExample, showBullishCampaignSetup }; 
+export { bullishCampaignExample, showBullishCampaignSetup };
