@@ -290,7 +290,7 @@ export class Dispatcher {
     // For Telegram events, create activity event structure
     if (this.isTelegramEvent(payload)) {
       return {
-        type: 'telegram.event',
+        type: 'telegram.event', // ❌ REVERTED: telegram_event not defined in compute engine
         userId: payload.userId,
         eventType: payload.eventType,
         data: payload.eventData,
@@ -304,7 +304,7 @@ export class Dispatcher {
     // For Telegram messages, create activity event structure
     if (this.isTelegramMessage(payload)) {
       return {
-        type: 'telegram.message',
+        type: 'telegram_message', // ✅ FIXED: Use underscore format expected by compute engine
         userId: payload.userId,
         messageId: payload.messageId,
         data: {
