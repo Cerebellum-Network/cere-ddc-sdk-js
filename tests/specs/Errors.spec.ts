@@ -26,7 +26,9 @@ describe('Errors', () => {
       expect(error).toBeInstanceOf(Error);
       expect(error).toEqual(
         expect.objectContaining({
-          message: expect.stringContaining('Failed to get bucket'),
+          message: expect.stringContaining('Bucket 99 not found in blockchain'),
+          context: 'bucket_not_found_in_blockchain',
+          bucketId: '99',
         }),
       );
     });
