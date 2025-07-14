@@ -49,5 +49,6 @@
     "@cere/embed-wallet": {
       "optional": true
     }
-  }
+  },
+  "gitHead": "fb04362e6067d36ab56d060880704e1661c41ebb"
 }
