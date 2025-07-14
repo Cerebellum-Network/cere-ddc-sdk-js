@@ -22,21 +22,21 @@ import {
 } from './NodeInterface';
 
 /**
- * The timeouts bettween retries are exponential, starting at `minTimeout` and increasing each time until `maxTimeout`.
+ * The timeouts between retries are exponential, starting at `minTimeout` and increasing each time until `maxTimeout`.
  *
- * The formuka for the timeout between retries is:
+ * The formula for the timeout between retries is:
  *
  * ```typescript
  * const timeout = Math.min(random * minTimeout * Math.pow(factor, attempt), maxTimeout);
  * ```
  */
-export type OpperationRetryOptions = Omit<RetryOptions, 'retries'> & {
+export type OperationRetryOptions = Omit<RetryOptions, 'retries'> & {
   attempts?: number;
 };
 
 export type BalancedNodeConfig = LoggerOptions & {
   router: Router;
-  retries?: number | OpperationRetryOptions;
+  retries?: number | OperationRetryOptions;
 };
 
 const withCorrelationId = <T extends CorrelationOptions>(options: T): T => ({
@@ -239,5 +239,19 @@ export class BalancedNode implements NodeInterface {
     return this.withRetry(bucketId, RouterOperation.READ_CNS_RECORD, options, (node) =>
       node.resolveName(bucketId, cidOrName, options),
     );
+  }
+
+  /**
+   * Clear ping cache for debugging purposes
+   */
+  public clearPingCache() {
+    this.router.clearPingCache();
+  }
+
+  /**
+   * Get ping cache info for debugging
+   */
+  public getPingCacheInfo() {
+    return this.router.getPingCacheInfo();
   }
 }

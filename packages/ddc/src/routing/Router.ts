@@ -101,4 +101,23 @@ export class Router {
 
     return storageNode;
   }
+
+  /**
+   * Clear ping cache for debugging purposes
+   */
+  public clearPingCache() {
+    if ('clearPingCache' in this.strategy) {
+      (this.strategy as any).clearPingCache();
+    }
+  }
+
+  /**
+   * Get ping cache info for debugging
+   */
+  public getPingCacheInfo() {
+    if ('getPingCacheInfo' in this.strategy) {
+      return (this.strategy as any).getPingCacheInfo();
+    }
+    return null;
+  }
 }

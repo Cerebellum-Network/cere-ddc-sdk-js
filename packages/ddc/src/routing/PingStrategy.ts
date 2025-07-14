@@ -7,6 +7,7 @@ import { shuffle } from './RandomStrategy';
 import {
   PING_ABORT_TIMEOUT,
   PING_BACKGROUND_DELAY,
+  PING_CACHE_TTL,
   PING_LATENCY_GROUP,
   PING_THRESHOLD,
   PING_THRESHOLD_INC,
@@ -16,6 +17,7 @@ type PingRecord = {
   node: RouterNode;
   isDone: Deferred<boolean>;
   latency?: number;
+  timestamp: number; // Added for TTL support
 };
 
 /**
@@ -23,6 +25,57 @@ type PingRecord = {
  */
 export abstract class PingStrategy extends NodeTypeStrategy {
   private nodesMap = new Map<RouterNode['httpUrl'], PingRecord>();
+
+  /**
+   * Clear the ping cache for debugging purposes
+   */
+  public clearPingCache() {
+    this.logger.info('🧹 Clearing ping cache (%d entries)', this.nodesMap.size);
+    this.nodesMap.clear();
+  }
+
+  /**
+   * Get ping cache info for debugging
+   */
+  public getPingCacheInfo() {
+    const entries = Array.from(this.nodesMap.entries()).map(([url, record]) => ({
+      url,
+      latency: record.latency,
+      state: record.isDone.state,
+      age: Date.now() - record.timestamp,
+      expired: this.isRecordExpired(record),
+    }));
+
+    return {
+      size: this.nodesMap.size,
+      entries,
+    };
+  }
+
+  /**
+   * Check if a ping record is expired based on TTL
+   */
+  private isRecordExpired(record: PingRecord): boolean {
+    return Date.now() - record.timestamp > PING_CACHE_TTL;
+  }
+
+  /**
+   * Clean expired ping records from cache
+   */
+  private cleanExpiredRecords(): void {
+    const beforeSize = this.nodesMap.size;
+
+    for (const [url, record] of this.nodesMap.entries()) {
+      if (this.isRecordExpired(record)) {
+        this.nodesMap.delete(url);
+      }
+    }
+
+    const removedCount = beforeSize - this.nodesMap.size;
+    if (removedCount > 0) {
+      this.logger.debug('🧹 Cleaned %d expired ping records (TTL: %dms)', removedCount, PING_CACHE_TTL);
+    }
+  }
 
   private getPingedNodes(state?: DeferredState) {
     const pings = Array.from(this.nodesMap.values());
@@ -59,14 +112,30 @@ export abstract class PingStrategy extends NodeTypeStrategy {
   }
 
   private enqueuePing(node: RouterNode) {
+    // Clean expired records first
+    this.cleanExpiredRecords();
+
     const existingPing = this.nodesMap.get(node.httpUrl);
 
-    if (existingPing) {
+    if (existingPing && !this.isRecordExpired(existingPing)) {
+      this.logger.debug(
+        '📋 Using cached ping result for %s (latency: %s ms, age: %dms)',
+        node.httpUrl,
+        existingPing.latency ?? 'pending',
+        Date.now() - existingPing.timestamp,
+      );
       return existingPing;
+    } else if (existingPing) {
+      this.logger.debug(
+        '⏰ Existing ping for %s expired (age: %dms > TTL: %dms), creating new ping',
+        node.httpUrl,
+        Date.now() - existingPing.timestamp,
+        PING_CACHE_TTL,
+      );
     }
 
     const isDone = new Deferred<boolean>();
-    const pingRecord: PingRecord = { node, isDone };
+    const pingRecord: PingRecord = { node, isDone, timestamp: Date.now() };
 
     this.nodesMap.set(node.httpUrl, pingRecord);
     this.ping(pingRecord)
@@ -83,6 +152,7 @@ export abstract class PingStrategy extends NodeTypeStrategy {
     const notPingedNodes = allOperationNodes.filter((node) => !this.nodesMap.has(node.httpUrl));
     const toPingSync = notPingedNodes.slice(0, Math.max(0, PING_THRESHOLD - pingedNodes.length));
     const toPingAsync = notPingedNodes.slice(0, PING_THRESHOLD_INC);
+
     const syncPings = [
       ...pingedNodes, // Include already pinged nodes to make sure they are settled
       ...toPingSync,
@@ -96,7 +166,12 @@ export abstract class PingStrategy extends NodeTypeStrategy {
     /**
      * After a short delay, start async pings in background
      */
-    setTimeout(() => toPingAsync.forEach((node) => this.enqueuePing(node)), PING_BACKGROUND_DELAY);
+    if (toPingAsync.length > 0) {
+      setTimeout(() => {
+        this.logger.debug('🚀 Starting background pings for %d nodes', toPingAsync.length);
+        toPingAsync.forEach((node) => this.enqueuePing(node));
+      }, PING_BACKGROUND_DELAY);
+    }
 
     /**
      * Sort opperation nodes by latency

@@ -17,6 +17,7 @@ import {
   AuthToken,
   BalancedNodeConfig,
   CnsRecordGetOptions,
+  BlockchainRetryConfig,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
 import { AccountId, Blockchain, BucketId, BucketParams, ClusterId, Sendable } from '@cere-ddc-sdk/blockchain';
@@ -26,6 +27,7 @@ import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
 export type DdcClientConfig = Omit<BalancedNodeConfig, 'router'> &
   Omit<ConfigPreset, 'blockchain'> & {
     blockchain: Blockchain | ConfigPreset['blockchain'];
+    blockchainRetryConfig?: BlockchainRetryConfig;
   };
 
 type DepositBalanceOptions = {
@@ -52,7 +54,7 @@ export class DdcClient {
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
     const router = config.nodes
       ? new Router({ signer, nodes: config.nodes, logger })
-      : new Router({ signer, blockchain, logger });
+      : new Router({ signer, blockchain, retryConfig: config.blockchainRetryConfig, logger });
 
     this.blockchain = blockchain;
     this.signer = signer;
@@ -519,5 +521,24 @@ export class DdcClient {
    */
   async resolveName(bucketId: BucketId, cnsName: string, options?: CnsRecordGetOptions) {
     return this.ddcNode.resolveName(bucketId, cnsName, options);
+  }
+
+  /**
+   * Clear ping cache for debugging purposes
+   */
+  clearPingCache() {
+    if ('clearPingCache' in this.ddcNode) {
+      (this.ddcNode as any).clearPingCache();
+    }
+  }
+
+  /**
+   * Get ping cache info for debugging
+   */
+  getPingCacheInfo() {
+    if ('getPingCacheInfo' in this.ddcNode) {
+      return (this.ddcNode as any).getPingCacheInfo();
+    }
+    return null;
   }
 }

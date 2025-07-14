@@ -89,3 +89,15 @@ export const PING_BACKGROUND_DELAY = 100;
  * Timeout in milliseconds for aborting a ping request.
  */
 export const PING_ABORT_TIMEOUT = 1000;
+
+/**
+ * TTL for ping cache in milliseconds.
+ * Set to 2 minutes for development, can be increased for production.
+ */
+export const PING_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
+/**
+ * TTL for bucket cache in milliseconds.
+ * Set to 5 minutes for development, can be increased for production.
+ */
+export const BUCKET_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
