@@ -32,4 +32,17 @@ export {
   type FileReadOptions,
 } from '@cere-ddc-sdk/file-storage';
 
-export type { BucketId, ClusterId, Bucket, AccountId } from '@cere-ddc-sdk/blockchain';
+export type { 
+  BucketId, 
+  ClusterId, 
+  Bucket, 
+  AccountId,
+  Ledger,
+  ChargeBatch,
+  ChargeResult,
+  UnlockChunk,
+  DdcBalanceChargedEvent,
+  DdcBalanceDepositedEvent,
+  DdcBalanceUnlockedEvent,
+  DdcBalanceWithdrawnEvent
+} from '@cere-ddc-sdk/blockchain';

@@ -25,3 +25,4 @@ export * from './DDCStakingPallet';
 export * from './DDCClustersPallet';
 export * from './DDCNodesPallet';
 export * from './DDCClustersGovPallet';
+export * from './DDCDepositContract';

@@ -1,61 +1,43 @@
 {
-  "name": "cere-ddc-sdk",
-  "description": "Cere DDC SDK for JavaScript",
+  "name": "developer-console",
   "private": true,
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
-  },
-  "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
-  "license": "Apache-2.0",
+  "version": "0.17.0",
+  "type": "module",
   "scripts": {
-    "lint": "eslint --quiet '**/*.{ts,tsx,js,cjs,mjs,jsx,json}'",
-    "lint:fix": "npm run lint -- --fix",
-    "test": "lerna run test",
-    "test:ci": "lerna run test -- --silent",
-    "test:clean": "lerna run test:clean",
-    "test:env": "lerna run test:env",
-    "clean": "lerna run clean",
-    "docs": "lerna run docs",
-    "build": "lerna run build",
-    "build:watch": "lerna watch -- lerna run build",
-    "package": "lerna run package",
-    "release": "lerna version --conventional-graduate",
-    "release:no-push": "npm run release -- --no-push --no-git-tag-version",
-    "release:rc": "lerna version --conventional-prerelease",
-    "release:rc:no-push": "npm run release:rc -- --no-push --no-git-tag-version",
-    "release:publish": "lerna publish from-package",
-    "check-types": "tsc --noEmit",
-    "check-types:ci": "npm run check-types -- -p ./tsconfig.build.json",
-    "playground": "lerna run playground"
+    "lint": "eslint . --ext ts,tsx",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "check-types": "npm run check-types --ws --if-present",
+    "build": "npm run build --ws --if-present"
   },
   "dependencies": {
-    "@polkadot/api": "^15.5.1",
-    "@polkadot/util": "^13.3.1",
-    "@polkadot/util-crypto": "^13.3.1",
-    "@types/node": "^18.17.1",
-    "clean-publish": "^4.2.0",
-    "eslint": "^8.56.0",
-    "lerna": "^8.0.1",
-    "microbundle": "^0.15.1",
-    "npm-run-all": "^4.1.5",
-    "prettier": "^3.1.1",
-    "rimraf": "^5.0.5",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
-    "typedoc": "^0.25.7",
-    "typescript": "^5.3.3",
-    "wait-port": "^1.1.0"
+    "@cere/embed-wallet": "^0.23.4",
+    "@hookform/resolvers": "^3.9.0",
+    "@reactour/tour": "^3.7.0",
+    "mobx": "^6.13.1",
+    "mobx-react-lite": "^4.0.7",
+    "mobx-utils": "^6.0.8",
+    "react": "^18.3.1",
+    "react-accessible-treeview": "^2.9.1",
+    "react-confetti": "^6.1.0",
+    "react-device-detect": "^2.2.3",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.52.1",
+    "react-router-dom": "^6.25.1",
+    "yup": "^1.4.0"
   },
-  "workspaces": {
-    "packages": [
-      "packages/*",
-      "examples/*",
-      "playground",
-      "tests"
-    ],
-    "nohoist": [
-      "playground/**"
-    ]
-  }
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.4",
+    "vite-plugin-node-polyfills": "^0.22.0",
+    "vite-tsconfig-paths": "^4.3.2"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
 }

@@ -19,7 +19,7 @@ import {
   CnsRecordGetOptions,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
-import { AccountId, Blockchain, BucketId, BucketParams, ClusterId, Sendable } from '@cere-ddc-sdk/blockchain';
+import { AccountId, Blockchain, BucketId, BucketParams, ClusterId, Sendable, DDCDepositContract, Ledger, ChargeBatch, ChargeResult } from '@cere-ddc-sdk/blockchain';
 
 import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
 
@@ -75,6 +75,15 @@ export class DdcClient {
         'resolveName',
       ]);
     }
+  }
+
+  /**
+   * Gets the signer's address.
+   *
+   * @returns The signer's address.
+   */
+  get address(): AccountId {
+    return this.signer.address;
   }
 
   /**
@@ -519,5 +528,156 @@ export class DdcClient {
    */
   async resolveName(bucketId: BucketId, cnsName: string, options?: CnsRecordGetOptions) {
     return this.ddcNode.resolveName(bucketId, cnsName, options);
+  }
+
+  // ===== Smart Contract Deposit Methods =====
+
+  /**
+   * Creates a new instance of DDCDepositContract for interacting with smart contract deposits.
+   *
+   * @param contractAddress - The address of the deposit smart contract
+   * @param abi - The ABI of the deposit smart contract
+   * @returns A new DDCDepositContract instance
+   */
+  createDepositContract(contractAddress: AccountId, abi: any): DDCDepositContract {
+    return new DDCDepositContract(this.blockchain.api, contractAddress, abi);
+  }
+
+  /**
+   * Charges customers for DDC service usage via smart contract.
+   * This method requires a deposit contract to be deployed and configured.
+   *
+   * @param contractAddress - The address of the deposit smart contract
+   * @param abi - The ABI of the deposit smart contract
+   * @param vault - Address of Payout Vault where all the charges for a specific era should be collected
+   * @param batch - List of customers with amounts expected to be charged
+   * @returns List of customers with amounts charged actually
+   */
+  async chargeViaContract(
+    contractAddress: AccountId,
+    abi: any,
+    vault: AccountId,
+    batch: ChargeBatch
+  ): Promise<ChargeResult> {
+    const contract = this.createDepositContract(contractAddress, abi);
+    return contract.charge(vault, batch);
+  }
+
+  /**
+   * Gets customer balance from smart contract.
+   * This method requires a deposit contract to be deployed and configured.
+   *
+   * @param contractAddress - The address of the deposit smart contract
+   * @param abi - The ABI of the deposit smart contract
+   * @param owner - The owner account whose balance is being fetched
+   * @returns The ledger information for the owner
+   */
+  async getContractBalance(
+    contractAddress: AccountId,
+    abi: any,
+    owner: AccountId
+  ): Promise<Ledger | null> {
+    const contract = this.createDepositContract(contractAddress, abi);
+    return contract.getBalance(owner);
+  }
+
+  /**
+   * Gets customer balances from smart contract in a paginated manner.
+   * This method requires a deposit contract to be deployed and configured.
+   *
+   * @param contractAddress - The address of the deposit smart contract
+   * @param abi - The ABI of the deposit smart contract
+   * @param fromIndex - Starting index for pagination
+   * @param limit - Maximum number of balances to return
+   * @returns Array of ledgers
+   */
+  async getContractBalances(
+    contractAddress: AccountId,
+    abi: any,
+    fromIndex: bigint,
+    limit: bigint
+  ): Promise<Ledger[]> {
+    const contract = this.createDepositContract(contractAddress, abi);
+    return contract.getBalances(fromIndex, limit);
+  }
+
+  /**
+   * Deposits funds via smart contract.
+   * This method requires a deposit contract to be deployed and configured.
+   *
+   * @param contractAddress - The address of the deposit smart contract
+   * @param abi - The ABI of the deposit smart contract
+   * @param value - Amount to deposit
+   * @returns Transaction hash
+   */
+  async depositViaContract(
+    contractAddress: AccountId,
+    abi: any,
+    value: bigint
+  ): Promise<string> {
+    const contract = this.createDepositContract(contractAddress, abi);
+    const tx = contract.deposit(value);
+    const result = await this.blockchain.send(tx, { account: this.signer });
+    return result.txHash;
+  }
+
+  /**
+   * Deposits funds for specific owner via smart contract.
+   * This method requires a deposit contract to be deployed and configured.
+   *
+   * @param contractAddress - The address of the deposit smart contract
+   * @param abi - The ABI of the deposit smart contract
+   * @param owner - Owner account to deposit for
+   * @param value - Amount to deposit
+   * @returns Transaction hash
+   */
+  async depositForViaContract(
+    contractAddress: AccountId,
+    abi: any,
+    owner: AccountId,
+    value: bigint
+  ): Promise<string> {
+    const contract = this.createDepositContract(contractAddress, abi);
+    const tx = contract.depositFor(owner, value);
+    const result = await this.blockchain.send(tx, { account: this.signer });
+    return result.txHash;
+  }
+
+  /**
+   * Unlocks deposit funds via smart contract.
+   * This method requires a deposit contract to be deployed and configured.
+   *
+   * @param contractAddress - The address of the deposit smart contract
+   * @param abi - The ABI of the deposit smart contract
+   * @param value - Amount to unlock
+   * @returns Transaction hash
+   */
+  async unlockDepositViaContract(
+    contractAddress: AccountId,
+    abi: any,
+    value: bigint
+  ): Promise<string> {
+    const contract = this.createDepositContract(contractAddress, abi);
+    const tx = contract.unlockDeposit(value);
+    const result = await this.blockchain.send(tx, { account: this.signer });
+    return result.txHash;
+  }
+
+  /**
+   * Withdraws unlocked deposit funds via smart contract.
+   * This method requires a deposit contract to be deployed and configured.
+   *
+   * @param contractAddress - The address of the deposit smart contract
+   * @param abi - The ABI of the deposit smart contract
+   * @returns Transaction hash
+   */
+  async withdrawUnlockedViaContract(
+    contractAddress: AccountId,
+    abi: any
+  ): Promise<string> {
+    const contract = this.createDepositContract(contractAddress, abi);
+    const tx = contract.withdrawUnlocked();
+    const result = await this.blockchain.send(tx, { account: this.signer });
+    return result.txHash;
   }
 }

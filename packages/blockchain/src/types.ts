@@ -113,6 +113,48 @@ export type StakingLedger = {
   unlocking: any[];
 };
 
+// New types for smart contract deposits
+export type UnlockChunk = {
+  value: Amount;
+  block: BlockNumber;
+};
+
+export type Ledger = {
+  owner: AccountId;
+  total: Amount;
+  active: Amount;
+  unlocking: UnlockChunk[];
+};
+
+export type DdcBalanceChargedEvent = {
+  clusterId: ClusterId;
+  ownerId: AccountId;
+  charged: Amount;
+  expected: Amount;
+};
+
+export type DdcBalanceDepositedEvent = {
+  clusterId: ClusterId;
+  ownerId: AccountId;
+  amount: Amount;
+};
+
+export type DdcBalanceUnlockedEvent = {
+  clusterId: ClusterId;
+  ownerId: AccountId;
+  amount: Amount;
+};
+
+export type DdcBalanceWithdrawnEvent = {
+  clusterId: ClusterId;
+  ownerId: AccountId;
+  amount: Amount;
+};
+
+export type ChargeBatch = Array<[AccountId, Amount]>;
+
+export type ChargeResult = Array<[AccountId, Amount]>;
+
 export enum ClusterNodeKind {
   Genesis = 'Genesis',
   External = 'External',
