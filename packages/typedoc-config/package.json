@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/typedoc-config",
-  "version": "2.15.0",
+  "version": "2.16.0",
   "private": true,
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
