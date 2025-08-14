@@ -37,10 +37,6 @@ export type DdcClientConfig = Omit<BalancedNodeConfig, 'router'> &
     customerDepositContractAddress: string;
   };
 
-type DepositBalanceOptions = {
-  allowExtra?: boolean;
-};
-
 /**
  * `DdcClient` is a class that provides methods to interact with the DDC.
  *
@@ -152,9 +148,7 @@ export class DdcClient {
   /**
    * Deposits a specified amount of tokens to the account for a specific cluster. The account must have enough tokens to cover the deposit.
    *
-   * @param clusterId - The ID of the cluster to deposit tokens for.
    * @param amount - The amount of tokens to deposit.
-   * @param options - Additional options for the deposit.
    *
    * @returns A promise that resolves to the transaction hash of the deposit.
    *
@@ -168,7 +162,7 @@ export class DdcClient {
    * console.log(txHash);
    * ```
    * */
-  async depositBalance(clusterId: ClusterId, amount: bigint, options: DepositBalanceOptions = {}) {
+  async depositBalance(amount: bigint) {
     this.logger.info('Depositing balance %s to %s using smart contract', amount, this.signer.address);
     const tx = this.customerDepositContract.deposit(amount);
     const result = await this.blockchain.send(tx, { account: this.signer });
@@ -212,7 +206,6 @@ export class DdcClient {
   /**
    * Retrieves the current active deposit of the account for a specific cluster.
    *
-   * @param clusterId - The ID of the cluster to get deposit for.
    * @param accountId - Optional account ID. If not provided, uses the signer's address.
    *
    * @returns A promise that resolves to the current active deposit of the account.
@@ -220,13 +213,12 @@ export class DdcClient {
    * @example
    *
    * ```typescript
-   * const clusterId: ClusterId = '0x...';
    * const deposit = await ddcClient.getDeposit(clusterId);
    *
    * console.log(deposit);
    * ```
    * */
-  async getDeposit(clusterId: ClusterId, accountId?: AccountId) {
+  async getDeposit(accountId?: AccountId) {
     const targetAccountId = accountId || this.signer.address;
     this.logger.info('Getting the account deposit %s using smart contract', targetAccountId);
 
@@ -298,7 +290,7 @@ export class DdcClient {
    * console.log('Unlocking chunks:', ledger?.unlocking);
    * ```
    */
-  async getLedger(clusterId?: ClusterId, accountId?: AccountId): Promise<Ledger | null> {
+  async getLedger(accountId?: AccountId): Promise<Ledger | null> {
     const targetAccountId = accountId || this.signer.address;
 
     this.logger.info('Getting ledger information for account %s', targetAccountId);
