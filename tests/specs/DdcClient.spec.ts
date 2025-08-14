@@ -205,7 +205,7 @@ describe('DDC Client', () => {
     test('Deposit balance', async () => {
       const toDeposit = 10n * CERE;
       const prevDeposit = await client.getDeposit(clusterId);
-      await client.depositBalance(clusterId, toDeposit);
+      await client.depositBalance(toDeposit);
       const nextDeposit = await client.getDeposit(clusterId);
 
       expect(nextDeposit - prevDeposit).toEqual(toDeposit);
