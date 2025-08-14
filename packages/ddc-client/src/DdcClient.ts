@@ -181,7 +181,6 @@ export class DdcClient {
    * This allows depositing funds on behalf of another address.
    *
    * @param targetAddress - The target address to deposit funds for.
-   * @param clusterId - The ID of the cluster to deposit tokens for.
    * @param amount - The amount of tokens to deposit.
    *
    * @returns A promise that resolves to the transaction hash of the deposit.
@@ -190,16 +189,15 @@ export class DdcClient {
    *
    * ```typescript
    * const targetAddress = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
-   * const clusterId: ClusterId = '0x...';
    * const amount = 100n;
-   * const txHash = await ddcClient.depositBalanceFor(targetAddress, clusterId, amount);
+   * const txHash = await ddcClient.depositBalanceFor(targetAddress, amount);
    *
    * console.log(txHash);
    * ```
    * */
-  async depositBalanceFor(targetAddress: AccountId, clusterId: ClusterId, amount: bigint) {
+  async depositBalanceFor(targetAddress: AccountId, amount: bigint) {
     this.logger.info('Depositing balance %s for %s using smart contract', amount, targetAddress);
-    const tx = this.customerDepositContract.depositFor(clusterId, targetAddress, amount);
+    const tx = this.customerDepositContract.depositFor(targetAddress, amount);
     return this.blockchain.send(tx, { account: this.signer });
   }
 
@@ -232,7 +230,6 @@ export class DdcClient {
   /**
    * Unlocks deposit funds from the account for the specified cluster.
    *
-   * @param clusterId - The ID of the cluster.
    * @param amount - The amount to unlock.
    *
    * @returns A promise that resolves to the transaction hash.
@@ -240,38 +237,34 @@ export class DdcClient {
    * @example
    *
    * ```typescript
-   * const clusterId: ClusterId = '0x...';
    * const amount = 100n;
    * const txHash = await ddcClient.unlockDeposit(clusterId, amount);
    *
    * console.log(txHash);
    * ```
    * */
-  async unlockDeposit(clusterId: ClusterId, amount: bigint) {
+  async unlockDeposit(amount: bigint) {
     this.logger.info('Unlocking deposit %s using smart contract', amount);
-    const tx = this.customerDepositContract.unlockDeposit(clusterId, amount);
+    const tx = this.customerDepositContract.unlockDeposit(amount);
     return this.blockchain.send(tx, { account: this.signer });
   }
 
   /**
    * Withdraws unlocked funds from the account for the specified cluster.
    *
-   * @param clusterId - The ID of the cluster.
-   *
    * @returns A promise that resolves to the transaction hash.
    *
    * @example
    *
    * ```typescript
-   * const clusterId: ClusterId = '0x...';
    * const txHash = await ddcClient.withdrawUnlockedDeposit(clusterId);
    *
    * console.log(txHash);
    * ```
    * */
-  async withdrawUnlockedDeposit(clusterId: ClusterId) {
+  async withdrawUnlockedDeposit() {
     this.logger.info('Withdrawing unlocked deposit using smart contract');
-    const tx = this.customerDepositContract.withdrawUnlocked(clusterId);
+    const tx = this.customerDepositContract.withdrawUnlocked();
     return this.blockchain.send(tx, { account: this.signer });
   }
 

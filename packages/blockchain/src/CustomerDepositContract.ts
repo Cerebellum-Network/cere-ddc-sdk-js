@@ -33,6 +33,12 @@ export class CustomerDepositContract {
     });
   }
 
+  private ensureConnected(): void {
+    if (!this.apiPromise.isConnected) {
+      throw new Error('API must be connected to a chain before using CustomerDepositContract methods');
+    }
+  }
+
   private toBigIntSafe(value: string | number | bigint): bigint {
     if (typeof value === 'string') {
       value = value.replace(/[^\d-]/g, '');
@@ -47,6 +53,8 @@ export class CustomerDepositContract {
    * @returns Promise that resolves to balance information or null if the balance is not found
    */
   async getBalance(owner: AccountId): Promise<Ledger | null> {
+    this.ensureConnected();
+
     try {
       const { result, output } = await this.contract.query['ddcBalancesFetcher::getBalance'](
         owner,
@@ -100,6 +108,8 @@ export class CustomerDepositContract {
    * ```
    */
   deposit(value: bigint): Sendable {
+    this.ensureConnected();
+
     const tx = this.contract.tx['ddcBalancesDepositor::deposit']({
       gasLimit: this.defaultGasLimit,
       storageDepositLimit: null,
@@ -111,25 +121,25 @@ export class CustomerDepositContract {
   /**
    * Tops up the deposit balance for a specific owner on behalf of the faucet.
    *
-   * @param clusterId - Cluster ID for the deposit
    * @param owner - Account owner address to top up
    * @param value - Amount to deposit
    * @returns Transaction to execute
    *
    * @example
    * ```typescript
-   * const tx = contract.depositFor('0x...', '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu', 100n);
+   * const tx = contract.depositFor('5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu', 100n);
    * const result = await blockchain.send(tx, { account: signer });
    * ```
    */
-  depositFor(clusterId: string, owner: AccountId, value: bigint): Sendable {
+  depositFor(owner: AccountId, value: bigint): Sendable {
+    this.ensureConnected();
+
     const tx = this.contract.tx['ddcBalancesDepositor::depositFor'](
       {
         gasLimit: this.defaultGasLimit,
         storageDepositLimit: null,
+        value,
       },
-      clusterId,
-      value,
       owner,
     );
     return tx as unknown as Sendable;
@@ -138,23 +148,23 @@ export class CustomerDepositContract {
   /**
    * Initiates unlocking of the deposit balance on behalf of the owner.
    *
-   * @param clusterId - Cluster ID to unlock the deposit
    * @param value - Amount to unlock
    * @returns Transaction to execute
    *
    * @example
    * ```typescript
-   * const tx = contract.unlockDeposit('0x...', 50n);
+   * const tx = contract.unlockDeposit(50n);
    * const result = await blockchain.send(tx, { account: signer });
    * ```
    */
-  unlockDeposit(clusterId: string, value: bigint): Sendable {
+  unlockDeposit(value: bigint): Sendable {
+    this.ensureConnected();
+
     const tx = this.contract.tx['ddcBalancesDepositor::unlockDeposit'](
       {
         gasLimit: this.defaultGasLimit,
         storageDepositLimit: null,
       },
-      clusterId,
       value,
     );
     return tx as unknown as Sendable;
@@ -167,18 +177,17 @@ export class CustomerDepositContract {
    *
    * @example
    * ```typescript
-   * const tx = contract.withdrawUnlocked('0x...');
+   * const tx = contract.withdrawUnlocked();
    * const result = await blockchain.send(tx, { account: signer });
    * ```
    */
-  withdrawUnlocked(clusterId: string): Sendable {
-    const tx = this.contract.tx['ddcBalancesDepositor::withdrawUnlocked'](
-      {
-        gasLimit: this.defaultGasLimit,
-        storageDepositLimit: null,
-      },
-      clusterId,
-    );
+  withdrawUnlocked(): Sendable {
+    this.ensureConnected();
+
+    const tx = this.contract.tx['ddcBalancesDepositor::withdrawUnlocked']({
+      gasLimit: this.defaultGasLimit,
+      storageDepositLimit: null,
+    });
     return tx as unknown as Sendable;
   }
 }
