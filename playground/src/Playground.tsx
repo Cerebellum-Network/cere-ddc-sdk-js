@@ -298,7 +298,7 @@ export const Playground = () => {
 
     try {
       setInProgress(true);
-      await client!.depositBalance(currentClusterId as ClusterId, BigInt(extraDeposit) * CERE);
+      await client!.depositBalance(BigInt(extraDeposit) * CERE);
       const updatedDeposit = await client!.getDeposit(currentClusterId as ClusterId);
       setDeposit(blockchain!.formatBalance(updatedDeposit, false));
       setStep(step + 1);
