@@ -16,6 +16,7 @@ import {
   getHostIP,
   getStorageNodes,
   BLOCKCHAIN_NODE_MAX_STARTUP_TIME,
+  ROOT_USER_SEED,
 } from '../../helpers';
 
 export type BlockchainConfig = BlockchainState & {
@@ -79,7 +80,7 @@ export const stopBlockchain = async () => {
 };
 
 export const setupBlockchain = async () => {
-  console.group('Setup pallets');
+  console.group('Setup blockchain with smart contracts');
   console.time('Done');
 
   await cryptoWaitReady();
@@ -163,16 +164,38 @@ export const setupBlockchain = async () => {
   );
   console.timeEnd('Add nodes to cluster');
 
-  console.time('Create buckets');
-  const bucketsSendResult = await blockchain.batchAllSend(
-    [
-      blockchain.ddcCustomers.createBucket(clusterId, { isPublic: true }), // 1n - public bucket
-      blockchain.ddcCustomers.createBucket(clusterId, { isPublic: false }), // 2n - private bucket
-    ],
-    { account: rootAccount },
-  );
-  const createdBucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(bucketsSendResult.events);
-  console.timeEnd('Create buckets');
+  // Setup customer with smart contract
+  console.time('Setup customer with smart contract');
+  const CUSTOMER_DEPOSIT_CONTRACT_ADDRESS = '6TZJb1s7PMa9UcHnjickVtiNG2JjYN6wNYU3CTMvji1VxTMY';
+  const customerDepositContract = blockchain.getCustomerDepositContract(CUSTOMER_DEPOSIT_CONTRACT_ADDRESS);
+
+  // Make a deposit for the customer (100 CERE)
+  const depositTx = customerDepositContract.deposit(100n * CERE);
+  await blockchain.send(depositTx, { account: rootAccount });
+  console.timeEnd('Setup customer with smart contract');
+
+  // Create buckets through DDC Client (which uses smart contracts)
+  console.time('Create buckets through DDC Client');
+  const { DdcClient } = await import('@cere-ddc-sdk/ddc-client');
+  const { UriSigner } = await import('@cere-ddc-sdk/blockchain');
+
+  const signer = new UriSigner(ROOT_USER_SEED);
+  await signer.isReady();
+
+  const ddcClient = await DdcClient.create(signer, {
+    blockchain: 'ws://localhost:9944',
+    customerDepositContractAddress: CUSTOMER_DEPOSIT_CONTRACT_ADDRESS,
+    logLevel: 'debug',
+    nodes: [],
+  });
+
+  // Create buckets through client
+  const publicBucket = await ddcClient.createBucket(clusterId, { isPublic: true });
+  const privateBucket = await ddcClient.createBucket(clusterId, { isPublic: false });
+  const createdBucketIds = [publicBucket, privateBucket];
+
+  await ddcClient.disconnect();
+  console.timeEnd('Create buckets through DDC Client');
 
   console.timeEnd('Done');
   console.groupEnd();
