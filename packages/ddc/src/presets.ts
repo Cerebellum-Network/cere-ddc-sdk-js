@@ -4,6 +4,7 @@ import { RouterNode } from './routing';
 export type ConfigPreset = {
   blockchain: string;
   nodes?: RouterNode[];
+  customerDepositContractAddress: string;
 };
 
 /**
@@ -13,6 +14,7 @@ export type ConfigPreset = {
  */
 export const MAINNET: ConfigPreset = {
   blockchain: 'wss://rpc.mainnet.cere.network/ws',
+  customerDepositContractAddress: '', // @TODO
 };
 
 /**
@@ -22,6 +24,7 @@ export const MAINNET: ConfigPreset = {
  */
 export const TESTNET: ConfigPreset = {
   blockchain: 'wss://rpc.testnet.cere.network/ws',
+  customerDepositContractAddress: '', // @TODO
 };
 
 /**
@@ -31,6 +34,7 @@ export const TESTNET: ConfigPreset = {
  */
 export const DEVNET: ConfigPreset = {
   blockchain: 'wss://archive.devnet.cere.network/ws',
+  customerDepositContractAddress: '6TZJb1s7PMa9UcHnjickVtiNG2JjYN6wNYU3CTMvji1VxTMY',
 };
 
 export const DEFAULT_PRESET = TESTNET;
@@ -45,6 +49,7 @@ export const DEFAULT_PRESET = TESTNET;
  */
 export const DEVNET_STATIC: ConfigPreset = {
   blockchain: 'wss://archive.devnet.cere.network/ws',
+  customerDepositContractAddress: '6TZJb1s7PMa9UcHnjickVtiNG2JjYN6wNYU3CTMvji1VxTMY',
   nodes: [
     {
       mode: StorageNodeMode.Full,
@@ -110,6 +115,7 @@ export const DEVNET_STATIC: ConfigPreset = {
  */
 export const TESTNET_STATIC: ConfigPreset = {
   blockchain: 'wss://rpc.testnet.cere.network/ws',
+  customerDepositContractAddress: '', // @TODO
   nodes: [
     {
       mode: StorageNodeMode.Full,

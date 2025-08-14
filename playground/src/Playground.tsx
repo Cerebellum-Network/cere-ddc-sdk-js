@@ -63,12 +63,25 @@ const Dropzone = styled(Box)(({ theme }) => ({
 }));
 
 const bcPresets = {
-  devnet: { ...DEVNET, baseUrl: 'https://storage.devnet.cere.network' },
-  testnet: { ...TESTNET, baseUrl: 'https://storage.testnet.cere.network' },
-  mainnet: { ...MAINNET, baseUrl: 'https://storage.dragon.cere.network' },
+  devnet: {
+    ...DEVNET,
+    baseUrl: 'https://storage.devnet.cere.network',
+    customerDepositContractAddress: DEVNET.customerDepositContractAddress,
+  },
+  testnet: {
+    ...TESTNET,
+    baseUrl: 'https://storage.testnet.cere.network',
+    customerDepositContractAddress: TESTNET.customerDepositContractAddress,
+  },
+  mainnet: {
+    ...MAINNET,
+    baseUrl: 'https://storage.dragon.cere.network',
+    customerDepositContractAddress: MAINNET.customerDepositContractAddress,
+  },
   custom: {
     blockchain: __BC_ENDPOINT__ || '',
     baseUrl: 'http://localhost:8091',
+    customerDepositContractAddress: DEVNET.customerDepositContractAddress,
   },
 };
 
@@ -245,7 +258,12 @@ export const Playground = () => {
     try {
       setInProgress(true);
       const blockchain = await Blockchain.connect({ wsEndpoint: preset.blockchain });
-      const client = await DdcClient.create(signer!, { ...preset, blockchain, logLevel: 'debug' });
+      const client = await DdcClient.create(signer!, {
+        ...preset,
+        blockchain,
+        logLevel: 'debug',
+        customerDepositContractAddress: bcPresets[selectedBc]?.customerDepositContractAddress ?? '',
+      });
       const [clusters, balance] = await Promise.all([blockchain.ddcClusters.listClusters(), client.getBalance()]);
 
       setBlockchain(blockchain);

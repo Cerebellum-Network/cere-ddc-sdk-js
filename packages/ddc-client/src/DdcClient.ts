@@ -19,13 +19,22 @@ import {
   CnsRecordGetOptions,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
-import { AccountId, Blockchain, BucketId, BucketParams, ClusterId, Sendable } from '@cere-ddc-sdk/blockchain';
+import {
+  AccountId,
+  Blockchain,
+  BucketId,
+  BucketParams,
+  ClusterId,
+  CustomerDepositContract,
+  Ledger,
+} from '@cere-ddc-sdk/blockchain';
 
 import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
 
 export type DdcClientConfig = Omit<BalancedNodeConfig, 'router'> &
   Omit<ConfigPreset, 'blockchain'> & {
     blockchain: Blockchain | ConfigPreset['blockchain'];
+    customerDepositContractAddress: string;
   };
 
 type DepositBalanceOptions = {
@@ -43,8 +52,9 @@ export class DdcClient {
   private readonly fileStorage: FileStorage;
   private readonly signer: Signer;
   private readonly logger: Logger;
+  private readonly customerDepositContract: CustomerDepositContract;
 
-  constructor(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
+  constructor(uriOrSigner: Signer | string, config: DdcClientConfig) {
     const logger = createLogger('DdcClient', config);
     const blockchain =
       typeof config.blockchain === 'string' ? new Blockchain({ wsEndpoint: config.blockchain }) : config.blockchain;
@@ -60,6 +70,8 @@ export class DdcClient {
     this.ddcNode = new BalancedNode({ ...config, router, logger });
     this.fileStorage = new FileStorage(router, { ...config, logger });
 
+    this.customerDepositContract = blockchain.getCustomerDepositContract(config.customerDepositContractAddress);
+
     logger.debug(config, 'DdcClient created');
 
     if (config.logErrors !== false) {
@@ -67,6 +79,7 @@ export class DdcClient {
         'getBalance',
         'depositBalance',
         'getDeposit',
+        'getLedger',
         'createBucket',
         'getBucket',
         'getBucketList',
@@ -156,21 +169,17 @@ export class DdcClient {
    * ```
    * */
   async depositBalance(clusterId: ClusterId, amount: bigint, options: DepositBalanceOptions = {}) {
-    let tx: Sendable;
-    const currentDeposit =
-      options.allowExtra === false
-        ? null
-        : await this.blockchain.ddcCustomers.getStackingInfo(clusterId, this.signer.address);
+    this.logger.info('Depositing balance %s to %s using smart contract', amount, this.signer.address);
+    const tx = this.customerDepositContract.deposit(amount);
+    const result = await this.blockchain.send(tx, { account: this.signer });
 
-    if (currentDeposit === null) {
-      this.logger.info('Depositing balance %s to %s for cluster %s', amount, this.signer.address, clusterId);
-      tx = this.blockchain.ddcCustomers.deposit(clusterId, amount);
-    } else {
-      this.logger.info('Depositing extra balance %s to %s for cluster %s', amount, this.signer.address, clusterId);
-      tx = this.blockchain.ddcCustomers.depositExtra(clusterId, amount);
-    }
+    this.logger.info('Deposit transaction result:', result);
+    this.logger.info(
+      'Deposit transaction events:',
+      result.events.map((e) => `${e.section}.${e.method}: ${JSON.stringify(e.data)}`),
+    );
 
-    return this.blockchain.send(tx, { account: this.signer });
+    return result;
   }
 
   /**
@@ -195,8 +204,8 @@ export class DdcClient {
    * ```
    * */
   async depositBalanceFor(targetAddress: AccountId, clusterId: ClusterId, amount: bigint) {
-    this.logger.info('Depositing balance %s for %s in cluster %s', amount, targetAddress, clusterId);
-    const tx = this.blockchain.ddcCustomers.depositFor(targetAddress, clusterId, amount);
+    this.logger.info('Depositing balance %s for %s using smart contract', amount, targetAddress);
+    const tx = this.customerDepositContract.depositFor(clusterId, targetAddress, amount);
     return this.blockchain.send(tx, { account: this.signer });
   }
 
@@ -219,11 +228,12 @@ export class DdcClient {
    * */
   async getDeposit(clusterId: ClusterId, accountId?: AccountId) {
     const targetAccountId = accountId || this.signer.address;
-    this.logger.info('Getting the account deposit %s for cluster %s', targetAccountId, clusterId);
-    const info = await this.blockchain.ddcCustomers.getStackingInfo(clusterId, targetAccountId);
-    const deposit = BigInt(info?.active || 0n);
-    this.logger.info('The account (%s) deposit for cluster %s is %s', targetAccountId, clusterId, deposit);
+    this.logger.info('Getting the account deposit %s using smart contract', targetAccountId);
 
+    const ledger = await this.customerDepositContract.getBalance(targetAccountId);
+    const deposit = ledger?.active || 0n;
+
+    this.logger.info('The account (%s) deposit is %s', targetAccountId, deposit);
     return deposit;
   }
 
@@ -246,8 +256,8 @@ export class DdcClient {
    * ```
    * */
   async unlockDeposit(clusterId: ClusterId, amount: bigint) {
-    this.logger.info('Unlocking deposit %s for cluster %s', amount, clusterId);
-    const tx = this.blockchain.ddcCustomers.unlockDeposit(clusterId, amount);
+    this.logger.info('Unlocking deposit %s using smart contract', amount);
+    const tx = this.customerDepositContract.unlockDeposit(clusterId, amount);
     return this.blockchain.send(tx, { account: this.signer });
   }
 
@@ -268,9 +278,34 @@ export class DdcClient {
    * ```
    * */
   async withdrawUnlockedDeposit(clusterId: ClusterId) {
-    this.logger.info('Withdrawing unlocked deposit for cluster %s', clusterId);
-    const tx = this.blockchain.ddcCustomers.withdrawUnlockedDeposit(clusterId);
+    this.logger.info('Withdrawing unlocked deposit using smart contract');
+    const tx = this.customerDepositContract.withdrawUnlocked(clusterId);
     return this.blockchain.send(tx, { account: this.signer });
+  }
+
+  /**
+   * Gets full client (ledger) balance information from the smart contract.
+   * Includes active funds, total amount, and unlock information.
+   *
+   * @param accountId - Optional account ID. If not specified, the signer's address is used.
+   * @returns Promise that resolves to balance information, or null if not found
+   *
+   * @example
+   * ```typescript
+   * const ledger = await ddcClient.getLedger();
+   * console.log('Active balance:', ledger?.active);
+   * console.log('Total balance:', ledger?.total);
+   * console.log('Unlocking chunks:', ledger?.unlocking);
+   * ```
+   */
+  async getLedger(clusterId?: ClusterId, accountId?: AccountId): Promise<Ledger | null> {
+    const targetAccountId = accountId || this.signer.address;
+
+    this.logger.info('Getting ledger information for account %s', targetAccountId);
+    const ledger = await this.customerDepositContract.getBalance(targetAccountId);
+    this.logger.info('Got ledger: %o', ledger);
+
+    return ledger;
   }
 
   /**

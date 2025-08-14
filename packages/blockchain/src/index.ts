@@ -21,6 +21,7 @@ export * from './Signer';
  * Pallets
  */
 export * from './DDCCustomersPallet';
+export * from './CustomerDepositContract';
 export * from './DDCStakingPallet';
 export * from './DDCClustersPallet';
 export * from './DDCNodesPallet';

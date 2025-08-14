@@ -11,6 +11,7 @@ import { DDCClustersPallet } from './DDCClustersPallet';
 import { DDCStakingPallet } from './DDCStakingPallet';
 import { DDCCustomersPallet } from './DDCCustomersPallet';
 import { DDCClustersGovPallet } from './DDCClustersGovPallet';
+import { CustomerDepositContract } from './CustomerDepositContract';
 
 export type SendOptions = Pick<Partial<SignerOptions>, 'nonce' | 'signer'> & {
   account: AddressOrPair | Signer;
@@ -331,6 +332,23 @@ export class Blockchain {
   async getCurrentBlockNumber() {
     const { number } = await this.api.rpc.chain.getHeader();
     return number.toNumber();
+  }
+
+  /**
+   * Creates an instance of CustomerDepositContract to work with the deposit smart contract.
+   *
+   * @param contractAddress - Address of the deployed smart contract customer deposit
+   * @returns Instance of CustomerDepositContract
+   *
+   * @example
+   * ```typescript
+   * const contractAddress = '5GBWmgdFAMqm8ZgAHGobqDqX6tjLxJhv53ygjNtaaAn3sjeZ';
+   * const contract = blockchain.getCustomerDepositContract(contractAddress);
+   * const balance = await contract.getBalance('5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu');
+   * ```
+   */
+  getCustomerDepositContract(contractAddress: string): CustomerDepositContract {
+    return new CustomerDepositContract(this.api, contractAddress);
   }
 }
 
