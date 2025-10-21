@@ -24,7 +24,7 @@
   "dependencies": {
     "@cere-ddc-sdk/ddc": "2.15.3",
     "@cere-ddc-sdk/ddc-client": "2.15.0",
-    "@polkadot/util-crypto": "^13.3.1",
+    "@polkadot/util-crypto": "^13.5.7",
     "@types/yargs": "^17.0.32",
     "yargs": "^17.7.2"
   },
