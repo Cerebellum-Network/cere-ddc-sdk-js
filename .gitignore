@@ -17,3 +17,4 @@ ddc-test-cluster/volumes
 
 # Lerna
 .nx/cache
+.nx/workspace-data
