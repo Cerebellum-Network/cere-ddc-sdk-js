@@ -9,7 +9,7 @@ export type DepositOptions = {
 };
 
 export const deposit = async (client: DdcClient, amount: number, options: DepositOptions) => {
-  await client.depositBalance(options.clusterId, BigInt(amount * CERE), options);
+  await client.depositBalance(options.clusterId, BigInt(amount * CERE), { allowExtra: options.allowExtra });
   const totalBalance = await client.getDeposit(options.clusterId);
 
   return Number(totalBalance / BigInt(CERE));

@@ -33,5 +33,11 @@ export default defineConfig(({ command }) => {
     define: {
       __BC_ENDPOINT__: JSON.stringify('ws://localhost:9944'),
     },
+
+    build: {
+      rollupOptions: {
+        external: ['@polkadot/extension-dapp', '@polkadot/extension-inject'],
+      },
+    },
   };
 });

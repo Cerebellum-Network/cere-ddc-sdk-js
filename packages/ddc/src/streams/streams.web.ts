@@ -24,7 +24,7 @@ globalThis.ReadableStream.prototype[Symbol.asyncIterator] ??= async function* <T
       const { done, value } = await reader.read();
 
       if (done) {
-        return;
+        return undefined;
       }
 
       yield value;
