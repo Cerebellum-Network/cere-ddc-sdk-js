@@ -1,10 +1,6 @@
 {
   "name": "@cere-ddc-sdk/playground",
-
   "version": "2.16.1",
-
-  "version": "2.16.1",
-
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,12 +11,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-
     "@cere-ddc-sdk/blockchain": "2.16.1",
     "@cere-ddc-sdk/ddc-client": "2.16.1",
-
-    "@cere-ddc-sdk/blockchain": "2.16.1",
-    "@cere-ddc-sdk/ddc-client": "2.15.0",
 
     "@cere/embed-wallet": "^0.20.1",
     "@emotion/react": "^11.11.4",
