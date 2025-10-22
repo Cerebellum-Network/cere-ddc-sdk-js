@@ -11,7 +11,7 @@
   "dependencies": {
     "@cere-ddc-sdk/blockchain": "2.16.1",
     "@cere-ddc-sdk/ddc": "2.16.1",
-    "@cere-ddc-sdk/ddc-client": "2.15.0",
+    "@cere-ddc-sdk/ddc-client": "2.16.1",
     "@cere-ddc-sdk/file-storage": "2.16.1",
     "@types/jest": "^29.5.11",
     "internal-ip": "6.2.0",

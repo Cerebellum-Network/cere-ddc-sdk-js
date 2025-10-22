@@ -1,7 +1,8 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { DecodedEvent } from '@polkadot/api-contract/types';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { GenericEvent } from '@polkadot/types';
 import { AddressOrPair, SubmittableExtrinsic, SubmittableResultValue } from '@polkadot/api/types';
 import { mnemonicGenerate } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/keyring';
@@ -12,7 +13,7 @@ import { ROOT_ACCOUNT_TYPE, ROOT_USER_SEED } from './constants';
 import { getHostIP } from './net';
 
 type TxResult = SubmittableResultValue & {
-  contractEvents?: DecodedEvent[];
+  contractEvents?: GenericEvent[];
 };
 
 export type BlockchainState = {
