@@ -1,23 +1,28 @@
+
 {
   "name": "@cere-ddc-sdk/node-examples",
   "version": "2.16.1",
   "private": true,
   "type": "module",
   "scripts": {
-    "example:1": "ts-node --esm ./1-create-bucket/index.ts",
-    "example:2": "ts-node --esm ./2-store-read-file/index.ts",
-    "example:3": "ts-node --esm ./3-upload-website/index.ts",
-    "example:4": "ts-node --esm ./4-store-read-events/index.ts",
-    "example:5": "ts-node --esm ./5-use-exported-account/index.ts",
-    "example:6": "ts-node --esm ./6-developer-console-compatibility/index.ts",
-    "example:7": "ts-node --esm ./7-private-bucket-access-sharing/index.ts",
-    "example:8": "ts-node --esm ./8-sudo-batch-remove-buckets/index.ts"
+    "example:1": "tsx ./1-create-bucket/index.ts",
+    "example:2": "tsx ./2-store-read-file/index.ts",
+    "example:3": "tsx ./3-upload-website/index.ts",
+    "example:4": "tsx ./4-store-read-events/index.ts",
+    "example:5": "tsx ./5-use-exported-account/index.ts",
+    "example:6": "tsx ./6-developer-console-compatibility/index.ts",
+    "example:7": "tsx ./7-private-bucket-access-sharing/index.ts",
+    "example:8": "tsx ./8-sudo-batch-remove-buckets/index.ts",
+    "example:9:sis": "tsx ./9-client-sdk/sis.ts"
   },
   "dependencies": {
     "@cere-ddc-sdk/blockchain": "2.16.1",
     "@cere-ddc-sdk/ddc-client": "2.15.0",
+    "@cere-ddc-sdk/client": "0.0.1",
     "@types/json-bigint": "^1.0.4",
-    "json-bigint": "^1.0.0",
-    "ts-node": "^10.9.2"
+    "json-bigint": "^1.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0"
   }
 }

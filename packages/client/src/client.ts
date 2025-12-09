@@ -1,0 +1,116 @@
+import type { ClientConfig, SignedWallet } from './types';
+import { SisClient } from './sis';
+import Event from './event';
+import MPC from './mcp';
+import Wallet from './wallet';
+const DEFAULT_WALLET_CONFIG = 'hybrid label reunion only dawn maze asset draft cousin height flock nation';
+
+export class ClientSdk {
+  private readonly clusterUrl: string;
+  private readonly eventRuntimeUrl: string;
+  private readonly mcpUrl: string;
+  private readonly sisUrl: string;
+  private readonly quicAddress: string;
+  private readonly basePath: string;
+  private readonly engineRuntimeSuffix: string;
+  private readonly orchestratorSuffix: string;
+  private readonly wallet: SignedWallet;
+  private readonly context: ClientConfig['context'];
+  private readonly sis: SisClient;
+
+  constructor(config: ClientConfig, env = 'production') {
+    this.clusterUrl = config.url;
+    if (env !== 'local') {
+      this.basePath = `/api/v1/`;
+      this.engineRuntimeSuffix = 'er';
+      this.orchestratorSuffix = 'orchestrator';
+    } else {
+      this.basePath = `/api/v1/`;
+      this.engineRuntimeSuffix = '';
+      this.orchestratorSuffix = '';
+    }
+    this.eventRuntimeUrl = config?.eventRuntimeUrl || this.clusterUrl;
+    this.mcpUrl = config?.mcpUrl || this.clusterUrl;
+    this.sisUrl = config?.sisUrl || this.clusterUrl;
+    this.quicAddress = config.quicAddress || this.clusterUrl;
+    const wallet = new Wallet(config.wallet || DEFAULT_WALLET_CONFIG);
+    this.wallet = wallet.wallet;
+    this.context = config.context;
+    this.sis = new SisClient({
+      nodes: [
+        {
+          pubKey: 'node-0',
+          httpUrl: this.sisUrl,
+          quicAddress: this.quicAddress,
+        },
+      ],
+    });
+  }
+
+  private buildURL(baseURL: string, path: string, suffix: string): string {
+    path = `/${suffix}${this.basePath}${path}`;
+    const url = new URL(baseURL + (baseURL.endsWith('/') && path.startsWith('/') ? path.slice(1) : path));
+
+    return url.toString();
+  }
+
+  public event = {
+    create: async (eventName: string, payload: unknown): Promise<unknown> => {
+      const data = {
+        event_type: eventName,
+        context_path: this.context,
+        payload,
+      };
+      const event = new Event(data, this.wallet, this.context);
+      const body = await event.body();
+      const url = this.buildURL(this.eventRuntimeUrl, 'events', this.engineRuntimeSuffix);
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return response.json();
+    },
+  };
+
+  public stream = {
+    create: async () => {
+      const stream = await this.sis.createStream(this.context, {});
+      return stream;
+    },
+    get: (streamId: string) => {
+      return this.sis.getStream(this.context, streamId);
+    },
+  };
+
+  public query = {
+    fetch: async (raftId: string, raftAlias: string, payload?: unknown): Promise<unknown> => {
+      const path = `mcp/agent-services/${this.context.agent_service}/rafts/${raftId}`;
+      const url = this.buildURL(this.mcpUrl, path, this.orchestratorSuffix);
+      const request = new MPC(raftAlias, payload || {});
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(request.body),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const json = await response.json();
+      if (response.ok) {
+        const resultData = json?.result?.data;
+        return resultData !== undefined ? resultData : json;
+      }
+      const errMessage = (json && json.error && json.error.message) || `Request failed with status ${response.status}`;
+      const error = new Error(errMessage);
+      // @ts-expect-error augment error with extra context
+      error.status = response.status;
+      // @ts-expect-error augment error with extra context
+      error.code = json?.error?.code;
+      throw error;
+    },
+  };
+}
+
+export default ClientSdk;
