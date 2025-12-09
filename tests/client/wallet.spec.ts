@@ -1,5 +1,7 @@
 import Wallet from '../../packages/client/src/wallet';
-import { UriSigner, CereWalletSigner } from '../../packages/signers/src';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { CereWalletSigner, UriSigner } from '@cere-activity-sdk/signers';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { EmbedWallet } from '@cere/embed-wallet';
 
 describe('Wallet', () => {
