@@ -59,7 +59,7 @@ jobs:
         if: ${{ !inputs.skipTests }}
         run: npm run test:ci
 
-      - name: Prepare pacakges for publish
+      - name: Prepare packages for publish
         run: npm run package
 
       - name: Publish packages

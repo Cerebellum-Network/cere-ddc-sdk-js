@@ -29,7 +29,8 @@
     "build": "npm-run-all --parallel build:node build:web",
     "build:node": "microbundle --tsconfig tsconfig.build.json --format esm,cjs --target node",
     "build:web": "microbundle --tsconfig tsconfig.build.json --format modern --output dist/browser.js",
-    "clean": "rimraf dist"
+    "package": "clean-publish",
+    "clean": "rimraf dist package"
   },
   "dependencies": {
     "@cere-activity-sdk/ciphers": "0.1.7",
