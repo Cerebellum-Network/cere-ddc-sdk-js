@@ -141,6 +141,53 @@ export interface CreateStreamOptions {
 }
 
 // =============================================================================
+// Raft Types (minimal set for tests)
+// =============================================================================
+
+/** Raft high-level status */
+export type RaftStatus = 'creating' | 'active' | 'failed' | 'stopped';
+
+/** Individual instance status */
+export type InstanceStatus = 'pending' | 'running' | 'stopped' | 'failed';
+
+/** Definition of a Raft (processor) */
+export interface RaftDefinition {
+  id?: string;
+  workspace_id: string;
+  parent_stream_id: string;
+  match_expression?: string;
+  tsCode?: string;
+  status?: RaftStatus;
+}
+
+/** Runtime instance information */
+export interface RaftInstance {
+  id: string;
+  raft_id: string;
+  node_pub_key: string;
+  status: InstanceStatus;
+}
+
+/** Aggregated stats for a Raft */
+export interface RaftStats {
+  raft_id: string;
+  instances: number;
+}
+
+/** Request payload for creating a Raft (SDK-side typing) */
+export interface CreateRaftRequest {
+  workspaceId: string;
+  parentStreamId: string;
+  matchExpression?: string;
+  tsCode: string;
+}
+
+/** Response from creating a Raft */
+export interface CreateRaftResponse {
+  id: string;
+}
+
+// =============================================================================
 // Client Configuration
 // =============================================================================
 
@@ -196,86 +243,6 @@ export interface SubscriptionOptions {
   onError?: (error: Error) => boolean;
   /** Reconnect callback */
   onReconnect?: (attempt: number, lastOffset: number) => void;
-}
-
-// =============================================================================
-// Raft Types
-// =============================================================================
-
-/** Raft definition status */
-export type RaftStatus = 'active' | 'inactive';
-
-/** Raft instance status */
-export type InstanceStatus = 'init' | 'active' | 'paused' | 'failed';
-
-/** Raft definition */
-export interface RaftDefinition {
-  /** Definition ID */
-  id: string;
-  /** Workspace ID */
-  workspace_id?: string;
-  /** Parent stream ID */
-  parent_stream_id: string;
-  /** Match expression for stream filtering */
-  match_expression?: string;
-  /** Definition status */
-  status: RaftStatus;
-  /** Creation timestamp */
-  created_at: number;
-  /** Error message if failed */
-  error_message?: string;
-}
-
-/** Raft instance */
-export interface RaftInstance {
-  /** Definition ID */
-  definition_id: string;
-  /** Data stream ID */
-  data_stream_id: string;
-  /** Parent stream ID */
-  parent_stream_id: string;
-  /** Instance status */
-  status: InstanceStatus;
-  /** Number of packets processed */
-  packets_processed: number;
-  /** Last activity timestamp */
-  last_active_at: number;
-  /** Error message if failed */
-  error_message?: string;
-}
-
-/** Raft statistics */
-export interface RaftStats {
-  /** Number of definitions */
-  definition_count: number;
-  /** Number of instances */
-  instance_count: number;
-  /** Number of streams */
-  stream_count: number;
-}
-
-/** Request to create a raft */
-export interface CreateRaftRequest {
-  /** Workspace ID */
-  workspaceId?: string;
-  /** Parent stream ID */
-  parentStreamId: string;
-  /** Match expression */
-  matchExpression?: string;
-  /** TypeScript code */
-  tsCode: string;
-}
-
-/** Response from creating a raft */
-export interface CreateRaftResponse {
-  /** Created raft ID */
-  id: string;
-  /** Status */
-  status: RaftStatus;
-  /** Parent stream ID */
-  parent_stream_id: string;
-  /** Match expression */
-  match_expression?: string;
 }
 
 // =============================================================================

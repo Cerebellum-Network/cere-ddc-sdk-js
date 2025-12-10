@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import ClientSdk from '../../packages/client/src/client';
-import { ClientContext } from '../../packages/client/src/context';
-import type { ClientConfig } from '../../packages/client/src/types';
+import ClientSdk from '../../../packages/client/src/client';
+import { ClientContext } from '../../../packages/client/src/context';
+import type { ClientConfig } from '../../../packages/client/src/types';
 
 function setupClient(baseUrl = 'https://api.example.com/') {
   const context = new ClientContext({ agentService: 'pubKey123', workspace: 'ws1', domain: 'example.com' });

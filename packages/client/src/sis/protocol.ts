@@ -1,9 +1,9 @@
 /**
  * SIS TypeScript SDK - Wire Protocol Helpers
- * 
+ *
  * This module implements the SIS wire protocol for serialization and deserialization.
  * Use these helpers when implementing custom transport layers or SDK ports.
- * 
+ *
  * Wire Formats:
  * - Handshake: [4 bytes: json_len][json_payload]
  * - Packet: [4 bytes: packet_size][8 bytes: seq_num][4 bytes: headers_len][headers_json][payload]
@@ -19,7 +19,7 @@ import {
   MAX_HEADERS_SIZE,
   MAX_STREAM_ID_LENGTH,
   SISError,
-} from './types.js';
+} from './types';
 
 // =============================================================================
 // Binary Helpers
@@ -118,7 +118,7 @@ function readInt64BE(data: Uint8Array, offset: number): number {
 /**
  * Serializes a handshake request for establishing a QUIC stream.
  * Wire Format: [4 bytes: json_len (big-endian uint32)][json_payload]
- * 
+ *
  * @param req - Handshake request
  * @returns Serialized handshake bytes
  * @throws SISError if validation fails
@@ -153,7 +153,7 @@ export function serializeHandshake(req: HandshakeRequest): Uint8Array {
 /**
  * Deserializes a handshake request from bytes.
  * Wire Format: [4 bytes: json_len (big-endian uint32)][json_payload]
- * 
+ *
  * @param data - Raw handshake bytes
  * @returns Parsed handshake request
  * @throws SISError if parsing fails
@@ -197,7 +197,7 @@ export function deserializeHandshake(data: Uint8Array): HandshakeRequest {
 /**
  * Serializes a packet in the SIS wire format.
  * Wire Format: [4 bytes: packet_size][8 bytes: seq_num][4 bytes: headers_len][headers_json][payload]
- * 
+ *
  * @param seqNum - Sequence number
  * @param headers - Optional packet headers
  * @param payload - Packet payload
@@ -248,7 +248,7 @@ export interface DeserializedPacket {
 /**
  * Deserializes a packet from the SIS wire format.
  * Wire Format: [4 bytes: packet_size][8 bytes: seq_num][4 bytes: headers_len][headers_json][payload]
- * 
+ *
  * @param data - Raw packet bytes (may contain more data after the packet)
  * @returns Parsed packet with sequence number, headers, payload, and bytes consumed
  * @throws SISError if parsing fails
@@ -319,7 +319,7 @@ export const ACK_SIZE = 16;
 /**
  * Deserializes an ACK from the server.
  * ACK Format: [8 bytes: seq_num][8 bytes: timestamp]
- * 
+ *
  * @param data - 16-byte ACK data
  * @returns Parsed ACK with sequence number and timestamp
  * @throws SISError if parsing fails
@@ -338,7 +338,7 @@ export function deserializeAck(data: Uint8Array): Ack {
 /**
  * Serializes an ACK (for server implementations or testing).
  * ACK Format: [8 bytes: seq_num][8 bytes: timestamp]
- * 
+ *
  * @param seqNum - Sequence number
  * @param timestamp - Timestamp in nanoseconds
  * @returns Serialized ACK bytes

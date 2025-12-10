@@ -11,6 +11,33 @@ import { HttpClient } from './http';
 import { Transport, Publisher as TransportPublisher, Subscriber } from './transport';
 import { NodeInfo, ClientConfig, DataStream, ContextPath, CreateStreamOptions, Packet, SISError } from './types';
 import fetchCertificateHash from './certificate';
+
+/**
+ * Normalize various inputs to a proper SIS WebTransport URL.
+ * Accepts:
+ *  - host:port (e.g., "localhost:4433")
+ *  - https URL with or without path (e.g., "https://localhost:4433" or "https://localhost:4433/some")
+ * Returns:
+ *  - https://host:port/sis (always)
+ */
+function normalizeSisUrl(input: string): string {
+  try {
+    if (input.startsWith('https://')) {
+      const u = new URL(input);
+      return `${u.origin}/sis`;
+    }
+    // Strip any protocol if mistakenly provided and enforce https
+    const trimmed = input.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+    return `https://${trimmed}/sis`;
+  } catch {
+    // Fallback: best-effort normalization
+    const trimmed = String(input || '')
+      .replace(/^https?:\/\//, '')
+      .replace(/\/+$/, '');
+    return `https://${trimmed}/sis`;
+  }
+}
+
 /**
  * Unified SIS client with multi-node support.
  * Provides automatic stream discovery, transparent failover,
@@ -177,8 +204,8 @@ export class Client {
   private getTransport(node: NodeInfo): Transport {
     let transport = this.transports.get(node.pubKey);
     if (!transport) {
-      // Handle quicAddr - if it's already a full URL, use it; otherwise construct one
-      const url = node.quicAddr.startsWith('https://') ? node.quicAddr : `https://${node.quicAddr}/sis`;
+      // Normalize WebTransport URL to always point to the SIS endpoint
+      const url = normalizeSisUrl(node.quicAddr);
       transport = new Transport({
         url,
         certificateHash: this.config.certificateHash,
@@ -409,19 +436,19 @@ export class Publisher {
   /**
    * Publishes a packet and waits for acknowledgement.
    *
-   * @param payload - Packet payload data
-   * @param headers - Optional packet headers
    * @returns The acknowledged sequence number and timestamp
+   * @param data
    */
-  async send(
-    payload: Uint8Array,
-    headers?: Record<string, string>,
-  ): Promise<{ sequenceNum: number; timestamp: number }> {
-    const ack = await this.publisher.send(payload, headers);
-    return {
-      sequenceNum: ack.sequenceNum,
-      timestamp: ack.timestamp,
+  async send(data: { message: any; index?: number }): Promise<{ sequenceNum: number; timestamp: number }> {
+    const payload = new TextEncoder().encode(data.message);
+    const headers = {
+      'content-type': 'text/plain',
+      'message-index': String(data.index || 0),
     };
+    const ack = (await this.publisher.send(payload, headers)) as any;
+    const sequenceNum = ack?.sequenceNum ?? ack?.seq;
+    const timestamp = ack?.timestamp ?? 0;
+    return { sequenceNum, timestamp };
   }
 
   /**

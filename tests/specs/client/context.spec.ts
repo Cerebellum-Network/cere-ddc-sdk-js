@@ -1,4 +1,4 @@
-import { ClientContext } from '../../packages/client/src/context';
+import { ClientContext } from '../../../packages/client/src/context';
 
 describe('ClientContext', () => {
   it('assigns passed properties and maps agentService -> agent_service', () => {

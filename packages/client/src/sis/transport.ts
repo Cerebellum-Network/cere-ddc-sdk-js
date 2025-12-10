@@ -10,8 +10,8 @@
  * Then pass { webTransportClass, webTransportReady: quicheLoaded } to the Client.
  */
 
-import { serializeHandshake, serializePacket, ACK_SIZE, BufferedReader, DeserializedPacket } from './protocol.js';
-import { Packet, Ack, STREAM_TYPE_PUBLISH, STREAM_TYPE_SUBSCRIBE, SISError } from './types.js';
+import { serializeHandshake, serializePacket, ACK_SIZE, BufferedReader, DeserializedPacket } from './protocol';
+import { Packet, Ack, STREAM_TYPE_PUBLISH, STREAM_TYPE_SUBSCRIBE, SISError } from './types';
 
 // =============================================================================
 // Transport Configuration

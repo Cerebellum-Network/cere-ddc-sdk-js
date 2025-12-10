@@ -7,7 +7,6 @@ const EVENT_URL = process.env.EVENT_URL || '//localhost:8084';
 const MCP_URL = process.env.MCP_URL || 'http://localhost:8080';
 const SIS_URL = process.env.SIS_URL || 'http://127.0.0.1:8085';
 const QUIC_ADDRESS = process.env.QUIC_ADDRESS || 'https://localhost:4433/sis';
-const ENV = (process.env.ENV ?? 'local') as 'local' | 'production';
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -38,15 +37,14 @@ async function main() {
     workspace: WORKSPACE,
   });
 
-  const client = new ClientSdk(
-    {
-      url: BASE_URL,
-      eventRuntimeUrl: EVENT_URL,
-      webTransportUrl: QUIC_ADDRESS,
-      mcpUrl: MCP_URL,
-      sisUrl: SIS_URL,
-      context,
-    });
+  const client = new ClientSdk({
+    url: BASE_URL,
+    eventRuntimeUrl: EVENT_URL,
+    webTransportUrl: QUIC_ADDRESS,
+    mcpUrl: MCP_URL,
+    sisUrl: SIS_URL,
+    context,
+  });
 
   logInfo('sdk initialized...');
 
@@ -57,6 +55,12 @@ async function main() {
   logInfo(`stream fetched...:${fetchedStream.id}`);
 
   const publisher = await client.stream.publisher(stream.id);
+
+  client.stream.subscribe(stream.id, ({ headers, data }) => {
+    console.log(headers, data);
+    logSuccess(`Received Packet... ${data}`);
+  });
+
   logInfo(`publisher created...`);
   const messages = [
     'Hello from Node.js! 🚀',
@@ -67,13 +71,7 @@ async function main() {
   ];
 
   for (let i = 0; i < messages.length; i++) {
-    const payload = new TextEncoder().encode(messages[i]);
-    const headers = {
-      'content-type': 'text/plain',
-      'message-index': String(i),
-    };
-
-    const ack = await publisher.send(payload, headers);
+    const ack = await publisher.send({ message: messages[i], index: i });
     logSuccess(`Sent message #${ack.sequenceNum}: "${messages[i]}"`);
     logInfo(`  Timestamp: ${ack.timestamp}`);
 

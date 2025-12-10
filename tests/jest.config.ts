@@ -16,7 +16,7 @@ const config: Config = {
   setupFilesAfterEnv: ['./setup/setup.ts'],
   moduleNameMapper: {
     // Stub browser-only wallet package to avoid UMD 'self' reference in Node
-    '^@cere/embed-wallet$': '<rootDir>/tests/__mocks__/embed-wallet.ts',
+    '^@cere/embed-wallet$': '<rootDir>/__mocks__/embed-wallet.ts',
   },
 
   transform: {

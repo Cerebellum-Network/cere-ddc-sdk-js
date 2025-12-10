@@ -1,6 +1,6 @@
-import Event from '../../packages/client/src/event';
-import Wallet from '../../packages/client/src/wallet';
-import { ClientContext } from '../../packages/client/src/context';
+import Event from '../../../packages/client/src/event';
+import Wallet from '../../../packages/client/src/wallet';
+import { ClientContext } from '../../../packages/client/src/context';
 
 describe('Event', () => {
   it('constructs id and timestamp and exposes body with payload, account_id and app_id', async () => {

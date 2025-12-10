@@ -1,6 +1,6 @@
 import type { ClientConfig, SignedWallet } from './types';
 import { Client as SisClient } from './sis';
-import { ContextPath } from './sis/types';
+import { ContextPath, Packet } from './sis/types';
 import Event from './event';
 import MPC from './mcp';
 import Wallet from './wallet';
@@ -71,8 +71,17 @@ export class ClientSdk {
       return this.sis.getStream(streamId);
     },
     publisher: async (streamId: string) => {
-      const publisher = await this.sis.newPublisher(streamId);
-      return publisher;
+      return this.sis.newPublisher(streamId);
+    },
+    subscribe: (streamId: string, callback: (data: { headers: Packet['headers']; data: any }) => void) => {
+      const packets = this.sis.subscribe(streamId);
+      (async () => {
+        for await (const packet of packets) {
+          const data = new TextDecoder().decode(packet.payload);
+          const headers = packet.headers;
+          callback({ headers, data });
+        }
+      })();
     },
   };
 

@@ -1,4 +1,4 @@
-import MCP from '../../packages/client/src/mcp';
+import MCP from '../../../packages/client/src/mcp';
 
 describe('MCP', () => {
   it('builds JSON-RPC 2.0 body with alias as name and payload as arguments', () => {

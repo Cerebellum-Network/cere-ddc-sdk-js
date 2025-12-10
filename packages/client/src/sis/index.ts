@@ -28,8 +28,8 @@ export {
   serializeAck,
   ACK_SIZE,
   BufferedReader,
-} from './protocol.js';
-export type { DeserializedPacket } from './protocol.js';
+} from './protocol';
+export type { DeserializedPacket } from './protocol';
 
 // Types - Constants (runtime values)
 export {
@@ -43,7 +43,7 @@ export {
   SISError,
   ServiceUnavailableError,
   StreamNotFoundError,
-} from './types.js';
+} from './types';
 
 // Types - Type definitions
 export type {
@@ -66,4 +66,4 @@ export type {
   RaftStats,
   CreateRaftRequest,
   CreateRaftResponse,
-} from './types.js';
+} from './types';

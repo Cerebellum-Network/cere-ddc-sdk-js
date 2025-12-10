@@ -12,13 +12,10 @@ import {
   CreateStreamResponse,
   CreateRaftRequest,
   CreateRaftResponse,
-  RaftDefinition,
-  RaftInstance,
-  RaftStats,
   SISError,
   ServiceUnavailableError,
   StreamNotFoundError,
-} from './types.js';
+} from './types';
 
 /**
  * HTTP client configuration
@@ -44,7 +41,7 @@ export class HttpClient {
   constructor(config: HttpClientConfig) {
     this.baseUrl = config.baseUrl.replace(/\/$/, ''); // Remove trailing slash
     this.timeout = config.timeout ?? 30000;
-    this.fetchFn = config.fetch ?? fetch;
+    this.fetchFn = config.fetch ?? fetch.bind(globalThis);
   }
 
   // ===========================================================================
@@ -91,7 +88,7 @@ export class HttpClient {
   // ===========================================================================
 
   /**
-   * Creates a new raft definition
+   * Creates a new Raft (processing unit) attached to a parent stream
    */
   async createRaft(req: CreateRaftRequest): Promise<CreateRaftResponse> {
     const body = {
@@ -100,73 +97,8 @@ export class HttpClient {
       match_expression: req.matchExpression,
       tsCode: req.tsCode,
     };
-
     return this.request<CreateRaftResponse>('POST', '/api/v1/rafts', body);
   }
-
-  /**
-   * Gets a raft definition by ID
-   */
-  async getRaft(definitionId: string): Promise<RaftDefinition> {
-    return this.request<RaftDefinition>('GET', `/api/v1/rafts/${definitionId}`);
-  }
-
-  /**
-   * Lists raft definitions for a parent stream
-   */
-  async listRafts(parentStreamId: string): Promise<RaftDefinition[]> {
-    if (!parentStreamId) {
-      throw new SISError('parentStreamId is required');
-    }
-    return this.request<RaftDefinition[]>(
-      'GET',
-      `/api/v1/rafts?parent_stream_id=${encodeURIComponent(parentStreamId)}`,
-    );
-  }
-
-  /**
-   * Deletes a raft definition
-   */
-  async deleteRaft(definitionId: string): Promise<void> {
-    await this.request('DELETE', `/api/v1/rafts/${definitionId}`);
-  }
-
-  /**
-   * Sets raft active status
-   */
-  async setRaftActive(definitionId: string, active: boolean): Promise<{ id: string; status: string }> {
-    return this.request('PATCH', `/api/v1/rafts/${definitionId}/status`, { active });
-  }
-
-  /**
-   * Gets instances for a raft definition
-   */
-  async getRaftInstances(definitionId: string): Promise<RaftInstance[]> {
-    return this.request<RaftInstance[]>('GET', `/api/v1/rafts/${definitionId}/instances`);
-  }
-
-  /**
-   * Queries a raft instance
-   */
-  async queryRaft(streamId: string, definitionId: string, query?: unknown): Promise<unknown> {
-    const response = await this.request<{ result: unknown }>(
-      'POST',
-      `/api/v1/rafts/${streamId}/${definitionId}/query`,
-      { query },
-    );
-    return response.result;
-  }
-
-  /**
-   * Gets raft statistics
-   */
-  async getRaftStats(): Promise<RaftStats> {
-    return this.request<RaftStats>('GET', '/api/v1/rafts/stats');
-  }
-
-  // ===========================================================================
-  // Internal
-  // ===========================================================================
 
   /**
    * Makes an HTTP request with error handling
@@ -190,7 +122,10 @@ export class HttpClient {
         signal: controller.signal,
       });
 
-      const responseText = await response.text();
+      // Prefer text when available; fall back to json() for mocks without text()
+      const hasText = typeof (response as any).text === 'function';
+      const hasJson = typeof (response as any).json === 'function';
+      const responseText = hasText ? await (response as any).text() : '';
 
       if (!response.ok) {
         if (response.status === 503) {
@@ -204,15 +139,28 @@ export class HttpClient {
           }
           throw new SISError(responseText || 'Not found', 'NOT_FOUND', 404);
         }
-        throw new SISError(responseText || `HTTP ${response.status}`, 'HTTP_ERROR', response.status);
+        if (responseText) {
+          throw new SISError(responseText || `HTTP ${response.status}`, 'HTTP_ERROR', response.status);
+        }
+        if (hasJson) {
+          try {
+            const j = await (response as any).json();
+            throw new SISError(typeof j === 'string' ? j : JSON.stringify(j), 'HTTP_ERROR', response.status);
+          } catch {
+            // ignore json parse errors
+          }
+        }
+        throw new SISError(`HTTP ${response.status}`, 'HTTP_ERROR', response.status);
       }
 
       // Handle empty responses
-      if (!responseText) {
-        return undefined as T;
+      if (responseText) {
+        return JSON.parse(responseText) as T;
       }
-
-      return JSON.parse(responseText) as T;
+      if (hasJson) {
+        return (await (response as any).json()) as T;
+      }
+      return undefined as T;
     } catch (error) {
       if (error instanceof SISError) {
         throw error;

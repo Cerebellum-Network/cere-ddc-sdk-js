@@ -1,4 +1,4 @@
-import Wallet from '../../packages/client/src/wallet';
+import Wallet from '../../../packages/client/src/wallet';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { CereWalletSigner, UriSigner } from '@cere-activity-sdk/signers';
 // eslint-disable-next-line import/no-extraneous-dependencies
