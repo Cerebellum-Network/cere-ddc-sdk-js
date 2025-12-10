@@ -35,6 +35,7 @@
     "@cere-activity-sdk/ciphers": "0.1.7",
     "@cere-activity-sdk/signers": "0.1.7",
     "@cere/embed-wallet": "^0.23.0",
+    "@fails-components/webtransport": "^1.4.8",
     "@polkadot/util": "^10.4.2",
     "@polkadot/util-crypto": "^10.4.2",
     "blakejs": "^1.2.1",
@@ -43,13 +44,5 @@
   },
   "devDependencies": {
     "@types/uuid": "^9.0.8"
-  },
-  "peerDependencies": {
-    "@aspect-build/webtransport": ">=0.1.0"
-  },
-  "peerDependenciesMeta": {
-    "@aspect-build/webtransport": {
-      "optional": true
-    }
   }
 }

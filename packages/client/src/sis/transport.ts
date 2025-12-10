@@ -138,7 +138,7 @@ export class Transport {
     }
 
     this.transport = new WebTransportClass(this.config.url, options as any);
-    await this.transport.ready;
+    await this.transport!.ready;
   }
 
   /**
@@ -411,20 +411,6 @@ export class Subscriber {
   }
 }
 
-// =============================================================================
-// Utilities
-// =============================================================================
-
-/**
- * Gets the global WebTransport constructor if available
- */
-function getGlobalWebTransport(): WebTransportConstructor | undefined {
-  if (typeof globalThis !== 'undefined' && 'WebTransport' in globalThis) {
-    return (globalThis as Record<string, unknown>)['WebTransport'] as WebTransportConstructor;
-  }
-  return undefined;
-}
-
 async function universalTransport() {
   if (typeof globalThis !== 'undefined' && 'WebTransport' in globalThis) {
     return (globalThis as Record<string, unknown>)['WebTransport'] as WebTransportConstructor;
@@ -436,7 +422,7 @@ async function universalTransport() {
     // Node.js environment
     try {
       // Dynamically import the WebTransport polyfill
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // @ts-ignore - @fails-components/webtransport is an optional Node.js dependency
       const { WebTransport, quicheLoaded } = await import('@fails-components/webtransport');
       await quicheLoaded;
       return WebTransport;
