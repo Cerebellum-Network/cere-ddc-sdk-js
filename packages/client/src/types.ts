@@ -21,7 +21,7 @@ export type ClientConfig = {
   url: string;
   eventRuntimeUrl?: string;
   mcpUrl?: string;
-  quicAddress?: string;
+  webTransportUrl?: string;
   sisUrl?: string;
   wallet?: WalletConfig | string;
 };
@@ -45,18 +45,19 @@ export type NodeInfo = {
   // HTTP endpoint for REST API operations (e.g., "http://localhost:8085")
   httpUrl: string;
   // QUIC/WebTransport endpoint for streaming (e.g., "https://localhost:44300")
-  quicAddress: string;
+  quicAddr: string;
 };
 
 export type SisClientConfig = {
   // Bootstrap nodes
-  nodes: NodeInfo[];
   // HTTP timeout in ms (default: 30000)
   httpTimeout?: number;
   // Retry attempts for failover (default: 3)
   retryAttempts?: number;
   // Base delay for exponential backoff in ms (default: 100)
   retryBaseDelay?: number;
+  httpUrl: string;
+  webTransportUrl: string;
 };
 
 export type CreateStreamOptions = {

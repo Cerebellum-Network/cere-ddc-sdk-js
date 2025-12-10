@@ -1,8 +1,10 @@
 import type { ClientConfig, SignedWallet } from './types';
-import { SisClient } from './sis';
+import { Client as SisClient } from './sis';
+import { ContextPath } from './sis/types';
 import Event from './event';
 import MPC from './mcp';
 import Wallet from './wallet';
+
 const DEFAULT_WALLET_CONFIG = 'hybrid label reunion only dawn maze asset draft cousin height flock nation';
 
 export class ClientSdk {
@@ -10,45 +12,30 @@ export class ClientSdk {
   private readonly eventRuntimeUrl: string;
   private readonly mcpUrl: string;
   private readonly sisUrl: string;
-  private readonly quicAddress: string;
+  private readonly webTransportUrl: string;
   private readonly basePath: string;
-  private readonly engineRuntimeSuffix: string;
-  private readonly orchestratorSuffix: string;
   private readonly wallet: SignedWallet;
   private readonly context: ClientConfig['context'];
   private readonly sis: SisClient;
 
-  constructor(config: ClientConfig, env = 'production') {
+  constructor(config: ClientConfig) {
     this.clusterUrl = config.url;
-    if (env !== 'local') {
-      this.basePath = `/api/v1/`;
-      this.engineRuntimeSuffix = 'er';
-      this.orchestratorSuffix = 'orchestrator';
-    } else {
-      this.basePath = `/api/v1/`;
-      this.engineRuntimeSuffix = '';
-      this.orchestratorSuffix = '';
-    }
-    this.eventRuntimeUrl = config?.eventRuntimeUrl || this.clusterUrl;
-    this.mcpUrl = config?.mcpUrl || this.clusterUrl;
+    this.basePath = `/api/v1/`;
+    this.eventRuntimeUrl = config?.eventRuntimeUrl || `${this.clusterUrl}/er`;
+    this.mcpUrl = config?.mcpUrl || `${this.clusterUrl}/orchestrator`;
     this.sisUrl = config?.sisUrl || this.clusterUrl;
-    this.quicAddress = config.quicAddress || this.clusterUrl;
+    this.webTransportUrl = config.webTransportUrl || this.clusterUrl;
     const wallet = new Wallet(config.wallet || DEFAULT_WALLET_CONFIG);
     this.wallet = wallet.wallet;
     this.context = config.context;
     this.sis = new SisClient({
-      nodes: [
-        {
-          pubKey: 'node-0',
-          httpUrl: this.sisUrl,
-          quicAddress: this.quicAddress,
-        },
-      ],
+      httpUrl: this.sisUrl,
+      webTransportUrl: this.webTransportUrl,
     });
   }
 
-  private buildURL(baseURL: string, path: string, suffix: string): string {
-    path = `/${suffix}${this.basePath}${path}`;
+  private buildURL(baseURL: string, path: string): string {
+    path = `${this.basePath}${path}`;
     const url = new URL(baseURL + (baseURL.endsWith('/') && path.startsWith('/') ? path.slice(1) : path));
 
     return url.toString();
@@ -63,7 +50,7 @@ export class ClientSdk {
       };
       const event = new Event(data, this.wallet, this.context);
       const body = await event.body();
-      const url = this.buildURL(this.eventRuntimeUrl, 'events', this.engineRuntimeSuffix);
+      const url = this.buildURL(this.eventRuntimeUrl, 'events');
       const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify(body),
@@ -77,18 +64,22 @@ export class ClientSdk {
 
   public stream = {
     create: async () => {
-      const stream = await this.sis.createStream(this.context, {});
+      const stream = await this.sis.createStream(this.context as ContextPath, {});
       return stream;
     },
     get: (streamId: string) => {
-      return this.sis.getStream(this.context, streamId);
+      return this.sis.getStream(streamId);
+    },
+    publisher: async (streamId: string) => {
+      const publisher = await this.sis.newPublisher(streamId);
+      return publisher;
     },
   };
 
   public query = {
     fetch: async (raftId: string, raftAlias: string, payload?: unknown): Promise<unknown> => {
       const path = `mcp/agent-services/${this.context.agent_service}/rafts/${raftId}`;
-      const url = this.buildURL(this.mcpUrl, path, this.orchestratorSuffix);
+      const url = this.buildURL(this.mcpUrl, path);
       const request = new MPC(raftAlias, payload || {});
       const response = await fetch(url, {
         method: 'POST',

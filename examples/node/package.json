@@ -13,7 +13,7 @@
     "example:6": "tsx ./6-developer-console-compatibility/index.ts",
     "example:7": "tsx ./7-private-bucket-access-sharing/index.ts",
     "example:8": "tsx ./8-sudo-batch-remove-buckets/index.ts",
-    "example:9:sis": "tsx ./9-client-sdk/sis.ts"
+    "example:9:sis": "tsx ./client-sdk/sis.ts"
   },
   "dependencies": {
     "@cere-ddc-sdk/blockchain": "2.16.1",
