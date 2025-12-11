@@ -7,11 +7,11 @@ const closeMock = jest.fn(async () => {});
 
 // Generator helpers
 async function* okThenDone() {
-  yield { headers: { h: '1' }, payload: new TextEncoder().encode('hello') } as any;
+  yield { headers: { h: '1', 'content-type': 'text/plain' }, payload: new TextEncoder().encode('hello') } as any;
 }
 
 async function* okThenThrow() {
-  yield { headers: { h: '1' }, payload: new TextEncoder().encode('one') } as any;
+  yield { headers: { h: '1', 'content-type': 'text/plain' }, payload: new TextEncoder().encode('one') } as any;
   throw new Error('boom');
 }
 
@@ -64,7 +64,7 @@ describe('ClientSdk.stream subscribe/unsubscribe', () => {
 
     expect(results.length).toBe(1);
     expect(results[0].err).toBeNull();
-    expect(results[0].data?.headers).toEqual({ h: '1' });
+    expect(results[0].data?.headers).toEqual({ h: '1', 'content-type': 'text/plain' });
     expect(results[0].data?.data).toBe('hello');
   });
 
