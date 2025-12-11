@@ -4,7 +4,7 @@ import { ClientContext } from '../../../packages/client/src/context';
 import type { ClientConfig } from '../../../packages/client/src/types';
 
 function setupClient(baseUrl = 'https://api.example.com/') {
-  const context = new ClientContext({ agentService: 'pubKey123', workspace: 'ws1', domain: 'example.com' });
+  const context = new ClientContext({ agentService: 'pubKey123', workspace: 'ws1', stream: 'stream-1' });
   const config: ClientConfig = {
     url: baseUrl,
     context,

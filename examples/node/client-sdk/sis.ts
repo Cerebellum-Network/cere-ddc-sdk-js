@@ -31,10 +31,16 @@ function logSuccess(message: string): void {
   log(`✅ ${message}`, 'green');
 }
 
+function logError(message: string): void {
+  log(`❌ ${message}`, 'red');
+}
+
 async function main() {
   const context = new ClientContext({
     agentService: AGENT_SERVICE,
     workspace: WORKSPACE,
+    // For demo purposes we use a fixed stream id; replace with your ER parent stream id in real apps
+    stream: process.env.STREAM_ID || 'demo-stream',
   });
 
   const client = new ClientSdk({
@@ -44,6 +50,8 @@ async function main() {
     mcpUrl: MCP_URL,
     sisUrl: SIS_URL,
     context,
+    // For demo purposes, provide a sample mnemonic wallet or set via env WALLET_MNEMONIC
+    wallet: process.env.WALLET_MNEMONIC || 'hybrid label reunion only dawn maze asset draft cousin height flock nation',
   });
 
   logInfo('sdk initialized...');
@@ -56,8 +64,11 @@ async function main() {
 
   const publisher = await client.stream.publisher(stream.id);
 
-  client.stream.subscribe(stream.id, ({ headers, data }) => {
-    console.log(headers, data);
+  client.stream.subscribe(stream.id, ({ headers, data }, error) => {
+    if (error) {
+      logError(`error: ${error.toString()}`);
+      return;
+    }
     logSuccess(`Received Packet... ${data}`);
   });
 
@@ -82,6 +93,11 @@ async function main() {
   logInfo('Closing publisher...');
   await publisher.close();
   logSuccess('Publisher closed');
+
+  // Unsubscribe from the stream
+  logInfo('Unsubscribing from the stream...');
+  await client.stream.unsubscribe();
+  logSuccess('Unsubscribed');
 }
 
 main().catch((err) => {

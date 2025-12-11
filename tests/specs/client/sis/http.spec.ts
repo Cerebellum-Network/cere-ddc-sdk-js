@@ -33,7 +33,7 @@ describe('SIS HttpClient', () => {
 
   it('createStream posts to /api/v1/streams with context and options', async () => {
     const { client, calls } = createClient('https://node-1.example');
-    const context = { agent_service: 'agent-1', workspace: 'ws-1', domain: 'example.com', stream: 's-1' } as any;
+    const context = { agent_service: 'agent-1', workspace: 'ws-1', stream: 's-1' } as any;
     await client.createStream(context, { ttlSeconds: 3600, metadata: { a: 1 } });
 
     expect(calls.length).toBe(1);
@@ -52,22 +52,5 @@ describe('SIS HttpClient', () => {
     const { client, calls } = createClient('https://sis.local');
     await client.listStreams({ status: 'active', limit: 10, offset: 20 });
     expect(calls[0].url).toBe('https://sis.local/api/v1/streams?status=active&limit=10&offset=20');
-  });
-
-  it('createRaft posts body to /api/v1/rafts', async () => {
-    const { client, calls } = createClient('https://sis.local');
-    await client.createRaft({
-      workspaceId: 'ws-1',
-      parentStreamId: 'p-1',
-      matchExpression: "headers['type']=='x'",
-      tsCode: 'export default () => {}',
-    });
-    expect(calls[0]).toMatchObject({ url: 'https://sis.local/api/v1/rafts', method: 'POST' });
-    expect(calls[0].body).toEqual({
-      workspace_id: 'ws-1',
-      parent_stream_id: 'p-1',
-      match_expression: "headers['type']=='x'",
-      tsCode: 'export default () => {}',
-    });
   });
 });

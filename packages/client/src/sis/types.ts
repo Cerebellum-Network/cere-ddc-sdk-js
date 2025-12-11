@@ -277,3 +277,39 @@ export class StreamNotFoundError extends SISError {
   }
 }
 
+// =============================================================================
+// Transport Configuration
+// =============================================================================
+
+export interface TransportConfig {
+  /** WebTransport URL (e.g., "https://localhost:44300") */
+  url: string;
+  /** Certificate hash for self-signed certificates (base64 encoded SHA-256) */
+  certificateHash?: string;
+  /** Custom WebTransport class (for Node.js polyfill) */
+  webTransportClass?: WebTransportConstructor;
+  /** Promise that resolves when the WebTransport library is ready (for @fails-components/webtransport) */
+  webTransportReady?: Promise<void>;
+}
+
+// Type for WebTransport constructor (compatible with both browser and polyfills)
+// Using 'any' for options because browser WebTransport and Node.js polyfills
+// have incompatible types for serverCertificateHashes (ArrayBuffer vs Buffer)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface WebTransportConstructor {
+  new (url: string, options?: any): WebTransportInstance;
+}
+
+export interface WebTransportInstance {
+  ready: Promise<void>;
+  closed: Promise<{ closeCode?: number; reason?: string }>;
+
+  close(closeInfo?: { closeCode?: number; reason?: string }): void;
+
+  createBidirectionalStream(): Promise<WebTransportBidirectionalStreamLike>;
+}
+
+export interface WebTransportBidirectionalStreamLike {
+  readable: ReadableStream<Uint8Array>;
+  writable: WritableStream<Uint8Array>;
+}

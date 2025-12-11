@@ -6,7 +6,7 @@ describe('Event', () => {
   it('constructs id and timestamp and exposes body with payload, account_id and app_id', async () => {
     const now = new Date('2020-01-01T00:00:00.000Z');
     const signer = new Wallet('hybrid label reunion only dawn maze asset draft cousin height flock nation');
-    const context = new ClientContext({ agentService: 'pubKey123', workspace: 'ws1', domain: 'example.com' });
+    const context = new ClientContext({ agentService: 'pubKey123', workspace: 'ws1', stream: 'stream-1' });
     const evt = new Event({ event_type: 'test', payload: { a: 1 } } as any, signer.wallet, context, {
       id: 'fixed-id',
       timestamp: now,
@@ -23,7 +23,7 @@ describe('Event', () => {
 
   it('autogenerates id and timestamp when not provided', async () => {
     const signer = new Wallet('hybrid label reunion only dawn maze asset draft cousin height flock nation');
-    const context = new ClientContext({ agentService: 'pubKey123', workspace: 'ws1' });
+    const context = new ClientContext({ agentService: 'pubKey123', workspace: 'ws1', stream: 'stream-1' });
     const evt = new Event({} as any, signer.wallet, context);
     expect(typeof evt.id).toBe('string');
     const body = await evt.body();

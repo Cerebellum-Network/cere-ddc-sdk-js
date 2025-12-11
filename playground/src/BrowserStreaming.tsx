@@ -1,14 +1,11 @@
 import { useCallback, useMemo, useState, useRef } from 'react';
 import {
-  Box,
   Paper,
   Stack,
   Typography,
   TextField,
   Button,
   Chip,
-  IconButton,
-  Divider,
   List,
   ListItem,
   ListItemText,
@@ -16,7 +13,7 @@ import {
 import { LoadingButton } from '@mui/lab';
 
 // Using the unified client SDK (packages/client)
-import { ClientContext, ClientSdk } from '@cere-ddc-sdk/client';
+import { ClientSdk } from '@cere-ddc-sdk/client';
 
 type LogEntry = {
   ts: number;
@@ -36,16 +33,8 @@ type StreamInfo = {
   ownerNode: string;
 };
 
-type CertificateInfo = {
-  hash: string;
-  expiresAt: string;
-  renewsAt: string;
-  nodePubKey: string;
-};
-
 /**
  * BrowserStreaming component
- * - Fetch certificate from SIS node
  * - Create stream
  * - Publish messages via WebTransport
  * - Subscribe to stream and receive messages
@@ -58,8 +47,6 @@ export const BrowserStreaming = () => {
   const [wtUrl, setWtUrl] = useState<string>('https://localhost:4433/sis');
   const [workspace, setWorkspace] = useState<string>('playground');
   const [agentService, setAgentService] = useState<string>('ddc-playground-agent');
-  const [certHash, setCertHash] = useState<string>('');
-  const [certInfo, setCertInfo] = useState<CertificateInfo | null>(null);
 
   // State
   const [client, setClient] = useState<ClientSdk | null>(null);
@@ -89,43 +76,10 @@ export const BrowserStreaming = () => {
     setLogs([]);
   }, []);
 
-  const ctx = useMemo(() => ({ agent_service: agentService, workspace }), [agentService, workspace]);
-
-  // Fetch certificate from the SIS node
-  const onFetchCertificate = useCallback(async () => {
-    setBusy(true);
-    try {
-      addLog('info', `Fetching certificate from ${httpUrl}/api/v1/node...`);
-
-      const response = await fetch(`${httpUrl}/api/v1/node`);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
-      }
-
-      const data = await response.json();
-      const cert = data.certificate;
-
-      setCertHash(cert.hash);
-      setCertInfo({
-        hash: cert.hash,
-        expiresAt: cert.expires_at,
-        renewsAt: cert.renews_at,
-        nodePubKey: data.pub_key,
-      });
-
-      const expiresAt = new Date(cert.expires_at);
-      const now = new Date();
-      const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-      addLog('success', `Certificate fetched: ${cert.hash.slice(0, 20)}...`);
-      addLog('info', `Certificate expires in ${daysUntilExpiry} days`);
-    } catch (e: any) {
-      addLog('error', `Failed to fetch certificate: ${e?.message || String(e)}`);
-      setCertInfo(null);
-    } finally {
-      setBusy(false);
-    }
-  }, [addLog, httpUrl]);
+  const ctx = useMemo(
+    () => ({ agent_service: agentService, workspace, stream: '' }),
+    [agentService, workspace],
+  );
 
   // Initialize client and create stream
   const onCreateStream = useCallback(async () => {
@@ -138,6 +92,8 @@ export const BrowserStreaming = () => {
         sisUrl: httpUrl,
         webTransportUrl: wtUrl,
         context: ctx,
+        // Demo-only wallet for playground purposes; replace with a secure wallet in real apps
+        wallet: 'test test test test test test test test test test test junk',
       });
       setClient(sdk);
 
@@ -251,17 +207,22 @@ export const BrowserStreaming = () => {
       addLog('success', 'Subscribed! Waiting for messages...');
 
       // Use the SDK's subscribe method with callback
-      client.stream.subscribe(streamInfo.id, ({ headers, data }) => {
-        setReceivedMessages((prev) => [
-          ...prev,
-          {
-            seqNum: prev.length,
-            headers,
-            payload: data,
-            ts: Date.now(),
-          },
-        ]);
-        addLog('data', `Received packet: ${data}`);
+      client.stream.subscribe(streamInfo.id, (data, error) => {
+        if (error) {
+          addLog('error', `Subscription error: ${error.message}`);
+          return;
+        }
+        if (data) {
+          setReceivedMessages((prev) => [
+            ...prev,
+            {
+              seqNum: prev.length,
+              payload: data.data,
+              ts: Date.now(),
+            },
+          ]);
+          addLog('data', `Received packet: ${data.data}`);
+        }
       });
     } catch (e: any) {
       addLog('error', `Failed to subscribe: ${e?.message || String(e)}`);
@@ -270,6 +231,7 @@ export const BrowserStreaming = () => {
       setBusy(false);
     }
   }, [addLog, client, streamInfo]);
+
   // Unsubscribe
   const onUnsubscribe = useCallback(async () => {
     try {
@@ -316,15 +278,6 @@ export const BrowserStreaming = () => {
       <Typography variant="body2" color="text.secondary">
         Stream data from browser using WebTransport
       </Typography>
-
-      {/* Warning Box */}
-      <Paper variant="outlined" sx={{ p: 2, bgcolor: 'warning.dark', borderColor: 'warning.main' }}>
-        <Typography variant="body2" color="warning.contrastText">
-          <strong>💡 Certificate Discovery:</strong> Click "Fetch Certificate" to automatically get the certificate hash
-          from the server. For self-signed certs, you may also need to launch Chrome with{' '}
-          <code>--ignore-certificate-errors-spki-list=&lt;hash&gt;</code>.
-        </Typography>
-      </Paper>
 
       {/* Configuration */}
       <Paper variant="outlined" sx={{ p: 2 }}>
@@ -373,27 +326,6 @@ export const BrowserStreaming = () => {
               onChange={(e) => setAgentService(e.target.value)}
             />
           </Stack>
-
-          <Stack spacing={1} direction="row" alignItems="center">
-            <TextField
-              fullWidth
-              size="small"
-              label="Certificate Hash (base64)"
-              value={certHash}
-              onChange={(e) => setCertHash(e.target.value)}
-              placeholder="Click 'Fetch' to auto-discover"
-            />
-            <Button variant="outlined" onClick={onFetchCertificate} disabled={busy}>
-              🔑 Fetch
-            </Button>
-          </Stack>
-
-          {certInfo && (
-            <Typography variant="caption" color="success.main">
-              ✓ Node: {certInfo.nodePubKey.slice(0, 10)}... | Expires:{' '}
-              {new Date(certInfo.expiresAt).toLocaleDateString()}
-            </Typography>
-          )}
 
           <LoadingButton variant="contained" loading={busy} onClick={onCreateStream}>
             🚀 Create Stream

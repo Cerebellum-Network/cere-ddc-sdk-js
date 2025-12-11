@@ -5,8 +5,6 @@ import Event from './event';
 import MPC from './mcp';
 import Wallet from './wallet';
 
-const DEFAULT_WALLET_CONFIG = 'hybrid label reunion only dawn maze asset draft cousin height flock nation';
-
 export class ClientSdk {
   private readonly clusterUrl: string;
   private readonly eventRuntimeUrl: string;
@@ -23,9 +21,12 @@ export class ClientSdk {
     this.basePath = `/api/v1/`;
     this.eventRuntimeUrl = config?.eventRuntimeUrl || `${this.clusterUrl}/er`;
     this.mcpUrl = config?.mcpUrl || `${this.clusterUrl}/orchestrator`;
-    this.sisUrl = config?.sisUrl || this.clusterUrl;
+    this.sisUrl = config?.sisUrl || `${this.clusterUrl}/sis`;
     this.webTransportUrl = config.webTransportUrl || this.clusterUrl;
-    const wallet = new Wallet(config.wallet || DEFAULT_WALLET_CONFIG);
+    if (!config.wallet) {
+      throw new Error('Wallet configuration is required. Provide a JsonSigner or EmbedWallet via ClientConfig.wallet');
+    }
+    const wallet = new Wallet(config.wallet);
     this.wallet = wallet.wallet;
     this.context = config.context;
     this.sis = new SisClient({
@@ -73,15 +74,26 @@ export class ClientSdk {
     publisher: async (streamId: string) => {
       return this.sis.newPublisher(streamId);
     },
-    subscribe: (streamId: string, callback: (data: { headers: Packet['headers']; data: any }) => void) => {
+    subscribe: (
+      streamId: string,
+      callback: (data: { headers: Packet['headers']; data: any } | null, error: Error | null) => void,
+    ) => {
       const packets = this.sis.subscribe(streamId);
+
       (async () => {
-        for await (const packet of packets) {
-          const data = new TextDecoder().decode(packet.payload);
-          const headers = packet.headers;
-          callback({ headers, data });
+        try {
+          for await (const packet of packets) {
+            const data = new TextDecoder().decode(packet.payload);
+            const headers = packet.headers;
+            callback({ headers, data }, null);
+          }
+        } catch (error) {
+          callback(null, error as Error);
         }
       })();
+    },
+    unsubscribe: () => {
+      return this.sis.close();
     },
   };
 

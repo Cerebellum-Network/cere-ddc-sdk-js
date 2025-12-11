@@ -11,32 +11,7 @@ import { HttpClient } from './http';
 import { Transport, Publisher as TransportPublisher, Subscriber } from './transport';
 import { NodeInfo, ClientConfig, DataStream, ContextPath, CreateStreamOptions, Packet, SISError } from './types';
 import fetchCertificateHash from './certificate';
-
-/**
- * Normalize various inputs to a proper SIS WebTransport URL.
- * Accepts:
- *  - host:port (e.g., "localhost:4433")
- *  - https URL with or without path (e.g., "https://localhost:4433" or "https://localhost:4433/some")
- * Returns:
- *  - https://host:port/sis (always)
- */
-function normalizeSisUrl(input: string): string {
-  try {
-    if (input.startsWith('https://')) {
-      const u = new URL(input);
-      return `${u.origin}/sis`;
-    }
-    // Strip any protocol if mistakenly provided and enforce https
-    const trimmed = input.replace(/^https?:\/\//, '').replace(/\/+$/, '');
-    return `https://${trimmed}/sis`;
-  } catch {
-    // Fallback: best-effort normalization
-    const trimmed = String(input || '')
-      .replace(/^https?:\/\//, '')
-      .replace(/\/+$/, '');
-    return `https://${trimmed}/sis`;
-  }
-}
+import { normalizeSisUrl } from './utils';
 
 /**
  * Unified SIS client with multi-node support.
@@ -69,6 +44,11 @@ function normalizeSisUrl(input: string): string {
  * }
  * ```
  */
+
+const HTTP_TIMEOUT = 30000;
+const RETRY_ATTEMPTS = 3;
+const RETRY_BASE_DELAY = 100;
+
 export class Client {
   private config: ClientConfig;
   private nodes: Map<string, NodeInfo>;
@@ -88,9 +68,9 @@ export class Client {
   constructor(config: ClientConfig) {
     this.config = {
       ...config,
-      httpTimeout: config.httpTimeout ?? 30000,
-      retryAttempts: config.retryAttempts ?? 3,
-      retryBaseDelay: config.retryBaseDelay ?? 100,
+      httpTimeout: config.httpTimeout ?? HTTP_TIMEOUT,
+      retryAttempts: config.retryAttempts ?? RETRY_ATTEMPTS,
+      retryBaseDelay: config.retryBaseDelay ?? RETRY_BASE_DELAY,
     };
 
     // Build node registry

@@ -11,44 +11,17 @@
  */
 
 import { serializeHandshake, serializePacket, ACK_SIZE, BufferedReader, DeserializedPacket } from './protocol';
-import { Packet, Ack, STREAM_TYPE_PUBLISH, STREAM_TYPE_SUBSCRIBE, SISError } from './types';
-
-// =============================================================================
-// Transport Configuration
-// =============================================================================
-
-export interface TransportConfig {
-  /** WebTransport URL (e.g., "https://localhost:44300") */
-  url: string;
-  /** Certificate hash for self-signed certificates (base64 encoded SHA-256) */
-  certificateHash?: string;
-  /** Custom WebTransport class (for Node.js polyfill) */
-  webTransportClass?: WebTransportConstructor;
-  /** Promise that resolves when the WebTransport library is ready (for @fails-components/webtransport) */
-  webTransportReady?: Promise<void>;
-}
-
-// Type for WebTransport constructor (compatible with both browser and polyfills)
-// Using 'any' for options because browser WebTransport and Node.js polyfills
-// have incompatible types for serverCertificateHashes (ArrayBuffer vs Buffer)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-interface WebTransportConstructor {
-  new (url: string, options?: any): WebTransportInstance;
-}
-
-interface WebTransportInstance {
-  ready: Promise<void>;
-  closed: Promise<{ closeCode?: number; reason?: string }>;
-
-  close(closeInfo?: { closeCode?: number; reason?: string }): void;
-
-  createBidirectionalStream(): Promise<WebTransportBidirectionalStreamLike>;
-}
-
-interface WebTransportBidirectionalStreamLike {
-  readable: ReadableStream<Uint8Array>;
-  writable: WritableStream<Uint8Array>;
-}
+import {
+  Packet,
+  Ack,
+  STREAM_TYPE_PUBLISH,
+  STREAM_TYPE_SUBSCRIBE,
+  SISError,
+  TransportConfig,
+  WebTransportInstance,
+  WebTransportBidirectionalStreamLike,
+} from './types';
+import { base64ToBytes, universalTransport } from './utils';
 
 // =============================================================================
 // Connection Management
@@ -408,45 +381,5 @@ export class Subscriber {
     } catch {
       // Ignore errors during close
     }
-  }
-}
-
-async function universalTransport() {
-  if (typeof globalThis !== 'undefined' && 'WebTransport' in globalThis) {
-    return (globalThis as Record<string, unknown>)['WebTransport'] as WebTransportConstructor;
-  } else if (
-    typeof process !== 'undefined' &&
-    (process as any).versions != null &&
-    (process as any).versions.node != null
-  ) {
-    // Node.js environment
-    try {
-      // Dynamically import the WebTransport polyfill
-      // @ts-ignore - @fails-components/webtransport is an optional Node.js dependency
-      const { WebTransport, quicheLoaded } = await import('@fails-components/webtransport');
-      await quicheLoaded;
-      return WebTransport;
-    } catch (e) {
-      console.log(e);
-      return undefined;
-    }
-  }
-}
-
-/**
- * Converts a base64 string to Uint8Array
- */
-function base64ToBytes(base64: string): Uint8Array {
-  // Handle both browser and Node.js
-  if (typeof atob !== 'undefined') {
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    return bytes;
-  } else {
-    // Node.js
-    return new Uint8Array(Buffer.from(base64, 'base64'));
   }
 }

@@ -83,23 +83,6 @@ export class HttpClient {
     return this.request<DataStream[]>('GET', path);
   }
 
-  // ===========================================================================
-  // Raft Management
-  // ===========================================================================
-
-  /**
-   * Creates a new Raft (processing unit) attached to a parent stream
-   */
-  async createRaft(req: CreateRaftRequest): Promise<CreateRaftResponse> {
-    const body = {
-      workspace_id: req.workspaceId,
-      parent_stream_id: req.parentStreamId,
-      match_expression: req.matchExpression,
-      tsCode: req.tsCode,
-    };
-    return this.request<CreateRaftResponse>('POST', '/api/v1/rafts', body);
-  }
-
   /**
    * Makes an HTTP request with error handling
    */
@@ -122,45 +105,17 @@ export class HttpClient {
         signal: controller.signal,
       });
 
-      // Prefer text when available; fall back to json() for mocks without text()
-      const hasText = typeof (response as any).text === 'function';
-      const hasJson = typeof (response as any).json === 'function';
-      const responseText = hasText ? await (response as any).text() : '';
-
       if (!response.ok) {
         if (response.status === 503) {
           throw new ServiceUnavailableError();
         }
         if (response.status === 404) {
-          // Try to extract stream ID from path
-          const streamMatch = path.match(/\/streams\/([^/]+)/);
-          if (streamMatch && streamMatch[1]) {
-            throw new StreamNotFoundError(streamMatch[1]);
-          }
-          throw new SISError(responseText || 'Not found', 'NOT_FOUND', 404);
-        }
-        if (responseText) {
-          throw new SISError(responseText || `HTTP ${response.status}`, 'HTTP_ERROR', response.status);
-        }
-        if (hasJson) {
-          try {
-            const j = await (response as any).json();
-            throw new SISError(typeof j === 'string' ? j : JSON.stringify(j), 'HTTP_ERROR', response.status);
-          } catch {
-            // ignore json parse errors
-          }
+          throw new SISError('Not found', 'NOT_FOUND', 404);
         }
         throw new SISError(`HTTP ${response.status}`, 'HTTP_ERROR', response.status);
       }
 
-      // Handle empty responses
-      if (responseText) {
-        return JSON.parse(responseText) as T;
-      }
-      if (hasJson) {
-        return (await (response as any).json()) as T;
-      }
-      return undefined as T;
+      return response.json() as Promise<T>;
     } catch (error) {
       if (error instanceof SISError) {
         throw error;

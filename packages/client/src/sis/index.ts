@@ -16,7 +16,8 @@ export type { HttpClientConfig } from './http';
 
 // Transport layer for custom implementations
 export { Transport, Publisher as TransportPublisher, Subscriber } from './transport';
-export type { TransportConfig, PacketCallback } from './transport';
+export type { PacketCallback } from './transport';
+export type { TransportConfig } from './types';
 
 // Protocol helpers for custom SDK implementations
 export {

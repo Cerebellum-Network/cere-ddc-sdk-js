@@ -207,12 +207,11 @@ export function deserializeHandshake(data: Uint8Array): HandshakeRequest {
 export function serializePacket(
   seqNum: number,
   headers: Record<string, string> | null | undefined,
-  payload: Uint8Array
+  payload: Uint8Array,
 ): Uint8Array {
   // Serialize headers
-  const headersJson = headers && Object.keys(headers).length > 0
-    ? encodeString(JSON.stringify(headers))
-    : new Uint8Array(0);
+  const headersJson =
+    headers && Object.keys(headers).length > 0 ? encodeString(JSON.stringify(headers)) : new Uint8Array(0);
 
   if (headersJson.length > MAX_HEADERS_SIZE) {
     throw new SISError(`Headers too large: ${headersJson.length} bytes (max ${MAX_HEADERS_SIZE})`);
@@ -231,7 +230,7 @@ export function serializePacket(
     writeUint64BE(seqNum),
     writeUint32BE(headersJson.length),
     headersJson,
-    payload
+    payload,
   );
 }
 
@@ -447,4 +446,3 @@ export class BufferedReader {
     return deserializeAck(ackData);
   }
 }
-
