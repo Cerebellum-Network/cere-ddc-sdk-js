@@ -1,11 +1,14 @@
+
 import { useState } from 'react';
 import { Box, Stack, Typography, Divider, Button } from '@mui/material';
 import { Playground } from './Playground';
 import { BrowserStreaming } from './BrowserStreaming';
+import { RecordPage } from './RecordPage';
 
 export const Main = () => {
   const [showPlayground, setShowPlayground] = useState(false);
   const [showBrowserStreaming, setShowBrowserStreaming] = useState(false);
+  const [showRecordPage, setShowRecordPage] = useState(false);
 
   return (
     <Box sx={{ p: 2 }}>
@@ -22,6 +25,12 @@ export const Main = () => {
         >
           {showBrowserStreaming ? 'Hide' : 'Load'} Browser Streaming
         </Button>
+        <Button
+          variant="contained"
+          onClick={() => setShowRecordPage(!showRecordPage)}
+        >
+          {showRecordPage ? 'Hide' : 'Load'} Audio Recording
+        </Button>
       </Stack>
 
       <Stack spacing={4}>
@@ -34,7 +43,7 @@ export const Main = () => {
           </Box>
         )}
 
-        {showPlayground && showBrowserStreaming && <Divider />}
+        {showPlayground && (showBrowserStreaming || showRecordPage) && <Divider />}
 
         {showBrowserStreaming && (
           <Box>
@@ -42,6 +51,17 @@ export const Main = () => {
               Browser Streaming
             </Typography>
             <BrowserStreaming />
+          </Box>
+        )}
+
+        {showBrowserStreaming && showRecordPage && <Divider />}
+
+        {showRecordPage && (
+          <Box>
+            <Typography variant="h4" gutterBottom>
+              Audio Recording
+            </Typography>
+            <RecordPage />
           </Box>
         )}
       </Stack>

@@ -11,7 +11,7 @@ import { HttpClient } from './http';
 import { Transport, Publisher as TransportPublisher, Subscriber } from './transport';
 import { NodeInfo, ClientConfig, DataStream, ContextPath, CreateStreamOptions, Packet, SISError } from './types';
 import fetchCertificateHash from './certificate';
-import { normalizeSisUrl } from './utils';
+import { normalizeSisUrl, determineContentType } from './utils';
 
 /**
  * Unified SIS client with multi-node support.
@@ -420,9 +420,16 @@ export class Publisher {
    * @param data
    */
   async send(data: { message: any; index?: number }): Promise<{ sequenceNum: number; timestamp: number }> {
-    const payload = new TextEncoder().encode(data.message);
+    const contentType = determineContentType(data.message);
+    const payload =
+      typeof data.message === 'object' && !(data.message instanceof Uint8Array)
+        ? new TextEncoder().encode(JSON.stringify(data.message))
+        : data.message instanceof Uint8Array
+          ? data.message
+          : new TextEncoder().encode(String(data.message));
+
     const headers = {
-      'content-type': 'text/plain',
+      'content-type': contentType,
       'message-index': String(data.index || 0),
     };
     const ack = (await this.publisher.send(payload, headers)) as any;

@@ -4,6 +4,7 @@ import { ContextPath, Packet } from './sis/types';
 import Event from './event';
 import MPC from './mcp';
 import Wallet from './wallet';
+import { parsePacket } from './utils'
 
 export class ClientSdk {
   private readonly clusterUrl: string;
@@ -83,8 +84,9 @@ export class ClientSdk {
       (async () => {
         try {
           for await (const packet of packets) {
-            const data = new TextDecoder().decode(packet.payload);
             const headers = packet.headers;
+            const data = parsePacket(packet);
+            console.log('data', data);
             callback({ headers, data }, null);
           }
         } catch (error) {

@@ -65,3 +65,28 @@ export async function universalTransport() {
     }
   }
 }
+
+export const determineContentType = (message: unknown): string => {
+  if (message === null || message === undefined) {
+    return 'application/octet-stream';
+  }
+
+  if (message instanceof Uint8Array || message instanceof ArrayBuffer) {
+    return 'application/octet-stream';
+  }
+
+  if (typeof message === 'string') {
+    try {
+      JSON.parse(message);
+      return 'application/json';
+    } catch {
+      return 'text/plain';
+    }
+  }
+
+  if (typeof message === 'object') {
+    return 'application/json';
+  }
+
+  return 'text/plain';
+};
