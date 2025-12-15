@@ -10,8 +10,6 @@ import {
   ContextPath,
   CreateStreamOptions,
   CreateStreamResponse,
-  CreateRaftRequest,
-  CreateRaftResponse,
   SISError,
   ServiceUnavailableError,
   StreamNotFoundError,
@@ -66,7 +64,14 @@ export class HttpClient {
    * Gets a stream by ID
    */
   async getStream(streamId: string): Promise<DataStream> {
-    return this.request<DataStream>('GET', `/api/v1/streams/${streamId}`);
+    try {
+      return await this.request<DataStream>('GET', `/api/v1/streams/${streamId}`);
+    } catch (error) {
+      if (error instanceof SISError && error.statusCode === 404) {
+        throw new StreamNotFoundError(streamId);
+      }
+      throw error;
+    }
   }
 
   /**
@@ -108,9 +113,6 @@ export class HttpClient {
       if (!response.ok) {
         if (response.status === 503) {
           throw new ServiceUnavailableError();
-        }
-        if (response.status === 404) {
-          throw new SISError('Not found', 'NOT_FOUND', 404);
         }
         throw new SISError(`HTTP ${response.status}`, 'HTTP_ERROR', response.status);
       }

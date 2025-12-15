@@ -181,8 +181,8 @@ export class Client {
   /**
    * Gets a Transport for a node (lazy initialized).
    */
-  private getTransport(node: NodeInfo): Transport {
-    let transport = this.transports.get(node.pubKey);
+  private getTransport(streamId: string, node: NodeInfo): Transport {
+    let transport = this.transports.get(streamId);
     if (!transport) {
       // Normalize WebTransport URL to always point to the SIS endpoint
       const url = normalizeSisUrl(node.quicAddr);
@@ -190,7 +190,7 @@ export class Client {
         url,
         certificateHash: this.config.certificateHash,
       });
-      this.transports.set(node.pubKey, transport);
+      this.transports.set(streamId, transport);
     }
     return transport;
   }
@@ -280,7 +280,7 @@ export class Client {
     // Query any node
     const stream = await this.getStream(streamId);
     if (!stream.owner_node) {
-      throw new SISError(`Stream ${streamId} has no owner node`);
+      throw new SISError(`Stream ${streamId} has no owner node`, 'STREAM_OWNER_NOT_FOUND');
     }
 
     return stream.owner_node;
@@ -309,7 +309,7 @@ export class Client {
     }
 
     // Get transport and create publisher
-    const transport = this.getTransport(ownerNode);
+    const transport = this.getTransport(streamId, ownerNode);
     const transportPublisher = new TransportPublisher(transport, streamId);
     await transportPublisher.init();
 
@@ -351,7 +351,7 @@ export class Client {
     }
 
     // Get transport and create subscriber
-    const transport = this.getTransport(ownerNode);
+    const transport = this.getTransport(streamId, ownerNode);
     const subscriber = new Subscriber(transport, streamId, offset);
     await subscriber.init();
 
@@ -377,23 +377,33 @@ export class Client {
     // However, if we already have initialization, it will use populated nodes.
     // For strictness, throw if not initialized yet.
     if (!this.initialized) {
-      throw new SISError('Client is not initialized. Call init() first.');
+      throw new SISError('Client is not initialized. Call init() first.', 'CLIENT_NOT_INITIALIZED');
     }
     const node = pubKey ? this.getNodeByPubKey(pubKey) : this.getRandomNode();
     if (!node) {
-      throw new SISError(`Node ${pubKey} not found`);
+      throw new SISError(`Node ${pubKey} not found`, 'NODE_NOT_FOUND');
     }
     return this.getHttpClient(node);
   }
 
+  async unsubscribe(streamId: string): Promise<void> {
+    const streamOwner = this.streamOwners.get(streamId);
+    if (streamOwner) {
+      this.streamOwners.delete(streamId);
+    }
+    const transport = this.transports.get(streamId);
+    if (transport) {
+      transport.close();
+      this.transports.delete(streamId);
+    }
+  }
   // ===========================================================================
   // Cleanup
   // ===========================================================================
-
   /**
    * Closes all connections and cleans up resources.
    */
-  async close(): Promise<void> {
+  async closeAll(): Promise<void> {
     for (const transport of this.transports.values()) {
       transport.close();
     }

@@ -78,23 +78,36 @@ export class ClientSdk {
     subscribe: (
       streamId: string,
       callback: (data: { headers: Packet['headers']; data: any } | null, error: Error | null) => void,
-    ) => {
+    ): AbortController => {
+      const abortController = new AbortController();
       const packets = this.sis.subscribe(streamId);
 
-      (async () => {
+      const run = async (signal: AbortSignal) => {
         try {
           for await (const packet of packets) {
+            if (signal.aborted) {
+              return;
+            }
             const headers = packet.headers;
             const data = parsePacket(packet);
             callback({ headers, data }, null);
           }
         } catch (error) {
-          callback(null, error as Error);
+          if (!signal.aborted) {
+            callback(null, error as Error);
+          }
         }
-      })();
+      };
+
+      run(abortController.signal);
+
+      return abortController;
     },
-    unsubscribe: () => {
-      return this.sis.close();
+    unsubscribe: (streamId: string) => {
+      return this.sis.unsubscribe(streamId);
+    },
+    unsubscribeAll: () => {
+      return this.sis.closeAll();
     },
   };
 

@@ -187,7 +187,7 @@ export class Publisher {
    */
   async send(payload: Uint8Array, headers?: Record<string, string>): Promise<Ack> {
     if (this.closed || !this.writer || !this.reader) {
-      throw new SISError('Publisher is closed');
+      throw new SISError('Publisher is closed', 'PUBLISHER_CLOSED');
     }
 
     const seqNum = this.seqNum++;
@@ -210,14 +210,14 @@ export class Publisher {
     while (this.ackBuffer.available < ACK_SIZE) {
       const result = await this.reader!.read();
       if (result.done) {
-        throw new SISError('Stream closed while reading ACK');
+        throw new SISError('Stream closed while reading ACK', 'ACK_STREAM_CLOSED');
       }
       this.ackBuffer.append(result.value);
     }
 
     const ack = this.ackBuffer.readAck();
     if (!ack) {
-      throw new SISError('Failed to read ACK');
+      throw new SISError('Failed to read ACK', 'ACK_READ_FAILED');
     }
     return ack;
   }
@@ -324,7 +324,7 @@ export class Subscriber {
    */
   async *packets(): AsyncGenerator<Packet, void, unknown> {
     if (!this.reader) {
-      throw new SISError('Subscriber not initialized');
+      throw new SISError('Subscriber not initialized', 'SUBSCRIBER_NOT_INITIALIZED');
     }
 
     try {

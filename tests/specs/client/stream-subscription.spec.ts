@@ -3,7 +3,8 @@ import ClientSdk from '../../../packages/client/src/client';
 import { ClientContext } from '../../../packages/client/src/context';
 
 // Mock SIS unified client used by ClientSdk
-const closeMock = jest.fn(async () => {});
+const closeAllMock = jest.fn(async () => {});
+const unsubscribeMock = jest.fn(async (_streamId: string) => {});
 
 // Generator helpers
 async function* okThenDone() {
@@ -29,7 +30,8 @@ jest.mock('../../../packages/client/src/sis', () => {
         yield pkt;
       }
     }
-    close = closeMock;
+    closeAll = closeAllMock;
+    unsubscribe = unsubscribeMock;
   }
   return { Client: MockSisClient };
 });
@@ -93,9 +95,16 @@ describe('ClientSdk.stream subscribe/unsubscribe', () => {
     expect(hasError).toBe(true);
   });
 
-  it('unsubscribe delegates to underlying sis.close()', async () => {
+  it('unsubscribe delegates to underlying sis.unsubscribe(streamId)', async () => {
     const client = makeClient();
-    await client.stream.unsubscribe();
-    expect(closeMock).toHaveBeenCalledTimes(1);
+    await client.stream.unsubscribe('stream-1');
+    expect(unsubscribeMock).toHaveBeenCalledTimes(1);
+    expect(unsubscribeMock).toHaveBeenCalledWith('stream-1');
+  });
+
+  it('unsubscribeAll delegates to underlying sis.closeAll()', async () => {
+    const client = makeClient();
+    await client.stream.unsubscribeAll();
+    expect(closeAllMock).toHaveBeenCalledTimes(1);
   });
 });

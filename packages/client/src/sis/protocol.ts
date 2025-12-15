@@ -126,10 +126,13 @@ function readInt64BE(data: Uint8Array, offset: number): number {
 export function serializeHandshake(req: HandshakeRequest): Uint8Array {
   // Validate stream ID
   if (!req.stream_id || req.stream_id.length === 0) {
-    throw new SISError('Stream ID is required');
+    throw new SISError('Stream ID is required', 'PROTOCOL_STREAM_ID_REQUIRED');
   }
   if (req.stream_id.length > MAX_STREAM_ID_LENGTH) {
-    throw new SISError(`Stream ID too long: ${req.stream_id.length} bytes (max ${MAX_STREAM_ID_LENGTH})`);
+    throw new SISError(
+      `Stream ID too long: ${req.stream_id.length} bytes (max ${MAX_STREAM_ID_LENGTH})`,
+      'PROTOCOL_STREAM_ID_TOO_LONG',
+    );
   }
 
   // Set default version
@@ -143,7 +146,10 @@ export function serializeHandshake(req: HandshakeRequest): Uint8Array {
 
   // Validate size
   if (jsonBytes.length > MAX_HANDSHAKE_SIZE) {
-    throw new SISError(`Handshake too large: ${jsonBytes.length} bytes (max ${MAX_HANDSHAKE_SIZE})`);
+    throw new SISError(
+      `Handshake too large: ${jsonBytes.length} bytes (max ${MAX_HANDSHAKE_SIZE})`,
+      'PROTOCOL_HANDSHAKE_TOO_LARGE',
+    );
   }
 
   // Build: [Len:4][JSON:n]
@@ -160,16 +166,19 @@ export function serializeHandshake(req: HandshakeRequest): Uint8Array {
  */
 export function deserializeHandshake(data: Uint8Array): HandshakeRequest {
   if (data.length < 4) {
-    throw new SISError('Handshake too short: missing length prefix');
+    throw new SISError('Handshake too short: missing length prefix', 'PROTOCOL_HANDSHAKE_TOO_SHORT');
   }
 
   const jsonLen = readUint32BE(data, 0);
   if (jsonLen === 0 || jsonLen > MAX_HANDSHAKE_SIZE) {
-    throw new SISError(`Invalid handshake length: ${jsonLen}`);
+    throw new SISError(`Invalid handshake length: ${jsonLen}`, 'PROTOCOL_HANDSHAKE_LENGTH_INVALID');
   }
 
   if (data.length < 4 + jsonLen) {
-    throw new SISError(`Incomplete handshake: expected ${4 + jsonLen} bytes, got ${data.length}`);
+    throw new SISError(
+      `Incomplete handshake: expected ${4 + jsonLen} bytes, got ${data.length}`,
+      'PROTOCOL_HANDSHAKE_INCOMPLETE',
+    );
   }
 
   const jsonBytes = data.slice(4, 4 + jsonLen);
@@ -180,13 +189,16 @@ export function deserializeHandshake(data: Uint8Array): HandshakeRequest {
 
     // Validate required fields
     if (!req.stream_id || req.stream_id.length === 0 || req.stream_id.length > MAX_STREAM_ID_LENGTH) {
-      throw new SISError(`Invalid stream ID length: ${req.stream_id?.length ?? 0}`);
+      throw new SISError(
+        `Invalid stream ID length: ${req.stream_id?.length ?? 0}`,
+        'PROTOCOL_STREAM_ID_LENGTH_INVALID',
+      );
     }
 
     return req;
   } catch (e) {
     if (e instanceof SISError) throw e;
-    throw new SISError(`Failed to parse handshake: ${e}`);
+    throw new SISError(`Failed to parse handshake: ${e}`, 'PROTOCOL_HANDSHAKE_PARSE_ERROR');
   }
 }
 
@@ -214,14 +226,20 @@ export function serializePacket(
     headers && Object.keys(headers).length > 0 ? encodeString(JSON.stringify(headers)) : new Uint8Array(0);
 
   if (headersJson.length > MAX_HEADERS_SIZE) {
-    throw new SISError(`Headers too large: ${headersJson.length} bytes (max ${MAX_HEADERS_SIZE})`);
+    throw new SISError(
+      `Headers too large: ${headersJson.length} bytes (max ${MAX_HEADERS_SIZE})`,
+      'PROTOCOL_HEADERS_TOO_LARGE',
+    );
   }
 
   // Calculate packet size: seq(8) + headersLen(4) + headers + payload
   const packetSize = 8 + 4 + headersJson.length + payload.length;
 
   if (packetSize > MAX_PACKET_SIZE) {
-    throw new SISError(`Packet too large: ${packetSize} bytes (max ${MAX_PACKET_SIZE})`);
+    throw new SISError(
+      `Packet too large: ${packetSize} bytes (max ${MAX_PACKET_SIZE})`,
+      'PROTOCOL_PACKET_TOO_LARGE',
+    );
   }
 
   // Build packet: [PacketSize:4][SeqNum:8][HeadersLen:4][Headers:n][Payload:m]
@@ -254,17 +272,20 @@ export interface DeserializedPacket {
  */
 export function deserializePacket(data: Uint8Array): DeserializedPacket {
   if (data.length < 4) {
-    throw new SISError('Packet too short: missing size prefix');
+    throw new SISError('Packet too short: missing size prefix', 'PROTOCOL_PACKET_TOO_SHORT');
   }
 
   const packetSize = readUint32BE(data, 0);
   if (packetSize === 0 || packetSize > MAX_PACKET_SIZE) {
-    throw new SISError(`Invalid packet size: ${packetSize}`);
+    throw new SISError(`Invalid packet size: ${packetSize}`, 'PROTOCOL_PACKET_SIZE_INVALID');
   }
 
   const totalSize = 4 + packetSize;
   if (data.length < totalSize) {
-    throw new SISError(`Incomplete packet: expected ${totalSize} bytes, got ${data.length}`);
+    throw new SISError(
+      `Incomplete packet: expected ${totalSize} bytes, got ${data.length}`,
+      'PROTOCOL_PACKET_INCOMPLETE',
+    );
   }
 
   let offset = 4;
@@ -278,7 +299,7 @@ export function deserializePacket(data: Uint8Array): DeserializedPacket {
   offset += 4;
 
   if (headersLen > MAX_HEADERS_SIZE) {
-    throw new SISError(`Headers too large: ${headersLen}`);
+    throw new SISError(`Headers too large: ${headersLen}`, 'PROTOCOL_HEADERS_TOO_LARGE');
   }
 
   // Read headers
@@ -289,7 +310,7 @@ export function deserializePacket(data: Uint8Array): DeserializedPacket {
     try {
       headers = JSON.parse(headersStr);
     } catch {
-      throw new SISError('Failed to parse headers JSON');
+      throw new SISError('Failed to parse headers JSON', 'PROTOCOL_HEADERS_PARSE_ERROR');
     }
     offset += headersLen;
   }
@@ -325,7 +346,10 @@ export const ACK_SIZE = 16;
  */
 export function deserializeAck(data: Uint8Array): Ack {
   if (data.length !== ACK_SIZE) {
-    throw new SISError(`Invalid ACK size: expected ${ACK_SIZE} bytes, got ${data.length}`);
+    throw new SISError(
+      `Invalid ACK size: expected ${ACK_SIZE} bytes, got ${data.length}`,
+      'PROTOCOL_ACK_SIZE_INVALID',
+    );
   }
 
   return {

@@ -64,9 +64,10 @@ async function main() {
 
   const publisher = await client.stream.publisher(stream.id);
 
-  client.stream.subscribe(stream.id, ({ headers, data }, error) => {
+  const subscriber = client.stream.subscribe(stream.id, ({ headers, data }, error) => {
     if (error) {
       logError(`error: ${error.toString()}`);
+      subscriber.abort();
       return;
     }
     logSuccess(`Received Packet... ${data}`);
@@ -93,11 +94,14 @@ async function main() {
   logInfo('Closing publisher...');
   await publisher.close();
   logSuccess('Publisher closed');
+  logInfo('Unsubscribing from stream...');
+  await client.stream.unsubscribe(stream.id);
+  logSuccess('Unsubscribed');
 
   // Unsubscribe from the stream
-  logInfo('Unsubscribing from the stream...');
-  await client.stream.unsubscribe();
-  logSuccess('Unsubscribed');
+  logInfo('Unsubscribing from all the stream...');
+  await client.stream.unsubscribeAll();
+  logSuccess('Unsubscribed from All');
 }
 
 main().catch((err) => {

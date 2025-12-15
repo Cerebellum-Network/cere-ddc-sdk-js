@@ -95,11 +95,13 @@ export const RecordPage = () => {
   const onCreateStream = useCallback(async () => {
     setBusy(true);
     setConnectionStatus('connecting');
+    console.log('ctx', ctx);
     try {
       addLog('info', 'Initializing ClientSdk...');
       const sdk = new ClientSdk({
         url: httpUrl,
         sisUrl: httpUrl,
+        eventRuntimeUrl: 'http://localhost:8084',
         webTransportUrl: wtUrl,
         context: ctx,
         wallet: USER_SEED,
@@ -115,6 +117,11 @@ export const RecordPage = () => {
 
       setConnectionStatus('connected');
       addLog('success', `Stream created: ${stream.id}`);
+      await sdk.event.create('STREAM_START', {
+        dataStreamId: stream.id,
+        description: 'Start Streaming',
+      });
+      addLog('success', `Agent triggered...`);
     } catch (e: any) {
       console.error(e);
       addLog('error', `Failed to create stream: ${e?.message || String(e)}`);
@@ -148,9 +155,10 @@ export const RecordPage = () => {
 
   const subscribeToStream = useCallback(
     (sdk: ClientSdk, streamId: string) => {
-      sdk.stream.subscribe(streamId, (result, error) => {
+      const subscriber = sdk.stream.subscribe(streamId, (result, error) => {
         if (error) {
           addLog('error', `Stream subscribe error: ${error.message}`);
+          subscriber.abort();
           return;
         }
         try {
@@ -230,7 +238,9 @@ export const RecordPage = () => {
     try {
       analyserRef.current?.disconnect();
       audioContextRef.current?.close();
-    } catch (_) {}
+    } catch (_) {
+      /* empty */
+    }
     analyserRef.current = null;
     audioContextRef.current = null;
     setLevel(0);
@@ -311,10 +321,13 @@ export const RecordPage = () => {
         };
         try {
           await publisherRef.current?.send({ message: payload, index: total });
+          console.log('streamId', streamId);
+          await client.stream.unsubscribe(streamId);
           addLog('success', `Recording complete. Total chunks: ${total}`);
         } catch (e: any) {
           addLog('warning', `Failed to send completion: ${e?.message}`);
         }
+        setIsRecording(false);
       };
 
       rec.start(1000); // collect data every second
@@ -340,7 +353,9 @@ export const RecordPage = () => {
     try {
       if (timerRef.current) clearInterval(timerRef.current);
       if (rec.state !== 'inactive') rec.stop();
-    } catch (_) {}
+    } catch (_) {
+      /* empty */
+    }
 
     mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
     mediaStreamRef.current = null;
