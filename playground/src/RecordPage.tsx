@@ -51,8 +51,11 @@ export const RecordPage = () => {
   // Configuration
   const [httpUrl, setHttpUrl] = useState<string>('http://localhost:8085');
   const [wtUrl, setWtUrl] = useState<string>('https://localhost:4433/sis');
-  const [workspace, setWorkspace] = useState<string>('playground');
-  const [agentService, setAgentService] = useState<string>('ddc-playground-agent');
+  const [workspace, setWorkspace] = useState<string>('2105');
+  const [agentService, setAgentService] = useState<string>(
+    '0xf15078913e31bf558abb540f9f3b6edac4bcca7ac8e8af597df5f2e64d9ca238',
+  );
+  const [dataStreamId, setDataStreamId] = useState<string | null>('stream-ffd265c8');
 
   // SDK State
   const [client, setClient] = useState<ClientSdk | null>(null);
@@ -89,7 +92,7 @@ export const RecordPage = () => {
     setLogs([]);
   }, []);
 
-  const ctx = { agent_service: agentService, workspace, stream: '' };
+  const ctx = { agent_service: agentService, workspace, stream: dataStreamId };
 
   // Initialize client and create stream
   const onCreateStream = useCallback(async () => {
@@ -157,8 +160,9 @@ export const RecordPage = () => {
     (sdk: ClientSdk, streamId: string) => {
       const subscriber = sdk.stream.subscribe(streamId, (result, error) => {
         if (error) {
+          console.log('error', error);
           addLog('error', `Stream subscribe error: ${error.message}`);
-          subscriber.abort();
+          // subscriber.abort();
           return;
         }
         try {
@@ -322,7 +326,9 @@ export const RecordPage = () => {
         try {
           await publisherRef.current?.send({ message: payload, index: total });
           console.log('streamId', streamId);
-          await client.stream.unsubscribe(streamId);
+          setTimeout(async () => {
+            await client.stream.unsubscribe(streamId);
+          }, 2000);
           addLog('success', `Recording complete. Total chunks: ${total}`);
         } catch (e: any) {
           addLog('warning', `Failed to send completion: ${e?.message}`);
@@ -453,6 +459,13 @@ export const RecordPage = () => {
               label="Agent Service"
               value={agentService}
               onChange={(e) => setAgentService(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              size="small"
+              label="Data Stream Id"
+              value={dataStreamId}
+              onChange={(e) => setDataStreamId(e.target.value)}
             />
           </Stack>
 
