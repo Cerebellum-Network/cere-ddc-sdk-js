@@ -325,11 +325,12 @@ export class Client {
    * Receives only packets published after subscription is established.
    *
    * @param streamId - Target stream identifier
+   * @param signal - Optional abort signal
    * @returns An async iterator of Packets
    */
-  async *subscribe(streamId: string): AsyncGenerator<Packet, void, unknown> {
+  async *subscribe(streamId: string, signal?: AbortSignal): AsyncGenerator<Packet, void, unknown> {
     await this.ensureInitialized();
-    yield* this.subscribeWithOffset(streamId);
+    yield* this.subscribeWithOffset(streamId, undefined, signal);
   }
 
   /**
@@ -337,9 +338,14 @@ export class Client {
    *
    * @param streamId - Target stream identifier
    * @param offset - Starting sequence number (undefined = live mode)
+   * @param signal - Optional abort signal
    * @returns An async iterator of Packets
    */
-  async *subscribeWithOffset(streamId: string, offset?: number): AsyncGenerator<Packet, void, unknown> {
+  async *subscribeWithOffset(
+    streamId: string,
+    offset?: number,
+    signal?: AbortSignal,
+  ): AsyncGenerator<Packet, void, unknown> {
     await this.ensureInitialized();
     // Discover owner node
     const ownerPubKey = await this.discoverOwner(streamId);
@@ -353,37 +359,17 @@ export class Client {
     // Get transport and create subscriber
     const transport = this.getTransport(streamId, ownerNode);
     const subscriber = new Subscriber(transport, streamId, offset);
+    const onAbort = () => subscriber.close();
+    signal?.addEventListener('abort', onAbort, { once: true });
+
     await subscriber.init();
 
     try {
       yield* subscriber.packets();
     } finally {
+      signal?.removeEventListener('abort', onAbort);
       await subscriber.close();
     }
-  }
-
-  // ===========================================================================
-  // Raft API (delegated to HTTP client)
-  // ===========================================================================
-
-  /**
-   * Gets an HTTP client for raft operations on a specific node.
-   * If pubKey is not provided, uses a random node.
-   */
-  raftClient(pubKey?: string): HttpClient {
-    // ensureInitialized is not awaited here because raftClient is synchronous;
-    // best-effort safeguard for consumers that call synchronous method first.
-    // They should call any async method or init() before using raft client.
-    // However, if we already have initialization, it will use populated nodes.
-    // For strictness, throw if not initialized yet.
-    if (!this.initialized) {
-      throw new SISError('Client is not initialized. Call init() first.', 'CLIENT_NOT_INITIALIZED');
-    }
-    const node = pubKey ? this.getNodeByPubKey(pubKey) : this.getRandomNode();
-    if (!node) {
-      throw new SISError(`Node ${pubKey} not found`, 'NODE_NOT_FOUND');
-    }
-    return this.getHttpClient(node);
   }
 
   async unsubscribe(streamId: string): Promise<void> {

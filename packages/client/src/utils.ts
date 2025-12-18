@@ -3,22 +3,24 @@ import { Packet } from './sis/types';
 export const parsePacket = (packet: Packet) => {
   const headers = packet.headers;
   const contentType = headers?.['content-type'] || '';
-  let data: any;
 
-  if (contentType.includes('application/json')) {
-    const text = new TextDecoder().decode(packet.payload);
-    data = JSON.parse(text);
-  } else if (contentType.includes('text/')) {
-    data = new TextDecoder().decode(packet.payload);
-  } else if (contentType.includes('application/octet-stream') || !contentType) {
+  if (contentType.includes('text/')) {
+    return new TextDecoder().decode(packet.payload);
+  }
+
+  const isJson = contentType.includes('application/json');
+  const isUnknown = contentType.includes('application/octet-stream') || !contentType;
+
+  if (isJson || isUnknown) {
     try {
       const text = new TextDecoder().decode(packet.payload);
-      data = JSON.parse(text);
-    } catch {
-      data = packet.payload;
+      return JSON.parse(text);
+    } catch (e) {
+      if (isJson) {
+        throw new Error('Invalid JSON payload for application/json content type');
+      }
     }
-  } else {
-    data = packet.payload;
   }
-  return data;
+
+  return packet.payload;
 };

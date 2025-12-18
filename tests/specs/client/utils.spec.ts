@@ -66,4 +66,24 @@ describe('utils.parsePacket', () => {
     expect(res).toBeInstanceOf(Uint8Array);
     expect(Array.from(res as Uint8Array)).toEqual([255, 0, 1]);
   });
+
+  it('throws error for invalid JSON when content-type is application/json', () => {
+    const payload = enc.encode('{ invalid json }');
+    const packet: any = {
+      headers: { 'content-type': 'application/json' },
+      payload,
+    };
+    expect(() => parsePacket(packet)).toThrow('Invalid JSON payload for application/json content type');
+  });
+
+  it('returns raw bytes for application/octet-stream if not valid JSON', () => {
+    const bin = new Uint8Array([1, 2, 3]);
+    const packet: any = {
+      headers: { 'content-type': 'application/octet-stream' },
+      payload: bin,
+    };
+    const res = parsePacket(packet);
+    expect(res).toBeInstanceOf(Uint8Array);
+    expect(Array.from(res as Uint8Array)).toEqual([1, 2, 3]);
+  });
 });

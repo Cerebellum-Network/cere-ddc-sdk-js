@@ -1,4 +1,4 @@
-import type { ClientConfig, SignedWallet } from './types';
+import { ClientConfig, SignedWallet, McpError } from './types';
 import { Client as SisClient } from './sis';
 import { ContextPath, Packet } from './sis/types';
 import Event from './event';
@@ -80,14 +80,15 @@ export class ClientSdk {
       callback: (data: { headers: Packet['headers']; data: any } | null, error: Error | null) => void,
     ): AbortController => {
       const abortController = new AbortController();
-      const packets = this.sis.subscribe(streamId);
+      const signal = abortController.signal;
+      const packets = this.sis.subscribe(streamId, signal);
 
-      const run = async (signal: AbortSignal) => {
+      (async () => {
+        if (signal.aborted) return;
+
         try {
           for await (const packet of packets) {
-            if (signal.aborted) {
-              return;
-            }
+            if (signal.aborted) break;
             const headers = packet.headers;
             const data = parsePacket(packet);
             callback({ headers, data }, null);
@@ -96,10 +97,10 @@ export class ClientSdk {
           if (!signal.aborted) {
             callback(null, error as Error);
           }
+        } finally {
+          packets.return?.();
         }
-      };
-
-      run(abortController.signal);
+      })();
 
       return abortController;
     },
@@ -129,12 +130,7 @@ export class ClientSdk {
         return resultData !== undefined ? resultData : json;
       }
       const errMessage = (json && json.error && json.error.message) || `Request failed with status ${response.status}`;
-      const error = new Error(errMessage);
-      // @ts-expect-error augment error with extra context
-      error.status = response.status;
-      // @ts-expect-error augment error with extra context
-      error.code = json?.error?.code;
-      throw error;
+      throw new McpError(errMessage, response.status, json?.error?.code);
     },
   };
 }

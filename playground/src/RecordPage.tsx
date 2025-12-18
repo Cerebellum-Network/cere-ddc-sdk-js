@@ -162,13 +162,13 @@ export const RecordPage = () => {
         if (error) {
           console.log('error', error);
           addLog('error', `Stream subscribe error: ${error.message}`);
-          // subscriber.abort();
+          subscriber.abort();
           return;
         }
         try {
           const payload = typeof result?.data === 'string' ? JSON.parse(result.data) : result?.data;
           if (!payload || typeof payload !== 'object') return;
-
+          console.log('Received Packet data...', payload);
           if (payload.type === 'AUDIO_CHUNK') {
             const { index, mimeType, data: b64DataUrl } = payload;
             receivedMimeRef.current = mimeType || receivedMimeRef.current;
@@ -198,6 +198,10 @@ export const RecordPage = () => {
                 return url;
               });
               addLog('success', 'Assembled audio from streamed chunks');
+              console.log('streamId', streamId);
+              setTimeout(async () => {
+                await sdk.stream.unsubscribe(streamId);
+              }, 2000);
             }
           }
         } catch (e) {
@@ -325,10 +329,6 @@ export const RecordPage = () => {
         };
         try {
           await publisherRef.current?.send({ message: payload, index: total });
-          console.log('streamId', streamId);
-          setTimeout(async () => {
-            await client.stream.unsubscribe(streamId);
-          }, 2000);
           addLog('success', `Recording complete. Total chunks: ${total}`);
         } catch (e: any) {
           addLog('warning', `Failed to send completion: ${e?.message}`);

@@ -25,3 +25,14 @@ export type ClientConfig = {
   sisUrl?: string;
   wallet?: WalletConfig | string;
 };
+
+export class McpError extends Error {
+  constructor(
+    message: string,
+    public status?: number,
+    public code?: string | number,
+  ) {
+    super(message);
+    this.name = 'McpError';
+  }
+}

@@ -133,13 +133,6 @@ export class Transport {
       this.transport = null;
     }
   }
-
-  /**
-   * Returns true if the transport is connected
-   */
-  get isConnected(): boolean {
-    return this.transport !== null;
-  }
 }
 
 // =============================================================================
@@ -291,7 +284,6 @@ export class Subscriber {
   private stream: WebTransportBidirectionalStreamLike | null = null;
   private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
   private packetBuffer = new BufferedReader();
-  private abortController: AbortController | null = null;
 
   constructor(transport: Transport, streamId: string, offset?: number) {
     this.transport = transport;
@@ -306,7 +298,6 @@ export class Subscriber {
     this.stream = await this.transport.createStream();
     const writer = this.stream.writable.getWriter();
     this.reader = this.stream.readable.getReader();
-    this.abortController = new AbortController();
 
     // Send handshake
     const handshake = serializeHandshake({
@@ -368,11 +359,6 @@ export class Subscriber {
    * Closes the subscriber
    */
   async close(): Promise<void> {
-    if (this.abortController) {
-      this.abortController.abort();
-      this.abortController = null;
-    }
-
     try {
       if (this.reader) {
         await this.reader.cancel();

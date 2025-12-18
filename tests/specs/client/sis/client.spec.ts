@@ -152,30 +152,6 @@ describe('SIS Client (unified)', () => {
     expect(stream.id).toBe(streamId);
   });
 
-  it('raftClient throws if not initialized, then works after init', async () => {
-    mockFetchSequence([
-      { matcher: (u) => u === `${httpUrl}/api/v1/node`, payload: nodeInfoResponse('node-A') },
-      { matcher: (u) => u === `${httpUrl}/api/v1/node`, payload: nodeInfoResponse('node-A') },
-      { matcher: (u) => u === `${httpUrl}/api/v1/streams`, payload: {}, ok: true, status: 200 },
-    ]);
-
-    const client = new Client({ httpUrl, webTransportUrl });
-    expect(() => client.raftClient()).toThrow(SISError);
-
-    await client.init();
-
-    // Use raft client to make a request and assert URL base
-    const fetchCalls: string[] = [];
-    (globalThis as any).fetch = jest.fn(async (input: any) => {
-      fetchCalls.push(String(input));
-      return { ok: true, status: 200, json: async () => ({}) } as any;
-    });
-
-    const rc = client.raftClient();
-    await rc.listStreams();
-    expect(fetchCalls[0]).toMatch(/^https:\/\/node-1\.example\/api\/v1\/streams/);
-  });
-
   it('subscribe yields packets from mocked Subscriber and closes it', async () => {
     const streamId = 's-sub';
     mockFetchSequence([
