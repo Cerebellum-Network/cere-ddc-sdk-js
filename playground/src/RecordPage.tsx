@@ -92,7 +92,7 @@ export const RecordPage = () => {
     setLogs([]);
   }, []);
 
-  const ctx = { agent_service: agentService, workspace, stream: dataStreamId };
+  const ctx = { agent_service: agentService, workspace, stream: dataStreamId! };
 
   // Initialize client and create stream
   const onCreateStream = useCallback(async () => {
