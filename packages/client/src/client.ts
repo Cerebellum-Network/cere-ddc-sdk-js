@@ -20,7 +20,7 @@ export class ClientSdk {
   constructor(config: ClientConfig) {
     this.clusterUrl = config.url;
     this.basePath = `/api/v1/`;
-    this.eventRuntimeUrl = config?.eventRuntimeUrl || `${this.clusterUrl}/er`;
+    this.eventRuntimeUrl = config?.eventRuntimeUrl || `${this.clusterUrl}/event`;
     this.mcpUrl = config?.mcpUrl || `${this.clusterUrl}/orchestrator`;
     this.sisUrl = config?.sisUrl || `${this.clusterUrl}/sis`;
     this.webTransportUrl = config.webTransportUrl || this.clusterUrl;
