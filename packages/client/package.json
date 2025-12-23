@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/client",
   "description": "Cere Client SDK",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "repository": {
     "type": "git",
@@ -36,13 +36,23 @@
     "@cere-activity-sdk/ciphers": "0.1.7",
     "@cere-activity-sdk/signers": "0.1.7",
     "@cere/embed-wallet": "^0.23.0",
-    "@fails-components/webtransport": "^1.4.8",
-    "@fails-components/webtransport-transport-http3-quiche": "^1.4.8",
     "@polkadot/util": "^10.4.2",
     "@polkadot/util-crypto": "^10.4.2",
     "blakejs": "^1.2.1",
     "cross-fetch": "^4.0.0",
     "uuid": "^9.0.1"
+  },
+  "peerDependencies": {
+    "@fails-components/webtransport": "^1.4.8",
+    "@fails-components/webtransport-transport-http3-quiche": "^1.4.8"
+  },
+  "peerDependenciesMeta": {
+    "@fails-components/webtransport": {
+      "optional": true
+    },
+    "@fails-components/webtransport-transport-http3-quiche": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/uuid": "^9.0.8"

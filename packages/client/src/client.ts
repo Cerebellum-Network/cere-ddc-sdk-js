@@ -23,7 +23,7 @@ export class ClientSdk {
     this.eventRuntimeUrl = config?.eventRuntimeUrl || `${this.clusterUrl}/event`;
     this.mcpUrl = config?.mcpUrl || `${this.clusterUrl}/orchestrator`;
     this.sisUrl = config?.sisUrl || `${this.clusterUrl}/sis`;
-    this.webTransportUrl = config.webTransportUrl || this.clusterUrl;
+    this.webTransportUrl = config.webTransportUrl || `${this.clusterUrl}:4433`;
     if (!config.wallet) {
       throw new Error('Wallet configuration is required. Provide a JsonSigner or EmbedWallet via ClientConfig.wallet');
     }
