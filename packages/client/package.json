@@ -1,7 +1,7 @@
 {
   "name": "@cere-ddc-sdk/client",
   "description": "Cere Client SDK",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "repository": {
     "type": "git",
@@ -46,9 +46,5 @@
   },
   "devDependencies": {
     "@types/uuid": "^9.0.8"
-  },
-  "bundledDependencies": [
-    "@fails-components/webtransport",
-    "@fails-components/webtransport-transport-http3-quiche"
-  ]
+  }
 }
