@@ -20,19 +20,19 @@ export type ClientConfig = {
   context: ContextInterface;
   url: string;
   eventRuntimeUrl?: string;
-  mcpUrl?: string;
+  agentRuntimeUrl?: string;
   webTransportUrl?: string;
   sisUrl?: string;
   wallet?: WalletConfig | string;
 };
 
-export class McpError extends Error {
+export class CubbyError extends Error {
   constructor(
     message: string,
     public status?: number,
     public code?: string | number,
   ) {
     super(message);
-    this.name = 'McpError';
+    this.name = 'CubbyRequestError';
   }
 }

@@ -1,15 +1,14 @@
-import { ClientConfig, SignedWallet, McpError } from './types';
+import { ClientConfig, SignedWallet, CubbyError } from './types';
 import { Client as SisClient } from './sis';
 import { ContextPath, Packet } from './sis/types';
 import Event from './event';
-import MPC from './mcp';
 import Wallet from './wallet';
 import { parsePacket } from './utils';
 
 export class ClientSdk {
   private readonly clusterUrl: string;
   private readonly eventRuntimeUrl: string;
-  private readonly mcpUrl: string;
+  private readonly agentRuntimeUrl: string;
   private readonly sisUrl: string;
   private readonly webTransportUrl: string;
   private readonly basePath: string;
@@ -21,7 +20,7 @@ export class ClientSdk {
     this.clusterUrl = config.url;
     this.basePath = `/api/v1/`;
     this.eventRuntimeUrl = config?.eventRuntimeUrl || `${this.clusterUrl}/event`;
-    this.mcpUrl = config?.mcpUrl || `${this.clusterUrl}/orchestrator`;
+    this.agentRuntimeUrl = config?.agentRuntimeUrl || `${this.clusterUrl}/agent`;
     this.sisUrl = config?.sisUrl || `${this.clusterUrl}/sis`;
     this.webTransportUrl = config.webTransportUrl || `${this.clusterUrl}:4433`;
     if (!config.wallet) {
@@ -113,13 +112,14 @@ export class ClientSdk {
   };
 
   public query = {
-    fetch: async (raftId: string, raftAlias: string, payload?: unknown): Promise<unknown> => {
-      const path = `mcp/agent-services/${this.context.agent_service}/rafts/${raftId}`;
-      const url = this.buildURL(this.mcpUrl, path);
-      const request = new MPC(raftAlias, payload || {});
+    fetch: async (cubbyName: string, queryName: string, payload?: unknown): Promise<unknown> => {
+      const path = `agent-services/${this.context.agent_service}/cubbies/${cubbyName}/queries/${queryName}`;
+      const url = this.buildURL(this.agentRuntimeUrl, path);
       const response = await fetch(url, {
         method: 'POST',
-        body: JSON.stringify(request.body),
+        body: JSON.stringify({
+          params: payload,
+        }),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -130,7 +130,7 @@ export class ClientSdk {
         return resultData !== undefined ? resultData : json;
       }
       const errMessage = (json && json.error && json.error.message) || `Request failed with status ${response.status}`;
-      throw new McpError(errMessage, response.status, json?.error?.code);
+      throw new CubbyError(errMessage, response.status, json?.error?.code);
     },
   };
 }
