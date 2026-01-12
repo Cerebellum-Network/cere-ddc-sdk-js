@@ -1,4 +1,4 @@
-import { ClientConfig, SignedWallet, CubbyError } from './types';
+import { ClientConfig, SignedWallet, CubbyError, CubbyQueryRequestBody } from './types';
 import { Client as SisClient } from './sis';
 import { ContextPath, Packet } from './sis/types';
 import Event from './event';
@@ -112,14 +112,19 @@ export class ClientSdk {
   };
 
   public query = {
-    fetch: async (cubbyName: string, queryName: string, payload?: unknown): Promise<unknown> => {
+    fetch: async (cubbyName: string, queryName: string, payload?: unknown, timeoutMs?: number): Promise<unknown> => {
       const path = `agent-services/${this.context.agent_service}/cubbies/${cubbyName}/queries/${queryName}`;
       const url = this.buildURL(this.agentRuntimeUrl, path);
+      const requestBody = {
+        params: payload,
+      } as CubbyQueryRequestBody;
+
+      if (timeoutMs) {
+        requestBody.timeoutMs = timeoutMs;
+      }
       const response = await fetch(url, {
         method: 'POST',
-        body: JSON.stringify({
-          params: payload,
-        }),
+        body: JSON.stringify(requestBody),
         headers: {
           'Content-Type': 'application/json',
         },

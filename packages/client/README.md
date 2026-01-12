@@ -3,7 +3,7 @@
 JavaScript/TypeScript Client SDK for interacting with the Cere platform. It provides a simple API to:
 - Initialize a client with your app Context and Wallet
 - Send activity events to the cluster
-- Execute MCP tool calls (agent-service raft queries)
+- Execute queries on cubbies
 
 ## Installation
 ```
@@ -99,9 +99,9 @@ const event = await client.event.create('user_signup', {
 });
 console.log('Created event:', event);
 
-// 4) (Optional) Execute an MCP tool call on a raft
-const result = await client.query.fetch('raft-42', 'getUserStats', { userId: 7 });
-console.log('MCP result:', result);
+// 4) (Optional) Execute a query on a cubby
+const result = await client.query.fetch('my-cubby', 'getUserStats', { userId: 7 });
+console.log('Query result:', result);
 ```
 
 
@@ -158,14 +158,15 @@ await client.event.create('user_signup', { user_id: 'usr_12345' });
 ```
 
 
-#### client.query.fetch(raftId: string, alias: string, payload?: object): Promise<any>
-Executes an MCP tool call against a specific raft of your agent-service.
-- Endpoint: POST /api/v1/mcp/agent-services/{agent_service}/rafts/{raftId}
-- Body: JSON-RPC 2.0 envelope with method "tools/call" where params.name is the alias and params.arguments is the payload (defaults to {}).
+#### client.query.fetch(cubbyName: string, queryName: string, payload?: object): Promise<any>
+Executes a query against a specific cubby of your agent-service.
+- Endpoint: POST /api/v1/agent-services/{agent_service}/cubbies/{cubbyName}/queries/{queryName}
+- Body:
+  - params: object — your query payload (defaults to undefined).
 
 Example:
 ```
-await client.query.fetch('raft-42', 'getUserStats', { userId: 7 });
+await client.query.fetch('my-cubby', 'getUserStats', { userId: 7 });
 ```
 
 

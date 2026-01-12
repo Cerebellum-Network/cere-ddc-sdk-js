@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid';
+import pkg from 'blakejs';
 import { JsonSigner, UriSigner, CereWalletSigner } from '@cere-activity-sdk/signers';
-import * as blakejs from 'blakejs';
 import type { ClientConfig } from './types';
-const { blake2bHex } = blakejs;
+const { blake2bHex } = pkg;
 
 type EventOptions = {
   id?: string;

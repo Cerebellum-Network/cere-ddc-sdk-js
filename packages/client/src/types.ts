@@ -26,6 +26,11 @@ export type ClientConfig = {
   wallet?: WalletConfig | string;
 };
 
+export interface CubbyQueryRequestBody {
+  payload?: unknown;
+  timeoutMs?: number;
+}
+
 export class CubbyError extends Error {
   constructor(
     message: string,
