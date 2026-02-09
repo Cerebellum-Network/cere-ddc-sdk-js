@@ -1,0 +1,29 @@
+# cere-ddc-sdk-js Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2026-02-09
+
+## Active Technologies
+
+- TypeScript (Node); see repo tsconfig and lerna packages + @cere-ddc-sdk/blockchain (Signer), @polkadot/api, existing ddc/grpc, auth (createSdkToken, AuthToken), signature and activity modules (001-global-agent-registry)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+npm test && npm run lint
+
+## Code Style
+
+TypeScript (Node); see repo tsconfig and lerna packages: Follow standard conventions
+
+## Recent Changes
+
+- 001-global-agent-registry: Added TypeScript (Node); see repo tsconfig and lerna packages + @cere-ddc-sdk/blockchain (Signer), @polkadot/api, existing ddc/grpc, auth (createSdkToken, AuthToken), signature and activity modules
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
