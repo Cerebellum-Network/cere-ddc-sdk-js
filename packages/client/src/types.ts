@@ -31,7 +31,7 @@ export interface CubbyQueryRequestBody {
   timeoutMs?: number;
 }
 
-export class CubbyError extends Error {
+export class CubbyRequestError extends Error {
   constructor(
     message: string,
     public status?: number,
@@ -39,5 +39,12 @@ export class CubbyError extends Error {
   ) {
     super(message);
     this.name = 'CubbyRequestError';
+  }
+}
+
+export class CubbyTimeoutError extends CubbyRequestError {
+  constructor(timeoutMs: number) {
+    super(`Request timed out after ${timeoutMs}ms`, 408, 'TIMEOUT');
+    this.name = 'CubbyTimeoutError';
   }
 }

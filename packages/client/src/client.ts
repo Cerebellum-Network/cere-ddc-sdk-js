@@ -1,4 +1,4 @@
-import { ClientConfig, SignedWallet, CubbyError, CubbyQueryRequestBody } from './types';
+import { ClientConfig, SignedWallet, CubbyRequestError, CubbyTimeoutError, CubbyQueryRequestBody } from './types';
 import { Client as SisClient } from './sis';
 import { ContextPath, Packet } from './sis/types';
 import Event from './event';
@@ -112,30 +112,47 @@ export class ClientSdk {
   };
 
   public query = {
-    fetch: async (cubbyName: string, queryName: string, payload?: unknown, timeoutMs?: number): Promise<unknown> => {
+    fetch: async (
+      cubbyName: string,
+      queryName: string,
+      params?: unknown,
+      timeoutMs: number = 60000,
+    ): Promise<unknown> => {
       const path = `agent-services/${this.context.agent_service}/cubbies/${cubbyName}/queries/${queryName}`;
       const url = this.buildURL(this.agentRuntimeUrl, path);
       const requestBody = {
-        params: payload,
+        params: params,
+        timeoutMs: timeoutMs,
       } as CubbyQueryRequestBody;
 
-      if (timeoutMs) {
-        requestBody.timeoutMs = timeoutMs;
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), timeoutMs);
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: abortController.signal,
+        });
+        const json = await response.json();
+        if (response.ok) {
+          const resultData = json?.result?.data;
+          return resultData !== undefined ? resultData : json;
+        }
+        const errMessage =
+          (json && json.error && json.error.message) || `Request failed with status ${response.status}`;
+        throw new CubbyRequestError(errMessage, response.status, json?.error?.code);
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw new CubbyTimeoutError(timeoutMs);
+        }
+        throw error;
+      } finally {
+        clearTimeout(timeoutId);
       }
-      const response = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(requestBody),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const json = await response.json();
-      if (response.ok) {
-        const resultData = json?.result?.data;
-        return resultData !== undefined ? resultData : json;
-      }
-      const errMessage = (json && json.error && json.error.message) || `Request failed with status ${response.status}`;
-      throw new CubbyError(errMessage, response.status, json?.error?.code);
     },
   };
 }
