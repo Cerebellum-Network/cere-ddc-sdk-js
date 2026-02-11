@@ -98,6 +98,16 @@ export interface Ack {
 // Handshake Types
 // =============================================================================
 
+/** Signer interface for handshake authentication.
+ * Compatible with @cere-activity-sdk/signers (JsonSigner, UriSigner, CereWalletSigner).
+ */
+export interface Signer {
+  /** Signs a message and returns the hex-encoded signature */
+  sign(message: string): Promise<string>;
+  /** Hex-encoded public key */
+  publicKey: string;
+}
+
 /** Handshake request for QUIC stream setup */
 export interface HandshakeRequest {
   /** Protocol version (currently 1) */
@@ -108,6 +118,12 @@ export interface HandshakeRequest {
   stream_id: string;
   /** Starting offset for subscribe (optional) */
   offset?: number;
+  /** Hex-encoded public key for publish handshake authentication */
+  pub_key?: string;
+  /** Hex-encoded signature over Blake2b-256(stream_id + type + version) */
+  signature?: string;
+  /** Authorization token for subscribe operations */
+  auth_token?: string;
   /** Extensible options */
   options?: Record<string, string>;
 }

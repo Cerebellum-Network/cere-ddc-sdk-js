@@ -9,7 +9,7 @@
 
 import { HttpClient } from './http';
 import { Transport, Publisher as TransportPublisher, Subscriber } from './transport';
-import { NodeInfo, ClientConfig, DataStream, ContextPath, CreateStreamOptions, Packet, SISError } from './types';
+import { NodeInfo, ClientConfig, DataStream, ContextPath, CreateStreamOptions, Packet, Signer, SISError } from './types';
 import fetchCertificateHash from './certificate';
 import { normalizeSisUrl, determineContentType } from './utils';
 
@@ -295,9 +295,10 @@ export class Client {
    * The Publisher maintains a persistent connection with automatic discovery.
    *
    * @param streamId - Target stream identifier
+   * @param signer - Optional signer for handshake authentication (Sr25519/Ed25519)
    * @returns A Publisher instance
    */
-  async newPublisher(streamId: string): Promise<Publisher> {
+  async newPublisher(streamId: string, signer?: Signer): Promise<Publisher> {
     await this.ensureInitialized();
     // Discover owner node
     const ownerPubKey = await this.discoverOwner(streamId);
@@ -310,7 +311,7 @@ export class Client {
 
     // Get transport and create publisher
     const transport = this.getTransport(streamId, ownerNode);
-    const transportPublisher = new TransportPublisher(transport, streamId);
+    const transportPublisher = new TransportPublisher(transport, streamId, signer);
     await transportPublisher.init();
 
     return new Publisher(transportPublisher);

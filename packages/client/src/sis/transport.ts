@@ -10,10 +10,14 @@
  * Then pass { webTransportClass, webTransportReady: quicheLoaded } to the Client.
  */
 
+import pkg from 'blakejs';
+const { blake2bHex } = pkg;
+
 import { serializeHandshake, serializePacket, ACK_SIZE, BufferedReader, DeserializedPacket } from './protocol';
 import {
   Packet,
   Ack,
+  Signer,
   STREAM_TYPE_PUBLISH,
   STREAM_TYPE_SUBSCRIBE,
   SISError,
@@ -146,6 +150,7 @@ export class Transport {
 export class Publisher {
   private transport: Transport;
   private streamId: string;
+  private signer?: Signer;
   private stream: WebTransportBidirectionalStreamLike | null = null;
   private writer: WritableStreamDefaultWriter<Uint8Array> | null = null;
   private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
@@ -153,25 +158,44 @@ export class Publisher {
   private closed = false;
   private ackBuffer = new BufferedReader();
 
-  constructor(transport: Transport, streamId: string) {
+  constructor(transport: Transport, streamId: string, signer?: Signer) {
     this.transport = transport;
     this.streamId = streamId;
+    this.signer = signer;
   }
 
   /**
-   * Initializes the publisher by opening a stream and sending the handshake
+   * Initializes the publisher by opening a stream and sending the handshake.
+   * If a signer is provided, the handshake includes a cryptographic signature
+   * over Blake2b-256(stream_id + type + version) for server-side verification.
    */
   async init(): Promise<void> {
     this.stream = await this.transport.createStream();
     this.writer = this.stream.writable.getWriter();
     this.reader = this.stream.readable.getReader();
 
-    // Send handshake
-    const handshake = serializeHandshake({
-      version: 1,
-      type: STREAM_TYPE_PUBLISH,
+    // Build handshake request
+    const version = 1;
+    const type = STREAM_TYPE_PUBLISH;
+    const req: Parameters<typeof serializeHandshake>[0] = {
+      version,
+      type,
       stream_id: this.streamId,
-    });
+    };
+
+    // Sign handshake if signer is available
+    if (this.signer) {
+      // Canonical message: Blake2b-256(stream_id + type + version)
+      // The "0x" prefix ensures the Polkadot signer hex-decodes the hash to 32 raw bytes,
+      // matching the server-side CanonicalMessage() which verifies against raw Blake2b-256 bytes.
+      const message = blake2bHex([this.streamId, String(type), String(version)].join(''), undefined, 32);
+      const signature = await this.signer.sign('0x' + message);
+      req.pub_key = this.signer.publicKey;
+      req.signature = signature;
+    }
+
+    // Send handshake
+    const handshake = serializeHandshake(req);
     await this.writer.write(handshake);
   }
 

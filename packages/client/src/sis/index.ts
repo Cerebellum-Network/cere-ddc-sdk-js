@@ -53,6 +53,7 @@ export type {
   DataStream,
   Packet,
   Ack,
+  Signer,
   HandshakeRequest,
   CreateStreamRequest,
   CreateStreamResponse,
