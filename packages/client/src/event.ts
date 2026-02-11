@@ -29,8 +29,11 @@ class Event {
     this.timestamp = (options.timestamp ?? new Date()).toISOString();
   }
   async body() {
-    const message = blake2bHex([this.id, this.payload.event_type, this.timestamp].join(''));
-    const signature = await this.signer.sign(['\x19Ethereum Signed Message:\n', message.length, message].join(''));
+    // Canonical message: Blake2b-256(id + event_type + timestamp)
+    // The "0x" prefix ensures the Polkadot signer hex-decodes the hash to 32 raw bytes,
+    // matching the server-side CanonicalMessage() which verifies against raw Blake2b-256 bytes.
+    const message = blake2bHex([this.id, this.payload.event_type, this.timestamp].join(''), undefined, 32);
+    const signature = await this.signer.sign('0x' + message);
     return {
       id: this.id,
       timestamp: this.timestamp,
