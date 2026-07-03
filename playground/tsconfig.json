@@ -1,0 +1,29 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["src"],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ],
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /**
+     * Browser types are different from node types in DDC SDK, so we have to use moduleSuffixes to fix it.
+     *
+     * TODO: Find a better way to fix browser types
+     */
+    "moduleSuffixes": [".web", ""]
+  }
+}

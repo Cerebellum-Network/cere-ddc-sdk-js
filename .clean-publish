@@ -1,0 +1,7 @@
+{
+    "withoutPublish": true,
+    "tempDir": "package",
+    "files": [
+        "tsconfig.*"
+    ]
+}

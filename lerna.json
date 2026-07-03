@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+  "version": "2.16.1",
+  "command": {
+    "publish": {
+      "directory": "{workspaceRoot}/{projectRoot}/package"
+    },
+    "version": {
+      "exact": true,
+      "forcePublish": true,
+      "preid": "rc",
+      "changelog": true,
+      "conventionalCommits": true,
+      "changelogPreset": "@cere-ddc-sdk/changelog-preset",
+      "message": "Release %s"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "encoded": "WSr08lLD0gfmV7tHdMd1PlqF7cXB9y99TT162qax3k8AgAAAAQAAAAgAAACZ0C57Sgfd2uiT+0/5vF0WWmjvXBhT3t5GtGm3/PBzmXfjfIcFHGb+WFCdosicxGnFmirgOgUmr17s6UOQI8wxOaiH/UDhvFdUR0iEv6B8A9YbA0m0Mcef7mPiR6Els/RPAu6rAgbae8Zji2Itk2l7ToD9Ns14QFwo0b6YKyvl6BJ285owu/wQT73n8XaugV2HW4uUpo8zypOvUW2J",
+  "encoding": { "content": ["pkcs8", "sr25519"], "type": ["scrypt", "xsalsa20-poly1305"], "version": "3" },
+  "address": "5CWwpqFegmMgzPcGmGFdUTRCzcNLAoM6n5thKKQhqyj4gFXD",
+  "meta": { "genesisHash": "", "name": "DDC Examples", "whenCreated": 1715758002113 }
+}

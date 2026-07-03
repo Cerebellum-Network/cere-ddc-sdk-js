@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package dag;
+
+option go_package = "cere.network/ddc-storage-node/api/dag";
+
+import "google/api/annotations.proto";
+
+service DagApi {
+  rpc Put(PutRequest) returns (PutResponse) {
+    option (google.api.http) = {
+      post: "/v1/dag/{bucketId}"
+      body: "*"
+    };
+  }
+
+  rpc Get(GetRequest) returns (GetResponse) {
+    option (google.api.http) = {
+      get: "/v1/dag/{bucketId}/{cid}/{path}"
+      additional_bindings {
+        get: "/v1/dag/{bucketId}/{cid}"
+      }
+    };
+  }
+}
+
+message PutRequest {
+  uint64 bucketId = 1 [jstype = JS_NORMAL];
+  Node node = 2;
+  optional bytes cid = 3;
+}
+
+message PutResponse {
+  bytes cid = 1;
+}
+
+message GetRequest {
+  uint64 bucketId = 1 [jstype = JS_NORMAL];
+  bytes cid = 2;
+  optional string path = 3;
+}
+
+message GetResponse {
+  Node node = 1;
+}
+
+message Node {
+  bytes data = 1;
+  repeated Link links = 2;
+  repeated Tag tags = 3;
+}
+
+message Link {
+  // CID of the target object
+  bytes cid = 1;
+  // UTF-8 string name
+  string name = 2;
+  // cumulative size of target object
+  uint64 size = 3;
+}
+
+message Tag {
+  string key = 1;
+  string value = 2;
+}

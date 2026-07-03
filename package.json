@@ -1,0 +1,61 @@
+{
+  "name": "cere-ddc-sdk",
+  "description": "Cere DDC SDK for JavaScript",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
+  },
+  "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
+  "license": "Apache-2.0",
+  "scripts": {
+    "lint": "eslint --quiet '**/*.{ts,tsx,js,cjs,mjs,jsx,json}'",
+    "lint:fix": "npm run lint -- --fix",
+    "test": "lerna run test",
+    "test:ci": "lerna run test -- --silent",
+    "test:clean": "lerna run test:clean",
+    "test:env": "lerna run test:env",
+    "clean": "lerna run clean",
+    "docs": "lerna run docs",
+    "build": "lerna run build",
+    "build:watch": "lerna watch -- lerna run build",
+    "package": "lerna run package",
+    "release": "lerna version --conventional-graduate",
+    "release:no-push": "npm run release -- --no-push --no-git-tag-version",
+    "release:rc": "lerna version --conventional-prerelease",
+    "release:rc:no-push": "npm run release:rc -- --no-push --no-git-tag-version",
+    "release:publish": "lerna publish from-package",
+    "check-types": "tsc --noEmit",
+    "check-types:ci": "npm run check-types -- -p ./tsconfig.build.json",
+    "playground": "lerna run playground"
+  },
+  "dependencies": {
+    "@polkadot/api": "^16.4.9",
+    "@polkadot/util": "^13.5.7",
+    "@polkadot/util-crypto": "^13.5.7",
+    "@types/node": "^18.17.1",
+    "clean-publish": "^4.2.0",
+    "eslint": "^8.56.0",
+    "lerna": "^8.0.1",
+    "microbundle": "^0.15.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typedoc": "^0.28.0",
+    "typescript": "^5.4.5",
+    "wait-port": "^1.1.0"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*",
+      "examples/*",
+      "playground",
+      "tests"
+    ],
+    "nohoist": [
+      "playground/**"
+    ]
+  }
+}

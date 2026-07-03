@@ -1,0 +1,20 @@
+# compiled output
+/dist
+**/node_modules/
+**/dist/
+**/build/
+**/package/
+coverage/
+tsconfig.*buildinfo
+tests/temp.spec.ts
+
+# IntelliJ
+.idea
+*.ipr
+*.iml
+*.iws
+ddc-test-cluster/volumes
+
+# Lerna
+.nx/cache
+.nx/workspace-data

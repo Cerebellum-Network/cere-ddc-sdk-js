@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package cns;
+
+option go_package = "cere.network/ddc-storage-node/api/cns";
+
+import "common/signature.proto";
+import "google/api/annotations.proto";
+
+service CnsApi {
+  rpc Put(PutRequest) returns (PutResponse) {
+    option (google.api.http) = {
+      post: "/v1/cns/{bucketId}"
+      body: "*"
+    };
+  }
+
+  rpc Get(GetRequest) returns (GetResponse) {
+    option (google.api.http) = {
+      get: "/v1/cns/{bucketId}/{name}"
+    };
+  }
+}
+
+message PutRequest {
+  uint64 bucketId = 1 [jstype = JS_NORMAL];
+  Record record = 2;
+}
+
+message PutResponse {}
+
+message GetRequest {
+  uint64 bucketId = 1 [jstype = JS_NORMAL];
+  string name = 2;
+}
+
+message GetResponse {
+  Record record = 1;
+}
+
+message Record {
+  common.Signature signature = 1; // signature of a CnsRecord serialised to protobuf (excluding Signature itself) by a client that have an access to a bucket so requester can verify the validity of the CNS record
+  bytes cid = 2;
+  string name = 3;
+  // TTL in seconds specifies how long it takes for record updates to reach your end users (time-to-live in cache layer).
+  // Default value is 300 (applied in case ttl isn't set). Min value is 30 and max value is 86400 (24 hours).
+  optional uint32 ttl = 4;
+}
