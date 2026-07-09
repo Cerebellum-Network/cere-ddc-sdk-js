@@ -46,7 +46,11 @@ export class CustomerDepositContracts {
     // `OutOfGas` immediately (gasRequired 0), for every caller, funded or not. So the dry
     // run itself must be given a real, generous gas ceiling or it can never succeed.
     const gasLimit = this.chainGasCeiling(contract.api as ApiPromise);
-    const { result, gasRequired } = await contract.query[message](caller, { gasLimit, storageDepositLimit: null, value }, ...args);
+    const { result, gasRequired } = await contract.query[message](
+      caller,
+      { gasLimit, storageDepositLimit: null, value },
+      ...args,
+    );
 
     // The dry run is executed as a fixed placeholder caller (see OWNER_PLACEHOLDER in
     // DDCCustomersPallet). If it still doesn't succeed even with a generous gas ceiling —
