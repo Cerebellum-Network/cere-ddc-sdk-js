@@ -164,10 +164,10 @@ export class DdcClient {
 
     if (currentDeposit === null) {
       this.logger.info('Depositing balance %s to %s for cluster %s', amount, this.signer.address, clusterId);
-      tx = this.blockchain.ddcCustomers.deposit(clusterId, amount);
+      tx = await this.blockchain.ddcCustomers.deposit(clusterId, amount);
     } else {
       this.logger.info('Depositing extra balance %s to %s for cluster %s', amount, this.signer.address, clusterId);
-      tx = this.blockchain.ddcCustomers.depositExtra(clusterId, amount);
+      tx = await this.blockchain.ddcCustomers.depositExtra(clusterId, amount);
     }
 
     return this.blockchain.send(tx, { account: this.signer });
@@ -196,7 +196,7 @@ export class DdcClient {
    * */
   async depositBalanceFor(targetAddress: AccountId, clusterId: ClusterId, amount: bigint) {
     this.logger.info('Depositing balance %s for %s in cluster %s', amount, targetAddress, clusterId);
-    const tx = this.blockchain.ddcCustomers.depositFor(targetAddress, clusterId, amount);
+    const tx = await this.blockchain.ddcCustomers.depositFor(targetAddress, clusterId, amount);
     return this.blockchain.send(tx, { account: this.signer });
   }
 
@@ -247,7 +247,7 @@ export class DdcClient {
    * */
   async unlockDeposit(clusterId: ClusterId, amount: bigint) {
     this.logger.info('Unlocking deposit %s for cluster %s', amount, clusterId);
-    const tx = this.blockchain.ddcCustomers.unlockDeposit(clusterId, amount);
+    const tx = await this.blockchain.ddcCustomers.unlockDeposit(clusterId, amount);
     return this.blockchain.send(tx, { account: this.signer });
   }
 
@@ -269,7 +269,7 @@ export class DdcClient {
    * */
   async withdrawUnlockedDeposit(clusterId: ClusterId) {
     this.logger.info('Withdrawing unlocked deposit for cluster %s', clusterId);
-    const tx = this.blockchain.ddcCustomers.withdrawUnlockedDeposit(clusterId);
+    const tx = await this.blockchain.ddcCustomers.withdrawUnlockedDeposit(clusterId);
     return this.blockchain.send(tx, { account: this.signer });
   }
 
