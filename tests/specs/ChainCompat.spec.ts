@@ -1,6 +1,6 @@
 import { Blockchain, cryptoWaitReady, decodeAddress, CustomerDepositContracts } from '@cere-ddc-sdk/blockchain';
 
-import { describeChain, connectChain } from '../helpers';
+import { describeChain, connectChain, fundedSigner } from '../helpers';
 
 const ALICE_PUBLIC = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 
@@ -94,4 +94,22 @@ describeChain('Chain compatibility (live)', () => {
   });
 
   // Cases from Tasks 3, 4/5 are added here.
+
+  it('performs a real signed deposit and reads it back', async () => {
+    const signer = fundedSigner();
+    if (!signer) return; // no funded seed provided — skip cleanly
+    await signer.isReady();
+
+    const clusterId = await findContractCluster(blockchain);
+    if (!clusterId) return; // no contract-backed cluster on this network — skip
+
+    const before = await blockchain.ddcCustomers.getStackingInfo(clusterId, signer.address);
+    const amount = 1n * 10_000_000_000n; // 1 CERE
+
+    const tx = await blockchain.ddcCustomers.deposit(clusterId, amount);
+    await blockchain.send(tx, { account: signer });
+
+    const after = await blockchain.ddcCustomers.getStackingInfo(clusterId, signer.address);
+    expect(after?.active ?? 0n).toBeGreaterThan(before?.active ?? 0n);
+  }, 120_000);
 });
