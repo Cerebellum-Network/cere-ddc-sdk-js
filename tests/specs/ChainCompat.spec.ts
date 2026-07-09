@@ -66,11 +66,15 @@ describeChain('Chain compatibility (live)', () => {
       treasuryShare: 0, validatorsShare: 0, clusterReserveShare: 0,
       storageBondSize: 0n, storageChillDelay: 0, storageUnbondingDelay: 0,
       costPerMbStored: 7n, costPerMbStreamed: 0n, costPerPutRequest: 0n, costPerGetRequest: 0n,
+      costPerGpuUnit: 3n,
     });
     // The gov-params arg is the 4th (index 3). If the field name were wrong, encoding
     // would silently drop it and this would read 0.
     const govArg = tx.args[3].toJSON() as Record<string, unknown>;
     expect(BigInt(govArg.costPerMbStored as number)).toBe(7n);
+    // Canary a GPU/CPU/RAM cost field too, so a silently-dropped optional field would
+    // also be caught here rather than only the always-present costPer* fields above.
+    expect(BigInt(govArg.costPerGpuUnit as number)).toBe(3n);
   });
 
   it('resolves a per-cluster deposit contract and reads a balance without throwing', async () => {
@@ -96,6 +100,9 @@ describeChain('Chain compatibility (live)', () => {
   // Cases from Tasks 3, 4/5 are added here.
 
   it('performs a real signed deposit and reads it back', async () => {
+    // Never submit a real, signed deposit against mainnet — enforce this, don't just document it.
+    expect(process.env.CERE_RPC_URL ?? '').not.toMatch(/mainnet/i);
+
     const signer = fundedSigner();
     if (!signer) return; // no funded seed provided — skip cleanly
     await signer.isReady();

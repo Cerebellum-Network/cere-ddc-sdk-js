@@ -64,7 +64,15 @@ export class CustomerDepositContracts {
       return gasLimit;
     }
 
-    return gasRequired;
+    // The dry run is priced against an unfunded/placeholder caller and against state
+    // that may be slightly stale by the time the real, signed transaction lands, so a
+    // verbatim `gasRequired` can undershoot and cause the real deposit to revert
+    // OutOfGas — apply a 2x safety margin, capped at the chain's own per-extrinsic ceiling.
+    return this.capWeight(
+      contract.api as ApiPromise,
+      gasRequired.refTime.toBigInt() * 2n,
+      gasRequired.proofSize.toBigInt() * 2n,
+    );
   }
 
   /**
@@ -83,6 +91,11 @@ export class CustomerDepositContracts {
     const GENEROUS_REF_TIME = 10_000_000_000n;
     const GENEROUS_PROOF_SIZE = 1_000_000n;
 
+    return this.capWeight(api, GENEROUS_REF_TIME, GENEROUS_PROOF_SIZE);
+  }
+
+  /** Cap a candidate (refTime, proofSize) pair at the chain's own per-extrinsic ceiling. */
+  private static capWeight(api: ApiPromise, refTime: bigint, proofSize: bigint): WeightV2 {
     // `system.blockWeights` isn't part of the statically-augmented API surface this
     // package builds against, so it types as a bare `Codec`; cast to its known shape
     // (frame_system::limits::BlockWeights) to reach the nested weight fields.
@@ -91,8 +104,8 @@ export class CustomerDepositContracts {
     const maxBlockProofSize = maxBlock.proofSize.toBigInt();
 
     return api.registry.createType('WeightV2', {
-      refTime: GENEROUS_REF_TIME < maxBlockRefTime ? GENEROUS_REF_TIME : maxBlockRefTime,
-      proofSize: GENEROUS_PROOF_SIZE < maxBlockProofSize ? GENEROUS_PROOF_SIZE : maxBlockProofSize,
+      refTime: refTime < maxBlockRefTime ? refTime : maxBlockRefTime,
+      proofSize: proofSize < maxBlockProofSize ? proofSize : maxBlockProofSize,
     }) as unknown as WeightV2;
   }
 
@@ -106,7 +119,13 @@ export class CustomerDepositContracts {
       { gasLimit, storageDepositLimit: null },
       owner,
     );
-    if (!result.isOk || !output) return undefined;
+    // A dispatch/execution failure is a genuine problem (node issue, bad ABI, contract
+    // trap, etc.) — it must not be conflated with "no deposit exists", or callers would
+    // silently treat a broken query as a zero balance. Throw so the caller can see it.
+    if (!result.isOk) {
+      throw new Error(`ddcBalancesFetcher::getBalance dry run failed: ${JSON.stringify(result.toHuman())}`);
+    }
+    if (!output) return undefined;
 
     const json = (output.toJSON() as { ok?: { owner: string; total: string | number; active: string | number } }).ok;
     if (!json) return undefined;

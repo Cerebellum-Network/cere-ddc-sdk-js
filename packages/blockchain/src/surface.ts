@@ -77,6 +77,10 @@ export const SURFACE: SurfaceEntry[] = [
   { kind: 'query', pallet: 'ddcStaking', method: 'bonded', args: -1 },
   { kind: 'query', pallet: 'ddcStaking', method: 'nodes', args: -1 },
   // governance (runtime pallet name is ddcClustersGov, plural)
+  { kind: 'tx', pallet: 'ddcClustersGov', method: 'proposeActivateClusterProtocol', args: 2 },
   { kind: 'tx', pallet: 'ddcClustersGov', method: 'proposeUpdateClusterProtocol', args: 3 },
   { kind: 'tx', pallet: 'ddcClustersGov', method: 'voteProposal', args: 3 },
+  { kind: 'tx', pallet: 'ddcClustersGov', method: 'closeProposal', args: 2 },
+  { kind: 'tx', pallet: 'ddcClustersGov', method: 'retractProposal', args: 1 },
+  { kind: 'tx', pallet: 'ddcClustersGov', method: 'refundSubmissionDeposit', args: 1 },
 ];
