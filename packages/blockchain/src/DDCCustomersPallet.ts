@@ -1,7 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { Sendable, Event } from './Blockchain';
+import { CustomerDepositContracts } from './CustomerDepositContract';
 import type { AccountId, Bucket, BucketId, BucketParams, ClusterId, StakingInfo } from './types';
+
+/** Dry-run caller used only for gas estimation — the fixed-shape contract messages don't depend on the caller. */
+const OWNER_PLACEHOLDER: AccountId = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 
 /**
  * This class provides methods to interact with the DDC Customers pallet on the blockchain.
@@ -16,7 +20,17 @@ import type { AccountId, Bucket, BucketId, BucketParams, ClusterId, StakingInfo 
  * ```
  */
 export class DDCCustomersPallet {
-  constructor(private apiPromise: ApiPromise) {}
+  private contracts: CustomerDepositContracts;
+
+  constructor(private apiPromise: ApiPromise) {
+    this.contracts = new CustomerDepositContracts(apiPromise);
+  }
+
+  /** Arg count of a ddcCustomers tx on the connected runtime; -1 if the call is absent. */
+  private palletTxArgs(method: string): number {
+    const entry = (this.apiPromise.tx.ddcCustomers as Record<string, any>)[method];
+    return entry?.meta?.args?.length ?? -1;
+  }
 
   /**
    * Returns the bucket with the given ID.
@@ -72,8 +86,21 @@ export class DDCCustomersPallet {
    * ```
    */
   async getStackingInfo(clusterId: ClusterId, accountId: AccountId) {
-    const result = await this.apiPromise.query.ddcCustomers.clusterLedger(clusterId, accountId);
-    return result.toJSON() as unknown as StakingInfo | undefined;
+    const contract = await this.contracts.resolve(clusterId);
+    if (contract) {
+      return CustomerDepositContracts.readBalance(contract, accountId);
+    }
+
+    // Migrated runtime: per-cluster ledger. Legacy runtime (mainnet): global ledger(accountId).
+    if (this.apiPromise.query.ddcCustomers?.clusterLedger) {
+      const result = await this.apiPromise.query.ddcCustomers.clusterLedger(clusterId, accountId);
+      return result.toJSON() as unknown as StakingInfo | undefined;
+    }
+    if (this.apiPromise.query.ddcCustomers?.ledger) {
+      const result = await this.apiPromise.query.ddcCustomers.ledger(accountId);
+      return result.toJSON() as unknown as StakingInfo | undefined;
+    }
+    return undefined;
   }
 
   /**
@@ -145,8 +172,21 @@ export class DDCCustomersPallet {
    * await blockchain.send(tx, { account });
    * ```
    */
-  deposit(clusterId: ClusterId, value: bigint) {
-    return this.apiPromise.tx.ddcCustomers.deposit(clusterId, value) as unknown as Sendable;
+  async deposit(clusterId: ClusterId, value: bigint) {
+    const contract = await this.contracts.resolve(clusterId);
+    if (contract) {
+      const gasLimit = await CustomerDepositContracts.estimateGas(
+        contract,
+        'ddcBalancesDepositor::deposit',
+        OWNER_PLACEHOLDER,
+        value,
+        [],
+      );
+      return contract.tx['ddcBalancesDepositor::deposit']({ gasLimit, storageDepositLimit: null, value }) as unknown as Sendable;
+    }
+    // Adaptive fallback: migrated pallet is deposit(clusterId, value); legacy mainnet is deposit(value).
+    const args = this.palletTxArgs('deposit') >= 2 ? [clusterId, value] : [value];
+    return (this.apiPromise.tx.ddcCustomers.deposit as any)(...args) as unknown as Sendable;
   }
 
   /**
@@ -164,8 +204,25 @@ export class DDCCustomersPallet {
    * await blockchain.send(tx, { account });
    * ```
    */
-  depositExtra(clusterId: ClusterId, maxAdditional: bigint) {
-    return this.apiPromise.tx.ddcCustomers.depositExtra(clusterId, maxAdditional) as unknown as Sendable;
+  async depositExtra(clusterId: ClusterId, maxAdditional: bigint) {
+    const contract = await this.contracts.resolve(clusterId);
+    if (contract) {
+      const gasLimit = await CustomerDepositContracts.estimateGas(
+        contract,
+        'ddcBalancesDepositor::deposit',
+        OWNER_PLACEHOLDER,
+        maxAdditional,
+        [],
+      );
+      return contract.tx['ddcBalancesDepositor::deposit']({
+        gasLimit,
+        storageDepositLimit: null,
+        value: maxAdditional,
+      }) as unknown as Sendable;
+    }
+    // Adaptive fallback: migrated pallet is depositExtra(clusterId, value); legacy mainnet is depositExtra(value).
+    const args = this.palletTxArgs('depositExtra') >= 2 ? [clusterId, maxAdditional] : [maxAdditional];
+    return (this.apiPromise.tx.ddcCustomers.depositExtra as any)(...args) as unknown as Sendable;
   }
 
   /**
@@ -185,7 +242,25 @@ export class DDCCustomersPallet {
    * await blockchain.send(tx, { account });
    * ```
    */
-  depositFor(targetAddress: AccountId, clusterId: ClusterId, amount: bigint) {
+  async depositFor(targetAddress: AccountId, clusterId: ClusterId, amount: bigint) {
+    const contract = await this.contracts.resolve(clusterId);
+    if (contract) {
+      const gasLimit = await CustomerDepositContracts.estimateGas(
+        contract,
+        'ddcBalancesDepositor::depositFor',
+        OWNER_PLACEHOLDER,
+        amount,
+        [targetAddress],
+      );
+      return contract.tx['ddcBalancesDepositor::depositFor'](
+        { gasLimit, storageDepositLimit: null, value: amount },
+        targetAddress,
+      ) as unknown as Sendable;
+    }
+    // depositFor is absent from the legacy (pre-migration) mainnet pallet.
+    if (this.palletTxArgs('depositFor') < 0) {
+      throw new Error('depositFor is not supported by the connected runtime');
+    }
     return this.apiPromise.tx.ddcCustomers.depositFor(targetAddress, clusterId, amount) as unknown as Sendable;
   }
 
@@ -204,8 +279,24 @@ export class DDCCustomersPallet {
    * await blockchain.send(tx, { account });
    * ```
    */
-  unlockDeposit(clusterId: ClusterId, value: bigint) {
-    return this.apiPromise.tx.ddcCustomers.unlockDeposit(clusterId, value) as unknown as Sendable;
+  async unlockDeposit(clusterId: ClusterId, value: bigint) {
+    const contract = await this.contracts.resolve(clusterId);
+    if (contract) {
+      const gasLimit = await CustomerDepositContracts.estimateGas(
+        contract,
+        'ddcBalancesDepositor::unlockDeposit',
+        OWNER_PLACEHOLDER,
+        0n,
+        [value],
+      );
+      return contract.tx['ddcBalancesDepositor::unlockDeposit'](
+        { gasLimit, storageDepositLimit: null },
+        value,
+      ) as unknown as Sendable;
+    }
+    // Adaptive fallback: migrated pallet is unlockDeposit(clusterId, value); legacy mainnet is unlockDeposit(value).
+    const args = this.palletTxArgs('unlockDeposit') >= 2 ? [clusterId, value] : [value];
+    return (this.apiPromise.tx.ddcCustomers.unlockDeposit as any)(...args) as unknown as Sendable;
   }
 
   /**
@@ -222,8 +313,24 @@ export class DDCCustomersPallet {
    * await blockchain.send(tx, { account });
    * ```
    */
-  withdrawUnlockedDeposit(clusterId: ClusterId) {
-    return this.apiPromise.tx.ddcCustomers.withdrawUnlockedDeposit(clusterId) as unknown as Sendable;
+  async withdrawUnlockedDeposit(clusterId: ClusterId) {
+    const contract = await this.contracts.resolve(clusterId);
+    if (contract) {
+      const gasLimit = await CustomerDepositContracts.estimateGas(
+        contract,
+        'ddcBalancesDepositor::withdrawUnlocked',
+        OWNER_PLACEHOLDER,
+        0n,
+        [],
+      );
+      return contract.tx['ddcBalancesDepositor::withdrawUnlocked']({
+        gasLimit,
+        storageDepositLimit: null,
+      }) as unknown as Sendable;
+    }
+    // Adaptive fallback: migrated pallet is withdrawUnlockedDeposit(clusterId); legacy mainnet is withdrawUnlockedDeposit().
+    const args = this.palletTxArgs('withdrawUnlockedDeposit') >= 1 ? [clusterId] : [];
+    return (this.apiPromise.tx.ddcCustomers.withdrawUnlockedDeposit as any)(...args) as unknown as Sendable;
   }
 
   /**

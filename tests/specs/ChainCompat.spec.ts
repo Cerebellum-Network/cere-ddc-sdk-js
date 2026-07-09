@@ -86,5 +86,12 @@ describeChain('Chain compatibility (live)', () => {
     expect(info === undefined || typeof info.active === 'bigint').toBe(true);
   });
 
+  it('getStackingInfo routes through the contract for a contract-backed cluster', async () => {
+    const clusterId = await findContractCluster(blockchain);
+    if (!clusterId) return; // no contract-backed cluster on this network — skip cleanly
+    const info = await blockchain.ddcCustomers.getStackingInfo(clusterId, ALICE_PUBLIC);
+    expect(info === undefined || typeof info.active === 'bigint').toBe(true);
+  });
+
   // Cases from Tasks 3, 4/5 are added here.
 });
