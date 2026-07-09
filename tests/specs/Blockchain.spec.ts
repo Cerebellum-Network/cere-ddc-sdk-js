@@ -34,10 +34,10 @@ describe('Blockchain', () => {
     storageBondSize: bondSize,
     storageChillDelay: 0,
     storageUnbondingDelay: 0,
-    unitPerMbStored: 0n,
-    unitPerMbStreamed: 0n,
-    unitPerPutRequest: 0n,
-    unitPerGetRequest: 0n,
+    costPerMbStored: 0n,
+    costPerMbStreamed: 0n,
+    costPerPutRequest: 0n,
+    costPerGetRequest: 0n,
   };
 
   beforeAll(async () => {

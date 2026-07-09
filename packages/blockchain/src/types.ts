@@ -27,6 +27,7 @@ export type Cluster = {
   readonly reserveId: AccountId;
   readonly props: ClusterParams;
   readonly status: ClusterStatus;
+  readonly lastPaidEra?: number;
 };
 
 export type PartsBerBillion = number;
@@ -38,12 +39,14 @@ export type ClusterProtocolParams = {
   readonly storageBondSize: Amount;
   readonly storageChillDelay: BlockInterval;
   readonly storageUnbondingDelay: BlockInterval;
-  readonly unitPerMbStored: Amount;
-  readonly unitPerMbStreamed: Amount;
-  readonly unitPerPutRequest: Amount;
-  readonly unitPerGetRequest: Amount;
-  // NOTE: live runtime (devnet, 2026-07-09) reports these as costPer* (not unitPer* as the
-  // task brief assumed) — verified via ddcClusters.clustersGovParams.entries()[0][1].toJSON().
+  // NOTE: live runtime (verified against devnet) encodes/decodes these fee fields as
+  // costPer* — the previous unitPer* names were silently dropped by polkadot.js Struct
+  // encoding (unknown keys are ignored), causing fees to encode as 0 and reads to be
+  // undefined.
+  readonly costPerMbStored: Amount;
+  readonly costPerMbStreamed: Amount;
+  readonly costPerPutRequest: Amount;
+  readonly costPerGetRequest: Amount;
   readonly costPerGpuUnit?: Amount;
   readonly costPerCpuUnit?: Amount;
   readonly costPerRamUnit?: Amount;

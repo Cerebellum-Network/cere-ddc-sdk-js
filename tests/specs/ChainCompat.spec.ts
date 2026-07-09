@@ -38,7 +38,7 @@ describeChain('Chain compatibility (live)', () => {
       blockchain.ddcClustersGov.proposeActivateClusterProtocol(clusterId, {
         treasuryShare: 0, validatorsShare: 0, clusterReserveShare: 0,
         storageBondSize: 0n, storageChillDelay: 0, storageUnbondingDelay: 0,
-        unitPerMbStored: 0n, unitPerMbStreamed: 0n, unitPerPutRequest: 0n, unitPerGetRequest: 0n,
+        costPerMbStored: 0n, costPerMbStreamed: 0n, costPerPutRequest: 0n, costPerGetRequest: 0n,
       }),
     ).not.toThrow();
   });
@@ -47,12 +47,30 @@ describeChain('Chain compatibility (live)', () => {
     expect(blockchain.api.tx.ddcStaking.serve).toBeUndefined();
   });
 
-  it('decodes clustersGovParams into ClusterProtocolParams including customerDepositContract', async () => {
+  it('decodes gov params via the typed getter with defined costPer* fees', async () => {
     const entries = await blockchain.api.query.ddcClusters.clustersGovParams.entries();
-    // Skip cleanly on a chain with no clusters configured yet.
     if (entries.length === 0) return;
-    const params = entries[0][1].toJSON() as Record<string, unknown>;
+    const clusterId = entries[0][0].args[0].toHex() as `0x${string}`;
+    const params = await blockchain.ddcClusters.getClusterGovernmentParams(clusterId);
+    expect(params).toBeDefined();
+    // The renamed fee fields must decode to real values, not undefined.
+    expect(typeof params!.costPerMbStored).not.toBe('undefined');
+    expect(typeof params!.costPerGetRequest).not.toBe('undefined');
     expect(params).toHaveProperty('customerDepositContract');
+  });
+
+  it('encodes createCluster gov params under the costPer* field names', () => {
+    const clusterId = '0x0000000000000000000000000000000000000001';
+    const acct = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+    const tx = blockchain.ddcClusters.createCluster(clusterId, acct, {}, {
+      treasuryShare: 0, validatorsShare: 0, clusterReserveShare: 0,
+      storageBondSize: 0n, storageChillDelay: 0, storageUnbondingDelay: 0,
+      costPerMbStored: 7n, costPerMbStreamed: 0n, costPerPutRequest: 0n, costPerGetRequest: 0n,
+    });
+    // The gov-params arg is the 4th (index 3). If the field name were wrong, encoding
+    // would silently drop it and this would read 0.
+    const govArg = tx.args[3].toJSON() as Record<string, unknown>;
+    expect(BigInt(govArg.costPerMbStored as number)).toBe(7n);
   });
 
   // Cases from Tasks 3, 4/5 are added here.
