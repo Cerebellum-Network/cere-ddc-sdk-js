@@ -1,4 +1,4 @@
-import { Blockchain, cryptoWaitReady, decodeAddress } from '@cere-ddc-sdk/blockchain';
+import { Blockchain, cryptoWaitReady, decodeAddress, CustomerDepositContracts } from '@cere-ddc-sdk/blockchain';
 
 import { describeChain, connectChain } from '../helpers';
 
@@ -71,6 +71,19 @@ describeChain('Chain compatibility (live)', () => {
     // would silently drop it and this would read 0.
     const govArg = tx.args[3].toJSON() as Record<string, unknown>;
     expect(BigInt(govArg.costPerMbStored as number)).toBe(7n);
+  });
+
+  it('resolves a per-cluster deposit contract and reads a balance without throwing', async () => {
+    const clusterId = await findContractCluster(blockchain);
+    if (!clusterId) return; // no contract-backed cluster on this network — skip cleanly
+
+    const contracts = new CustomerDepositContracts(blockchain.api);
+    const contract = await contracts.resolve(clusterId);
+    expect(contract).toBeDefined();
+
+    const info = await CustomerDepositContracts.readBalance(contract!, ALICE_PUBLIC);
+    // Either a decoded StakingInfo or undefined (account with no deposit) — must not throw.
+    expect(info === undefined || typeof info.active === 'bigint').toBe(true);
   });
 
   // Cases from Tasks 3, 4/5 are added here.
