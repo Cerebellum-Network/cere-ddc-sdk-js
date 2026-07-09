@@ -274,25 +274,6 @@ export class DDCStakingPallet {
   }
 
   /**
-   * Serves the cluster.
-   *
-   * @param clusterId - The ID of the cluster.
-   * @returns An extrinsic to serve the cluster.
-   *
-   * @example
-   *
-   * ```typescript
-   * const clusterId = '0x...';
-   * const tx = blockchain.ddcStaking.serve(clusterId);
-   *
-   * await blockchain.send(tx, { account });
-   * ```
-   */
-  serve(clusterId: ClusterId) {
-    return this.apiPromise.tx.ddcStaking.serve(clusterId) as Sendable;
-  }
-
-  /**
    * Finds the staking ledger associated with a given controller account ID.
    *
    * @param controllerAccountId - The account ID of the controller.

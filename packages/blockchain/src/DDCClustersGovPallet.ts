@@ -13,7 +13,7 @@ import { ClusterId, ClusterMember, ClusterProtocolParams, NodePublicKey, Referen
  * const protocolParams = { ... };
  * const member = ClusterMember.ClusterManager;
  *
- * const tx = blockchain.ddcClusterGov.proposeUpdateClusterProtocol(clusterId, protocolParams, member);
+ * const tx = blockchain.ddcClustersGov.proposeUpdateClusterProtocol(clusterId, protocolParams, member);
  *
  * await blockchain.send(tx, { account });
  * ```
@@ -29,7 +29,7 @@ export class DDCClustersGovPallet {
    * @param clusterId - The ID of the cluster.
    */
   proposeActivateClusterProtocol(clusterId: ClusterId, protocolParams: ClusterProtocolParams) {
-    return this.apiPromise.tx.ddcClusterGov.proposeActivateClusterProtocol(clusterId, protocolParams) as Sendable;
+    return this.apiPromise.tx.ddcClustersGov.proposeActivateClusterProtocol(clusterId, protocolParams) as Sendable;
   }
 
   /**
@@ -51,7 +51,7 @@ export class DDCClustersGovPallet {
    * const protocolParams = { ... };
    * const member = ClusterMember.ClusterManager;
    *
-   * const tx = blockchain.ddcClusterGov.proposeUpdateClusterProtocol(clusterId, protocolParams, member);
+   * const tx = blockchain.ddcClustersGov.proposeUpdateClusterProtocol(clusterId, protocolParams, member);
    *
    * await blockchain.send(tx, { account });
    * ```
@@ -62,7 +62,7 @@ export class DDCClustersGovPallet {
     member: ClusterMember,
     nodePublicKey?: NodePublicKey,
   ): Sendable {
-    return this.apiPromise.tx.ddcClusterGov.proposeUpdateClusterProtocol(
+    return this.apiPromise.tx.ddcClustersGov.proposeUpdateClusterProtocol(
       clusterId,
       protocolParams,
       this.createClusterMember(member, nodePublicKey),
@@ -86,13 +86,13 @@ export class DDCClustersGovPallet {
    * const approve = true;
    * const member = ClusterMember.ClusterManager;
    *
-   * const tx = blockchain.ddcClusterGov.voteProposal(clusterId, approve, member);
+   * const tx = blockchain.ddcClustersGov.voteProposal(clusterId, approve, member);
    *
    * await blockchain.send(tx, { account });
    * ```
    */
   voteProposal(clusterId: ClusterId, approve: boolean, member: ClusterMember, nodePublicKey?: NodePublicKey) {
-    return this.apiPromise.tx.ddcClusterGov.voteProposal(
+    return this.apiPromise.tx.ddcClustersGov.voteProposal(
       clusterId,
       approve,
       this.createClusterMember(member, nodePublicKey),
@@ -113,13 +113,13 @@ export class DDCClustersGovPallet {
    * const clusterId = '0x...';
    * const member = ClusterMember.ClusterManager;
    *
-   * const tx = blockchain.ddcClusterGov.retractProposal(clusterId, member);
+   * const tx = blockchain.ddcClustersGov.retractProposal(clusterId, member);
    *
    * await blockchain.send(tx, { account });
    * ```
    */
   closeProposal(clusterId: ClusterId, member: ClusterMember, nodePublicKey?: NodePublicKey) {
-    return this.apiPromise.tx.ddcClusterGov.closeProposal(
+    return this.apiPromise.tx.ddcClustersGov.closeProposal(
       clusterId,
       this.createClusterMember(member, nodePublicKey),
     ) as Sendable;
@@ -138,13 +138,13 @@ export class DDCClustersGovPallet {
    *
    * ```typescript
    * const clusterId = '0x...';
-   * const tx = blockchain.ddcClusterGov.retractProposal(clusterId);
+   * const tx = blockchain.ddcClustersGov.retractProposal(clusterId);
    *
    * await blockchain.send(tx, { account });
    * ```
    */
   retractProposal(clusterId: ClusterId) {
-    return this.apiPromise.tx.ddcClusterGov.retractProposal(clusterId) as Sendable;
+    return this.apiPromise.tx.ddcClustersGov.retractProposal(clusterId) as Sendable;
   }
 
   /**
@@ -158,13 +158,13 @@ export class DDCClustersGovPallet {
    *
    * ```typescript
    * const referendaIndex = 0;
-   * const tx = blockchain.ddcClusterGov.refundSubmissionDeposit(referendaIndex);
+   * const tx = blockchain.ddcClustersGov.refundSubmissionDeposit(referendaIndex);
    *
    * await blockchain.send(tx, { account });
    * ```
    */
   refundSubmissionDeposit(referendaIndex: ReferendumIndex) {
-    return this.apiPromise.tx.ddcClusterGov.refundSubmissionDeposit(referendaIndex) as Sendable;
+    return this.apiPromise.tx.ddcClustersGov.refundSubmissionDeposit(referendaIndex) as Sendable;
   }
 
   private createClusterMember(member: ClusterMember, nodePublicKey?: NodePublicKey) {

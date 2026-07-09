@@ -32,5 +32,20 @@ describeChain('Chain compatibility (live)', () => {
     expect(await blockchain.getCurrentBlockNumber()).toBeGreaterThan(0);
   });
 
-  // Cases from Tasks 2, 3, 4/5 are added here.
+  it('builds a ddcClustersGov proposal against live metadata without throwing', () => {
+    const clusterId = '0x0000000000000000000000000000000000000001';
+    expect(() =>
+      blockchain.ddcClustersGov.proposeActivateClusterProtocol(clusterId, {
+        treasuryShare: 0, validatorsShare: 0, clusterReserveShare: 0,
+        storageBondSize: 0n, storageChillDelay: 0, storageUnbondingDelay: 0,
+        unitPerMbStored: 0n, unitPerMbStreamed: 0n, unitPerPutRequest: 0n, unitPerGetRequest: 0n,
+      }),
+    ).not.toThrow();
+  });
+
+  it('confirms ddcStaking.serve was removed from the runtime', () => {
+    expect(blockchain.api.tx.ddcStaking.serve).toBeUndefined();
+  });
+
+  // Cases from Tasks 3, 4/5 are added here.
 });
