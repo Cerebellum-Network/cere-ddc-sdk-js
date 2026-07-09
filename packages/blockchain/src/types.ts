@@ -6,6 +6,7 @@ export type ClusterParams = {
   readonly erasureCodingRequired: number;
   readonly erasureCodingTotal: number;
   readonly replicationTotal: number;
+  readonly inspectionDryRunParams?: unknown | null;
 };
 
 /**
@@ -41,6 +42,12 @@ export type ClusterProtocolParams = {
   readonly unitPerMbStreamed: Amount;
   readonly unitPerPutRequest: Amount;
   readonly unitPerGetRequest: Amount;
+  // NOTE: live runtime (devnet, 2026-07-09) reports these as costPer* (not unitPer* as the
+  // task brief assumed) — verified via ddcClusters.clustersGovParams.entries()[0][1].toJSON().
+  readonly costPerGpuUnit?: Amount;
+  readonly costPerCpuUnit?: Amount;
+  readonly costPerRamUnit?: Amount;
+  readonly customerDepositContract?: AccountId | null;
 };
 
 /**

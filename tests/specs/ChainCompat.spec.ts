@@ -47,5 +47,13 @@ describeChain('Chain compatibility (live)', () => {
     expect(blockchain.api.tx.ddcStaking.serve).toBeUndefined();
   });
 
+  it('decodes clustersGovParams into ClusterProtocolParams including customerDepositContract', async () => {
+    const entries = await blockchain.api.query.ddcClusters.clustersGovParams.entries();
+    // Skip cleanly on a chain with no clusters configured yet.
+    if (entries.length === 0) return;
+    const params = entries[0][1].toJSON() as Record<string, unknown>;
+    expect(params).toHaveProperty('customerDepositContract');
+  });
+
   // Cases from Tasks 3, 4/5 are added here.
 });
