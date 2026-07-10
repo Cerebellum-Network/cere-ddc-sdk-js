@@ -10,6 +10,9 @@ import type {
   ClusterProtocolParams,
   ClusterStatus,
   NodePublicKey,
+  StorageNode,
+  StorageNodeMode,
+  StorageNodeProps,
   StorageNodePublicKey,
 } from '../../types.js';
 
@@ -155,6 +158,69 @@ export function buildClusterParams(params: Partial<ClusterParams>) {
  * supported here and is deferred to the testnet/mainnet compat backlog (2b
  * tests run on devnet only).
  */
+/**
+ * DdcNodes.StorageNodes value → StorageNode.
+ *
+ * Verified against a live devnet probe: `pub_key`/`provider_id` decode as
+ * BARE SS58 strings — the `NodePubKey` enum wrapping (`{ type:
+ * 'StoragePubKey', value }`, see `storagePubKey()` above) only appears on
+ * the `create_node`/`set_node_params`/`delete_node` TX ARGS, not on this
+ * storage value or its key (the legacy pallet queried `storageNodes` with a
+ * bare key too — `findStorageNodeByPublicKey` in `nodes.ts` does the same).
+ * `cluster_id` decodes as a bare `0x…` hex string or `undefined` (no
+ * `Option` wrapper to unwrap). `props` decodes as the bare `StorageParams`
+ * struct — no enum wrapper on the READ side (unlike the write side, see
+ * `buildStorageNodeParams`) — and `host`/`domain` decode to raw
+ * `Uint8Array`, NOT hex: probe observed
+ * `host = Uint8Array[49,55,56,...] → "178.251.228.165"`,
+ * `domain = Uint8Array[...] → "storage-7.devnet.ddc-dragon.com"`. `Binary`
+ * is a static-function bag (task 1-4 finding, no `.asHex()`/`.asText()`
+ * instance methods in papi 2.1.8), so `Binary.toText` is the papi-native
+ * inverse.
+ */
+export function toStorageNode(value: any): StorageNode {
+  const p = value.props?.value ?? value.props;
+  return {
+    pubKey: hex(value.pub_key) as StorageNode['pubKey'],
+    providerId: hex(value.provider_id) as StorageNode['providerId'],
+    clusterId: value.cluster_id == null ? null : (hex(value.cluster_id) as StorageNode['clusterId']),
+    props: {
+      host: Binary.toText(p.host),
+      domain: Binary.toText(p.domain),
+      ssl: !!p.ssl,
+      httpPort: Number(p.http_port),
+      grpcPort: Number(p.grpc_port),
+      p2pPort: Number(p.p2p_port),
+      mode: (typeof p.mode === 'string' ? p.mode : p.mode?.type) as StorageNodeMode,
+    },
+  };
+}
+
+/**
+ * Domain StorageNodeProps → runtime `create_node`/`set_node_params`
+ * `node_params` arg. Unlike the read side, the write side DOES need the
+ * `StorageParams` enum wrapper (verified against the live TX arg type:
+ * `node_params: Enum<{ StorageParams: {...} }>`). `host`/`domain` encode via
+ * `Binary.fromText` (inverse of `toStorageNode`'s `Binary.toText`); `domain`
+ * is optional on the domain type but mandatory on the wire, so it's
+ * defaulted to `''` (task 3 lesson: never let an optional domain field hit
+ * the codec as `undefined`).
+ */
+export function buildStorageNodeParams(props: StorageNodeProps) {
+  return {
+    type: 'StorageParams' as const,
+    value: {
+      host: Binary.fromText(props.host),
+      domain: Binary.fromText(props.domain ?? ''),
+      ssl: props.ssl ?? false,
+      http_port: props.httpPort,
+      grpc_port: props.grpcPort,
+      p2p_port: props.p2pPort,
+      mode: { type: props.mode },
+    },
+  };
+}
+
 export function buildProtocolParams(p: ClusterProtocolParams) {
   if (p.customerDepositContract == null) {
     throw new Error('customerDepositContract is required to build ClusterProtocolParams for this runtime');
