@@ -20,7 +20,7 @@ import type {
 /**
  * Normalize a decoded chain value to a `0x…` hex / SS58 string.
  *
- * Verified against a live devnet probe (see task-3-report.md): `DdcClusters`
+ * Verified against a live devnet probe: `DdcClusters`
  * account/cluster-id/node-key fields decode as plain strings (`SizedHex<N>`
  * is `string & {...}` at the type level; account fields are `SS58String`) —
  * there is no `FixedSizeBinary`/`Uint8Array` anywhere in this pallet today.
@@ -44,7 +44,7 @@ export function toCluster(clusterId: any, value: any): Cluster {
     lastPaidEra: value.last_paid_era == null ? undefined : Number(value.last_paid_era),
     props: {
       nodeProviderAuthContract:
-        value.props?.node_provider_auth_contract == null ? null : hex(value.props.node_provider_auth_contract),
+        value.props.node_provider_auth_contract == null ? null : hex(value.props.node_provider_auth_contract),
       erasureCodingRequired: Number(value.props.erasure_coding_required),
       erasureCodingTotal: Number(value.props.erasure_coding_total),
       replicationTotal: Number(value.props.replication_total),
@@ -141,25 +141,6 @@ export function buildClusterParams(params: Partial<ClusterParams>) {
 }
 
 /**
- * Domain protocol params → runtime protocol-params arg (inverse of
- * toClusterProtocolParams). NOTE: `treasury_share`/`validators_share`/
- * `cluster_reserve_share` are `Perquintill` (u64) on the wire — the generated
- * papi codec requires an actual `bigint` there (verified live: passing the
- * domain `number` fails papi's structural value-compat check with
- * "Incompatible runtime entry Tx(DdcClusters.create_cluster)", even though
- * `assertCompatible` reports the call itself as compatible). The domain type
- * (`ClusterProtocolParams`/`PartsBerBillion = number`, in `types.ts`, reused
- * as-is) keeps the legacy `number` shape, so convert here on the way out.
- *
- * WRITE-PATH LIMITATION: this emits the current devnet/testnet `cost_per_*`
- * + mandatory `customer_deposit_contract` shape (descriptor `I883b57s89bnhm`).
- * Mainnet's shipped runtime still types this storage item with the older
- * `unit_per_*` shape (descriptor `Idk8g9jf3hucr8`: no gpu/cpu/ram, no
- * `customer_deposit_contract`) — writing against that runtime is NOT
- * supported here and is deferred to the testnet/mainnet compat backlog (2b
- * tests run on devnet only).
- */
-/**
  * DdcNodes.StorageNodes value → StorageNode.
  *
  * Verified against a live devnet probe: `pub_key`/`provider_id` decode as
@@ -230,7 +211,7 @@ export function buildStorageNodeParams(props: StorageNodeProps) {
 /**
  * DdcStaking.Ledger value → StakingLedger (Amount = bigint, chilling = block number|null).
  *
- * Verified against a live devnet probe (see task-6-report.md) and the descriptor
+ * Verified against a live devnet probe and the descriptor
  * (`I4kgujf10e5kt2`): `stash` is a bare SS58String (not the `NodePubKey` enum —
  * unlike `DdcStaking.Nodes`'s key/`DdcStaking.Providers`'s value, see
  * `storagePubKey()`), `total`/`active` are `bigint`, `chilling` is an OPTIONAL
@@ -249,6 +230,25 @@ export function toStakingLedger(v: any): StakingLedger {
   };
 }
 
+/**
+ * Domain protocol params → runtime protocol-params arg (inverse of
+ * toClusterProtocolParams). NOTE: `treasury_share`/`validators_share`/
+ * `cluster_reserve_share` are `Perquintill` (u64) on the wire — the generated
+ * papi codec requires an actual `bigint` there (verified live: passing the
+ * domain `number` fails papi's structural value-compat check with
+ * "Incompatible runtime entry Tx(DdcClusters.create_cluster)", even though
+ * `assertCompatible` reports the call itself as compatible). The domain type
+ * (`ClusterProtocolParams`/`PartsBerBillion = number`, in `types.ts`, reused
+ * as-is) keeps the legacy `number` shape, so convert here on the way out.
+ *
+ * WRITE-PATH LIMITATION: this emits the current devnet/testnet `cost_per_*`
+ * + mandatory `customer_deposit_contract` shape (descriptor `I883b57s89bnhm`).
+ * Mainnet's shipped runtime still types this storage item with the older
+ * `unit_per_*` shape (descriptor `Idk8g9jf3hucr8`: no gpu/cpu/ram, no
+ * `customer_deposit_contract`) — writing against that runtime is NOT
+ * supported here and is deferred to the testnet/mainnet compat backlog (2b
+ * tests run on devnet only).
+ */
 export function buildProtocolParams(p: ClusterProtocolParams) {
   if (p.customerDepositContract == null) {
     throw new Error('customerDepositContract is required to build ClusterProtocolParams for this runtime');

@@ -21,8 +21,8 @@ export interface ClustersGovPallet {
  * DdcClustersGov pallet: cluster-protocol governance proposals + votes.
  *
  * All calls are writes — verified via encode (`getEncodedData`) +
- * `client.assertCompatible('DdcClustersGov', <call>)` against live devnet
- * (task-4-report.md); no proposal is ever actually submitted by the tests.
+ * `client.assertCompatible('DdcClustersGov', <call>)` against a live devnet
+ * probe; no proposal is ever actually submitted by the tests.
  *
  * Arg field names verified against the `DdcClustersGov` tx block in
  * `cereDevnet.d.ts` (descriptor types `Iah9p413nlasv4`/`I6iiotpri56hrl`/

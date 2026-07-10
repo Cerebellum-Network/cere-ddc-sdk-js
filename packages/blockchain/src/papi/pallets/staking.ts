@@ -3,8 +3,8 @@ import type { Sendable } from '../tx.js';
 import type { AccountId, Amount, ClusterId, StakingLedger, StorageNodePublicKey } from '../../types.js';
 import { storagePubKey, toStakingLedger } from './mapping.js';
 
-// Storage-item values in this pallet decode as plain SS58 strings (verified live —
-// see task-6-report.md), never `Binary`/`FixedSizeBinary`, but this stays defensive
+// Storage-item values in this pallet decode as plain SS58 strings (verified against
+// a live devnet probe), never `Binary`/`FixedSizeBinary`, but this stays defensive
 // the same way `mapping.ts`'s `hex()` does for other pallets, and guards `null`/
 // `undefined` (an absent storage entry) so callers get `undefined`, never a throw.
 const strOrUndef = (v: any): any => (v == null ? undefined : typeof v === 'string' ? v : (v.asHex?.() ?? v));
