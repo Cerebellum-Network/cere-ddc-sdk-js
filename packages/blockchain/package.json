@@ -12,6 +12,22 @@
     "browser": "./dist/browser.js",
     "default": "./dist/index.js"
   },
+  "imports": {
+    "#descriptors": {
+      "types": "./.papi/descriptors/dist/index.d.ts",
+      "default": "./.papi/descriptors/dist/index.js"
+    },
+    "#ws-provider": {
+      "types": "./dist/types/papi/ws-provider.d.ts",
+      "browser": "./dist/papi/ws-provider.web.js",
+      "default": "./dist/papi/ws-provider.js"
+    }
+  },
+  "files": [
+    "dist",
+    ".papi",
+    "package"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -26,25 +42,32 @@
     "build:web": "microbundle --tsconfig tsconfig.web.json --format modern --output dist/browser.js",
     "package": "clean-publish",
     "clean": "rimraf dist package",
-    "docs": "typedoc"
+    "docs": "typedoc",
+    "generate": "papi generate",
+    "prepare": "papi generate && node scripts/ensure-publishable-descriptors.mjs"
   },
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
   "dependencies": {
     "@cere/embed-wallet-inject": "^0.20.1",
+    "@polkadot-api/ws-provider": "^0.9.0",
+    "@polkadot-labs/hdkd": "^0.0.29",
+    "@polkadot-labs/hdkd-helpers": "^0.0.31",
     "@polkadot/api": "^16.4.9",
     "@polkadot/api-base": "^16.4.9",
     "@polkadot/api-contract": "^16.4.9",
     "@polkadot/extension-dapp": "^0.62.2",
     "@polkadot/extension-inject": "^0.62.2",
     "@polkadot/keyring": "^13.3.1",
-    "@polkadot/types": "^16.4.9",
-    "@polkadot/util": "^13.5.7",
-    "@polkadot/util-crypto": "^13.5.7",
     "@polkadot/rpc-core": "^16.4.9",
     "@polkadot/rpc-provider": "^16.4.9",
+    "@polkadot/types": "^16.4.9",
     "@polkadot/types-codec": "^16.4.9",
-    "@polkadot/types-create": "^16.4.9"
+    "@polkadot/types-create": "^16.4.9",
+    "@polkadot/util": "^13.5.7",
+    "@polkadot/util-crypto": "^13.5.7",
+    "polkadot-api": "^2.1.8",
+    "ws": "^8.21.0"
   },
   "peerDependencies": {
     "@cere/embed-wallet": "*"
