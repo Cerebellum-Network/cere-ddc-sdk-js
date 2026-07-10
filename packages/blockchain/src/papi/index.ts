@@ -5,3 +5,5 @@ export * from './signers/index.js';
 export { createTxApi, type TxApi, type Sendable, type SendOptions, type SendResult, type Event } from './tx.js';
 export type { CereApi } from './api-types.js';
 export { createChainApi, type ChainApi } from './chain.js';
+export { createClustersPallet, type ClustersPallet } from './pallets/clusters.js';
+export * from './pallets/mapping.js';

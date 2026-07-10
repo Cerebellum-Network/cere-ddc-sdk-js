@@ -13,6 +13,7 @@ import { DESCRIPTORS, CERE_WS, type CereNetwork } from './descriptors.js';
 import { ChainIncompatibleError } from './compat.js';
 import { createTxApi, type TxApi } from './tx.js';
 import { createChainApi, type ChainApi } from './chain.js';
+import { createClustersPallet, type ClustersPallet } from './pallets/clusters.js';
 
 export interface ConnectOptions {
   /** Which Cere network's typed descriptors + default endpoint to use. */
@@ -37,6 +38,8 @@ export interface CereClient {
   tx: TxApi;
   /** Non-pallet chain helpers (block number, balances, nonce, decimals, formatting). */
   chain: ChainApi;
+  /** DdcClusters pallet: cluster/protocol-params reads + cluster/node write builders. */
+  clusters: ClustersPallet;
 }
 
 /** Infer the network from a bare WS URL — back-compat for `connect(url)`. */
@@ -79,6 +82,7 @@ export function connect(opts: ConnectOptions | string): CereClient {
     disconnect: () => client.destroy(),
     tx: createTxApi(api),
     chain: createChainApi(api, client),
+    clusters: createClustersPallet(api),
     async assertCompatible(pallet, call) {
       const statics = await api.getStaticApis();
       const entry = (statics.compat.tx as any)[pallet]?.[call];
