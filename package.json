@@ -57,5 +57,36 @@
     "nohoist": [
       "playground/**"
     ]
+  },
+  "comments": {
+    "overrides": "polkadot-api's @polkadot-api/* packages are version-locked. A legacy transitive (@cere/embed-wallet-inject -> @polkadot/extension-inject -> @substrate/connect -> @polkadot-api/client@0.0.1-*) drags in ancient @polkadot-api/* that hoist and skew against polkadot-api@2.1.8, breaking its chainHead client (RpcError -32601). Pin the shared set to polkadot-api@2.1.8's versions."
+  },
+  "overrides": {
+    "@polkadot-api/cli": "0.21.7",
+    "@polkadot-api/codegen": "0.22.5",
+    "@polkadot-api/common-sdk-utils": "0.3.0",
+    "@polkadot-api/ink-contracts": "0.6.3",
+    "@polkadot-api/json-rpc-provider": "0.2.0",
+    "@polkadot-api/json-rpc-provider-proxy": "0.4.0",
+    "@polkadot-api/known-chains": "0.11.7",
+    "@polkadot-api/logs-provider": "0.2.0",
+    "@polkadot-api/merkleize-metadata": "1.2.3",
+    "@polkadot-api/metadata-builders": "0.14.3",
+    "@polkadot-api/metadata-compatibility": "0.6.3",
+    "@polkadot-api/observable-client": "0.18.7",
+    "@polkadot-api/pjs-signer": "0.7.3",
+    "@polkadot-api/polkadot-signer": "0.1.6",
+    "@polkadot-api/raw-client": "0.3.0",
+    "@polkadot-api/sdk-ink": "0.7.0",
+    "@polkadot-api/signer": "0.3.3",
+    "@polkadot-api/signers-common": "0.2.3",
+    "@polkadot-api/sm-provider": "0.3.7",
+    "@polkadot-api/smoldot": "0.4.6",
+    "@polkadot-api/substrate-bindings": "0.20.3",
+    "@polkadot-api/substrate-client": "0.7.0",
+    "@polkadot-api/utils": "0.4.0",
+    "@polkadot-api/wasm-executor": "0.2.3",
+    "@polkadot-api/ws-middleware": "0.3.5",
+    "@polkadot-api/ws-provider": "0.9.0"
   }
 }
