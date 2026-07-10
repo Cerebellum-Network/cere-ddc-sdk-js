@@ -26,12 +26,20 @@ export function diffSurface(manifest: SurfaceEntry[], live: LiveSurface): Findin
     }
 
     if (!(entry.method in pallet)) {
-      findings.push({ entry, problem: 'missing-method', detail: `${entry.kind}.${entry.pallet}.${entry.method} not found on chain` });
+      findings.push({
+        entry,
+        problem: 'missing-method',
+        detail: `${entry.kind}.${entry.pallet}.${entry.method} not found on chain`,
+      });
       continue;
     }
 
     if (entry.args >= 0 && pallet[entry.method] !== entry.args) {
-      findings.push({ entry, problem: 'arg-count', detail: `expected ${entry.args} args, live has ${pallet[entry.method]}` });
+      findings.push({
+        entry,
+        problem: 'arg-count',
+        detail: `expected ${entry.args} args, live has ${pallet[entry.method]}`,
+      });
     }
   }
 

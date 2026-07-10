@@ -182,7 +182,11 @@ export class DDCCustomersPallet {
         value,
         [],
       );
-      return contract.tx['ddcBalancesDepositor::deposit']({ gasLimit, storageDepositLimit: null, value }) as unknown as Sendable;
+      return contract.tx['ddcBalancesDepositor::deposit']({
+        gasLimit,
+        storageDepositLimit: null,
+        value,
+      }) as unknown as Sendable;
     }
     // Adaptive fallback: migrated pallet is deposit(clusterId, value); legacy mainnet is deposit(value).
     const args = this.palletTxArgs('deposit') >= 2 ? [clusterId, value] : [value];

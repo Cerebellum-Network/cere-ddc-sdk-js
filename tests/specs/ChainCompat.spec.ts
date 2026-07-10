@@ -36,9 +36,16 @@ describeChain('Chain compatibility (live)', () => {
     const clusterId = '0x0000000000000000000000000000000000000001';
     expect(() =>
       blockchain.ddcClustersGov.proposeActivateClusterProtocol(clusterId, {
-        treasuryShare: 0, validatorsShare: 0, clusterReserveShare: 0,
-        storageBondSize: 0n, storageChillDelay: 0, storageUnbondingDelay: 0,
-        costPerMbStored: 0n, costPerMbStreamed: 0n, costPerPutRequest: 0n, costPerGetRequest: 0n,
+        treasuryShare: 0,
+        validatorsShare: 0,
+        clusterReserveShare: 0,
+        storageBondSize: 0n,
+        storageChillDelay: 0,
+        storageUnbondingDelay: 0,
+        costPerMbStored: 0n,
+        costPerMbStreamed: 0n,
+        costPerPutRequest: 0n,
+        costPerGetRequest: 0n,
       }),
     ).not.toThrow();
   });
@@ -62,12 +69,24 @@ describeChain('Chain compatibility (live)', () => {
   it('encodes createCluster gov params under the costPer* field names', () => {
     const clusterId = '0x0000000000000000000000000000000000000001';
     const acct = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
-    const tx = blockchain.ddcClusters.createCluster(clusterId, acct, {}, {
-      treasuryShare: 0, validatorsShare: 0, clusterReserveShare: 0,
-      storageBondSize: 0n, storageChillDelay: 0, storageUnbondingDelay: 0,
-      costPerMbStored: 7n, costPerMbStreamed: 0n, costPerPutRequest: 0n, costPerGetRequest: 0n,
-      costPerGpuUnit: 3n,
-    });
+    const tx = blockchain.ddcClusters.createCluster(
+      clusterId,
+      acct,
+      {},
+      {
+        treasuryShare: 0,
+        validatorsShare: 0,
+        clusterReserveShare: 0,
+        storageBondSize: 0n,
+        storageChillDelay: 0,
+        storageUnbondingDelay: 0,
+        costPerMbStored: 7n,
+        costPerMbStreamed: 0n,
+        costPerPutRequest: 0n,
+        costPerGetRequest: 0n,
+        costPerGpuUnit: 3n,
+      },
+    );
     // The gov-params arg is the 4th (index 3). If the field name were wrong, encoding
     // would silently drop it and this would read 0.
     const govArg = tx.args[3].toJSON() as Record<string, unknown>;
