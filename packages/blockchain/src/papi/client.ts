@@ -57,6 +57,10 @@ export function connect(opts: ConnectOptions | string): CereClient {
   const network = typeof opts === 'string' ? inferNetwork(opts) : opts.network;
   const wsUrl = typeof opts === 'string' ? opts : (opts.wsUrl ?? CERE_WS[opts.network]);
 
+  // NOTE: Cere's public testnet/mainnet RPC endpoints don't yet implement papi's new
+  // JSON-RPC (chainHead_v1/…) — devnet does. Connecting to those needs a version-matched
+  // `@polkadot-api/polkadot-sdk-compat` shim (latest 2.4.1 mismatches papi 2.1.8's provider
+  // message format); tracked as a follow-up. devnet connects natively.
   const client: PolkadotClient = createClient(getWsProvider(wsUrl));
   // Runtime descriptor is per-network (correct metadata/genesis); the static
   // type uses the mainnet baseline — the calls we use are identical across nets,

@@ -87,6 +87,7 @@
     "@polkadot-api/utils": "0.4.0",
     "@polkadot-api/wasm-executor": "0.2.3",
     "@polkadot-api/ws-middleware": "0.3.5",
-    "@polkadot-api/ws-provider": "0.9.0"
+    "@polkadot-api/ws-provider": "0.9.0",
+    "@polkadot-api/polkadot-sdk-compat": "2.4.1"
   }
 }

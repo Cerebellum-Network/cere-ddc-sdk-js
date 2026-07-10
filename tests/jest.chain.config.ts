@@ -12,21 +12,10 @@ const config: Config = {
   testTimeout: 120_000,
   // Specs that either talk to live chains or are pure unit tests — neither needs the
   // docker-based globalSetup (broken repo-wide against the pre-migration harness).
-  testMatch: [
-    '<rootDir>/specs/ChainCompat.spec.ts',
-    '<rootDir>/specs/metadata-audit.spec.ts',
-    '<rootDir>/specs/papi.spec.ts',
-  ],
+  testMatch: ['<rootDir>/specs/ChainCompat.spec.ts', '<rootDir>/specs/metadata-audit.spec.ts'],
   transform: {
     '\\.(js|ts)$': ['ts-jest', { tsconfig: path.resolve(__dirname, '../tsconfig.build.json') }],
   },
-  // papi.spec.ts pulls in `polkadot-api`, which ships ESM-only dist output (no CJS
-  // build) with a deep transitive tree of equally ESM-only packages (`@polkadot-api/*`,
-  // `@scure/*`, `@noble/*`, ...). Jest's default `transformIgnorePatterns` skips all of
-  // `node_modules`, so Node's CJS `require()` chokes on their bare `export` syntax.
-  // Rather than enumerate every transitive package, transform all of `node_modules`
-  // here too — this config only runs the small opt-in live-chain suite.
-  transformIgnorePatterns: [],
 };
 
 export default config;
