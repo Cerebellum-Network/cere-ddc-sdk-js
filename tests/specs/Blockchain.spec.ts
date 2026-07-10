@@ -25,6 +25,9 @@ describe('Blockchain', () => {
     erasureCodingRequired: 4,
     erasureCodingTotal: 6,
     replicationTotal: 3,
+    // The current runtime stores this field on cluster props (defaults to null);
+    // include it so the round-trip `toEqual(clusterProps)` assertion matches the decoded shape.
+    inspectionDryRunParams: null,
   };
 
   const clusterGovernmentParams = {
@@ -150,6 +153,8 @@ describe('Blockchain', () => {
       erasureCodingRequired: 4,
       erasureCodingTotal: 6,
       replicationTotal: 3,
+      // Current runtime stores this on cluster props (defaults null) — match the decoded shape.
+      inspectionDryRunParams: null,
     };
 
     await blockchain.send(blockchain.ddcClusters.setClusterParams(clusterId, clusterProps), { account: userAccount });
