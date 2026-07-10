@@ -41,10 +41,22 @@ interface DepositTarget {
 // falling back to the pallet ledger. Prefers a cluster the signer isn't yet
 // paired to (exercises `deposit()`'s first-time path); if the funded seed is
 // already paired everywhere (e.g. a prior run of this same test), falls back
-// to topping up via `depositExtra()` so the test stays green on reruns —
-// verified live: the ink `deposit` message's underlying pallet call rejects a
-// second `deposit` on an already-paired account with `DdcCustomers.AlreadyPaired`,
-// while `depositExtra` succeeds either way.
+// to topping up via `depositExtra()` so the test stays green on reruns.
+//
+// NOTE on `deposit()` vs `depositExtra()` on the CONTRACT path: `customers.ts`
+// builds the IDENTICAL extrinsic for both — same ink message
+// `DdcBalancesDepositor::deposit`, same empty args, differing only in the
+// attached `value` — so there is no protocol-level reason a repeat `deposit()`
+// would behave differently from `depositExtra()` there. Empirically
+// re-verified live (a prior version of this comment claimed otherwise): a
+// SECOND real `deposit()` call against an already-paired account on a
+// contract-bearing cluster succeeds as a plain top-up (observed
+// before.total 190_000_000_000n -> after.total 210_000_000_000n for a
+// 20_000_000_000n deposit, delta == amount, no error) — it does NOT throw
+// `DdcCustomers.AlreadyPaired` on the contract path. The two methods are
+// interchangeable there; this test still calls `deposit()` for the fresh
+// pairing and `depositExtra()` for the top-up purely to exercise both public
+// API methods across reruns, not because the chain enforces a difference.
 async function pickDepositTarget(client: any, address: string): Promise<DepositTarget | undefined> {
   const entries = await client.api.query.DdcClusters.ClustersGovParams.getEntries();
   const withContract = entries
@@ -77,6 +89,16 @@ describeChain('papi customers — deposit writes (live, devnet)', () => {
       const tx = alreadyPaired
         ? await client.customers.depositExtra(clusterId as any, amount)
         : await client.customers.deposit(clusterId as any, amount);
+      // Prove the sent tx actually goes through the ink! contract (this
+      // task's whole point), not a silent fallback to a `DdcCustomers.*`
+      // pallet call — both would move the same ledger balance, so the
+      // balance-delta assertions below can't tell them apart on their own.
+      // `decodedCall`'s live shape (verified empirically; `tx.ts` already
+      // relies on `t.decodedCall` for batching) is a nested
+      // `{ type: <PalletName>, value: { type: <CallName>, ... } }`, NOT a
+      // single dotted `'Pallet.call'` string.
+      expect((tx as any).decodedCall?.type).toBe('Contracts');
+      expect((tx as any).decodedCall?.value?.type).toBe('call');
       const res = await client.tx.send(tx, { signer });
       expect(res.txHash).toMatch(/^0x/);
       const after = await client.customers.getStackingInfo(clusterId as any, signer.address);
