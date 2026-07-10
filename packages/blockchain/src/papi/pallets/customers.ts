@@ -36,6 +36,24 @@ export interface CustomersPallet {
 
 export function createCustomersPallet(api: CereApi): CustomersPallet {
   const contract: CustomerDepositContract = createCustomerDepositContract(api);
+
+  // Shared deposit/withdraw scaffold: contract-first (dry-run gas + build the
+  // ink call) when the cluster has a live deposit contract, else the pallet
+  // fallback thunk. Every one of the 5 deposit/withdraw methods below is this
+  // same shape, differing only in ink message/value/args and the pallet call.
+  const contractOrPallet = async (
+    clusterId: ClusterId,
+    message: string,
+    value: bigint,
+    args: any,
+    palletCall: () => Sendable,
+  ): Promise<Sendable> => {
+    const addr = await contract.resolve(clusterId);
+    if (!addr) return palletCall();
+    const gas = await contract.estimateGas(addr, message, accountPlaceholder, value, args);
+    return contract.buildContractCall(addr, message, value, args, gas);
+  };
+
   return {
     async getStackingInfo(clusterId, accountId) {
       const addr = await contract.resolve(clusterId);
@@ -118,89 +136,71 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
     // `{ cluster_id, max_additional }`, `deposit_for` takes
     // `{ owner, cluster_id, value }` (NOT `{ target, amount }` as guessed),
     // `withdraw_unlocked_deposit` takes `{ cluster_id }` only.
-    async deposit(clusterId, value) {
-      const addr = await contract.resolve(clusterId);
-      if (addr) {
-        const gas = await contract.estimateGas(addr, 'DdcBalancesDepositor::deposit', accountPlaceholder, value, {});
-        return contract.buildContractCall(addr, 'DdcBalancesDepositor::deposit', value, {}, gas);
-      }
-      return api.tx.DdcCustomers.deposit({ cluster_id: clusterId, value } as any) as Sendable;
+    deposit(clusterId, value) {
+      return contractOrPallet(
+        clusterId,
+        'DdcBalancesDepositor::deposit',
+        value,
+        {},
+        () => api.tx.DdcCustomers.deposit({ cluster_id: clusterId, value } as any) as Sendable,
+      );
     },
-    async depositExtra(clusterId, maxAdditional) {
-      const addr = await contract.resolve(clusterId);
-      if (addr) {
-        // The contract has no separate "top up" message — `deposit` (payable)
-        // covers both the initial and additional lock-up.
-        const gas = await contract.estimateGas(
-          addr,
-          'DdcBalancesDepositor::deposit',
-          accountPlaceholder,
-          maxAdditional,
-          {},
-        );
-        return contract.buildContractCall(addr, 'DdcBalancesDepositor::deposit', maxAdditional, {}, gas);
-      }
-      return api.tx.DdcCustomers.deposit_extra({
-        cluster_id: clusterId,
-        max_additional: maxAdditional,
-      } as any) as Sendable;
+    depositExtra(clusterId, maxAdditional) {
+      // The contract has no separate "top up" message — `deposit` (payable)
+      // covers both the initial and additional lock-up.
+      return contractOrPallet(
+        clusterId,
+        'DdcBalancesDepositor::deposit',
+        maxAdditional,
+        {},
+        () =>
+          api.tx.DdcCustomers.deposit_extra({
+            cluster_id: clusterId,
+            max_additional: maxAdditional,
+          } as any) as Sendable,
+      );
     },
-    async depositFor(targetAddress, clusterId, amount) {
-      const addr = await contract.resolve(clusterId);
-      if (addr) {
-        const args = { owner: targetAddress };
-        const gas = await contract.estimateGas(
-          addr,
-          'DdcBalancesDepositor::deposit_for',
-          accountPlaceholder,
-          amount,
-          args,
-        );
-        return contract.buildContractCall(addr, 'DdcBalancesDepositor::deposit_for', amount, args, gas);
-      }
-      // `deposit_for` is not on the mainnet static baseline (mainnet's
-      // DdcCustomers lacks it entirely — only devnet/testnet's migrated
-      // runtime has it), so reach it through a cast, same as the
-      // `ClusterLedger` query above.
-      return (api.tx.DdcCustomers as any).deposit_for({
-        owner: targetAddress,
-        cluster_id: clusterId,
-        value: amount,
-      }) as Sendable;
+    depositFor(targetAddress, clusterId, amount) {
+      return contractOrPallet(
+        clusterId,
+        'DdcBalancesDepositor::deposit_for',
+        amount,
+        { owner: targetAddress },
+        () =>
+          // `deposit_for` is not on the mainnet static baseline (mainnet's
+          // DdcCustomers lacks it entirely — only devnet/testnet's migrated
+          // runtime has it), so reach it through a cast, same as the
+          // `ClusterLedger` query above.
+          (api.tx.DdcCustomers as any).deposit_for({
+            owner: targetAddress,
+            cluster_id: clusterId,
+            value: amount,
+          }) as Sendable,
+      );
     },
-    async unlockDeposit(clusterId, value) {
-      const addr = await contract.resolve(clusterId);
-      if (addr) {
-        const args = { value };
-        const gas = await contract.estimateGas(
-          addr,
-          'DdcBalancesDepositor::unlock_deposit',
-          accountPlaceholder,
-          0n,
-          args,
-        );
-        return contract.buildContractCall(addr, 'DdcBalancesDepositor::unlock_deposit', 0n, args, gas);
-      }
-      return api.tx.DdcCustomers.unlock_deposit({ cluster_id: clusterId, value } as any) as Sendable;
+    unlockDeposit(clusterId, value) {
+      return contractOrPallet(
+        clusterId,
+        'DdcBalancesDepositor::unlock_deposit',
+        0n,
+        { value },
+        () => api.tx.DdcCustomers.unlock_deposit({ cluster_id: clusterId, value } as any) as Sendable,
+      );
     },
-    async withdrawUnlockedDeposit(clusterId) {
-      const addr = await contract.resolve(clusterId);
-      if (addr) {
-        const gas = await contract.estimateGas(
-          addr,
-          'DdcBalancesDepositor::withdraw_unlocked',
-          accountPlaceholder,
-          0n,
-          {},
-        );
-        return contract.buildContractCall(addr, 'DdcBalancesDepositor::withdraw_unlocked', 0n, {}, gas);
-      }
-      // The mainnet static baseline types `withdraw_unlocked_deposit` as a
-      // no-arg call (mainnet's account-keyed ledger needs no cluster id);
-      // the migrated devnet/testnet runtime requires `{ cluster_id }` — cast
-      // to reach the shape the connected (devnet/testnet) chain actually
-      // expects, same rationale as `deposit_for` above.
-      return (api.tx.DdcCustomers as any).withdraw_unlocked_deposit({ cluster_id: clusterId }) as Sendable;
+    withdrawUnlockedDeposit(clusterId) {
+      return contractOrPallet(
+        clusterId,
+        'DdcBalancesDepositor::withdraw_unlocked',
+        0n,
+        {},
+        () =>
+          // The mainnet static baseline types `withdraw_unlocked_deposit` as a
+          // no-arg call (mainnet's account-keyed ledger needs no cluster id);
+          // the migrated devnet/testnet runtime requires `{ cluster_id }` — cast
+          // to reach the shape the connected (devnet/testnet) chain actually
+          // expects, same rationale as `deposit_for` above.
+          (api.tx.DdcCustomers as any).withdraw_unlocked_deposit({ cluster_id: clusterId }) as Sendable,
+      );
     },
   };
 }

@@ -43,10 +43,19 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
   let maxBlock: Promise<Weight> | undefined;
   const getMaxBlock = () => {
     if (!maxBlock) {
-      maxBlock = api.constants.System.BlockWeights().then((bw: any) => ({
-        ref_time: BigInt(bw.max_block.ref_time),
-        proof_size: BigInt(bw.max_block.proof_size),
-      }));
+      maxBlock = api.constants.System.BlockWeights()
+        .then((bw: any) => ({
+          ref_time: BigInt(bw.max_block.ref_time),
+          proof_size: BigInt(bw.max_block.proof_size),
+        }))
+        .catch((err) => {
+          // Don't memoize a rejection — a transient fetch failure would
+          // otherwise permanently break `cap()` (and thus every `cap()`
+          // caller, including `estimateGas`) for the lifetime of this
+          // contract instance. Clear the memo so the next call retries.
+          maxBlock = undefined;
+          throw err;
+        });
     }
     return maxBlock;
   };
@@ -80,13 +89,29 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
     },
 
     async estimateGas(contractAddr, message, caller, value, args) {
-      const input = builder.buildMessage(message).call.enc(args ?? {});
+      const msg = builder.buildMessage(message);
+      const input = msg.call.enc(args ?? {});
       const dry: any = await api.apis.ContractsApi.call(caller, contractAddr, value, GENEROUS, undefined, input);
       // `dry.result` is a papi Result (`{ success, value }`) at the DISPATCH
       // level. A failed dry run (OutOfGas, revert, unaffordable value for the
       // placeholder caller, …) leaves `gas_required` untrustworthy, so fall back
       // to the generous ceiling rather than under-provisioning the real call.
       if (!dry?.result?.success) return cap(GENEROUS);
+      // Symmetric with `readBalance`'s two-level decode: dispatch success alone
+      // doesn't mean the ink message itself succeeded. Decode the ink
+      // `MessageResult` and treat a LangError/contract-level failure the same as
+      // a dispatch failure — sizing off `gas_required` from a
+      // semantically-failed run is unsafe. Guarded defensively (unlike
+      // `readBalance`, `estimateGas` must never throw — it always returns a
+      // usable Weight): a payable message dry-run against the placeholder
+      // caller can legitimately fail at this level (e.g. it can't afford
+      // `value`), and that's exactly when the generous ceiling should be used.
+      try {
+        const decoded: any = msg.value.dec(dry.result.value.data);
+        if (!decoded?.success) return cap(GENEROUS);
+      } catch {
+        return cap(GENEROUS);
+      }
       const gr = dry.gas_required;
       // 2x safety margin — the dry run is priced against possibly-stale state and
       // a placeholder caller, so a verbatim `gas_required` can undershoot.
@@ -113,7 +138,14 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
         throw new Error(`get_balance returned a contract error: ${JSON.stringify(decoded)}`);
       }
       const ledger = decoded.value;
-      return ledger == null ? undefined : toStakingInfo(ledger);
+      if (ledger == null) return undefined;
+      // The decoded `Ledger.owner` is a fixed WRONG SS58 address on this
+      // contract (a known on-chain/ABI quirk — `total`/`active` decode
+      // correctly; only `owner` is bogus). The `owner` argument we queried
+      // WITH is, by definition, the account this balance belongs to, so it's
+      // authoritative here — override the decoded field with it rather than
+      // trusting the contract's mis-encoded value.
+      return { ...toStakingInfo(ledger), owner };
     },
 
     buildContractCall(contractAddr, message, value, args, gasLimit) {
