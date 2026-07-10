@@ -4,3 +4,4 @@ export { DESCRIPTORS, CERE_WS, type CereNetwork } from './descriptors.js';
 export * from './signers/index.js';
 export { createTxApi, type TxApi, type Sendable, type SendOptions, type SendResult, type Event } from './tx.js';
 export type { CereApi } from './api-types.js';
+export { createChainApi, type ChainApi } from './chain.js';
