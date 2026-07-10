@@ -10,8 +10,11 @@ import type { CereSigner } from './types.js';
  *
  * Extension discovery/connection (`getInjectedExtensions`/`connectInjectedExtension`)
  * reads `window.injectedWeb3`, so it only works in a browser with the
- * extension installed; see `ExtensionSigner.node.ts` for the Node stub that
- * throws with a clear message instead of a bare `window is not defined`.
+ * extension installed. Unlike the legacy `Web3Signer`/`CereWalletSigner`
+ * split, the `./papi` build (`tsc -p tsconfig.papi.json`) does not do
+ * `.node` module substitution, so this file is what ships for both browser
+ * and Node — `fromExtension()` guards against `window` being undefined and
+ * throws a clear error instead of a bare `ReferenceError` from Node.
  */
 export class ExtensionSigner implements CereSigner {
   constructor(private readonly account: InjectedPolkadotAccount) {}
@@ -29,6 +32,10 @@ export class ExtensionSigner implements CereSigner {
    * one `ExtensionSigner` per account it exposes.
    */
   static async fromExtension(name: string): Promise<ExtensionSigner[]> {
+    if (typeof window === 'undefined') {
+      throw new Error('ExtensionSigner requires a browser environment');
+    }
+
     const available = getInjectedExtensions();
 
     if (!available.includes(name)) {
