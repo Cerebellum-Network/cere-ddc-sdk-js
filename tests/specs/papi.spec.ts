@@ -1,4 +1,5 @@
-import { connect } from '@cere-ddc-sdk/blockchain/papi';
+import * as fs from 'fs';
+import { connect, MnemonicSigner } from '@cere-ddc-sdk/blockchain/papi';
 
 // Self-contained gate: this suite runs under the native-ESM jest config
 // (jest.papi.config.ts) and must not pull in the legacy `@cere-ddc-sdk/blockchain`
@@ -30,4 +31,23 @@ describeChain('papi core (live, devnet)', () => {
       client.disconnect();
     }
   }, 60_000);
+
+  it('signs and submits System.remark on devnet via MnemonicSigner', async () => {
+    let seed = process.env.CERE_FUNDED_SEED;
+    if (!seed) {
+      try {
+        seed = fs.readFileSync(process.env.HOME + '/.cef/models-seed', 'utf8').trim();
+      } catch {
+        /* no funded seed available — skip below */
+      }
+    }
+    if (!seed) return; // skip without a funded seed
+    const client = connect({ network: 'devnet' });
+    const signer = new MnemonicSigner(seed);
+    const res = await client.api.tx.System.remark({ remark: new Uint8Array([1, 2, 3]) }).signAndSubmit(
+      signer.getPolkadotSigner(),
+    );
+    expect(res.ok).toBe(true);
+    client.disconnect();
+  }, 120_000);
 });
