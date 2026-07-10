@@ -10,6 +10,7 @@ import type {
   ClusterProtocolParams,
   ClusterStatus,
   NodePublicKey,
+  StakingLedger,
   StorageNode,
   StorageNodeMode,
   StorageNodeProps,
@@ -223,6 +224,28 @@ export function buildStorageNodeParams(props: StorageNodeProps) {
       p2p_port: props.p2pPort,
       mode: { type: props.mode },
     },
+  };
+}
+
+/**
+ * DdcStaking.Ledger value → StakingLedger (Amount = bigint, chilling = block number|null).
+ *
+ * Verified against a live devnet probe (see task-6-report.md) and the descriptor
+ * (`I4kgujf10e5kt2`): `stash` is a bare SS58String (not the `NodePubKey` enum —
+ * unlike `DdcStaking.Nodes`'s key/`DdcStaking.Providers`'s value, see
+ * `storagePubKey()`), `total`/`active` are `bigint`, `chilling` is an OPTIONAL
+ * field (absent — not `null` — on every live entry observed, all currently
+ * active/non-chilling) decoding to a block-number `number` when present, and
+ * `unlocking` is `Array<{ value: bigint; block: number }>`, passed through
+ * as-is since the domain `StakingLedger.unlocking` is `any[]`.
+ */
+export function toStakingLedger(v: any): StakingLedger {
+  return {
+    stash: hex(v.stash),
+    total: BigInt(v.total),
+    active: BigInt(v.active),
+    chilling: v.chilling == null ? null : Number(v.chilling),
+    unlocking: Array.isArray(v.unlocking) ? v.unlocking : [],
   };
 }
 
