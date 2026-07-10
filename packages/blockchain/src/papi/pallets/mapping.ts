@@ -46,19 +46,35 @@ export function toCluster(clusterId: any, value: any): Cluster {
   };
 }
 
-/** DdcClusters.ClustersGovParams value → ClusterProtocolParams (Amount = bigint, shares = number). */
+/**
+ * DdcClusters.ClustersGovParams value → ClusterProtocolParams (Amount = bigint, shares = number).
+ *
+ * Cross-shape read tolerance: devnet/testnet's runtime (descriptor
+ * `I883b57s89bnhm`) types the four core cost fields as `cost_per_mb_stored`/
+ * `cost_per_mb_streamed`/`cost_per_put_request`/`cost_per_get_request` and
+ * adds gpu/cpu/ram + `customer_deposit_contract`. Mainnet's shipped
+ * descriptor (`Idk8g9jf3hucr8`) still types the SAME storage item with the
+ * older `unit_per_mb_stored`/`unit_per_mb_streamed`/`unit_per_put_request`/
+ * `unit_per_get_request` names and has none of the newer fields. Fall back
+ * to the old names so a mainnet read degrades gracefully (optional domain
+ * fields become `undefined`) instead of throwing `BigInt(undefined)`.
+ */
 export function toClusterProtocolParams(v: any): ClusterProtocolParams {
+  const mbStored = v.cost_per_mb_stored ?? v.unit_per_mb_stored;
+  const mbStreamed = v.cost_per_mb_streamed ?? v.unit_per_mb_streamed;
+  const putRequest = v.cost_per_put_request ?? v.unit_per_put_request;
+  const getRequest = v.cost_per_get_request ?? v.unit_per_get_request;
   return {
     treasuryShare: Number(v.treasury_share),
     validatorsShare: Number(v.validators_share),
     clusterReserveShare: Number(v.cluster_reserve_share),
-    storageBondSize: BigInt(v.storage_bond_size),
+    storageBondSize: v.storage_bond_size == null ? 0n : BigInt(v.storage_bond_size),
     storageChillDelay: Number(v.storage_chill_delay),
     storageUnbondingDelay: Number(v.storage_unbonding_delay),
-    costPerMbStored: BigInt(v.cost_per_mb_stored),
-    costPerMbStreamed: BigInt(v.cost_per_mb_streamed),
-    costPerPutRequest: BigInt(v.cost_per_put_request),
-    costPerGetRequest: BigInt(v.cost_per_get_request),
+    costPerMbStored: BigInt(mbStored ?? 0),
+    costPerMbStreamed: BigInt(mbStreamed ?? 0),
+    costPerPutRequest: BigInt(putRequest ?? 0),
+    costPerGetRequest: BigInt(getRequest ?? 0),
     costPerGpuUnit: v.cost_per_gpu_unit == null ? undefined : BigInt(v.cost_per_gpu_unit),
     costPerCpuUnit: v.cost_per_cpu_unit == null ? undefined : BigInt(v.cost_per_cpu_unit),
     costPerRamUnit: v.cost_per_ram_unit == null ? undefined : BigInt(v.cost_per_ram_unit),
@@ -109,8 +125,19 @@ export function buildClusterParams(params: Partial<ClusterParams>) {
  * `assertCompatible` reports the call itself as compatible). The domain type
  * (`ClusterProtocolParams`/`PartsBerBillion = number`, in `types.ts`, reused
  * as-is) keeps the legacy `number` shape, so convert here on the way out.
+ *
+ * WRITE-PATH LIMITATION: this emits the current devnet/testnet `cost_per_*`
+ * + mandatory `customer_deposit_contract` shape (descriptor `I883b57s89bnhm`).
+ * Mainnet's shipped runtime still types this storage item with the older
+ * `unit_per_*` shape (descriptor `Idk8g9jf3hucr8`: no gpu/cpu/ram, no
+ * `customer_deposit_contract`) — writing against that runtime is NOT
+ * supported here and is deferred to the testnet/mainnet compat backlog (2b
+ * tests run on devnet only).
  */
 export function buildProtocolParams(p: ClusterProtocolParams) {
+  if (p.customerDepositContract == null) {
+    throw new Error('customerDepositContract is required to build ClusterProtocolParams for this runtime');
+  }
   return {
     treasury_share: BigInt(p.treasuryShare),
     validators_share: BigInt(p.validatorsShare),
@@ -122,9 +149,9 @@ export function buildProtocolParams(p: ClusterProtocolParams) {
     cost_per_mb_streamed: p.costPerMbStreamed,
     cost_per_put_request: p.costPerPutRequest,
     cost_per_get_request: p.costPerGetRequest,
-    cost_per_gpu_unit: p.costPerGpuUnit,
-    cost_per_cpu_unit: p.costPerCpuUnit,
-    cost_per_ram_unit: p.costPerRamUnit,
-    customer_deposit_contract: p.customerDepositContract ?? undefined,
+    cost_per_gpu_unit: BigInt(p.costPerGpuUnit ?? 0),
+    cost_per_cpu_unit: BigInt(p.costPerCpuUnit ?? 0),
+    cost_per_ram_unit: BigInt(p.costPerRamUnit ?? 0),
+    customer_deposit_contract: p.customerDepositContract,
   };
 }
