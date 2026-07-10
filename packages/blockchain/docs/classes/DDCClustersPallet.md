@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/blockchain**](../README.md)
+
+***
+
 [@cere-ddc-sdk/blockchain](../README.md) / DDCClustersPallet
 
 # Class: DDCClustersPallet
 
 This class provides methods to interact with the DDC Clusters pallet on the blockchain.
 
-**`Example`**
+## Example
 
 ```typescript
 const clusters = await blockchain.ddcClusters.listClusters();
@@ -14,19 +18,29 @@ console.log(clusters);
 
 ## Methods
 
-### addStorageNodeToCluster
+### addStorageNodeToCluster()
 
-▸ **addStorageNodeToCluster**(`clusterId`, `storageNodePublicKey`, `nodeKind`): `Sendable`
+> **addStorageNodeToCluster**(`clusterId`, `storageNodePublicKey`, `nodeKind`): `Sendable`
 
 Adds a storage node to a cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `storageNodePublicKey` | `string` | The public key of the storage node. |
-| `nodeKind` | `ClusterNodeKind` | - |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
+
+##### storageNodePublicKey
+
+`string`
+
+The public key of the storage node.
+
+##### nodeKind
+
+`ClusterNodeKind`
 
 #### Returns
 
@@ -34,7 +48,7 @@ Adds a storage node to a cluster.
 
 An extrinsic to add the storage node to the cluster.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';
@@ -45,20 +59,27 @@ const tx = blockchain.ddcClustersPallet.addStorageNodeToCluster(clusterId, stora
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### clusterHasStorageNode
+### clusterHasStorageNode()
 
-▸ **clusterHasStorageNode**(`clusterId`, `storageNodePublicKey`): `Promise`\<`boolean`\>
+> **clusterHasStorageNode**(`clusterId`, `storageNodePublicKey`): `Promise`\<`boolean`\>
 
 Checks if a cluster has a storage node.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `storageNodePublicKey` | `string` | The public key of the storage node. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
+
+##### storageNodePublicKey
+
+`string`
+
+The public key of the storage node.
 
 #### Returns
 
@@ -66,7 +87,7 @@ Checks if a cluster has a storage node.
 
 A promise that resolves to a boolean indicating whether the cluster has the storage node.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';
@@ -76,22 +97,39 @@ const hasStorageNode = await blockchain.ddcClustersPallet.clusterHasStorageNode(
 console.log(hasStorageNode);
 ```
 
-___
+***
 
-### createCluster
+### createCluster()
 
-▸ **createCluster**(`clusterId`, `clusterReserveId`, `clusterParams`, `clusterGovernmentParams`): `Sendable`
+> **createCluster**(`clusterId`, `clusterReserveId`, `clusterParams`, `clusterGovernmentParams`): `Sendable`
 
 Creates a new cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `clusterReserveId` | `string` | The ID of the cluster reserve. |
-| `clusterParams` | `Partial`\<`ClusterParams`\> | The properties of the cluster. |
-| `clusterGovernmentParams` | `ClusterProtocolParams` | The government parameters of the cluster. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
+
+##### clusterReserveId
+
+`string`
+
+The ID of the cluster reserve.
+
+##### clusterParams
+
+`Partial`\<`ClusterParams`\>
+
+The properties of the cluster.
+
+##### clusterGovernmentParams
+
+`ClusterProtocolParams`
+
+The government parameters of the cluster.
 
 #### Returns
 
@@ -99,7 +137,7 @@ Creates a new cluster.
 
 An extrinsic to create the cluster.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';
@@ -117,19 +155,21 @@ const tx = blockchain.ddcClustersPallet.createCluster(
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### filterNodeKeysByClusterId
+### filterNodeKeysByClusterId()
 
-▸ **filterNodeKeysByClusterId**(`clusterId`): `Promise`\<`string`[]\>
+> **filterNodeKeysByClusterId**(`clusterId`): `Promise`\<`string`[]\>
 
 Filters node keys by cluster ID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
 
 #### Returns
 
@@ -137,7 +177,7 @@ Filters node keys by cluster ID.
 
 A promise that resolves to an array of node keys.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';
@@ -146,19 +186,21 @@ const nodeKeys = await blockchain.ddcClustersPallet.filterNodeKeysByClusterId(cl
 console.log(nodeKeys);
 ```
 
-___
+***
 
-### findClusterById
+### findClusterById()
 
-▸ **findClusterById**(`clusterId`): `Promise`\<`Cluster`\>
+> **findClusterById**(`clusterId`): `Promise`\<`Cluster`\>
 
 Finds a cluster by ID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
 
 #### Returns
 
@@ -166,7 +208,7 @@ Finds a cluster by ID.
 
 A promise that resolves to the cluster.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';
@@ -175,27 +217,29 @@ const cluster = await blockchain.ddcClustersPallet.findClusterById(clusterId);
 console.log(cluster);
 ```
 
-___
+***
 
-### getClusterGovernmentParams
+### getClusterGovernmentParams()
 
-▸ **getClusterGovernmentParams**(`clusterId`): `Promise`\<`undefined` \| `ClusterProtocolParams`\>
+> **getClusterGovernmentParams**(`clusterId`): `Promise`\<`ClusterProtocolParams` \| `undefined`\>
 
 Gets the government parameters of a cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
 
 #### Returns
 
-`Promise`\<`undefined` \| `ClusterProtocolParams`\>
+`Promise`\<`ClusterProtocolParams` \| `undefined`\>
 
 A promise that resolves to the government parameters of the cluster.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';
@@ -204,11 +248,11 @@ const clusterGovernmentParams = await blockchain.ddcClustersPallet.getClusterGov
 console.log(clusterGovernmentParams);
 ```
 
-___
+***
 
-### listClusters
+### listClusters()
 
-▸ **listClusters**(): `Promise`\<`Cluster`[]\>
+> **listClusters**(): `Promise`\<`Cluster`[]\>
 
 Lists all clusters.
 
@@ -218,7 +262,7 @@ Lists all clusters.
 
 A promise that resolves to an array of clusters.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusters = await blockchain.ddcClustersPallet.listClusters();
@@ -226,20 +270,27 @@ const clusters = await blockchain.ddcClustersPallet.listClusters();
 console.log(clusters);
 ```
 
-___
+***
 
-### removeStorageNodeFromCluster
+### removeStorageNodeFromCluster()
 
-▸ **removeStorageNodeFromCluster**(`clusterId`, `storageNodePublicKey`): `Sendable`
+> **removeStorageNodeFromCluster**(`clusterId`, `storageNodePublicKey`): `Sendable`
 
 Removes a storage node from a cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `storageNodePublicKey` | `string` | The public key of the storage node. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
+
+##### storageNodePublicKey
+
+`string`
+
+The public key of the storage node.
 
 #### Returns
 
@@ -247,7 +298,7 @@ Removes a storage node from a cluster.
 
 An extrinsic to remove the storage node from the cluster.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';
@@ -258,20 +309,27 @@ const tx = blockchain.ddcClustersPallet.removeStorageNodeFromCluster(clusterId, 
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### setClusterParams
+### setClusterParams()
 
-▸ **setClusterParams**(`clusterId`, `clusterParams`): `Sendable`
+> **setClusterParams**(`clusterId`, `clusterParams`): `Sendable`
 
 Sets the properties of a cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `clusterParams` | `Partial`\<`ClusterParams`\> | The properties of the cluster. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
+
+##### clusterParams
+
+`Partial`\<`ClusterParams`\>
+
+The properties of the cluster.
 
 #### Returns
 
@@ -279,7 +337,7 @@ Sets the properties of a cluster.
 
 An extrinsic to set the cluster properties.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';

@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/blockchain**](../README.md)
+
+***
+
 [@cere-ddc-sdk/blockchain](../README.md) / DDCCustomersPallet
 
 # Class: DDCCustomersPallet
 
 This class provides methods to interact with the DDC Customers pallet on the blockchain.
 
-**`Example`**
+## Example
 
 ```typescript
 const bucket = await blockchain.ddcCustomers.getBucket(1n);
@@ -14,18 +18,25 @@ console.log(bucket);
 
 ## Methods
 
-### createBucket
+### createBucket()
 
-▸ **createBucket**(`clusterId`, `params`): `Sendable`
+> **createBucket**(`clusterId`, `params`): `Sendable`
 
 Creates a new bucket.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `params` | `BucketParams` | The bucket parameters. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
+
+##### params
+
+`BucketParams`
+
+The bucket parameters.
 
 #### Returns
 
@@ -33,7 +44,7 @@ Creates a new bucket.
 
 An extrinsic to create the bucket.
 
-**`Example`**
+#### Example
 
 ```typescript
 const tx = blockchain.ddcCustomers.createBucket('0x...', { isPublic: true });
@@ -41,28 +52,35 @@ const tx = blockchain.ddcCustomers.createBucket('0x...', { isPublic: true });
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### deposit
+### deposit()
 
-▸ **deposit**(`clusterId`, `value`): `Sendable`
+> **deposit**(`clusterId`, `value`): `Promise`\<`Sendable`\>
 
 Deposits funds to the account for the specified cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `value` | `bigint` | The amount to deposit. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
+
+##### value
+
+`bigint`
+
+The amount to deposit.
 
 #### Returns
 
-`Sendable`
+`Promise`\<`Sendable`\>
 
 An extrinsic to deposit funds.
 
-**`Example`**
+#### Example
 
 ```typescript
 const tx = blockchain.ddcCustomers.deposit('0x...', 100n);
@@ -70,28 +88,35 @@ const tx = blockchain.ddcCustomers.deposit('0x...', 100n);
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### depositExtra
+### depositExtra()
 
-▸ **depositExtra**(`clusterId`, `maxAdditional`): `Sendable`
+> **depositExtra**(`clusterId`, `maxAdditional`): `Promise`\<`Sendable`\>
 
 Deposits additional funds to the account for the specified cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `maxAdditional` | `bigint` | The maximum amount to deposit. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
+
+##### maxAdditional
+
+`bigint`
+
+The maximum amount to deposit.
 
 #### Returns
 
-`Sendable`
+`Promise`\<`Sendable`\>
 
 An extrinsic to deposit additional funds.
 
-**`Example`**
+#### Example
 
 ```typescript
 const tx = blockchain.ddcCustomers.depositExtra('0x...', 100n);
@@ -99,30 +124,42 @@ const tx = blockchain.ddcCustomers.depositExtra('0x...', 100n);
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### depositFor
+### depositFor()
 
-▸ **depositFor**(`targetAddress`, `clusterId`, `amount`): `Sendable`
+> **depositFor**(`targetAddress`, `clusterId`, `amount`): `Promise`\<`Sendable`\>
 
 Deposits funds to the target address for the specified cluster.
 This allows a third party to deposit funds on behalf of another address.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `targetAddress` | `string` | The target address to deposit funds for. |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `amount` | `bigint` | The amount to deposit. |
+##### targetAddress
+
+`string`
+
+The target address to deposit funds for.
+
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
+
+##### amount
+
+`bigint`
+
+The amount to deposit.
 
 #### Returns
 
-`Sendable`
+`Promise`\<`Sendable`\>
 
 An extrinsic to deposit funds for the target address.
 
-**`Example`**
+#### Example
 
 ```typescript
 const tx = blockchain.ddcCustomers.depositFor('5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu', '0x...', 100n);
@@ -130,19 +167,21 @@ const tx = blockchain.ddcCustomers.depositFor('5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydr
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### extractCreatedBucketIds
+### extractCreatedBucketIds()
 
-▸ **extractCreatedBucketIds**(`events`): `bigint`[]
+> **extractCreatedBucketIds**(`events`): `bigint`[]
 
 Extracts the IDs of the created buckets from the given events.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `events` | `Event`[] | The events to extract the bucket IDs from. |
+##### events
+
+`Event`[]
+
+The events to extract the bucket IDs from.
 
 #### Returns
 
@@ -150,7 +189,7 @@ Extracts the IDs of the created buckets from the given events.
 
 The IDs of the created buckets.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(events);
@@ -158,19 +197,21 @@ const bucketIds = blockchain.ddcCustomers.extractCreatedBucketIds(events);
 console.log(bucketIds);
 ```
 
-___
+***
 
-### extractRemovedBucketIds
+### extractRemovedBucketIds()
 
-▸ **extractRemovedBucketIds**(`events`): `bigint`[]
+> **extractRemovedBucketIds**(`events`): `bigint`[]
 
 Extracts the IDs of the removed buckets from the given events.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `events` | `Event`[] | The events to extract the bucket IDs from. |
+##### events
+
+`Event`[]
+
+The events to extract the bucket IDs from.
 
 #### Returns
 
@@ -178,7 +219,7 @@ Extracts the IDs of the removed buckets from the given events.
 
 The IDs of the removed buckets.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketIds = blockchain.ddcCustomers.extractRemovedBucketIds(events);
@@ -186,27 +227,29 @@ const bucketIds = blockchain.ddcCustomers.extractRemovedBucketIds(events);
 console.log(bucketIds);
 ```
 
-___
+***
 
-### getBucket
+### getBucket()
 
-▸ **getBucket**(`bucketId`): `Promise`\<`undefined` \| `Bucket`\>
+> **getBucket**(`bucketId`): `Promise`\<`Bucket` \| `undefined`\>
 
 Returns the bucket with the given ID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket. |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket.
 
 #### Returns
 
-`Promise`\<`undefined` \| `Bucket`\>
+`Promise`\<`Bucket` \| `undefined`\>
 
 A promise that resolves to the bucket.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucket = await blockchain.ddcCustomers.getBucket(1n);
@@ -214,11 +257,11 @@ const bucket = await blockchain.ddcCustomers.getBucket(1n);
 console.log(bucket);
 ```
 
-___
+***
 
-### getBucketsCount
+### getBucketsCount()
 
-▸ **getBucketsCount**(): `Promise`\<`number`\>
+> **getBucketsCount**(): `Promise`\<`number`\>
 
 Returns the number of buckets.
 
@@ -228,7 +271,7 @@ Returns the number of buckets.
 
 A promise that resolves to the number of buckets.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketsCount = await blockchain.ddcCustomers.getBucketsCount();
@@ -236,28 +279,35 @@ const bucketsCount = await blockchain.ddcCustomers.getBucketsCount();
 console.log(bucketsCount);
 ```
 
-___
+***
 
-### getStackingInfo
+### getStackingInfo()
 
-▸ **getStackingInfo**(`clusterId`, `accountId`): `Promise`\<`undefined` \| `StakingInfo`\>
+> **getStackingInfo**(`clusterId`, `accountId`): `Promise`\<`StakingInfo` \| `undefined`\>
 
 Returns the staking info for the given account in the specified cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `accountId` | `string` | The ID of the account. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
+
+##### accountId
+
+`string`
+
+The ID of the account.
 
 #### Returns
 
-`Promise`\<`undefined` \| `StakingInfo`\>
+`Promise`\<`StakingInfo` \| `undefined`\>
 
 A promise that resolves to the staking info.
 
-**`Example`**
+#### Example
 
 ```typescript
 const stakingInfo = await blockchain.ddcCustomers.getStackingInfo('0x...', '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu');
@@ -265,11 +315,11 @@ const stakingInfo = await blockchain.ddcCustomers.getStackingInfo('0x...', '5D5P
 console.log(stakingInfo);
 ```
 
-___
+***
 
-### getStackingInfoLegacy
+### ~~getStackingInfoLegacy()~~
 
-▸ **getStackingInfoLegacy**(`accountId`): `Promise`\<`undefined` \| `StakingInfo`\>
+> **getStackingInfoLegacy**(`accountId`): `Promise`\<`StakingInfo` \| `undefined`\>
 
 Returns the staking info for the given account (legacy method - deprecated).
 This method is deprecated because the storage has migrated to cluster-based ledger.
@@ -277,25 +327,27 @@ Use getStackingInfo(clusterId, accountId) instead.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `accountId` | `string` | The ID of the account. |
+##### accountId
+
+`string`
+
+The ID of the account.
 
 #### Returns
 
-`Promise`\<`undefined` \| `StakingInfo`\>
+`Promise`\<`StakingInfo` \| `undefined`\>
 
 A promise that resolves to the staking info.
 
-**`Deprecated`**
+#### Deprecated
 
 Use getStackingInfo(clusterId, accountId) instead.
 
-___
+***
 
-### listBuckets
+### listBuckets()
 
-▸ **listBuckets**(): `Promise`\<`Bucket`[]\>
+> **listBuckets**(): `Promise`\<`Bucket`[]\>
 
 Returns the list of buckets.
 
@@ -305,7 +357,7 @@ Returns the list of buckets.
 
 A promise that resolves to the list of buckets.
 
-**`Example`**
+#### Example
 
 ```typescript
 const buckets = await blockchain.ddcCustomers.listBuckets();
@@ -313,19 +365,21 @@ const buckets = await blockchain.ddcCustomers.listBuckets();
 console.log(buckets);
 ```
 
-___
+***
 
-### removeBuckets
+### removeBuckets()
 
-▸ **removeBuckets**(`...bucketIds`): `Sendable`
+> **removeBuckets**(...`bucketIds`): `Sendable`
 
 Mark existing buckets with specified bucket ids as removed.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `...bucketIds` | `bigint`[] | The IDs of the buckets to remove. |
+##### bucketIds
+
+...`bigint`[]
+
+The IDs of the buckets to remove.
 
 #### Returns
 
@@ -333,7 +387,7 @@ Mark existing buckets with specified bucket ids as removed.
 
 An extrinsic to remove the buckets.
 
-**`Example`**
+#### Example
 
 ```typescript
 const tx = blockchain.ddcCustomers.removeBuckets(1n, 2n);
@@ -341,20 +395,27 @@ const tx = blockchain.ddcCustomers.removeBuckets(1n, 2n);
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### setBucketParams
+### setBucketParams()
 
-▸ **setBucketParams**(`bucketId`, `params`): `Sendable`
+> **setBucketParams**(`bucketId`, `params`): `Sendable`
 
 Sets the parameters of the bucket with the given ID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket. |
-| `params` | `BucketParams` | The bucket parameters. |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket.
+
+##### params
+
+`BucketParams`
+
+The bucket parameters.
 
 #### Returns
 
@@ -362,7 +423,7 @@ Sets the parameters of the bucket with the given ID.
 
 An extrinsic to set the bucket parameters.
 
-**`Example`**
+#### Example
 
 ```typescript
 const tx = blockchain.ddcCustomers.setBucketParams(1n, { isPublic: true });
@@ -370,28 +431,35 @@ const tx = blockchain.ddcCustomers.setBucketParams(1n, { isPublic: true });
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### unlockDeposit
+### unlockDeposit()
 
-▸ **unlockDeposit**(`clusterId`, `value`): `Sendable`
+> **unlockDeposit**(`clusterId`, `value`): `Promise`\<`Sendable`\>
 
 Unlocks deposit funds from the account for the specified cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `value` | `bigint` | The amount to unlock. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
+
+##### value
+
+`bigint`
+
+The amount to unlock.
 
 #### Returns
 
-`Sendable`
+`Promise`\<`Sendable`\>
 
 An extrinsic to unlock deposit funds.
 
-**`Example`**
+#### Example
 
 ```typescript
 const tx = blockchain.ddcCustomers.unlockDeposit('0x...', 100n);
@@ -399,27 +467,29 @@ const tx = blockchain.ddcCustomers.unlockDeposit('0x...', 100n);
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### withdrawUnlockedDeposit
+### withdrawUnlockedDeposit()
 
-▸ **withdrawUnlockedDeposit**(`clusterId`): `Sendable`
+> **withdrawUnlockedDeposit**(`clusterId`): `Promise`\<`Sendable`\>
 
 Withdraws unlocked funds from the account for the specified cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
 
 #### Returns
 
-`Sendable`
+`Promise`\<`Sendable`\>
 
 An extrinsic to withdraw unlocked funds.
 
-**`Example`**
+#### Example
 
 ```typescript
 const tx = blockchain.ddcCustomers.withdrawUnlockedDeposit('0x...');

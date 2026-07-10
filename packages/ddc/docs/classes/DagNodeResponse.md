@@ -1,103 +1,113 @@
+[**@cere-ddc-sdk/ddc**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc](../README.md) / DagNodeResponse
 
 # Class: DagNodeResponse
 
 The `DagNodeResponse` class represents a response for a DAG Node.
 
-## Hierarchy
+## Extends
 
 - [`DagNode`](DagNode.md)
-
-  ↳ **`DagNodeResponse`**
 
 ## Accessors
 
 ### cid
 
-• `get` **cid**(): `string`
+#### Get Signature
+
+> **get** **cid**(): `string`
 
 The content identifier of the response as a string.
 
-#### Returns
+##### Returns
 
 `string`
 
-___
+***
 
 ### data
 
-• `get` **data**(): `Buffer`
+#### Get Signature
+
+> **get** **data**(): `Buffer`
 
 The data of the node as a `Buffer`.
 
-#### Returns
+##### Returns
 
 `Buffer`
 
 #### Inherited from
 
-DagNode.data
+[`DagNode`](DagNode.md).[`data`](DagNode.md#data)
 
-___
+***
 
 ### size
 
-• `get` **size**(): `number`
+#### Get Signature
+
+> **get** **size**(): `number`
 
 The size of the node in bytes.
 
-#### Returns
+##### Returns
 
 `number`
 
 #### Inherited from
 
-DagNode.size
+[`DagNode`](DagNode.md).[`size`](DagNode.md#size)
 
 ## Methods
 
-### isDagNode
+### isDagNode()
 
-▸ **isDagNode**(`object`): object is DagNode
+> `static` **isDagNode**(`object`): `object is DagNode`
 
 Checks if an object is an instance of `DagNode`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `object` | `unknown` | The object to check. |
+##### object
+
+`unknown`
+
+The object to check.
 
 #### Returns
 
-object is DagNode
+`object is DagNode`
 
 `true` if the object is an instance of `DagNode` or has the same properties as a `DagNode`, `false` otherwise.
 
 #### Inherited from
 
-[DagNode](DagNode.md).[isDagNode](DagNode.md#isdagnode)
+[`DagNode`](DagNode.md).[`isDagNode`](DagNode.md#isdagnode)
 
 ## Properties
 
 ### links
 
-• **links**: [`Link`](Link.md)[]
+> **links**: [`Link`](Link.md)[]
 
 The links of the node.
 
 #### Inherited from
 
-[DagNode](DagNode.md).[links](DagNode.md#links)
+[`DagNode`](DagNode.md).[`links`](DagNode.md#links)
 
-___
+***
 
 ### tags
 
-• **tags**: [`Tag`](Tag.md)[]
+> **tags**: [`Tag`](Tag.md)[]
 
 The tags of the node.
 
 #### Inherited from
 
-[DagNode](DagNode.md).[tags](DagNode.md#tags)
+[`DagNode`](DagNode.md).[`tags`](DagNode.md#tags)

@@ -1,52 +1,55 @@
+[**@cere-ddc-sdk/ddc-client**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc-client](../README.md) / DdcUri
 
 # Class: DdcUri\<T\>
 
 A generic representation of a DDC URI.
 
-## Type parameters
+## Extended by
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `T` | extends `DdcEntity` = `DdcEntity` | The type of the entity. Must extend DdcEntity. |
+- [`FileUri`](FileUri.md)
+- [`DagNodeUri`](DagNodeUri.md)
 
-## Hierarchy
+## Type Parameters
 
-- **`DdcUri`**
+### T
 
-  ↳ [`FileUri`](FileUri.md)
+`T` *extends* `DdcEntity` = `DdcEntity`
 
-  ↳ [`DagNodeUri`](DagNodeUri.md)
+The type of the entity. Must extend DdcEntity.
 
 ## Properties
 
 ### bucketId
 
-• `Readonly` **bucketId**: `bigint`
+> `readonly` **bucketId**: `bigint`
 
 The bucket identifier.
 
-___
+***
 
 ### cid
 
-• `Readonly` **cid**: `string` = `''`
+> `readonly` **cid**: `string` = `''`
 
 The Content Identifier (CID) of the entity.
 
-___
+***
 
 ### entity
 
-• `Readonly` **entity**: `T`
+> `readonly` **entity**: `T`
 
 The type of the entity.
 
-___
+***
 
-### name
+### name?
 
-• `Optional` `Readonly` **name**: `string`
+> `readonly` `optional` **name?**: `string`
 
 The name of the entity.
 
@@ -54,10 +57,12 @@ The name of the entity.
 
 ### cidOrName
 
-• `get` **cidOrName**(): `string`
+#### Get Signature
+
+> **get** **cidOrName**(): `string`
 
 The CID or name of the entity.
 
-#### Returns
+##### Returns
 
 `string`

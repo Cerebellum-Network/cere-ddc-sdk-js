@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/blockchain**](../README.md)
+
+***
+
 [@cere-ddc-sdk/blockchain](../README.md) / DDCStakingPallet
 
 # Class: DDCStakingPallet
 
 This class provides methods to interact with the DDC Staking pallet on the blockchain.
 
-**`Example`**
+## Example
 
 ```typescript
 const storageNodePublicKey = '0x...';
@@ -15,17 +19,19 @@ console.log(stashAccountId);
 
 ## Methods
 
-### bondCluster
+### bondCluster()
 
-▸ **bondCluster**(`clusterId`): `Sendable`
+> **bondCluster**(`clusterId`): `Sendable`
 
 Bonds the cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The cluster ID to bond |
+##### clusterId
+
+`` `0x${string}` ``
+
+The cluster ID to bond
 
 #### Returns
 
@@ -33,7 +39,7 @@ Bonds the cluster.
 
 An extrinsic to bond the cluster.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';
@@ -42,21 +48,33 @@ const tx = blockchain.ddcStaking.bondCluster(clusterId);
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### bondStorageNode
+### bondStorageNode()
 
-▸ **bondStorageNode**(`controller`, `storageNodePublicKey`, `bondAmount`): `Sendable`
+> **bondStorageNode**(`controller`, `storageNodePublicKey`, `bondAmount`): `Sendable`
 
 Binds the storage node.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `controller` | `string` | The account that will control the storage node. |
-| `storageNodePublicKey` | `string` | The public key of the storage node. |
-| `bondAmount` | `bigint` | The amount to bond. |
+##### controller
+
+`string`
+
+The account that will control the storage node.
+
+##### storageNodePublicKey
+
+`string`
+
+The public key of the storage node.
+
+##### bondAmount
+
+`bigint`
+
+The amount to bond.
 
 #### Returns
 
@@ -64,7 +82,7 @@ Binds the storage node.
 
 An extrinsic to bind the storage node.
 
-**`Example`**
+#### Example
 
 ```typescript
 const controller = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
@@ -75,11 +93,11 @@ const tx = blockchain.ddcStaking.bondStorageNode(controller, storageNodePublicKe
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### chill
+### chill()
 
-▸ **chill**(): `Sendable`
+> **chill**(): `Sendable`
 
 Chills the controller.
 
@@ -89,7 +107,7 @@ Chills the controller.
 
 An extrinsic to chill the controller.
 
-**`Example`**
+#### Example
 
 ```typescript
 const tx = blockchain.ddcStaking.chill();
@@ -97,11 +115,11 @@ const tx = blockchain.ddcStaking.chill();
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### fastChillStorage
+### fastChillStorage()
 
-▸ **fastChillStorage**(): `Sendable`
+> **fastChillStorage**(): `Sendable`
 
 Initiates a fast chill of storage.
 
@@ -118,27 +136,29 @@ const tx = blockchain.ddcStaking.fastChillStorage();
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### findControllerAccountByStashAccountId
+### findControllerAccountByStashAccountId()
 
-▸ **findControllerAccountByStashAccountId**(`stashAccountId`): `Promise`\<`undefined` \| `string`\>
+> **findControllerAccountByStashAccountId**(`stashAccountId`): `Promise`\<`string` \| `undefined`\>
 
 Finds the controller account associated with a given stash account ID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `stashAccountId` | `string` | The account ID of the stash. |
+##### stashAccountId
+
+`string`
+
+The account ID of the stash.
 
 #### Returns
 
-`Promise`\<`undefined` \| `string`\>
+`Promise`\<`string` \| `undefined`\>
 
 A promise that resolves to the controller account ID, or undefined if no controller account is found.
 
-**`Example`**
+#### Example
 
 ```typescript
 const stashAccountId = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
@@ -147,27 +167,29 @@ const controllerAccountId = await blockchain.ddcStaking.findControllerAccountByS
 console.log(controllerAccountId);
 ```
 
-___
+***
 
-### findNodePublicKeyByStashAccountId
+### findNodePublicKeyByStashAccountId()
 
-▸ **findNodePublicKeyByStashAccountId**(`stashAccountId`): `Promise`\<`undefined` \| \{ `storagePubKey`: `string`  }\>
+> **findNodePublicKeyByStashAccountId**(`stashAccountId`): `Promise`\<\{ `storagePubKey`: `string`; \} \| `undefined`\>
 
 Finds the node public key associated with a given stash account ID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `stashAccountId` | `string` | The account ID of the stash. |
+##### stashAccountId
+
+`string`
+
+The account ID of the stash.
 
 #### Returns
 
-`Promise`\<`undefined` \| \{ `storagePubKey`: `string`  }\>
+`Promise`\<\{ `storagePubKey`: `string`; \} \| `undefined`\>
 
 A promise that resolves to the node public key, or undefined if no node public key is found.
 
-**`Example`**
+#### Example
 
 ```typescript
 const stashAccountId = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
@@ -176,27 +198,29 @@ const nodePublicKey = await blockchain.ddcStaking.findNodePublicKeyByStashAccoun
 console.log(nodePublicKey);
 ```
 
-___
+***
 
-### findStakedClusterIdByCdnNodeStashAccountId
+### findStakedClusterIdByCdnNodeStashAccountId()
 
-▸ **findStakedClusterIdByCdnNodeStashAccountId**(`stashAccountId`): `Promise`\<`undefined` \| \`0x$\{string}\`\>
+> **findStakedClusterIdByCdnNodeStashAccountId**(`stashAccountId`): `Promise`\<`` `0x${string}` `` \| `undefined`\>
 
 Finds the cluster ID associated with a given CDN node stash account ID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `stashAccountId` | `string` | The stash account ID of the CDN node. |
+##### stashAccountId
+
+`string`
+
+The stash account ID of the CDN node.
 
 #### Returns
 
-`Promise`\<`undefined` \| \`0x$\{string}\`\>
+`Promise`\<`` `0x${string}` `` \| `undefined`\>
 
 A promise that resolves to the cluster ID, or undefined if no cluster is found.
 
-**`Example`**
+#### Example
 
 ```typescript
 const stashAccountId = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
@@ -205,27 +229,29 @@ const clusterId = await blockchain.ddcStaking.findStakedClusterIdByCdnNodeStashA
 console.log(clusterId);
 ```
 
-___
+***
 
-### findStakedClusterIdByStorageNodeStashAccountId
+### findStakedClusterIdByStorageNodeStashAccountId()
 
-▸ **findStakedClusterIdByStorageNodeStashAccountId**(`stashAccountId`): `Promise`\<`undefined` \| \`0x$\{string}\`\>
+> **findStakedClusterIdByStorageNodeStashAccountId**(`stashAccountId`): `Promise`\<`` `0x${string}` `` \| `undefined`\>
 
 Finds the cluster ID associated with a given storage node stash account ID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `stashAccountId` | `string` | The stash account ID of the storage node. |
+##### stashAccountId
+
+`string`
+
+The stash account ID of the storage node.
 
 #### Returns
 
-`Promise`\<`undefined` \| \`0x$\{string}\`\>
+`Promise`\<`` `0x${string}` `` \| `undefined`\>
 
 A promise that resolves to the cluster ID, or undefined if no cluster is found.
 
-**`Example`**
+#### Example
 
 ```typescript
 const stashAccountId = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
@@ -234,27 +260,29 @@ const clusterId = await blockchain.ddcStaking.findStakedClusterIdByStorageNodeSt
 console.log(clusterId);
 ```
 
-___
+***
 
-### findStakingLedgerByControllerAccountId
+### findStakingLedgerByControllerAccountId()
 
-▸ **findStakingLedgerByControllerAccountId**(`controllerAccountId`): `Promise`\<`undefined` \| `StakingLedger`\>
+> **findStakingLedgerByControllerAccountId**(`controllerAccountId`): `Promise`\<`StakingLedger` \| `undefined`\>
 
 Finds the staking ledger associated with a given controller account ID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `controllerAccountId` | `string` | The account ID of the controller. |
+##### controllerAccountId
+
+`string`
+
+The account ID of the controller.
 
 #### Returns
 
-`Promise`\<`undefined` \| `StakingLedger`\>
+`Promise`\<`StakingLedger` \| `undefined`\>
 
 A promise that resolves to the staking ledger, or undefined if no staking ledger is found.
 
-**`Example`**
+#### Example
 
 ```typescript
 const controllerAccountId = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
@@ -263,27 +291,29 @@ const stakingLedger = await blockchain.ddcStaking.findStakingLedgerByControllerA
 console.log(stakingLedger);
 ```
 
-___
+***
 
-### findStashAccountIdByStorageNodePublicKey
+### findStashAccountIdByStorageNodePublicKey()
 
-▸ **findStashAccountIdByStorageNodePublicKey**(`storageNodePublicKey`): `Promise`\<`undefined` \| `string`\>
+> **findStashAccountIdByStorageNodePublicKey**(`storageNodePublicKey`): `Promise`\<`string` \| `undefined`\>
 
 Finds the stash account ID associated with a given storage node public key.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `storageNodePublicKey` | `string` | The public key of the storage node. |
+##### storageNodePublicKey
+
+`string`
+
+The public key of the storage node.
 
 #### Returns
 
-`Promise`\<`undefined` \| `string`\>
+`Promise`\<`string` \| `undefined`\>
 
 A promise that resolves to the stash account ID, or undefined if no stash account is found.
 
-**`Example`**
+#### Example
 
 ```typescript
 const storageNodePublicKey = '0x...';
@@ -292,21 +322,21 @@ const stashAccountId = await blockchain.ddcStaking.findStashAccountIdByStorageNo
 console.log(stashAccountId);
 ```
 
-___
+***
 
-### listStakedCdnNodesStashAccountsAndClusterIds
+### listStakedCdnNodesStashAccountsAndClusterIds()
 
-▸ **listStakedCdnNodesStashAccountsAndClusterIds**(): `Promise`\<\{ `clusterId`: \`0x$\{string}\` ; `stashAccountId`: `string`  }[]\>
+> **listStakedCdnNodesStashAccountsAndClusterIds**(): `Promise`\<`object`[]\>
 
 Returns the list of staked CDN nodes, their stash accounts, and their cluster IDs.
 
 #### Returns
 
-`Promise`\<\{ `clusterId`: \`0x$\{string}\` ; `stashAccountId`: `string`  }[]\>
+`Promise`\<`object`[]\>
 
 A promise that resolves to the list of staked CDN nodes, their stash accounts, and their cluster IDs.
 
-**`Example`**
+#### Example
 
 ```typescript
 const stakedCdnNodes = await blockchain.ddcStaking.listStakedCdnNodesStashAccountsAndClusterIds();
@@ -314,21 +344,21 @@ const stakedCdnNodes = await blockchain.ddcStaking.listStakedCdnNodesStashAccoun
 console.log(stakedCdnNodes);
 ```
 
-___
+***
 
-### listStakedStorageNodesStashAccountsAndClusterIds
+### listStakedStorageNodesStashAccountsAndClusterIds()
 
-▸ **listStakedStorageNodesStashAccountsAndClusterIds**(): `Promise`\<\{ `clusterId`: \`0x$\{string}\` ; `stashAccountId`: `string`  }[]\>
+> **listStakedStorageNodesStashAccountsAndClusterIds**(): `Promise`\<`object`[]\>
 
 Returns the list of staked storage nodes, their stash accounts, and their cluster IDs.
 
 #### Returns
 
-`Promise`\<\{ `clusterId`: \`0x$\{string}\` ; `stashAccountId`: `string`  }[]\>
+`Promise`\<`object`[]\>
 
 A promise that resolves to the list of staked storage nodes, their stash accounts, and their cluster IDs.
 
-**`Example`**
+#### Example
 
 ```typescript
 const stakedStorageNodes = await blockchain.ddcStaking.listStakedStorageNodesStashAccountsAndClusterIds();
@@ -336,48 +366,21 @@ const stakedStorageNodes = await blockchain.ddcStaking.listStakedStorageNodesSta
 console.log(stakedStorageNodes);
 ```
 
-___
+***
 
-### serve
+### setController()
 
-▸ **serve**(`clusterId`): `Sendable`
-
-Serves the cluster.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-
-#### Returns
-
-`Sendable`
-
-An extrinsic to serve the cluster.
-
-**`Example`**
-
-```typescript
-const clusterId = '0x...';
-const tx = blockchain.ddcStaking.serve(clusterId);
-
-await blockchain.send(tx, { account });
-```
-
-___
-
-### setController
-
-▸ **setController**(`accountId`): `Sendable`
+> **setController**(`accountId`): `Sendable`
 
 Sets the controller account for the stash account.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `accountId` | `string` | The account ID of the new controller. |
+##### accountId
+
+`string`
+
+The account ID of the new controller.
 
 #### Returns
 
@@ -385,7 +388,7 @@ Sets the controller account for the stash account.
 
 An extrinsic to set the controller account.
 
-**`Example`**
+#### Example
 
 ```typescript
 const newControllerAccountId = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
@@ -394,19 +397,21 @@ const tx = blockchain.ddcStaking.setController(newControllerAccountId);
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### setStorageNode
+### setStorageNode()
 
-▸ **setStorageNode**(`storageNodePublicKey`): `Sendable`
+> **setStorageNode**(`storageNodePublicKey`): `Sendable`
 
 Sets the storage node for the stash account.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `storageNodePublicKey` | `string` | The public key of the storage node. |
+##### storageNodePublicKey
+
+`string`
+
+The public key of the storage node.
 
 #### Returns
 
@@ -414,7 +419,7 @@ Sets the storage node for the stash account.
 
 An extrinsic to set the storage node.
 
-**`Example`**
+#### Example
 
 ```typescript
 const storageNodePublicKey = '0x...';
@@ -423,19 +428,21 @@ const tx = blockchain.ddcStaking.setStorageNode(storageNodePublicKey);
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### store
+### store()
 
-▸ **store**(`clusterId`): `Sendable`
+> **store**(`clusterId`): `Sendable`
 
 Stores the cluster ID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
+##### clusterId
+
+`` `0x${string}` ``
+
+The ID of the cluster.
 
 #### Returns
 
@@ -443,7 +450,7 @@ Stores the cluster ID.
 
 An extrinsic to store the cluster ID.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';
@@ -452,19 +459,21 @@ const tx = blockchain.ddcStaking.store(clusterId);
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### unbond
+### unbond()
 
-▸ **unbond**(`amount`): `Sendable`
+> **unbond**(`amount`): `Sendable`
 
 Unbonds the amount.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `amount` | `bigint` | The amount to unbond. |
+##### amount
+
+`bigint`
+
+The amount to unbond.
 
 #### Returns
 
@@ -472,7 +481,7 @@ Unbonds the amount.
 
 An extrinsic to unbond the amount.
 
-**`Example`**
+#### Example
 
 ```typescript
 const amount = 100n;
@@ -481,19 +490,21 @@ const tx = blockchain.ddcStaking.unbond(amount);
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### unbondCluster
+### unbondCluster()
 
-▸ **unbondCluster**(`clusterId`): `Sendable`
+> **unbondCluster**(`clusterId`): `Sendable`
 
 Unbonds the cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The cluster ID to bond |
+##### clusterId
+
+`` `0x${string}` ``
+
+The cluster ID to bond
 
 #### Returns
 
@@ -501,7 +512,7 @@ Unbonds the cluster.
 
 An extrinsic to unbond the cluster.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';
@@ -510,11 +521,11 @@ const tx = blockchain.ddcStaking.unbondCluster(clusterId);
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### withdrawUnbonded
+### withdrawUnbonded()
 
-▸ **withdrawUnbonded**(): `Sendable`
+> **withdrawUnbonded**(): `Sendable`
 
 Withdraws unbonded funds.
 
@@ -524,7 +535,7 @@ Withdraws unbonded funds.
 
 An extrinsic to withdraw unbonded funds.
 
-**`Example`**
+#### Example
 
 ```typescript
 const tx = blockchain.ddcStaking.withdrawUnbonded();
@@ -532,19 +543,21 @@ const tx = blockchain.ddcStaking.withdrawUnbonded();
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### withdrawUnbondedCluster
+### withdrawUnbondedCluster()
 
-▸ **withdrawUnbondedCluster**(`clusterId`): `Sendable`
+> **withdrawUnbondedCluster**(`clusterId`): `Sendable`
 
 Withdraws unbonded cluster funds.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The cluster ID to withdraw |
+##### clusterId
+
+`` `0x${string}` ``
+
+The cluster ID to withdraw
 
 #### Returns
 
@@ -552,7 +565,7 @@ Withdraws unbonded cluster funds.
 
 An extrinsic to withdraw the cluster funds.
 
-**`Example`**
+#### Example
 
 ```typescript
 const clusterId = '0x...';

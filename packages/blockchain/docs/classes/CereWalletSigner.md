@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/blockchain**](../README.md)
+
+***
+
 [@cere-ddc-sdk/blockchain](../README.md) / CereWalletSigner
 
 # Class: CereWalletSigner
 
 Signer that uses Cere Wallet to sign messages.
 
-**`Example`**
+## Example
 
 ```typescript
 import { EmbedWallet } from '@cere/embed-wallet';
@@ -18,81 +22,145 @@ const signature = await cereWalletSigner.sign('data');
 console.log(signature);
 ```
 
-## Hierarchy
+## Extends
 
 - [`Web3Signer`](Web3Signer.md)
-
-  ↳ **`CereWalletSigner`**
 
 ## Accessors
 
 ### address
 
-• `get` **address**(): `string`
+#### Get Signature
+
+> **get** **address**(): `string`
 
 The address of the signer.
 
-#### Returns
+##### Returns
 
 `string`
 
+The address of the signer.
+
 #### Inherited from
 
-Web3Signer.address
+[`Web3Signer`](Web3Signer.md).[`address`](Web3Signer.md#address)
 
-___
+***
+
+### isLocked
+
+#### Get Signature
+
+> **get** **isLocked**(): `boolean`
+
+A boolean indicating whether the signer is locked.
+
+##### Returns
+
+`boolean`
+
+A boolean indicating whether the signer is locked.
+
+#### Inherited from
+
+[`Web3Signer`](Web3Signer.md).[`isLocked`](Web3Signer.md#islocked)
+
+***
 
 ### publicKey
 
-• `get` **publicKey**(): `Uint8Array`
+#### Get Signature
+
+> **get** **publicKey**(): `Uint8Array`\<`ArrayBufferLike`\>
 
 The public key of the signer.
 
-#### Returns
+##### Returns
 
-`Uint8Array`
+`Uint8Array`\<`ArrayBufferLike`\>
+
+The public key of the signer.
 
 #### Inherited from
 
-Web3Signer.publicKey
+[`Web3Signer`](Web3Signer.md).[`publicKey`](Web3Signer.md#publickey)
 
-___
+***
 
 ### type
 
-• `get` **type**(): `KeypairType`
+#### Get Signature
+
+> **get** **type**(): `KeypairType`
 
 The type of the signer ('ed25519' or 'sr25519').
 
-#### Returns
+##### Returns
 
 `KeypairType`
 
+The type of the signer ('ed25519' or 'sr25519').
+
 #### Inherited from
 
-Web3Signer.type
+[`Web3Signer`](Web3Signer.md).[`type`](Web3Signer.md#type)
 
 ## Methods
 
-### getSigner
+### connect()
 
-▸ **getSigner**(): `Promise`\<`Signer`\>
+> **connect**(`options?`): `Promise`\<`CereWalletSigner`\>
+
+Connects to the underlying Web3 signer.
+
+#### Parameters
+
+##### options?
+
+`WalletConnectOptions`
+
+#### Returns
+
+`Promise`\<`CereWalletSigner`\>
+
+A promise that resolves to the signer.
+
+#### Throws
+
+An error if the signer cannot be detected.
+
+#### Example
+
+```typescript
+await web3Signer.connect();
+```
+
+#### Overrides
+
+[`Web3Signer`](Web3Signer.md).[`connect`](Web3Signer.md#connect)
+
+***
+
+### getSigner()
+
+> **getSigner**(): `Promise`\<`Signer`\>
 
 #### Returns
 
 `Promise`\<`Signer`\>
 
-**`Inherit Doc`**
+#### Inherit Doc
 
 #### Inherited from
 
-[Web3Signer](Web3Signer.md).[getSigner](Web3Signer.md#getsigner)
+[`Web3Signer`](Web3Signer.md).[`getSigner`](Web3Signer.md#getsigner)
 
-___
+***
 
-### isReady
+### isReady()
 
-▸ **isReady**(): `Promise`\<`boolean`\>
+> **isReady**(): `Promise`\<`boolean`\>
 
 Checks if the signer is ready.
 
@@ -102,47 +170,51 @@ Checks if the signer is ready.
 
 A promise that resolves to a boolean indicating whether the signer is ready.
 
-#### Inherited from
+#### Overrides
 
-[Web3Signer](Web3Signer.md).[isReady](Web3Signer.md#isready)
+[`Web3Signer`](Web3Signer.md).[`isReady`](Web3Signer.md#isready)
 
-___
+***
 
-### sign
+### sign()
 
-▸ **sign**(`message`): `Promise`\<`Uint8Array`\>
+> **sign**(`message`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
 Signs data with the signer.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `message` | `string` \| `Uint8Array` | The data to sign. |
+##### message
+
+`string` \| `Uint8Array`\<`ArrayBufferLike`\>
+
+The data to sign.
 
 #### Returns
 
-`Promise`\<`Uint8Array`\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
 A promise that resolves to the signature.
 
 #### Inherited from
 
-[Web3Signer](Web3Signer.md).[sign](Web3Signer.md#sign)
+[`Web3Signer`](Web3Signer.md).[`sign`](Web3Signer.md#sign)
 
-___
+***
 
-### unlock
+### unlock()
 
-▸ **unlock**(`passphrase?`): `Promise`\<`void`\>
+> **unlock**(`passphrase?`): `Promise`\<`void`\>
 
 Unlocks the signer with a passphrase.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `passphrase?` | `string` | The passphrase to unlock the signer. |
+##### passphrase?
+
+`string`
+
+The passphrase to unlock the signer.
 
 #### Returns
 
@@ -150,28 +222,30 @@ Unlocks the signer with a passphrase.
 
 #### Inherited from
 
-[Web3Signer](Web3Signer.md).[unlock](Web3Signer.md#unlock)
+[`Web3Signer`](Web3Signer.md).[`unlock`](Web3Signer.md#unlock)
 
-___
+***
 
-### isSigner
+### isSigner()
 
-▸ **isSigner**(`signer`): signer is Signer
+> `static` **isSigner**(`signer`): `signer is Signer`
 
 Checks if an object is a signer.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `signer` | `unknown` | The object to check. |
+##### signer
+
+`unknown`
+
+The object to check.
 
 #### Returns
 
-signer is Signer
+`signer is Signer`
 
 A boolean indicating whether the object is a signer.
 
 #### Inherited from
 
-[Web3Signer](Web3Signer.md).[isSigner](Web3Signer.md#issigner)
+[`Web3Signer`](Web3Signer.md).[`isSigner`](Web3Signer.md#issigner)

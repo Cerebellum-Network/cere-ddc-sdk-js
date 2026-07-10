@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/blockchain**](../README.md)
+
+***
+
 [@cere-ddc-sdk/blockchain](../README.md) / Blockchain
 
 # Class: Blockchain
 
 This class provides methods to interact with the Cere blockchain.
 
-**`Example`**
+## Example
 
 ```typescript
 const blockchain = await Blockchain.connect({ wsEndpoint: 'wss://rpc.testnet.cere.network/ws' });
@@ -18,19 +22,21 @@ console.log(balance);
 
 ### chainDecimals
 
-• `get` **chainDecimals**(): `number`
+#### Get Signature
+
+> **get** **chainDecimals**(): `number`
 
 The decimals of the chain's native token.
 
-#### Returns
+##### Returns
 
 `number`
 
-___
+***
 
-### batchAllSend
+### batchAllSend()
 
-▸ **batchAllSend**(`sendables`, `options`): `Promise`\<`SendResult`\>
+> **batchAllSend**(`sendables`, `options`): `Promise`\<`SendResult`\>
 
 Sends a batch of transactions to the blockchain.
 The transactions are sent in a single batch and are executed in the order they are provided.
@@ -38,10 +44,17 @@ If one transaction in the batch fails, the entire batch fails and no further tra
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `sendables` | `Sendable`[] | The transactions to send. |
-| `options` | `SendOptions` | Options for sending the transactions. |
+##### sendables
+
+`Sendable`[]
+
+The transactions to send.
+
+##### options
+
+`SendOptions`
+
+Options for sending the transactions.
 
 #### Returns
 
@@ -49,7 +62,7 @@ If one transaction in the batch fails, the entire batch fails and no further tra
 
 A promise that resolves to the result of the batch of transactions.
 
-**`Example`**
+#### Example
 
 ```typescript
 const account = new UriSigner('//Alice');
@@ -61,11 +74,11 @@ const result = await blockchain.batchAllSend([tx1, tx2], { account });
 console.log(result);
 ```
 
-___
+***
 
-### batchSend
+### batchSend()
 
-▸ **batchSend**(`sendables`, `options`): `Promise`\<`SendResult`\>
+> **batchSend**(`sendables`, `options`): `Promise`\<`SendResult`\>
 
 Sends a batch of transactions to the blockchain.
 The transactions are sent in a single batch and are executed in the order they are provided.
@@ -73,10 +86,17 @@ If one transaction in the batch fails, the rest of the transactions in the batch
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `sendables` | `Sendable`[] | The transactions to send. |
-| `options` | `SendOptions` | Options for sending the transactions. |
+##### sendables
+
+`Sendable`[]
+
+The transactions to send.
+
+##### options
+
+`SendOptions`
+
+Options for sending the transactions.
 
 #### Returns
 
@@ -84,7 +104,7 @@ If one transaction in the batch fails, the rest of the transactions in the batch
 
 A promise that resolves to the result of the batch of transactions.
 
-**`Example`**
+#### Example
 
 ```typescript
 const account = new UriSigner('//Alice');
@@ -96,11 +116,11 @@ const result = await blockchain.batchSend([tx1, tx2], { account });
 console.log(result);
 ```
 
-___
+***
 
-### disconnect
+### disconnect()
 
-▸ **disconnect**(): `Promise`\<`void`\>
+> **disconnect**(): `Promise`\<`void`\>
 
 Disconnects from the blockchain.
 
@@ -110,25 +130,27 @@ Disconnects from the blockchain.
 
 A promise that resolves when the connection is closed.
 
-**`Example`**
+#### Example
 
 ```typescript
 await blockchain.disconnect();
 ```
 
-___
+***
 
-### getAccountFreeBalance
+### getAccountFreeBalance()
 
-▸ **getAccountFreeBalance**(`accountId`): `Promise`\<`bigint`\>
+> **getAccountFreeBalance**(`accountId`): `Promise`\<`bigint`\>
 
 Retrieves the free balance of an account.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `accountId` | `string` | The account ID. |
+##### accountId
+
+`string`
+
+The account ID.
 
 #### Returns
 
@@ -136,7 +158,7 @@ Retrieves the free balance of an account.
 
 A promise that resolves to the free balance of the account.
 
-**`Example`**
+#### Example
 
 ```typescript
 const balance = await blockchain.getAccountFreeBalance('5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu');
@@ -144,11 +166,11 @@ const balance = await blockchain.getAccountFreeBalance('5D5PhZQNJzcJXVBxwJxZcsut
 console.log(balance);
 ```
 
-___
+***
 
-### getCurrentBlockNumber
+### getCurrentBlockNumber()
 
-▸ **getCurrentBlockNumber**(): `Promise`\<`number`\>
+> **getCurrentBlockNumber**(): `Promise`\<`number`\>
 
 Retrieves the current block number.
 
@@ -166,19 +188,21 @@ const blockNumber = await blockchain.getCurrentBlockNumber();
 console.log(blockNumber);
 ```
 
-___
+***
 
-### getNextNonce
+### getNextNonce()
 
-▸ **getNextNonce**(`address`): `Promise`\<`number`\>
+> **getNextNonce**(`address`): `Promise`\<`number`\>
 
 Retrieves the next nonce for an account.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `address` | `string` | The address of the account. |
+##### address
+
+`string`
+
+The address of the account.
 
 #### Returns
 
@@ -193,11 +217,11 @@ const nonce = await blockchain.getNextNonce('5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvp
 console.log(nonce);
 ```
 
-___
+***
 
-### isReady
+### isReady()
 
-▸ **isReady**(): `Promise`\<`boolean`\>
+> **isReady**(): `Promise`\<`boolean`\>
 
 Checks if the blockchain is ready.
 
@@ -207,27 +231,34 @@ Checks if the blockchain is ready.
 
 A promise that resolves to `true` if the blockchain is ready.
 
-**`Example`**
+#### Example
 
 ```typescript
 const isReady = await blockchain.isReady();
 console.log(isReady);
 ```
 
-___
+***
 
-### send
+### send()
 
-▸ **send**(`sendable`, `options`): `Promise`\<`SendResult`\>
+> **send**(`sendable`, `options`): `Promise`\<`SendResult`\>
 
 Sends a transaction to the blockchain.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `sendable` | `Sendable` | The transaction to send. |
-| `options` | `SendOptions` | Options for sending the transaction. |
+##### sendable
+
+`Sendable`
+
+The transaction to send.
+
+##### options
+
+`SendOptions`
+
+Options for sending the transaction.
 
 #### Returns
 
@@ -245,23 +276,25 @@ const result = await blockchain.send(sendable, { account });
 console.log(result);
 ```
 
-___
+***
 
-### connect
+### connect()
 
-▸ **connect**(`options`): `Promise`\<[`Blockchain`](Blockchain.md)\>
+> `static` **connect**(`options`): `Promise`\<`Blockchain`\>
 
 Connects to the blockchain and returns a new instance of the Blockchain class.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `options` | `BlockchainConnectOptions` | Options for connecting to the blockchain. |
+##### options
+
+`BlockchainConnectOptions`
+
+Options for connecting to the blockchain.
 
 #### Returns
 
-`Promise`\<[`Blockchain`](Blockchain.md)\>
+`Promise`\<`Blockchain`\>
 
 A promise that resolves to a new instance of the Blockchain class.
 
@@ -274,38 +307,38 @@ const blockchain = await Blockchain.connect({ wsEndpoint: 'wss://rpc.testnet.cer
 
 ### ddcClusters
 
-• `Readonly` **ddcClusters**: [`DDCClustersPallet`](DDCClustersPallet.md)
+> `readonly` **ddcClusters**: [`DDCClustersPallet`](DDCClustersPallet.md)
 
 The DDC Clusters pallet.
 
-___
+***
 
 ### ddcClustersGov
 
-• `Readonly` **ddcClustersGov**: [`DDCClustersGovPallet`](DDCClustersGovPallet.md)
+> `readonly` **ddcClustersGov**: [`DDCClustersGovPallet`](DDCClustersGovPallet.md)
 
 The DDC Cluster government pallet.
 
-___
+***
 
 ### ddcCustomers
 
-• `Readonly` **ddcCustomers**: [`DDCCustomersPallet`](DDCCustomersPallet.md)
+> `readonly` **ddcCustomers**: [`DDCCustomersPallet`](DDCCustomersPallet.md)
 
 The DDC Customers pallet.
 
-___
+***
 
 ### ddcNodes
 
-• `Readonly` **ddcNodes**: [`DDCNodesPallet`](DDCNodesPallet.md)
+> `readonly` **ddcNodes**: [`DDCNodesPallet`](DDCNodesPallet.md)
 
 The DDC Nodes pallet.
 
-___
+***
 
 ### ddcStaking
 
-• `Readonly` **ddcStaking**: [`DDCStakingPallet`](DDCStakingPallet.md)
+> `readonly` **ddcStaking**: [`DDCStakingPallet`](DDCStakingPallet.md)
 
 The DDC Staking pallet.

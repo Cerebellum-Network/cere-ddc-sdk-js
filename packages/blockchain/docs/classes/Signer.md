@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/blockchain**](../README.md)
+
+***
+
 [@cere-ddc-sdk/blockchain](../README.md) / Signer
 
-# Class: Signer
+# Abstract Class: Signer
 
 This abstract class provides a blueprint for creating different types of signers.
 
-**`Example`**
+## Example
 
 ```typescript
 class MySigner extends Signer {
@@ -16,19 +20,16 @@ const isReady = await mySigner.isReady();
 console.log(isReady);
 ```
 
-## Hierarchy
+## Extended by
 
-- **`Signer`**
-
-  ↳ [`Web3Signer`](Web3Signer.md)
-
-  ↳ [`KeyringSigner`](KeyringSigner.md)
+- [`Web3Signer`](Web3Signer.md)
+- [`KeyringSigner`](KeyringSigner.md)
 
 ## Methods
 
-### isReady
+### isReady()
 
-▸ **isReady**(): `Promise`\<`boolean`\>
+> `abstract` **isReady**(): `Promise`\<`boolean`\>
 
 Checks if the signer is ready.
 
@@ -38,61 +39,67 @@ Checks if the signer is ready.
 
 A promise that resolves to a boolean indicating whether the signer is ready.
 
-___
+***
 
-### sign
+### sign()
 
-▸ **sign**(`data`): `Promise`\<`Uint8Array`\>
+> `abstract` **sign**(`data`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
 Signs data with the signer.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `data` | `string` \| `Uint8Array` | The data to sign. |
+##### data
+
+`string` \| `Uint8Array`\<`ArrayBufferLike`\>
+
+The data to sign.
 
 #### Returns
 
-`Promise`\<`Uint8Array`\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
 A promise that resolves to the signature.
 
-___
+***
 
-### unlock
+### unlock()
 
-▸ **unlock**(`passphrase?`): `Promise`\<`void`\>
+> **unlock**(`passphrase?`): `Promise`\<`void`\>
 
 Unlocks the signer with a passphrase.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `passphrase?` | `string` | The passphrase to unlock the signer. |
+##### passphrase?
+
+`string`
+
+The passphrase to unlock the signer.
 
 #### Returns
 
 `Promise`\<`void`\>
 
-___
+***
 
-### isSigner
+### isSigner()
 
-▸ **isSigner**(`signer`): signer is Signer
+> `static` **isSigner**(`signer`): `signer is Signer`
 
 Checks if an object is a signer.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `signer` | `unknown` | The object to check. |
+##### signer
+
+`unknown`
+
+The object to check.
 
 #### Returns
 
-signer is Signer
+`signer is Signer`
 
 A boolean indicating whether the object is a signer.
 
@@ -100,30 +107,30 @@ A boolean indicating whether the object is a signer.
 
 ### address
 
-• `Readonly` `Abstract` **address**: `string`
+> `abstract` `readonly` **address**: `string`
 
 The address of the signer.
 
-___
+***
 
 ### isLocked
 
-• `Readonly` `Abstract` **isLocked**: `boolean`
+> `abstract` `readonly` **isLocked**: `boolean`
 
 A boolean indicating whether the signer is locked.
 
-___
+***
 
 ### publicKey
 
-• `Readonly` `Abstract` **publicKey**: `Uint8Array`
+> `abstract` `readonly` **publicKey**: `Uint8Array`
 
 The public key of the signer.
 
-___
+***
 
 ### type
 
-• `Readonly` `Abstract` **type**: `KeypairType`
+> `abstract` `readonly` **type**: `KeypairType`
 
 The type of the signer ('ed25519' or 'sr25519').

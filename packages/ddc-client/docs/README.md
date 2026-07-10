@@ -1,4 +1,6 @@
-@cere-ddc-sdk/ddc-client
+**@cere-ddc-sdk/ddc-client**
+
+***
 
 # @cere-ddc-sdk/ddc-client
 
@@ -6,6 +8,10 @@
 
 - [DdcClient](classes/DdcClient.md)
 - [DdcUri](classes/DdcUri.md)
+
+## Variables
+
+- [createCorrelationId](variables/createCorrelationId.md)
 
 ## Authentication
 
@@ -27,7 +33,8 @@
 
 ## Signers
 
+- [CereWalletSigner](classes/CereWalletSigner.md)
 - [JsonSigner](classes/JsonSigner.md)
 - [KeyringSigner](classes/KeyringSigner.md)
-- [Signer](classes/Signer.md)
 - [UriSigner](classes/UriSigner.md)
+- [Signer](interfaces/Signer.md)

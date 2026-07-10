@@ -1,3 +1,7 @@
+[**@cere-ddc-sdk/file-storage**](../README.md)
+
+***
+
 [@cere-ddc-sdk/file-storage](../README.md) / FileStorage
 
 # Class: FileStorage
@@ -8,19 +12,31 @@ It provides methods to read and store files in the DDC.
 
 ## Methods
 
-### read
+### read()
 
-▸ **read**(`bucketId`, `cidOrName`, `options?`): `Promise`\<[`FileResponse`](FileResponse.md)\>
+> **read**(`bucketId`, `cidOrName`, `options?`): `Promise`\<[`FileResponse`](FileResponse.md)\>
 
 Reads a file from the file storage.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket where the file is stored. |
-| `cidOrName` | `string` | The CID or CNS name of the file to read. |
-| `options?` | `PieceReadOptions` | The options for reading the file. |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket where the file is stored.
+
+##### cidOrName
+
+`string`
+
+The CID or CNS name of the file to read.
+
+##### options?
+
+`PieceReadOptions`
+
+The options for reading the file.
 
 #### Returns
 
@@ -28,7 +44,7 @@ Reads a file from the file storage.
 
 A promise that resolves to a `FileResponse` instance.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketId = 1n;
@@ -39,21 +55,33 @@ const content = await file.text();
 console.log(content);
 ```
 
-___
+***
 
-### store
+### store()
 
-▸ **store**(`bucketId`, `file`, `options?`): `Promise`\<`string`\>
+> **store**(`bucketId`, `file`, `options?`): `Promise`\<`string`\>
 
 Stores a file in the DDC. Large files are stored as a collection of pieces.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket where the file will be stored. |
-| `file` | [`File`](File.md) | The file to store. |
-| `options` | `FileStoreOptions` | The options for storing the file. |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket where the file will be stored.
+
+##### file
+
+[`File`](File.md)
+
+The file to store.
+
+##### options?
+
+`FileStoreOptions` = `{}`
+
+The options for storing the file.
 
 #### Returns
 
@@ -61,7 +89,7 @@ Stores a file in the DDC. Large files are stored as a collection of pieces.
 
 A promise that resolves to the CID of the stored file.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketId = 1n;
@@ -72,30 +100,37 @@ const fileCid = await fileStorage.store(bucketId, file);
 console.log(fileCid);
 ```
 
-___
+***
 
-### create
+### create()
 
-▸ **create**(`uriOrSigner`, `config?`): `Promise`\<[`FileStorage`](FileStorage.md)\>
+> `static` **create**(`uriOrSigner`, `config?`): `Promise`\<`FileStorage`\>
 
 Creates a new instance of the `FileStorage` class asynchronously.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `uriOrSigner` | `string` \| [`Signer`](Signer.md) | `undefined` | A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri). |
-| `config` | `FileStorageConfig` | `DEFAULT_PRESET` | Configuration options for the `FileStorage`. Defaults to TESTNET. |
+##### uriOrSigner
+
+`string` \| [`Signer`](../interfaces/Signer.md)
+
+A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri).
+
+##### config?
+
+`FileStorageConfig` = `DEFAULT_PRESET`
+
+Configuration options for the `FileStorage`. Defaults to TESTNET.
 
 #### Returns
 
-`Promise`\<[`FileStorage`](FileStorage.md)\>
+`Promise`\<`FileStorage`\>
 
 A promise that resolves to a new `FileStorage` instance.
 
 *
 
-**`Example`**
+#### Example
 
 ```typescript
 import { FileStorage, TESTNET } from '@cere-ddc-sdk/file-storage';
