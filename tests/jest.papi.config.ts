@@ -13,7 +13,7 @@ const config: Config = {
   testEnvironment: 'node',
   roots: ['<rootDir>'],
   testTimeout: 120_000,
-  testMatch: ['<rootDir>/specs/papi.spec.ts'],
+  testMatch: ['<rootDir>/specs/papi*.spec.ts'],
   extensionsToTreatAsEsm: ['.ts'],
   transform: {
     '\\.ts$': ['ts-jest', { useESM: true, tsconfig: path.resolve(__dirname, '../tsconfig.build.json') }],

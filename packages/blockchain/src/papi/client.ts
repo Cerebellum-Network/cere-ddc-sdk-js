@@ -11,6 +11,7 @@ import { cereMainnet } from '#descriptors';
 
 import { DESCRIPTORS, CERE_WS, type CereNetwork } from './descriptors.js';
 import { ChainIncompatibleError } from './compat.js';
+import { createTxApi, type TxApi } from './tx.js';
 
 export interface ConnectOptions {
   /** Which Cere network's typed descriptors + default endpoint to use. */
@@ -31,6 +32,8 @@ export interface CereClient {
    * encode error when the runtime predates the call's shape.
    */
   assertCompatible(pallet: string, call: string): Promise<void>;
+  /** Transaction submission, batching, sudo, and event extraction. */
+  tx: TxApi;
 }
 
 /** Infer the network from a bare WS URL — back-compat for `connect(url)`. */
@@ -71,6 +74,7 @@ export function connect(opts: ConnectOptions | string): CereClient {
   return {
     api,
     disconnect: () => client.destroy(),
+    tx: createTxApi(api),
     async assertCompatible(pallet, call) {
       const statics = await api.getStaticApis();
       const entry = (statics.compat.tx as any)[pallet]?.[call];
