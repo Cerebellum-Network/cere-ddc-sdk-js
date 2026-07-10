@@ -58,6 +58,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@cere/embed-wallet-inject": "^0.20.1",
+    "@polkadot-api/ink-contracts": "^0.6.3",
+    "@polkadot-api/substrate-bindings": "^0.20.3",
     "@polkadot-api/ws-provider": "^0.9.0",
     "@polkadot-labs/hdkd": "^0.0.29",
     "@polkadot-labs/hdkd-helpers": "^0.0.31",

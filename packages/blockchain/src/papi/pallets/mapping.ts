@@ -10,6 +10,7 @@ import type {
   ClusterProtocolParams,
   ClusterStatus,
   NodePublicKey,
+  StakingInfo,
   StakingLedger,
   StorageNode,
   StorageNodeMode,
@@ -227,6 +228,25 @@ export function toStakingLedger(v: any): StakingLedger {
     active: BigInt(v.active),
     chilling: v.chilling == null ? null : Number(v.chilling),
     unlocking: Array.isArray(v.unlocking) ? v.unlocking : [],
+  };
+}
+
+/**
+ * A decoded customer-deposit `Ledger` (the ink! contract's `get_balance`
+ * `Some(Ledger)` value) OR a `DdcCustomers.ClusterLedger` storage value →
+ * `StakingInfo`. Both decode to the same `{ owner, total, active, unlocking }`
+ * shape (verified live in the 2c spike): the contract's `Ledger` struct and
+ * the pallet's `ClusterLedger` value share these fields, so one mapper serves
+ * both the contract-first path and the pallet-ledger fallback. `owner` decodes
+ * as a bare SS58 string (passed through by `hex()`); `total`/`active` are
+ * `bigint` on the wire but normalized via `BigInt(...)` to stay tolerant of a
+ * string/number form. `unlocking` is not part of the domain `StakingInfo`.
+ */
+export function toStakingInfo(v: any): StakingInfo {
+  return {
+    owner: hex(v.owner) as StakingInfo['owner'],
+    total: BigInt(v.total),
+    active: BigInt(v.active),
   };
 }
 

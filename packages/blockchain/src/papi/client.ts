@@ -17,6 +17,7 @@ import { createClustersPallet, type ClustersPallet } from './pallets/clusters.js
 import { createClustersGovPallet, type ClustersGovPallet } from './pallets/clustersGov.js';
 import { createNodesPallet, type NodesPallet } from './pallets/nodes.js';
 import { createStakingPallet, type StakingPallet } from './pallets/staking.js';
+import { createCustomersPallet, type CustomersPallet } from './pallets/customers.js';
 
 export interface ConnectOptions {
   /** Which Cere network's typed descriptors + default endpoint to use. */
@@ -49,6 +50,8 @@ export interface CereClient {
   nodes: NodesPallet;
   /** DdcStaking pallet: bond/unbond/store/chill write builders + stash/controller/ledger reads. */
   staking: StakingPallet;
+  /** DdcCustomers: customer balance reads (contract-first, pallet-ledger fallback). */
+  customers: CustomersPallet;
 }
 
 /** Infer the network from a bare WS URL — back-compat for `connect(url)`. */
@@ -95,6 +98,7 @@ export function connect(opts: ConnectOptions | string): CereClient {
     clustersGov: createClustersGovPallet(api),
     nodes: createNodesPallet(api),
     staking: createStakingPallet(api),
+    customers: createCustomersPallet(api),
     async assertCompatible(pallet, call) {
       const statics = await api.getStaticApis();
       const entry = (statics.compat.tx as any)[pallet]?.[call];

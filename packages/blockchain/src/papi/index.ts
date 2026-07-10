@@ -9,3 +9,5 @@ export { createClustersPallet, type ClustersPallet } from './pallets/clusters.js
 export { createClustersGovPallet, type ClustersGovPallet } from './pallets/clustersGov.js';
 export { createNodesPallet, type NodesPallet } from './pallets/nodes.js';
 export { createStakingPallet, type StakingPallet } from './pallets/staking.js';
+export { createCustomersPallet, type CustomersPallet } from './pallets/customers.js';
+export { createCustomerDepositContract, type CustomerDepositContract } from './contracts/customerDeposit.js';
