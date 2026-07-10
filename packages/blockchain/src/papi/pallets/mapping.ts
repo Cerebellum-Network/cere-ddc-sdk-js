@@ -3,6 +3,7 @@ import { Binary } from 'polkadot-api';
 import { ClusterMember } from '../../types.js';
 import type {
   AccountId,
+  Bucket,
   Cluster,
   ClusterId,
   ClusterNodeKind,
@@ -247,6 +248,25 @@ export function toStakingInfo(v: any): StakingInfo {
     owner: hex(v.owner) as StakingInfo['owner'],
     total: BigInt(v.total),
     active: BigInt(v.active),
+  };
+}
+
+/**
+ * DdcCustomers.Buckets value → Bucket.
+ *
+ * Verified against the descriptor (`If9jn24dnm9mbt`): `bucket_id` is `bigint`,
+ * `owner_id` is `SS58String`, `cluster_id` is `SizedHex<20>` (plain hex
+ * string), `is_public`/`is_removed` are `boolean` — passed through `hex()`
+ * for the string-typed fields for the same defensive reasons as the other
+ * mappers in this file.
+ */
+export function toBucket(value: any): Bucket {
+  return {
+    bucketId: BigInt(value.bucket_id),
+    ownerId: hex(value.owner_id) as AccountId,
+    clusterId: hex(value.cluster_id) as ClusterId,
+    isPublic: !!value.is_public,
+    isRemoved: !!value.is_removed,
   };
 }
 
