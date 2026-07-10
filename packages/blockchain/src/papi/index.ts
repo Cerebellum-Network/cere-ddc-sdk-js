@@ -6,4 +6,5 @@ export { createTxApi, type TxApi, type Sendable, type SendOptions, type SendResu
 export type { CereApi } from './api-types.js';
 export { createChainApi, type ChainApi } from './chain.js';
 export { createClustersPallet, type ClustersPallet } from './pallets/clusters.js';
+export { createClustersGovPallet, type ClustersGovPallet } from './pallets/clustersGov.js';
 export * from './pallets/mapping.js';

@@ -1,5 +1,6 @@
 import { Binary } from 'polkadot-api';
 
+import { ClusterMember } from '../../types.js';
 import type {
   AccountId,
   Cluster,
@@ -8,6 +9,7 @@ import type {
   ClusterParams,
   ClusterProtocolParams,
   ClusterStatus,
+  NodePublicKey,
   StorageNodePublicKey,
 } from '../../types.js';
 
@@ -91,6 +93,25 @@ export function toClusterProtocolParams(v: any): ClusterProtocolParams {
  */
 export function storagePubKey(key: StorageNodePublicKey) {
   return { type: 'StoragePubKey' as const, value: key };
+}
+
+/**
+ * Domain ClusterMember (+ optional node key) → runtime `DdcClustersGov`
+ * member enum. Verified against the live `propose_update_cluster_protocol`/
+ * `vote_proposal`/`close_proposal` arg types (`AnonymousEnum<{ ClusterManager:
+ * undefined; NodeProvider: AnonymousEnum<{ StoragePubKey: SS58String }> }>`):
+ * `ClusterManager` is a bare unit variant, and `NodeProvider`'s value is the
+ * SAME `{ StoragePubKey: ... }` sub-enum as `storagePubKey()` builds for
+ * `DdcClusters` node keys — not a bare key — so this reuses that helper.
+ */
+export function buildClusterMember(member: ClusterMember, nodePublicKey?: NodePublicKey) {
+  if (member === ClusterMember.ClusterManager) {
+    return { type: 'ClusterManager' as const };
+  }
+  if (!nodePublicKey) {
+    throw new Error('Node public key is required to create a NodeProvider cluster member.');
+  }
+  return { type: 'NodeProvider' as const, value: storagePubKey(nodePublicKey) };
 }
 
 /** Domain ClusterNodeKind → runtime enum variant. */
