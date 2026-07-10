@@ -191,6 +191,11 @@ export function toStorageNode(value: any): StorageNode {
       httpPort: Number(p.http_port),
       grpcPort: Number(p.grpc_port),
       p2pPort: Number(p.p2p_port),
+      // NOTE: the runtime mode enum has a 4th variant `Compute` that the domain
+      // `StorageNodeMode` (Full/Storage/Cache) doesn't model — a Compute-mode node
+      // decodes to the out-of-domain string 'Compute' via this cast. Extending
+      // `StorageNodeMode` touches the shared public type in types.ts, deferred to
+      // the 2d cutover (tracked in the branch roll-up). Devnet nodes are Storage/Full/Cache.
       mode: (typeof p.mode === 'string' ? p.mode : p.mode?.type) as StorageNodeMode,
     },
   };
