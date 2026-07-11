@@ -6,3 +6,4 @@ export { UriSigner } from './UriSigner.js';
 export { createRandomSigner } from './createRandomSigner.js';
 export { Web3Signer } from './Web3Signer.js';
 export { CereWalletSigner } from './CereWalletSigner.js';
+export { JsonSigner, type KeystoreJson } from './JsonSigner.js';
