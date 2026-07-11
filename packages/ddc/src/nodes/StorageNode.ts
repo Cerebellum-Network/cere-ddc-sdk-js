@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import type { Signer, BucketId, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
+import type { Signer, BucketId, StorageNodeMode } from '@cere-ddc-sdk/blockchain/papi';
 
 import { Cid } from '../Cid';
 import { CnsApi } from '../CnsApi';

@@ -1,4 +1,4 @@
-import { Signer } from '@cere-ddc-sdk/blockchain';
+import { Signer } from '@cere-ddc-sdk/blockchain/papi';
 
 import { RpcTransport } from '../transports';
 import { PutRequest as ProtoPutRequest, GetRequest as ProtoGetRequest, Node } from '../grpc/dag_api';

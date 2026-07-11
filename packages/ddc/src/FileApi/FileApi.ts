@@ -1,4 +1,4 @@
-import { Signer } from '@cere-ddc-sdk/blockchain';
+import { Signer } from '@cere-ddc-sdk/blockchain/papi';
 
 import { MAX_PIECE_SIZE, MB } from '../constants';
 import { FileValidator } from '../validators';

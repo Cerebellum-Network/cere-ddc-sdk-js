@@ -1,4 +1,4 @@
-import { type SignerType, encodeAddress } from '@cere-ddc-sdk/blockchain';
+import { type SignerType, encodeAddress } from '@cere-ddc-sdk/blockchain/papi';
 
 import { Signature as ApiSignature, Signature_Algorithm as SigAlg } from '../grpc/common/signature';
 

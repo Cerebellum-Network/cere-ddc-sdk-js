@@ -1,4 +1,4 @@
-import type { Signer } from '@cere-ddc-sdk/blockchain';
+import type { Signer } from '@cere-ddc-sdk/blockchain/papi';
 
 import type { Logger } from '../logger';
 import { ActivityAcknowledgment } from '../grpc/activity_report/activity_report';

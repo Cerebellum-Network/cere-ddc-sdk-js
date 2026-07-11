@@ -1,4 +1,4 @@
-import { Signer, Web3Signer, createRandomSigner } from '@cere-ddc-sdk/blockchain';
+import { Signer, Web3Signer, createRandomSigner } from '@cere-ddc-sdk/blockchain/papi';
 
 import { AuthToken } from './AuthToken';
 
@@ -17,7 +17,9 @@ const getRegestry = (signer: Signer) => {
 };
 
 const createSdkSigner = async (signer: Signer) => {
-  const randomSigner = createRandomSigner({ type: signer.type });
+  // DDC only ever hands us `Signer`s with an ed25519/sr25519 `type` (enforced in `createSignature`);
+  // `createRandomSigner` is typed narrower than the chain-free `SignerType` union, hence the cast.
+  const randomSigner = createRandomSigner({ type: signer.type as 'ed25519' | 'sr25519' });
   await randomSigner.isReady();
 
   getRegestry(signer).set(randomSigner.address, randomSigner);
