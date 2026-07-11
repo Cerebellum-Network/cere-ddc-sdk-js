@@ -15,6 +15,7 @@ export class BlockchainStrategy extends PingStrategy {
   private client: CereClient;
   private bucketCache: Map<BucketId, Bucket> = new Map();
   private clusterNodes: Map<ClusterId, RouterNode[]> = new Map();
+  private readyProbe?: Promise<boolean>;
 
   constructor(logger: Logger, { client }: BlockchainStrategyConfig) {
     super(logger);
@@ -23,6 +24,16 @@ export class BlockchainStrategy extends PingStrategy {
   }
 
   async isReady() {
+    // `Router.getNode()` calls `isReady()` on every store/read/dagNode operation.
+    // Memoize the probe so it runs at most once per instance and resolves
+    // instantly thereafter, mirroring the old polkadot.js `api.isReady`
+    // resolve-once semantics and avoiding a per-operation RPC round-trip.
+    this.readyProbe ??= this.probeLiveness();
+
+    return this.readyProbe;
+  }
+
+  private async probeLiveness(): Promise<boolean> {
     // The papi client connects lazily and has no `isReady()` gate; a cheap
     // chain read confirms the connection is live.
     await this.client.chain.getCurrentBlockNumber();
