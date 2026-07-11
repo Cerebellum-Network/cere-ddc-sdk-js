@@ -1,4 +1,4 @@
-import { StorageNodeMode as Mode } from '@cere-ddc-sdk/blockchain';
+import { StorageNodeMode as Mode } from '@cere-ddc-sdk/blockchain/papi';
 
 import { RouterOperation as Operation, RouterNode } from './RoutingStrategy';
 import { BaseStrategy } from './BaseStrategy.web';

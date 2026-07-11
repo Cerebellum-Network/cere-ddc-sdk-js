@@ -1,6 +1,6 @@
 import retry, { Options as RetryOptions } from 'async-retry';
 import { RpcError } from '@protobuf-ts/runtime-rpc';
-import { BucketId } from '@cere-ddc-sdk/blockchain';
+import { BucketId } from '@cere-ddc-sdk/blockchain/papi';
 
 import { GrpcStatus } from '../grpc/status';
 import { RETRYABLE_GRPC_ERROR_CODES, RETRY_MAX_ATTEPTS } from '../constants';

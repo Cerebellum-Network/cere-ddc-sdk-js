@@ -26,7 +26,7 @@ export {
   type Signer,
   type SignerType,
   type UriSignerOptions,
-} from '@cere-ddc-sdk/blockchain';
+} from '@cere-ddc-sdk/blockchain/papi';
 
 /**
  * Utilities

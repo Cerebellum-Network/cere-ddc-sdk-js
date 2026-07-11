@@ -1,6 +1,4 @@
-import { Signer, createRandomSigner } from '@cere-ddc-sdk/blockchain/papi';
-// Web3Signer stays on the legacy import for this instanceof check until Task 4 flips the barrel + this together (papi vs legacy classes aren't instanceof-compatible).
-import { Web3Signer } from '@cere-ddc-sdk/blockchain';
+import { Signer, createRandomSigner, Web3Signer } from '@cere-ddc-sdk/blockchain/papi';
 
 import { AuthToken } from './AuthToken';
 

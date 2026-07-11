@@ -14,6 +14,7 @@ export { createCustomerDepositContract, type CustomerDepositContract } from './c
 export type {
   AccountId,
   ClusterId,
+  Cluster,
   BucketId,
   BucketParams,
   Bucket,

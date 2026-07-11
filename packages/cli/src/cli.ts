@@ -4,7 +4,7 @@ import fs from 'fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { mnemonicGenerate } from '@polkadot/util-crypto';
-import type { ClusterId } from '@cere-ddc-sdk/blockchain';
+import type { ClusterId } from '@cere-ddc-sdk/blockchain/papi';
 
 import { upload } from './upload';
 import { createBucket } from './createBucket';

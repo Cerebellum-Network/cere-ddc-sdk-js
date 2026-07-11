@@ -1,4 +1,4 @@
-import type { BucketId } from '@cere-ddc-sdk/blockchain';
+import type { BucketId } from '@cere-ddc-sdk/blockchain/papi';
 
 import type { StorageNodeConfig } from '../nodes';
 import type { Logger } from '../logger';

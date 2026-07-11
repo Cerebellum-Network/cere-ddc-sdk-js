@@ -7,7 +7,7 @@ import { AddressOrPair, SubmittableExtrinsic, SubmittableResultValue } from '@po
 import { mnemonicGenerate } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/keyring';
 import { KeypairType } from '@polkadot/util-crypto/types';
-import type { BucketId, ClusterId } from '@cere-ddc-sdk/blockchain';
+import type { BucketId, ClusterId } from '@cere-ddc-sdk/blockchain/papi';
 
 import { ROOT_ACCOUNT_TYPE, ROOT_USER_SEED } from './constants';
 import { getHostIP } from './net';

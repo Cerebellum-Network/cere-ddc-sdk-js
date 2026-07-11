@@ -3,7 +3,16 @@ import { useDropzone } from 'react-dropzone';
 import { LoadingButton } from '@mui/lab';
 import { EmbedWallet } from '@cere/embed-wallet';
 import FileIcon from '@mui/icons-material/InsertDriveFileOutlined';
-import { Blockchain, Cluster, BucketId, ClusterId, Web3Signer, CereWalletSigner } from '@cere-ddc-sdk/blockchain';
+import {
+  connect,
+  decodeAddress,
+  type CereClient,
+  type Cluster,
+  type BucketId,
+  type ClusterId,
+  Web3Signer,
+  CereWalletSigner,
+} from '@cere-ddc-sdk/blockchain/papi';
 
 import {
   File,
@@ -50,6 +59,42 @@ import {
 
 import { CERE, USER_SEED } from './constants';
 import { createDataStream } from './helpers';
+
+const hexToU8a = (hex: string) => {
+  const clean = hex.startsWith('0x') ? hex.slice(2) : hex;
+  const bytes = new Uint8Array(clean.length / 2);
+
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(clean.substr(i * 2, 2), 16);
+  }
+
+  return bytes;
+};
+
+const u8aToHex = (bytes: Uint8Array) => `0x${Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+
+/**
+ * Adapts a connected `EmbedWallet` account into a chain-free papi `CereWalletSigner`.
+ * `EmbedWallet`'s `Signer.signMessage` only signs/returns strings (encoding
+ * unspecified), so bytes are hex-encoded going in and hex-decoded coming back —
+ * a pragmatic bridge for this demo, not a guaranteed-stable wire format.
+ */
+const toCereWalletSigner = async (wallet: EmbedWallet) => {
+  await wallet.connect();
+
+  const [account] = await wallet.getAccounts();
+
+  if (!account) {
+    throw new Error('Cere Wallet has no connected accounts');
+  }
+
+  const walletSigner = wallet.getSigner({ address: account.address });
+  const publicKey = decodeAddress(account.address);
+
+  return new CereWalletSigner(account.address, publicKey, async (bytes) =>
+    hexToU8a(await walletSigner.signMessage(u8aToHex(bytes))),
+  );
+};
 
 const Dropzone = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -99,7 +144,7 @@ export const Playground = () => {
   const [deposit, setDeposit] = useState<string>();
   const [extraDeposit, setExtraDeposit] = useState<number>(0);
   const [client, setClient] = useState<DdcClient>();
-  const [blockchain, setBlockchain] = useState<Blockchain>();
+  const [blockchain, setBlockchain] = useState<CereClient>();
 
   const isCompleted = !!realFileCid && !!randomFileCid;
   const currentClusterId = clusterId || clusters[0]?.clusterId;
@@ -118,23 +163,23 @@ export const Playground = () => {
 
     let signer: Signer | undefined;
 
-    if (signerType === 'cere-wallet') {
-      if (cereWallet.status === 'not-ready') {
-        await cereWallet.init();
+    try {
+      if (signerType === 'cere-wallet') {
+        if (cereWallet.status === 'not-ready') {
+          await cereWallet.init();
+        }
+
+        signer = await toCereWalletSigner(cereWallet);
       }
 
-      signer = new CereWalletSigner(cereWallet);
-    }
+      if (signerType === 'extension') {
+        [signer] = await Web3Signer.fromExtension('polkadot-js');
+      }
 
-    if (signerType === 'extension') {
-      signer = new Web3Signer();
-    }
+      if (signerType === 'seed') {
+        signer = new UriSigner(seed);
+      }
 
-    if (signerType === 'seed') {
-      signer = new UriSigner(seed);
-    }
-
-    try {
       await signer?.isReady();
       setStep(1);
     } catch (error) {
@@ -244,14 +289,14 @@ export const Playground = () => {
 
     try {
       setInProgress(true);
-      const blockchain = await Blockchain.connect({ wsEndpoint: preset.blockchain });
+      const blockchain = connect(preset.blockchain);
       const client = await DdcClient.create(signer!, { ...preset, blockchain, logLevel: 'debug' });
-      const [clusters, balance] = await Promise.all([blockchain.ddcClusters.listClusters(), client.getBalance()]);
+      const [clusters, balance] = await Promise.all([blockchain.clusters.listClusters(), client.getBalance()]);
 
       setBlockchain(blockchain);
       setClient(client);
       setClusters(clusters);
-      setBalance(blockchain.formatBalance(balance, false));
+      setBalance(await blockchain.chain.formatBalance(balance, false));
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
@@ -266,7 +311,7 @@ export const Playground = () => {
     try {
       setInProgress(true);
       const deposit = await client!.getDeposit(currentClusterId as ClusterId);
-      setDeposit(blockchain!.formatBalance(deposit, false));
+      setDeposit(await blockchain!.chain.formatBalance(deposit, false));
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
@@ -282,7 +327,7 @@ export const Playground = () => {
       setInProgress(true);
       await client!.depositBalance(currentClusterId as ClusterId, BigInt(extraDeposit) * CERE);
       const updatedDeposit = await client!.getDeposit(currentClusterId as ClusterId);
-      setDeposit(blockchain!.formatBalance(updatedDeposit, false));
+      setDeposit(await blockchain!.chain.formatBalance(updatedDeposit, false));
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);

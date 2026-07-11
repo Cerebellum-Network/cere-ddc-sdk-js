@@ -1,4 +1,4 @@
-import { Blockchain } from '@cere-ddc-sdk/blockchain';
+import { connect } from '@cere-ddc-sdk/blockchain/papi';
 import { DdcClient, File, DagNode } from '@cere-ddc-sdk/ddc-client';
 import { Router, RouterOperation, UriSigner, StorageNodeMode, RouterNode } from '@cere-ddc-sdk/ddc';
 import { ROOT_USER_SEED, BLOCKCHAIN_RPC_URL, getStorageNodes, getClientConfig, createDataStream, MB } from '../helpers';
@@ -20,7 +20,7 @@ const strategies = [
   {
     name: 'Blockchain',
     config: {
-      blockchain: new Blockchain({ wsEndpoint: BLOCKCHAIN_RPC_URL }),
+      client: connect(BLOCKCHAIN_RPC_URL),
     },
   },
 ];
@@ -32,12 +32,8 @@ describe('Routing', () => {
     describe.each(strategies)('All modes ($name)', ({ config }) => {
       const router = new Router({ signer, ...config });
 
-      beforeAll(async () => {
-        await config.blockchain?.isReady();
-      });
-
-      afterAll(async () => {
-        await config.blockchain?.disconnect();
+      afterAll(() => {
+        config.client?.disconnect();
       });
 
       test('Read piece', async () => {

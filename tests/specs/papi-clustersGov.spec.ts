@@ -1,6 +1,5 @@
 import { Binary } from 'polkadot-api';
-import { connect } from '@cere-ddc-sdk/blockchain/papi';
-import { ClusterMember } from '@cere-ddc-sdk/blockchain';
+import { connect, ClusterMember } from '@cere-ddc-sdk/blockchain/papi';
 
 const describeChain = process.env.CERE_CHAIN_TESTS ? describe : describe.skip;
 

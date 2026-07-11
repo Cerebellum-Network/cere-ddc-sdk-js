@@ -27,7 +27,7 @@ const networkToPreset = {
   mainnet: MAINNET,
 };
 
-export const createSigner = async (signer: string, signerType?: string) => {
+export const createSigner = async (signer: string, signerType?: string, passphrase = '') => {
   if (!signer.endsWith('.json')) {
     return new UriSigner(signer, {
       type: signerType === 'ed25519' ? 'ed25519' : 'sr25519',
@@ -37,21 +37,20 @@ export const createSigner = async (signer: string, signerType?: string) => {
   const content = await readFile(signer);
   const account = JSON.parse(content.toString());
 
-  return new JsonSigner(account);
+  /**
+   * `JsonSigner` decrypts the keystore eagerly (no lazy `unlock()` in the papi
+   * signer model), so the passphrase must be supplied up front.
+   *
+   * TODO: Implement passprase prompt in case it's not provided
+   */
+  return new JsonSigner(account, passphrase);
 };
 
 export const createClient = async (options: CreateClientOptions) => {
   const network = options.network as keyof typeof networkToPreset;
   const preset = networkToPreset[network];
   const blockchain = options.blockchainRpc || preset.blockchain;
-  const signer = await createSigner(options.signer, options.signerType);
-
-  /**
-   * Unlock the signer with the passphrase
-   *
-   * TODO: Implement passprase prompt in case it's not provided
-   */
-  await signer.unlock(options.signerPassphrase);
+  const signer = await createSigner(options.signer, options.signerType, options.signerPassphrase);
 
   return DdcClient.create(signer, {
     ...preset,

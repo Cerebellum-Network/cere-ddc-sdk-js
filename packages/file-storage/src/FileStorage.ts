@@ -1,13 +1,19 @@
-import { Blockchain, BucketId } from '@cere-ddc-sdk/blockchain';
+import {
+  connect,
+  UriSigner,
+  type Signer,
+  type CereClient,
+  type CereNetwork,
+  type BucketId,
+} from '@cere-ddc-sdk/blockchain/papi';
 import {
   PieceReadOptions,
   Piece,
   MultipartPiece,
   Router,
   PieceStoreOptions,
-  Signer,
-  UriSigner,
   RouterConfig,
+  RouterNode,
   ConfigPreset,
   DEFAULT_PRESET,
   Logger,
@@ -24,12 +30,25 @@ import {
 import { File, FileResponse } from './File';
 import { DEFAULT_BUFFER_SIZE, MAX_BUFFER_SIZE, MIN_BUFFER_SIZE } from './constants';
 
+const NETWORKS = ['mainnet', 'testnet', 'devnet'] as const;
+
 type Config = LoggerOptions & Pick<BalancedNodeConfig, 'retries'>;
+
+/**
+ * A network name (`'mainnet' | 'testnet' | 'devnet'`), a WS URL, or a
+ * pre-connected/injected `CereClient`. Mirrors `DdcClient`'s `ChainConfig`.
+ */
+type ChainConfig = CereNetwork | string | CereClient;
 
 export type FileStorageConfig = Config &
   Omit<ConfigPreset, 'blockchain'> & {
-    blockchain: Blockchain | ConfigPreset['blockchain'];
+    blockchain: ChainConfig;
   };
+
+type FileStorageConstructorConfig = Config & { signer: Signer } & (
+    | { nodes: RouterNode[] }
+    | { blockchain: ChainConfig }
+  );
 
 export type FileReadOptions = PieceReadOptions;
 export type FileStoreOptions = PieceStoreOptions & {
@@ -50,11 +69,12 @@ type LargeFileStoreOptions = FileStoreOptions & {
 export class FileStorage {
   private ddcNode: NodeInterface;
   private logger: Logger;
-  private blockchain?: Blockchain;
+  private client?: CereClient;
+  private ownsClient = false;
 
-  constructor(config: RouterConfig & Config);
+  constructor(config: FileStorageConstructorConfig);
   constructor(router: Router, config: Config);
-  constructor(configOrRouter: (RouterConfig & Config) | Router, config?: Config) {
+  constructor(configOrRouter: FileStorageConstructorConfig | Router, config?: Config) {
     let finalConfig: Config | undefined;
 
     if (configOrRouter instanceof Router) {
@@ -68,11 +88,30 @@ export class FileStorage {
       finalConfig = configOrRouter;
 
       this.logger = createLogger('FileStorage', configOrRouter);
-      this.blockchain = 'blockchain' in configOrRouter ? configOrRouter.blockchain : undefined;
+
+      let routerConfig: RouterConfig;
+
+      if ('nodes' in configOrRouter) {
+        routerConfig = { signer: configOrRouter.signer, nodes: configOrRouter.nodes, logger: this.logger };
+      } else {
+        const bc = configOrRouter.blockchain;
+        let client: CereClient;
+
+        if (typeof bc === 'string') {
+          client = connect(NETWORKS.includes(bc as CereNetwork) ? { network: bc as CereNetwork } : bc);
+          this.ownsClient = true;
+        } else {
+          client = bc;
+        }
+
+        this.client = client;
+        routerConfig = { signer: configOrRouter.signer, client, logger: this.logger };
+      }
+
       this.ddcNode = new BalancedNode({
         logger: this.logger,
         retries: configOrRouter.retries,
-        router: new Router({ ...configOrRouter, logger: this.logger }),
+        router: new Router(routerConfig),
       });
 
       this.logger.debug(configOrRouter, 'FileStorage created');
@@ -101,16 +140,14 @@ export class FileStorage {
    */
   static async create(uriOrSigner: Signer | string, config: FileStorageConfig = DEFAULT_PRESET) {
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
-    const blockchain =
-      typeof config.blockchain === 'string'
-        ? await Blockchain.connect({ wsEndpoint: config.blockchain })
-        : config.blockchain;
 
-    return new FileStorage({ ...config, blockchain, signer });
+    return new FileStorage({ ...config, signer });
   }
 
   async disconnect() {
-    await this.blockchain?.disconnect();
+    if (this.ownsClient) {
+      this.client?.disconnect();
+    }
   }
 
   private async storeLarge(bucketId: BucketId, file: File, { partSize, ...options }: LargeFileStoreOptions) {

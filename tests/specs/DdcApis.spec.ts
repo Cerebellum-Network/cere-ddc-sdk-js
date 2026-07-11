@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { createRandomSigner } from '@cere-ddc-sdk/blockchain';
+import { createRandomSigner } from '@cere-ddc-sdk/blockchain/papi';
 import {
   Content,
   WebsocketTransport,
