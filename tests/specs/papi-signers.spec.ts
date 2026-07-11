@@ -38,6 +38,14 @@ describe('papi signers (unit)', () => {
     expect(sr25519.verify(sig, msg, s.publicKey)).toBe(true);
   });
 
+  it('createRandomSigner({ type: "ed25519" }) produces a working ed25519 signer', async () => {
+    const s = createRandomSigner({ type: 'ed25519' });
+    expect(s.type).toBe('ed25519');
+    const msg = new Uint8Array([1, 2, 3]);
+    const sig = await s.sign(msg);
+    expect(ed25519.verify(sig, msg, s.publicKey)).toBe(true);
+  });
+
   it('isSigner accepts a UriSigner and a plain @cef-ai/signer-shaped object; rejects malformed', () => {
     expect(isSigner(new UriSigner('bottom drive obey lake curtain smoke basket hold race lonely fit walk'))).toBe(true);
     expect(
@@ -51,6 +59,17 @@ describe('papi signers (unit)', () => {
     ).toBe(true);
     expect(isSigner({ address: '5x' })).toBe(false);
     expect(isSigner(null)).toBe(false);
+    // A raw papi PolkadotSigner (publicKey/signTx/signBytes, no type/address/isReady/sign)
+    // must NOT be misclassified as a chain-free Signer — resolveSigner (tx.ts) relies on
+    // this to pass such objects through unbridged rather than routing them through
+    // toPolkadotSigner.
+    expect(
+      isSigner({
+        publicKey: new Uint8Array(32),
+        signTx: async () => new Uint8Array(),
+        signBytes: async () => new Uint8Array(),
+      }),
+    ).toBe(false);
   });
 
   it('toPolkadotSigner throws for an unbridgeable type', () => {
