@@ -1,12 +1,10 @@
 import type { PolkadotSigner } from 'polkadot-api/signer';
 import { getInjectedExtensions, connectInjectedExtension, type InjectedPolkadotAccount } from 'polkadot-api/pjs-signer';
 
-import type { CereSigner } from './types.js';
-
 /**
- * Wraps a papi-injected browser extension account (PolkadotJs, Talisman, ...)
- * as a `CereSigner`. The extension itself does the signing — this class is a
- * thin adapter over the account papi's `pjs-signer` hands back.
+ * Wraps a papi-injected browser extension account (PolkadotJs, Talisman, ...).
+ * The extension itself does the signing — this class is a thin adapter over
+ * the account papi's `pjs-signer` hands back.
  *
  * Extension discovery/connection (`getInjectedExtensions`/`connectInjectedExtension`)
  * reads `window.injectedWeb3`, so it only works in a browser with the
@@ -15,8 +13,12 @@ import type { CereSigner } from './types.js';
  * `.node` module substitution, so this file is what ships for both browser
  * and Node — `fromExtension()` guards against `window` being undefined and
  * throws a clear error instead of a bare `ReferenceError` from Node.
+ *
+ * NOTE: not yet wired to the chain-free `Signer` interface (2d-i Task 1) —
+ * this class exposes the raw `getPolkadotSigner()` shape it always has, and
+ * is not currently exported from `./index.js`. Left for a later 2d-i task.
  */
-export class ExtensionSigner implements CereSigner {
+export class ExtensionSigner {
   constructor(private readonly account: InjectedPolkadotAccount) {}
 
   get address(): string {

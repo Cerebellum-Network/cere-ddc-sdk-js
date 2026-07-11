@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { Binary } from 'polkadot-api';
-import { connect, MnemonicSigner } from '@cere-ddc-sdk/blockchain/papi';
+import { connect, UriSigner } from '@cere-ddc-sdk/blockchain/papi';
 
 const describeChain = process.env.CERE_CHAIN_TESTS ? describe : describe.skip;
 
@@ -76,10 +76,10 @@ describeChain('papi customers — deposit writes (live, devnet)', () => {
     if (!seed) return;
     const client = connect({ network: 'devnet' });
     try {
-      const target = await pickDepositTarget(client, new MnemonicSigner(seed).address);
+      const target = await pickDepositTarget(client, new UriSigner(seed).address);
       if (!target) return; // no contract-bearing cluster on devnet right now — skip
       const { clusterId, alreadyPaired } = target;
-      const signer = new MnemonicSigner(seed);
+      const signer = new UriSigner(seed);
       const before = await client.customers.getStackingInfo(clusterId as any, signer.address);
       // Must clear the chain's ExistentialDeposit (10_000_000_000 on devnet) —
       // the contract's deposit message rejects a value at or below the

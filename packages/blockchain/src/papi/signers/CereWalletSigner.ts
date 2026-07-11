@@ -1,10 +1,8 @@
 import { getPolkadotSigner, type PolkadotSigner } from 'polkadot-api/signer';
 
-import type { CereSigner } from './types.js';
-
 /**
  * Adapts an already-connected signing account (e.g. from `@cere/embed-wallet`)
- * to a papi `CereSigner`.
+ * to a papi `PolkadotSigner` provider.
  *
  * This is a pure constructor-injection adapter: it takes the address, public
  * key and a raw `(payload) => signature` callback, and does NOT import
@@ -20,8 +18,12 @@ import type { CereSigner } from './types.js';
  *
  * `getPolkadotSigner()` prepends the `MultiSignature` variant byte for
  * `scheme` and hashes payloads over 256 bytes, same as any other papi signer.
+ *
+ * NOTE: not yet wired to the chain-free `Signer` interface (2d-i Task 1) —
+ * this class exposes the raw `getPolkadotSigner()` shape it always has, and
+ * is not currently exported from `./index.js`. Left for a later 2d-i task.
  */
-export class CereWalletSigner implements CereSigner {
+export class CereWalletSigner {
   constructor(
     readonly address: string,
     private readonly publicKey: Uint8Array,

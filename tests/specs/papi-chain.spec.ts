@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { connect, MnemonicSigner } from '@cere-ddc-sdk/blockchain/papi';
+import { connect, UriSigner } from '@cere-ddc-sdk/blockchain/papi';
 
 const describeChain = process.env.CERE_CHAIN_TESTS ? describe : describe.skip;
 
@@ -24,7 +24,7 @@ describeChain('papi chain helpers (live, devnet)', () => {
     }
     const client = connect({ network: 'devnet' });
     try {
-      const { address } = new MnemonicSigner(seed);
+      const { address } = new UriSigner(seed);
       expect(await client.chain.getAccountFreeBalance(address)).toBeGreaterThan(0n);
       expect(await client.chain.getNextNonce(address)).toBeGreaterThanOrEqual(0);
     } finally {
