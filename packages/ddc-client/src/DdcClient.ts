@@ -2,8 +2,6 @@ import {
   DagNode,
   DagNodeResponse,
   Router,
-  Signer,
-  UriSigner,
   DagNodeStoreOptions,
   ConfigPreset,
   DagNodeGetOptions,
@@ -19,13 +17,34 @@ import {
   CnsRecordGetOptions,
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
-import { AccountId, Blockchain, BucketId, BucketParams, ClusterId, Sendable } from '@cere-ddc-sdk/blockchain';
+import {
+  connect,
+  UriSigner,
+  type Signer,
+  type CereClient,
+  type CereNetwork,
+  type AccountId,
+  type BucketId,
+  type BucketParams,
+  type ClusterId,
+  type Sendable,
+} from '@cere-ddc-sdk/blockchain/papi';
 
 import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
 
+const NETWORKS = ['mainnet', 'testnet', 'devnet'] as const;
+
+/**
+ * A network name (`'mainnet' | 'testnet' | 'devnet'`), a WS URL, or a
+ * pre-connected/injected `CereClient`. `CereNetwork` is folded into `string`
+ * here (rather than `CereNetwork | (string & {})`) to keep `@typescript-eslint/ban-types`
+ * happy; the network name is still validated at runtime in the constructor.
+ */
+type ChainConfig = CereNetwork | string | CereClient;
+
 export type DdcClientConfig = Omit<BalancedNodeConfig, 'router'> &
   Omit<ConfigPreset, 'blockchain'> & {
-    blockchain: Blockchain | ConfigPreset['blockchain'];
+    blockchain: ChainConfig;
   };
 
 type DepositBalanceOptions = {
@@ -39,22 +58,34 @@ type DepositBalanceOptions = {
  */
 export class DdcClient {
   private readonly ddcNode: NodeInterface;
-  private readonly blockchain: Blockchain;
+  private readonly client: CereClient;
+  private readonly ownsClient: boolean;
   private readonly fileStorage: FileStorage;
   private readonly signer: Signer;
   private readonly logger: Logger;
 
   constructor(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
     const logger = createLogger('DdcClient', config);
-    const blockchain =
-      typeof config.blockchain === 'string' ? new Blockchain({ wsEndpoint: config.blockchain }) : config.blockchain;
+    const bc = config.blockchain;
+
+    let client: CereClient;
+    let ownsClient: boolean;
+
+    if (typeof bc === 'string') {
+      client = connect(NETWORKS.includes(bc as CereNetwork) ? { network: bc as CereNetwork } : bc);
+      ownsClient = true;
+    } else {
+      client = bc;
+      ownsClient = false;
+    }
 
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
     const router = config.nodes
       ? new Router({ signer, nodes: config.nodes, logger })
-      : new Router({ signer, blockchain, logger });
+      : new Router({ signer, client, logger });
 
-    this.blockchain = blockchain;
+    this.client = client;
+    this.ownsClient = ownsClient;
     this.signer = signer;
     this.logger = logger;
     this.ddcNode = new BalancedNode({ ...config, router, logger });
@@ -105,13 +136,14 @@ export class DdcClient {
   }
 
   async connect() {
-    await this.blockchain.isReady();
-
+    // The papi client connects lazily on first use; nothing to await here.
     return this;
   }
 
   async disconnect() {
-    await this.blockchain.disconnect();
+    if (this.ownsClient) {
+      this.client.disconnect();
+    }
 
     return this;
   }
@@ -130,7 +162,7 @@ export class DdcClient {
    * */
   async getBalance() {
     this.logger.info('Getting the account balance %s', this.signer.address);
-    const balance = await this.blockchain.getAccountFreeBalance(this.signer.address);
+    const balance = await this.client.chain.getAccountFreeBalance(this.signer.address);
     this.logger.info('The account (%s) balance is %s', this.signer.address, balance);
 
     return balance;
@@ -159,18 +191,18 @@ export class DdcClient {
     let tx: Sendable;
     const currentDeposit =
       options.allowExtra === false
-        ? null
-        : await this.blockchain.ddcCustomers.getStackingInfo(clusterId, this.signer.address);
+        ? undefined
+        : await this.client.customers.getStackingInfo(clusterId, this.signer.address);
 
-    if (currentDeposit === null) {
+    if (currentDeposit === undefined) {
       this.logger.info('Depositing balance %s to %s for cluster %s', amount, this.signer.address, clusterId);
-      tx = await this.blockchain.ddcCustomers.deposit(clusterId, amount);
+      tx = await this.client.customers.deposit(clusterId, amount);
     } else {
       this.logger.info('Depositing extra balance %s to %s for cluster %s', amount, this.signer.address, clusterId);
-      tx = await this.blockchain.ddcCustomers.depositExtra(clusterId, amount);
+      tx = await this.client.customers.depositExtra(clusterId, amount);
     }
 
-    return this.blockchain.send(tx, { account: this.signer });
+    return this.client.tx.send(tx, { signer: this.signer });
   }
 
   /**
@@ -196,8 +228,8 @@ export class DdcClient {
    * */
   async depositBalanceFor(targetAddress: AccountId, clusterId: ClusterId, amount: bigint) {
     this.logger.info('Depositing balance %s for %s in cluster %s', amount, targetAddress, clusterId);
-    const tx = await this.blockchain.ddcCustomers.depositFor(targetAddress, clusterId, amount);
-    return this.blockchain.send(tx, { account: this.signer });
+    const tx = await this.client.customers.depositFor(targetAddress, clusterId, amount);
+    return this.client.tx.send(tx, { signer: this.signer });
   }
 
   /**
@@ -220,7 +252,7 @@ export class DdcClient {
   async getDeposit(clusterId: ClusterId, accountId?: AccountId) {
     const targetAccountId = accountId || this.signer.address;
     this.logger.info('Getting the account deposit %s for cluster %s', targetAccountId, clusterId);
-    const info = await this.blockchain.ddcCustomers.getStackingInfo(clusterId, targetAccountId);
+    const info = await this.client.customers.getStackingInfo(clusterId, targetAccountId);
     const deposit = BigInt(info?.active || 0n);
     this.logger.info('The account (%s) deposit for cluster %s is %s', targetAccountId, clusterId, deposit);
 
@@ -247,8 +279,8 @@ export class DdcClient {
    * */
   async unlockDeposit(clusterId: ClusterId, amount: bigint) {
     this.logger.info('Unlocking deposit %s for cluster %s', amount, clusterId);
-    const tx = await this.blockchain.ddcCustomers.unlockDeposit(clusterId, amount);
-    return this.blockchain.send(tx, { account: this.signer });
+    const tx = await this.client.customers.unlockDeposit(clusterId, amount);
+    return this.client.tx.send(tx, { signer: this.signer });
   }
 
   /**
@@ -269,8 +301,8 @@ export class DdcClient {
    * */
   async withdrawUnlockedDeposit(clusterId: ClusterId) {
     this.logger.info('Withdrawing unlocked deposit for cluster %s', clusterId);
-    const tx = await this.blockchain.ddcCustomers.withdrawUnlockedDeposit(clusterId);
-    return this.blockchain.send(tx, { account: this.signer });
+    const tx = await this.client.customers.withdrawUnlockedDeposit(clusterId);
+    return this.client.tx.send(tx, { signer: this.signer });
   }
 
   /**
@@ -297,12 +329,12 @@ export class DdcClient {
       isPublic: false,
     };
 
-    const response = await this.blockchain.send(
-      this.blockchain.ddcCustomers.createBucket(clusterId, { ...defaultParams, ...params }),
-      { account: this.signer },
+    const response = await this.client.tx.send(
+      this.client.customers.createBucket(clusterId, { ...defaultParams, ...params }),
+      { signer: this.signer },
     );
 
-    const [bucketId] = this.blockchain.ddcCustomers.extractCreatedBucketIds(response.events);
+    const [bucketId] = this.client.customers.extractCreatedBucketIds(response.events);
     this.logger.info('Bucket %s created in cluster %s in TX: %s', bucketId, clusterId, response.txHash);
 
     return bucketId;
@@ -326,7 +358,7 @@ export class DdcClient {
    */
   async getBucket(bucketId: BucketId) {
     this.logger.info('Getting bucket %s', bucketId);
-    const bucket = await this.blockchain.ddcCustomers.getBucket(bucketId);
+    const bucket = await this.client.customers.getBucket(bucketId);
     this.logger.info('Got bucket %s', bucketId);
 
     return bucket;
@@ -347,7 +379,7 @@ export class DdcClient {
    */
   async getBucketList() {
     this.logger.info('Getting bucket list');
-    const list = await this.blockchain.ddcCustomers.listBuckets();
+    const list = await this.client.customers.listBuckets();
     this.logger.info('Got bucket list of lenght %s', list.length);
 
     return list;
@@ -368,11 +400,11 @@ export class DdcClient {
   async removeBuckets(...bucketIds: BucketId[]) {
     this.logger.info('Removing buckets %s', bucketIds);
 
-    const response = await this.blockchain.send(this.blockchain.ddcCustomers.removeBuckets(...bucketIds), {
-      account: this.signer,
+    const response = await this.client.tx.send(this.client.customers.removeBuckets(...bucketIds), {
+      signer: this.signer,
     });
 
-    const removedBucketIds = this.blockchain.ddcCustomers.extractRemovedBucketIds(response.events);
+    const removedBucketIds = this.client.customers.extractRemovedBucketIds(response.events);
     this.logger.info('Buckets %s removed in TX: %s', removedBucketIds, response.txHash);
 
     return removedBucketIds;
