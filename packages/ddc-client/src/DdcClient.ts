@@ -18,11 +18,11 @@ import {
 } from '@cere-ddc-sdk/ddc';
 import { FileStorage, File, FileStoreOptions, FileResponse, FileReadOptions } from '@cere-ddc-sdk/file-storage';
 import {
-  connect,
   UriSigner,
+  resolveClient,
   type Signer,
   type CereClient,
-  type CereNetwork,
+  type ChainConfig,
   type AccountId,
   type BucketId,
   type BucketParams,
@@ -31,16 +31,6 @@ import {
 } from '@cere-ddc-sdk/blockchain';
 
 import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
-
-const NETWORKS = ['mainnet', 'testnet', 'devnet'] as const;
-
-/**
- * A network name (`'mainnet' | 'testnet' | 'devnet'`), a WS URL, or a
- * pre-connected/injected `CereClient`. `CereNetwork` is folded into `string`
- * here (rather than `CereNetwork | (string & {})`) to keep `@typescript-eslint/ban-types`
- * happy; the network name is still validated at runtime in the constructor.
- */
-type ChainConfig = CereNetwork | string | CereClient;
 
 export type DdcClientConfig = Omit<BalancedNodeConfig, 'router'> &
   Omit<ConfigPreset, 'blockchain'> & {
@@ -66,18 +56,7 @@ export class DdcClient {
 
   constructor(uriOrSigner: Signer | string, config: DdcClientConfig = DEFAULT_PRESET) {
     const logger = createLogger('DdcClient', config);
-    const bc = config.blockchain;
-
-    let client: CereClient;
-    let ownsClient: boolean;
-
-    if (typeof bc === 'string') {
-      client = connect(NETWORKS.includes(bc as CereNetwork) ? { network: bc as CereNetwork } : bc);
-      ownsClient = true;
-    } else {
-      client = bc;
-      ownsClient = false;
-    }
+    const { client, ownsClient } = resolveClient(config.blockchain);
 
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
     const router = config.nodes

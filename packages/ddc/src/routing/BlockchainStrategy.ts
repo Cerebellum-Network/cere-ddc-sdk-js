@@ -23,7 +23,7 @@ export class BlockchainStrategy extends PingStrategy {
     this.client = client;
   }
 
-  async isReady() {
+  async isReady(): Promise<boolean> {
     // `Router.getNode()` calls `isReady()` on every store/read/dagNode operation.
     // Memoize the probe so it runs at most once per instance and resolves
     // instantly thereafter, mirroring the old polkadot.js `api.isReady`

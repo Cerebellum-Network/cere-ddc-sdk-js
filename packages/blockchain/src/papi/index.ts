@@ -1,4 +1,5 @@
 export { connect, inferNetwork, type CereClient, type ConnectOptions } from './client.js';
+export { resolveClient, type ChainConfig, type ResolvedClient } from './resolveClient.js';
 export { ChainIncompatibleError } from './compat.js';
 export { DESCRIPTORS, CERE_WS, type CereNetwork } from './descriptors.js';
 export * from './signers/index.js';

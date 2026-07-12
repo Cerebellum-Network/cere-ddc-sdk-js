@@ -10,6 +10,7 @@ import {
   type Cluster,
   type BucketId,
   type ClusterId,
+  type SignerType,
   Web3Signer,
   CereWalletSigner,
 } from '@cere-ddc-sdk/blockchain';
@@ -73,6 +74,11 @@ const hexToU8a = (hex: string) => {
 
 const u8aToHex = (bytes: Uint8Array) => `0x${Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
 
+const SIGNER_TYPES: readonly SignerType[] = ['ed25519', 'sr25519', 'ecdsa', 'ethereum'];
+
+/** Narrows an `EmbedWallet` account's key type to a papi `SignerType`, when recognized. */
+const isSignerType = (type?: string): type is SignerType => SIGNER_TYPES.includes(type as SignerType);
+
 /**
  * Adapts a connected `EmbedWallet` account into a chain-free papi `CereWalletSigner`.
  * `EmbedWallet`'s `Signer.signMessage` only signs/returns strings (encoding
@@ -90,9 +96,16 @@ const toCereWalletSigner = async (wallet: EmbedWallet) => {
 
   const walletSigner = wallet.getSigner({ address: account.address });
   const publicKey = decodeAddress(account.address);
+  // Derive the signer's key type from the connected account; fall back to
+  // `sr25519` (CereWalletSigner's own default) when the account exposes no
+  // key type recognized by papi's `SignerType`.
+  const type = isSignerType(account.type) ? account.type : 'sr25519';
 
-  return new CereWalletSigner(account.address, publicKey, async (bytes) =>
-    hexToU8a(await walletSigner.signMessage(u8aToHex(bytes))),
+  return new CereWalletSigner(
+    account.address,
+    publicKey,
+    async (bytes) => hexToU8a(await walletSigner.signMessage(u8aToHex(bytes))),
+    type,
   );
 };
 

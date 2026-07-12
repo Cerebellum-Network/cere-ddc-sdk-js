@@ -1,9 +1,9 @@
 import {
-  connect,
   UriSigner,
+  resolveClient,
   type Signer,
   type CereClient,
-  type CereNetwork,
+  type ChainConfig,
   type BucketId,
 } from '@cere-ddc-sdk/blockchain';
 import {
@@ -30,15 +30,7 @@ import {
 import { File, FileResponse } from './File';
 import { DEFAULT_BUFFER_SIZE, MAX_BUFFER_SIZE, MIN_BUFFER_SIZE } from './constants';
 
-const NETWORKS = ['mainnet', 'testnet', 'devnet'] as const;
-
 type Config = LoggerOptions & Pick<BalancedNodeConfig, 'retries'>;
-
-/**
- * A network name (`'mainnet' | 'testnet' | 'devnet'`), a WS URL, or a
- * pre-connected/injected `CereClient`. Mirrors `DdcClient`'s `ChainConfig`.
- */
-type ChainConfig = CereNetwork | string | CereClient;
 
 export type FileStorageConfig = Config &
   Omit<ConfigPreset, 'blockchain'> & {
@@ -94,17 +86,10 @@ export class FileStorage {
       if ('nodes' in configOrRouter) {
         routerConfig = { signer: configOrRouter.signer, nodes: configOrRouter.nodes, logger: this.logger };
       } else {
-        const bc = configOrRouter.blockchain;
-        let client: CereClient;
-
-        if (typeof bc === 'string') {
-          client = connect(NETWORKS.includes(bc as CereNetwork) ? { network: bc as CereNetwork } : bc);
-          this.ownsClient = true;
-        } else {
-          client = bc;
-        }
+        const { client, ownsClient } = resolveClient(configOrRouter.blockchain);
 
         this.client = client;
+        this.ownsClient = ownsClient;
         routerConfig = { signer: configOrRouter.signer, client, logger: this.logger };
       }
 
