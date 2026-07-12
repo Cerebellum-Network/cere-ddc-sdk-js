@@ -1,5 +1,5 @@
 import { RpcError } from '@protobuf-ts/runtime-rpc';
-import type { Signer } from '@cere-ddc-sdk/blockchain/papi';
+import type { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { RpcTransport } from '../transports';
 import { createRpcMeta as createAuthRpcMeta, AuthMetaParams } from '../auth';

@@ -1,4 +1,4 @@
-import { CereWalletSigner, isSigner, toPolkadotSigner } from '@cere-ddc-sdk/blockchain/papi';
+import { CereWalletSigner, isSigner, toPolkadotSigner } from '@cere-ddc-sdk/blockchain';
 
 describe('papi wallet signers (unit)', () => {
   it('CereWalletSigner surfaces address/publicKey/type and delegates sign()', async () => {
@@ -29,7 +29,7 @@ describe('papi wallet signers (unit)', () => {
   });
 
   it('Web3Signer.fromExtension throws outside a browser', async () => {
-    const { Web3Signer } = await import('@cere-ddc-sdk/blockchain/papi');
+    const { Web3Signer } = await import('@cere-ddc-sdk/blockchain');
     await expect(Web3Signer.fromExtension('polkadot-js')).rejects.toThrow(/browser/);
   });
 });

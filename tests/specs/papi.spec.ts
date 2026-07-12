@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { connect, UriSigner, toPolkadotSigner } from '@cere-ddc-sdk/blockchain/papi';
+import { connect, UriSigner, toPolkadotSigner } from '@cere-ddc-sdk/blockchain';
 
 // Self-contained gate: this suite runs under the native-ESM jest config
 // (jest.papi.config.ts) and must not pull in the legacy `@cere-ddc-sdk/blockchain`

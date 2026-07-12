@@ -1,4 +1,4 @@
-import { Signer, createRandomSigner, Web3Signer } from '@cere-ddc-sdk/blockchain/papi';
+import { Signer, createRandomSigner, Web3Signer } from '@cere-ddc-sdk/blockchain';
 
 import { AuthToken } from './AuthToken';
 

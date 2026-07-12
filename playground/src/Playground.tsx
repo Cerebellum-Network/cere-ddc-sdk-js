@@ -12,7 +12,7 @@ import {
   type ClusterId,
   Web3Signer,
   CereWalletSigner,
-} from '@cere-ddc-sdk/blockchain/papi';
+} from '@cere-ddc-sdk/blockchain';
 
 import {
   File,

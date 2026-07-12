@@ -1,5 +1,5 @@
 import { DdcClient } from '@cere-ddc-sdk/ddc-client';
-import type { ClusterId } from '@cere-ddc-sdk/blockchain/papi';
+import type { ClusterId } from '@cere-ddc-sdk/blockchain';
 
 import { CERE } from './constants';
 

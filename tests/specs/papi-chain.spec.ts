@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { connect, UriSigner } from '@cere-ddc-sdk/blockchain/papi';
+import { connect, UriSigner } from '@cere-ddc-sdk/blockchain';
 
 const describeChain = process.env.CERE_CHAIN_TESTS ? describe : describe.skip;
 

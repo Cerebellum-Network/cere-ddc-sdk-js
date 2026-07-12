@@ -5,7 +5,7 @@ import {
   type CereClient,
   type CereNetwork,
   type BucketId,
-} from '@cere-ddc-sdk/blockchain/papi';
+} from '@cere-ddc-sdk/blockchain';
 import {
   PieceReadOptions,
   Piece,

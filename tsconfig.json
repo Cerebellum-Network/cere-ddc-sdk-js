@@ -5,8 +5,7 @@
     "paths": {
       "@cere-ddc-sdk/*": ["packages/*/src"],
       "#descriptors": ["packages/blockchain/.papi/descriptors/dist/index.d.ts"],
-      "#ws-provider": ["packages/blockchain/src/papi/ws-provider.ts"],
-      "@cere-ddc-sdk/blockchain/papi": ["packages/blockchain/dist/types/papi/index.d.ts"]
+      "#ws-provider": ["packages/blockchain/src/papi/ws-provider.ts"]
     }
   }
 }

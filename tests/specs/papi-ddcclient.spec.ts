@@ -36,7 +36,7 @@ describeChain('DdcClient chain path (live, devnet)', () => {
     const ddc = await DdcClient.create(seed, { blockchain: 'devnet' });
     try {
       // Discover a cluster id from chain via a fresh papi client.
-      const { connect } = await import('@cere-ddc-sdk/blockchain/papi');
+      const { connect } = await import('@cere-ddc-sdk/blockchain');
       const probe = connect({ network: 'devnet' });
       const clusterId = (await probe.clusters.listClusters())[0].clusterId;
       probe.disconnect();

@@ -1,4 +1,4 @@
-import { CereClient, Bucket, BucketId, ClusterId, StorageNode as BCStorageNode } from '@cere-ddc-sdk/blockchain/papi';
+import { CereClient, Bucket, BucketId, ClusterId, StorageNode as BCStorageNode } from '@cere-ddc-sdk/blockchain';
 
 import { RouterNode } from './RoutingStrategy';
 import { Logger } from '../logger';

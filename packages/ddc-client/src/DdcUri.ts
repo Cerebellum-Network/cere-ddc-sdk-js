@@ -1,4 +1,4 @@
-import type { BucketId } from '@cere-ddc-sdk/blockchain/papi';
+import type { BucketId } from '@cere-ddc-sdk/blockchain';
 import { Cid } from '@cere-ddc-sdk/ddc';
 
 export type DdcEntity = 'file' | 'dag-node';

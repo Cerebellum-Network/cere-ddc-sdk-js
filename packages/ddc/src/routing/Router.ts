@@ -1,4 +1,4 @@
-import { BucketId, Signer } from '@cere-ddc-sdk/blockchain/papi';
+import { BucketId, Signer } from '@cere-ddc-sdk/blockchain';
 
 import { StorageNode, StorageNodeConfig } from '../nodes';
 import { RouterNode, RouterOperation, RoutingStrategy } from './RoutingStrategy';

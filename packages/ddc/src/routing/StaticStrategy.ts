@@ -1,4 +1,4 @@
-import { BucketId } from '@cere-ddc-sdk/blockchain/papi';
+import { BucketId } from '@cere-ddc-sdk/blockchain';
 
 import { RouterNode } from './RoutingStrategy';
 import { Logger } from '../logger';

@@ -4,12 +4,9 @@
   "description": "Cere Blockchain client",
   "type": "module",
   "main": "./dist/papi/index.js",
+  "types": "./dist/types/papi/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/papi/index.d.ts",
-      "default": "./dist/papi/index.js"
-    },
-    "./papi": {
       "types": "./dist/types/papi/index.d.ts",
       "default": "./dist/papi/index.js"
     },

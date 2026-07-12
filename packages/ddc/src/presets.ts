@@ -1,4 +1,4 @@
-import { StorageNodeMode } from '@cere-ddc-sdk/blockchain/papi';
+import { StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 import { RouterNode } from './routing';
 
 export type ConfigPreset = {

@@ -28,7 +28,7 @@ import {
   type BucketParams,
   type ClusterId,
   type Sendable,
-} from '@cere-ddc-sdk/blockchain/papi';
+} from '@cere-ddc-sdk/blockchain';
 
 import { DagNodeUri, DdcUri, FileUri } from './DdcUri';
 

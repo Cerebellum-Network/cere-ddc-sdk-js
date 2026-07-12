@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { Buffer } from 'buffer';
-import type { Signer } from '@cere-ddc-sdk/blockchain/papi';
+import type { Signer } from '@cere-ddc-sdk/blockchain';
 
 import type { Logger } from '../logger';
 import { createSignature, CreateSignatureOptions } from '../signature';
