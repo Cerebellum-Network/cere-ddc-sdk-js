@@ -190,7 +190,7 @@ const blockchain = await Blockchain.connect({ wsEndpoint: 'wss://rpc.testnet.cer
 
 const clusterId = '0x...';
 const deposit = 100n * 10n ** blockchain.chainDecimals; // 100 CERE
-const tx = blockchain.ddcCustomers.deposit(deposit);
+const tx = blockchain.ddcCustomers.deposit(clusterId, deposit);
 
 await blockchain.send(tx, { account });
 ```
