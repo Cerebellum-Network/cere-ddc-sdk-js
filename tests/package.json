@@ -4,7 +4,7 @@
   "description": "Cere DDC SDK tests",
   "private": true,
   "scripts": {
-    "test": "jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.papi.config.ts --runInBand",
     "test:clean": "rimraf ./data/*",
     "test:env": "ts-node ./scripts/env.ts"
   },
