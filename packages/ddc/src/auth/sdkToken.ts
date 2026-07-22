@@ -35,7 +35,34 @@ export const isValidSdkToken = (signer: Signer, token: AuthToken) => {
   return signer.address === token.signature?.signer;
 };
 
-export const createSdkToken = async (signer: Signer) => {
+const rootTokenCache = new WeakMap<Signer, Promise<AuthToken>>();
+
+/**
+ * The root SDK token for a signer, memoized per signer.
+ *
+ * Critical for interactive wallet signers (e.g. a browser extension): the wallet
+ * signs this delegation token exactly ONCE; every subsequent per-operation
+ * signature uses the delegated ephemeral key (in-process, no wallet round-trip).
+ * Without this cache each `StorageNode`/operation re-signs a fresh root token via
+ * the wallet, and wallets rate-limit rapid `signRaw` requests ("Rate limit
+ * exceeded. Try again later.") — which broke multi-piece uploads with an
+ * extension signer while in-process signers (seed/keyring) were unaffected.
+ */
+export const createSdkToken = (signer: Signer): Promise<AuthToken> => {
+  let cached = rootTokenCache.get(signer);
+
+  if (!cached) {
+    cached = buildSdkToken(signer).catch((error) => {
+      rootTokenCache.delete(signer); // never cache a failed/rejected signature
+      throw error;
+    });
+    rootTokenCache.set(signer, cached);
+  }
+
+  return cached;
+};
+
+const buildSdkToken = async (signer: Signer) => {
   if (!isWeb3Signer(signer)) {
     return AuthToken.fullAccess().sign(signer);
   }
