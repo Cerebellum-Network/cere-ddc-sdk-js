@@ -14,26 +14,36 @@ export type CreateClientOptions = {
   blockchainRpc?: string;
 
   /**
-   * TODO(Task 3): the network preset configs were removed in favor of an explicit
-   * single-cluster config. Wire `clusterId`/`storageUrl`/`cdnUrl` up as real CLI options
-   * (`--clusterId`, `--storageUrl`, `--cdnUrl`) instead of the placeholder plumbing below.
-   * `clusterId` is typed as a plain `string` here (rather than `ClusterId`) because it
-   * currently rides along on the `deposit`/`create-bucket` command's own `--clusterId`
-   * option.
+   * The DDC cluster this client operates against. Sourced from the global
+   * `--clusterId` CLI option or the `clusterId` field of the config file.
    */
   clusterId?: string;
+
+  /**
+   * The DDC storage endpoint (write + fallback read). Sourced from the global
+   * `--storageUrl` CLI option/config field, defaulting to the `--network`'s
+   * public storage endpoint below when omitted.
+   */
   storageUrl?: string;
+
+  /**
+   * The DDC CDN endpoint (read). Sourced from the global `--cdnUrl` CLI
+   * option/config field, defaulting to the `--network`'s public CDN endpoint
+   * below when omitted.
+   */
   cdnUrl?: string;
 };
 
 /**
- * TODO(Task 3): these were the `blockchain` fields of the removed `DEVNET`/`TESTNET`/`MAINNET`
- * network preset configs. Kept as a local map so the CLI keeps resolving `--network` to an RPC URL.
+ * Public storage/CDN endpoints per network. Presets/client-side routing were
+ * removed from the SDK itself (single-cluster config), but the CLI keeps this
+ * small map as an app-level convenience so `--network testnet` keeps working
+ * without requiring `--storageUrl`/`--cdnUrl` on every invocation.
  */
-const networkToRpc: Record<string, string> = {
-  devnet: 'wss://archive.devnet.cere.network/ws',
-  testnet: 'wss://rpc.testnet.cere.network/ws',
-  mainnet: 'wss://rpc.mainnet.cere.network/ws',
+const networkToEndpoints: Record<string, { storageUrl: string; cdnUrl: string }> = {
+  devnet: { storageUrl: 'https://storage.devnet.dragon-1.xyz', cdnUrl: 'https://cdn.devnet.dragon-1.xyz' },
+  testnet: { storageUrl: 'https://storage.testnet.dragon-1.xyz', cdnUrl: 'https://cdn.testnet.dragon-1.xyz' },
+  mainnet: { storageUrl: 'https://storage.dragon-1.xyz', cdnUrl: 'https://cdn.dragon-1.xyz' },
 };
 
 export const createSigner = async (signer: string, signerType?: string, passphrase = '') => {
@@ -56,25 +66,28 @@ export const createSigner = async (signer: string, signerType?: string, passphra
 };
 
 export const createClient = async (options: CreateClientOptions) => {
-  const network = options.network as keyof typeof networkToRpc;
-  const blockchain = options.blockchainRpc || networkToRpc[network];
+  const network = options.network as keyof typeof networkToEndpoints;
+  const defaults = networkToEndpoints[network];
+  // `blockchain` accepts a network name directly (resolved to its public RPC
+  // internally), so `--blockchainRpc`/`--rpc` only needs to override it with an
+  // explicit WS URL.
+  const blockchain = options.blockchainRpc || network;
+  const storageUrl = options.storageUrl || defaults?.storageUrl;
+  const cdnUrl = options.cdnUrl || defaults?.cdnUrl;
   const signer = await createSigner(options.signer, options.signerType, options.signerPassphrase);
 
-  // TODO(Task 3): `clusterId`/`storageUrl` aren't wired up as real CLI options yet
-  // (see `CreateClientOptions`); this only keeps the package compiling against the
-  // new single-cluster `DdcClientConfig`.
-  if (!options.clusterId || !options.storageUrl) {
+  if (!options.clusterId || !storageUrl) {
     throw new Error(
-      'CLI needs --clusterId and --storageUrl (single-cluster config; network preset configs were removed). ' +
-        'These are not yet wired up as CLI options — see Task 3.',
+      'DDC CLI needs --clusterId, and --storageUrl (unless --network provides a default) — ' +
+        'pass them as flags or add them to the config file.',
     );
   }
 
   return DdcClient.create(signer, {
     blockchain,
     clusterId: options.clusterId as ClusterId,
-    storageUrl: options.storageUrl,
-    cdnUrl: options.cdnUrl,
+    storageUrl,
+    cdnUrl,
     logLevel: options.logLevel as DdcClientConfig['logLevel'],
   });
 };

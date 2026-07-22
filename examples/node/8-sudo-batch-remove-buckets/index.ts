@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { UriSigner, TESTNET } from '@cere-ddc-sdk/ddc-client';
+import { UriSigner } from '@cere-ddc-sdk/ddc-client';
 import { connect } from '@cere-ddc-sdk/blockchain';
 
 import JSONBig from 'json-bigint';
@@ -15,7 +15,7 @@ const sudo = new UriSigner('bottom drive obey lake curtain smoke basket hold rac
 /**
  * Create the blockchain RPC client instance and connect it to DDC TESTNET.
  */
-const client = connect(TESTNET.blockchain);
+const client = connect({ network: 'testnet' });
 
 /**
  * Get a list of existing buckets.
