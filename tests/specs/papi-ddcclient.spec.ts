@@ -20,7 +20,14 @@ describeChain('DdcClient chain path (live, devnet)', () => {
     const seed = fundedSeed();
     if (!seed) return;
 
-    const ddc = await DdcClient.create(seed, { blockchain: 'devnet' });
+    // TODO(Task 4): `clusterId`/`storageUrl` are placeholders here just to satisfy the
+    // new single-cluster `DdcClientConfig` at compile time; update this chain spec to
+    // use real values once Task 4 wires up the chain-test fixtures.
+    const ddc = await DdcClient.create(seed, {
+      blockchain: 'devnet',
+      clusterId: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      storageUrl: 'https://storage.devnet.cere.network',
+    });
     try {
       const balance = await ddc.getBalance();
       expect(balance).toBeGreaterThan(0n);
@@ -33,7 +40,14 @@ describeChain('DdcClient chain path (live, devnet)', () => {
     const seed = fundedSeed();
     if (!seed) return;
 
-    const ddc = await DdcClient.create(seed, { blockchain: 'devnet' });
+    // TODO(Task 4): `clusterId`/`storageUrl` are placeholders here just to satisfy the
+    // new single-cluster `DdcClientConfig` at compile time; update this chain spec to
+    // use real values once Task 4 wires up the chain-test fixtures.
+    const ddc = await DdcClient.create(seed, {
+      blockchain: 'devnet',
+      clusterId: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      storageUrl: 'https://storage.devnet.cere.network',
+    });
     try {
       // Discover a cluster id from chain via a fresh papi client.
       const { connect } = await import('@cere-ddc-sdk/blockchain');

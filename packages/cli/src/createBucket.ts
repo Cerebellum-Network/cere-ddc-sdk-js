@@ -6,9 +6,10 @@ export type CreateBucketOptions = {
 };
 
 export const createBucket = async (client: DdcClient, options: CreateBucketOptions) => {
-  const clusterId = options.clusterId as `0x${string}`;
-
-  return client.createBucket(clusterId, {
+  // TODO(Task 3): `options.clusterId` is now redundant with the `clusterId` on the
+  // client's own config (single-cluster SDK); drop it from `CreateBucketOptions`/the
+  // CLI `--clusterId` flag once callers are updated.
+  return client.createBucket({
     isPublic: options.isPublic,
   });
 };

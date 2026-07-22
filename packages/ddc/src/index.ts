@@ -45,8 +45,3 @@ export {
  * Constants
  */
 export { KB, MB, MAX_PIECE_SIZE, MIN_PIECE_SIZE } from './constants';
-
-/**
- * Configuration
- */
-export * from './presets';

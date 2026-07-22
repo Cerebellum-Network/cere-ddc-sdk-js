@@ -3,9 +3,6 @@ export * from './FileStorage';
 export * from './constants';
 
 export {
-  TESTNET,
-  DEVNET,
-  MAINNET,
   UriSigner,
   CereWalletSigner,
   JsonSigner,

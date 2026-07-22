@@ -15,19 +15,7 @@ import {
   CereWalletSigner,
 } from '@cere-ddc-sdk/blockchain';
 
-import {
-  File,
-  Signer,
-  UriSigner,
-  MB,
-  DEVNET,
-  TESTNET,
-  MAINNET,
-  DdcClient,
-  DagNode,
-  Link,
-  DagNodeUri,
-} from '@cere-ddc-sdk/ddc-client';
+import { File, Signer, UriSigner, MB, DdcClient, DagNode, Link, DagNodeUri } from '@cere-ddc-sdk/ddc-client';
 
 import {
   Container,
@@ -120,10 +108,15 @@ const Dropzone = styled(Box)(({ theme }) => ({
   cursor: 'pointer',
 }));
 
+/**
+ * TODO(Task 3): these were the `blockchain` fields of the removed `DEVNET`/`TESTNET`/`MAINNET`
+ * presets. Kept as plain values so the playground keeps resolving a network choice to an
+ * RPC + storage URL pair.
+ */
 const bcPresets = {
-  devnet: { ...DEVNET, baseUrl: 'https://storage.devnet.cere.network' },
-  testnet: { ...TESTNET, baseUrl: 'https://storage.testnet.cere.network' },
-  mainnet: { ...MAINNET, baseUrl: 'https://storage.dragon.cere.network' },
+  devnet: { blockchain: 'wss://archive.devnet.cere.network/ws', baseUrl: 'https://storage.devnet.cere.network' },
+  testnet: { blockchain: 'wss://rpc.testnet.cere.network/ws', baseUrl: 'https://storage.testnet.cere.network' },
+  mainnet: { blockchain: 'wss://rpc.mainnet.cere.network/ws', baseUrl: 'https://storage.dragon.cere.network' },
   custom: {
     blockchain: __BC_ENDPOINT__ || '',
     baseUrl: 'http://localhost:8091',
@@ -216,7 +209,9 @@ export const Playground = () => {
 
     try {
       setInProgress(true);
-      const newBucketId = await client!.createBucket(currentClusterId as ClusterId, {
+      // TODO(Task 3): bucket creation now always targets the client's configured
+      // `clusterId` (single-cluster SDK), not the `currentClusterId` selected below.
+      const newBucketId = await client!.createBucket({
         isPublic: true,
       });
 
@@ -227,7 +222,7 @@ export const Playground = () => {
     }
 
     setInProgress(false);
-  }, [bucketId, client, currentClusterId, isNewBucket, step]);
+  }, [bucketId, client, isNewBucket, step]);
 
   const handleRandomFileUpload = useCallback(async () => {
     setInProgress(true);
@@ -303,7 +298,16 @@ export const Playground = () => {
     try {
       setInProgress(true);
       const blockchain = connect(preset.blockchain);
-      const client = await DdcClient.create(signer!, { ...preset, blockchain, logLevel: 'debug' });
+      // TODO(Task 3): `clusterId` is only known after `listClusters()` below; a placeholder
+      // is used here just to satisfy the new single-cluster `DdcClientConfig` at compile
+      // time. Rework this flow (e.g. re-create the client) once cluster selection is wired
+      // up properly for the single-cluster config.
+      const client = await DdcClient.create(signer!, {
+        blockchain,
+        logLevel: 'debug',
+        clusterId: '0x0000000000000000000000000000000000000000000000000000000000000000' as ClusterId,
+        storageUrl: preset.baseUrl,
+      });
       const [clusters, balance] = await Promise.all([blockchain.clusters.listClusters(), client.getBalance()]);
 
       setBlockchain(blockchain);
@@ -338,7 +342,7 @@ export const Playground = () => {
 
     try {
       setInProgress(true);
-      await client!.depositBalance(currentClusterId as ClusterId, BigInt(extraDeposit) * CERE);
+      await client!.depositBalance(BigInt(extraDeposit) * CERE);
       const updatedDeposit = await client!.getDeposit(currentClusterId as ClusterId);
       setDeposit(await blockchain!.chain.formatBalance(updatedDeposit, false));
       setStep(step + 1);
