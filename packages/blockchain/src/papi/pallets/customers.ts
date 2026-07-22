@@ -37,6 +37,33 @@ export interface CustomersPallet {
 export function createCustomersPallet(api: CereApi): CustomersPallet {
   const contract: CustomerDepositContract = createCustomerDepositContract(api);
 
+  // Runtime deposit-model detection (cached). Three models exist across Cere
+  // networks: (1) a per-cluster ink! deposit contract (devnet/testnet, on every
+  // cluster), (2) the migrated per-cluster pallet `DdcCustomers.ClusterLedger`,
+  // and (3) the legacy account-global pallet `DdcCustomers.Ledger` (mainnet,
+  // pre-migration). The contract is resolved per-cluster (`contract.resolve`);
+  // this flag distinguishes the two *pallet* shapes for a cluster with no
+  // contract. It only matters on a runtime with no contracts (mainnet today) —
+  // on devnet/testnet every cluster has a contract, so this probe never runs.
+  // Detected by whether the account-keyed `Ledger` storage exists on the
+  // connected runtime (present only on the legacy runtime; the migrated runtime
+  // replaced it with `ClusterLedger`).
+  let accountKeyedLedger: boolean | undefined;
+  const isAccountKeyedLedger = async (): Promise<boolean> => {
+    if (accountKeyedLedger === undefined) {
+      try {
+        await api.query.DdcCustomers.Ledger.getValue(accountPlaceholder as any);
+        accountKeyedLedger = true; // legacy runtime: account-global `Ledger` present
+      } catch (e: any) {
+        // A missing storage entry (migrated runtime) is the negative signal; any
+        // other error (network, decode) must propagate rather than be cached.
+        if (!/not found/i.test(String(e?.message ?? e))) throw e;
+        accountKeyedLedger = false;
+      }
+    }
+    return accountKeyedLedger;
+  };
+
   // Shared deposit/withdraw scaffold: contract-first (dry-run gas + build the
   // ink call) when the cluster has a live deposit contract, else the pallet
   // fallback thunk. Every one of the 5 deposit/withdraw methods below is this
@@ -46,7 +73,7 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
     message: string,
     value: bigint,
     args: any,
-    palletCall: () => Sendable,
+    palletCall: () => Sendable | Promise<Sendable>,
   ): Promise<Sendable> => {
     const addr = await contract.resolve(clusterId);
     if (!addr) return palletCall();
@@ -58,14 +85,17 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
     async getStackingInfo(clusterId, accountId) {
       const addr = await contract.resolve(clusterId);
       if (addr) return contract.readBalance(addr, accountId);
-      // Pallet fallback for a cluster with no deposit contract. The migrated
-      // devnet/testnet runtime keys this by `(clusterId, accountId)` under
-      // `DdcCustomers.ClusterLedger` (verified live in the 2c spike). That
-      // storage item is NOT on the mainnet static baseline type (mainnet still
-      // has the account-keyed `DdcCustomers.Ledger`), so reach it through a cast
-      // — the established 2a/2b pattern for cross-runtime query access. The
-      // value decodes to the same `{ owner, total, active }` shape `toStakingInfo`
-      // maps for the contract path.
+      // Pallet fallback for a cluster with no deposit contract. Two pallet
+      // shapes: the legacy account-global `DdcCustomers.Ledger(accountId)`
+      // (mainnet) and the migrated `DdcCustomers.ClusterLedger(clusterId,
+      // accountId)` (devnet/testnet). `ClusterLedger` is not on the mainnet
+      // static baseline type, so reach it through a cast — the established
+      // 2a/2b pattern for cross-runtime query access. Both decode to the same
+      // `{ owner, total, active }` shape `toStakingInfo` maps for the contract.
+      if (await isAccountKeyedLedger()) {
+        const legacy: any = await api.query.DdcCustomers.Ledger.getValue(accountId as any);
+        return legacy == null ? undefined : toStakingInfo(legacy);
+      }
       const value: any = await (api.query.DdcCustomers as any).ClusterLedger.getValue(
         clusterId as any,
         accountId as any,
@@ -140,28 +170,29 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
     // `{ cluster_id, max_additional }`, `deposit_for` takes
     // `{ owner, cluster_id, value }` (NOT `{ target, amount }` as guessed),
     // `withdraw_unlocked_deposit` takes `{ cluster_id }` only.
+    // Each pallet fallback below builds the shape the connected runtime expects:
+    // the legacy account-global calls (mainnet — no cluster id) or the migrated
+    // per-cluster calls (devnet/testnet). Legacy arg shapes verified live against
+    // the mainnet runtime: `deposit({value})`, `deposit_extra({max_additional})`,
+    // `unlock_deposit({value})`, `withdraw_unlocked_deposit()` (no args); the
+    // legacy runtime has no `deposit_for`.
     deposit(clusterId, value) {
-      return contractOrPallet(
-        clusterId,
-        'DdcBalancesDepositor::deposit',
-        value,
-        {},
-        () => api.tx.DdcCustomers.deposit({ cluster_id: clusterId, value } as any) as Sendable,
+      return contractOrPallet(clusterId, 'DdcBalancesDepositor::deposit', value, {}, async () =>
+        (await isAccountKeyedLedger())
+          ? (api.tx.DdcCustomers.deposit({ value } as any) as Sendable)
+          : (api.tx.DdcCustomers.deposit({ cluster_id: clusterId, value } as any) as Sendable),
       );
     },
     depositExtra(clusterId, maxAdditional) {
       // The contract has no separate "top up" message — `deposit` (payable)
       // covers both the initial and additional lock-up.
-      return contractOrPallet(
-        clusterId,
-        'DdcBalancesDepositor::deposit',
-        maxAdditional,
-        {},
-        () =>
-          api.tx.DdcCustomers.deposit_extra({
-            cluster_id: clusterId,
-            max_additional: maxAdditional,
-          } as any) as Sendable,
+      return contractOrPallet(clusterId, 'DdcBalancesDepositor::deposit', maxAdditional, {}, async () =>
+        (await isAccountKeyedLedger())
+          ? (api.tx.DdcCustomers.deposit_extra({ max_additional: maxAdditional } as any) as Sendable)
+          : (api.tx.DdcCustomers.deposit_extra({
+              cluster_id: clusterId,
+              max_additional: maxAdditional,
+            } as any) as Sendable),
       );
     },
     depositFor(targetAddress, clusterId, amount) {
@@ -170,40 +201,32 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
         'DdcBalancesDepositor::deposit_for',
         amount,
         { owner: targetAddress },
-        () =>
-          // `deposit_for` is not on the mainnet static baseline (mainnet's
-          // DdcCustomers lacks it entirely — only devnet/testnet's migrated
-          // runtime has it), so reach it through a cast, same as the
-          // `ClusterLedger` query above.
-          (api.tx.DdcCustomers as any).deposit_for({
+        async () => {
+          // `deposit_for` exists only on the migrated runtime; the legacy
+          // account-global mainnet pallet has no equivalent.
+          if (await isAccountKeyedLedger()) {
+            throw new Error('depositFor is not supported by the legacy (account-global) DdcCustomers runtime');
+          }
+          return (api.tx.DdcCustomers as any).deposit_for({
             owner: targetAddress,
             cluster_id: clusterId,
             value: amount,
-          }) as Sendable,
+          }) as Sendable;
+        },
       );
     },
     unlockDeposit(clusterId, value) {
-      return contractOrPallet(
-        clusterId,
-        'DdcBalancesDepositor::unlock_deposit',
-        0n,
-        { value },
-        () => api.tx.DdcCustomers.unlock_deposit({ cluster_id: clusterId, value } as any) as Sendable,
+      return contractOrPallet(clusterId, 'DdcBalancesDepositor::unlock_deposit', 0n, { value }, async () =>
+        (await isAccountKeyedLedger())
+          ? (api.tx.DdcCustomers.unlock_deposit({ value } as any) as Sendable)
+          : (api.tx.DdcCustomers.unlock_deposit({ cluster_id: clusterId, value } as any) as Sendable),
       );
     },
     withdrawUnlockedDeposit(clusterId) {
-      return contractOrPallet(
-        clusterId,
-        'DdcBalancesDepositor::withdraw_unlocked',
-        0n,
-        {},
-        () =>
-          // The mainnet static baseline types `withdraw_unlocked_deposit` as a
-          // no-arg call (mainnet's account-keyed ledger needs no cluster id);
-          // the migrated devnet/testnet runtime requires `{ cluster_id }` — cast
-          // to reach the shape the connected (devnet/testnet) chain actually
-          // expects, same rationale as `deposit_for` above.
-          (api.tx.DdcCustomers as any).withdraw_unlocked_deposit({ cluster_id: clusterId }) as Sendable,
+      return contractOrPallet(clusterId, 'DdcBalancesDepositor::withdraw_unlocked', 0n, {}, async () =>
+        (await isAccountKeyedLedger())
+          ? (api.tx.DdcCustomers.withdraw_unlocked_deposit() as Sendable) // legacy: no cluster id
+          : ((api.tx.DdcCustomers as any).withdraw_unlocked_deposit({ cluster_id: clusterId }) as Sendable),
       );
     },
   };
