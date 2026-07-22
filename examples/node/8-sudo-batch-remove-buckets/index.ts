@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { UriSigner, TESTNET } from '@cere-ddc-sdk/ddc-client';
-import { Blockchain } from '@cere-ddc-sdk/blockchain';
+import { connect } from '@cere-ddc-sdk/blockchain';
 
 import JSONBig from 'json-bigint';
 
@@ -15,13 +15,12 @@ const sudo = new UriSigner('bottom drive obey lake curtain smoke basket hold rac
 /**
  * Create the blockchain RPC client instance and connect it to DDC TESTNET.
  */
-const blockchain = new Blockchain({ wsEndpoint: TESTNET.blockchain });
-await blockchain.isReady();
+const client = connect(TESTNET.blockchain);
 
 /**
  * Get a list of existing buckets.
  */
-const buckets = await blockchain.ddcCustomers.listBuckets();
+const buckets = await client.customers.listBuckets();
 console.log('Total number of buckets:', buckets.length);
 
 /**
@@ -53,15 +52,15 @@ for (const bucket of bucketsToRemove) {
 for (const [ownerId, bucketIds] of bucketsByOwner) {
   console.log('Removing buckets for owner:', ownerId);
 
-  const removeBucketTx = blockchain.ddcCustomers.removeBuckets(...bucketIds);
-  const sudoAsTx = blockchain.sudoAs(ownerId, removeBucketTx);
+  const removeBucketTx = client.customers.removeBuckets(...bucketIds);
+  const sudoAsTx = client.tx.sudoAs(ownerId, removeBucketTx);
 
-  const response = await blockchain.send(sudoAsTx, { account: sudo });
-  const removedBucketIds = blockchain.ddcCustomers.extractRemovedBucketIds(response.events);
+  const response = await client.tx.send(sudoAsTx, { signer: sudo });
+  const removedBucketIds = client.customers.extractRemovedBucketIds(response.events);
   console.log('\tBuckets', removedBucketIds, 'removed in TX:', response.txHash);
 }
 
 /**
  * Disconnect from the RPC node.
  */
-await blockchain.disconnect();
+client.disconnect();

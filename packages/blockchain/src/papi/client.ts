@@ -78,14 +78,11 @@ export function connect(opts: ConnectOptions | string): CereClient {
   const network = typeof opts === 'string' ? inferNetwork(opts) : opts.network;
   const wsUrl = typeof opts === 'string' ? opts : (opts.wsUrl ?? CERE_WS[opts.network]);
 
-  // NOTE: devnet and testnet serve papi's new JSON-RPC (chainHead_v1/…) and connect
-  // natively. Cere MAINNET is still on the legacy JSON-RPC, so `chainHead_follow` returns
-  // "Method not found" and the client can't initialize against it. The fix is to upgrade
-  // the mainnet RPC node to the new spec (matching devnet/testnet — preferred), or to wrap
-  // this provider in `@polkadot-api/polkadot-sdk-compat`'s `withPolkadotSdkCompat`. The
-  // latter is currently blocked: the published shim tracks the papi 3.0 line (parsed-object
-  // provider messages) and is incompatible with this repo's pinned papi 2.1.8 stack
-  // (raw-string messages), so it can't be version-matched yet. Tracked as a follow-up.
+  // devnet, testnet, and mainnet all serve papi's new JSON-RPC (chainHead_v1/…)
+  // and connect natively. (An older node without the stabilized `_v1` spec would
+  // fail here with `chainHead_follow: Method not found` — the case that required
+  // `@polkadot-api/polkadot-sdk-compat`; no longer needed now the public RPCs are
+  // upgraded.)
   const client: PolkadotClient = createClient(getWsProvider(wsUrl));
   // Runtime descriptor is per-network (correct metadata/genesis); the static
   // type uses the mainnet baseline — the calls we use are identical across nets,

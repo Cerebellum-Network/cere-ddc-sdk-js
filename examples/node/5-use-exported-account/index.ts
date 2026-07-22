@@ -15,7 +15,7 @@ const dir = path.dirname(fileURLToPath(import.meta.url));
 
 // Create DDC client instance using JSON account exported from Cere Wallet
 const keyringPair = JSON.parse(fs.readFileSync(path.resolve(dir, pathToAccount)).toString());
-const jsonSigner = new JsonSigner(keyringPair, { passphrase: accountPassphrase });
+const jsonSigner = new JsonSigner(keyringPair, accountPassphrase);
 const client = await DdcClient.create(jsonSigner, TESTNET);
 
 // Upload file
