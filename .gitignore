@@ -18,3 +18,5 @@ ddc-test-cluster/volumes
 # Lerna
 .nx/cache
 .nx/workspace-data
+# Superpowers workflow scratch (design specs/plans) - local only, not product docs
+/docs/superpowers/
