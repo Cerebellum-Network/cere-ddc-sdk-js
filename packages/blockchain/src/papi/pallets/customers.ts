@@ -70,7 +70,11 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
         clusterId as any,
         accountId as any,
       );
-      return value == null ? undefined : toStakingInfo(value);
+      // Override `owner` with the queried `accountId` for parity with the contract
+      // path (whose decoded `owner` is a known bogus fixed value): the entry is
+      // keyed by `accountId`, so the deposit belongs to it regardless of what the
+      // storage's `owner` field decodes to.
+      return value == null ? undefined : { ...toStakingInfo(value), owner: accountId };
     },
     async getBucket(bucketId) {
       const value = await api.query.DdcCustomers.Buckets.getValue(bucketId as any);
