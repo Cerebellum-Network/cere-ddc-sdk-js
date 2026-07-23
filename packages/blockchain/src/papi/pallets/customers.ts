@@ -94,7 +94,8 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
       // `{ owner, total, active }` shape `toStakingInfo` maps for the contract.
       if (await isAccountKeyedLedger()) {
         const legacy: any = await api.query.DdcCustomers.Ledger.getValue(accountId as any);
-        return legacy == null ? undefined : toStakingInfo(legacy);
+        // Same queried-accountId `owner` override as the ClusterLedger path below.
+        return legacy == null ? undefined : { ...toStakingInfo(legacy), owner: accountId };
       }
       const value: any = await (api.query.DdcCustomers as any).ClusterLedger.getValue(
         clusterId as any,
