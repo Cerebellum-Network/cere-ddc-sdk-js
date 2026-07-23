@@ -16,7 +16,9 @@ export function createNodesPallet(api: CereApi): NodesPallet {
     createStorageNode(key, props) {
       return api.tx.DdcNodes.create_node({
         node_pub_key: storagePubKey(key),
-        node_params: buildStorageNodeParams({ domain: '', ssl: false, ...props }),
+        // `buildStorageNodeParams` already defaults `domain ?? ''` / `ssl ?? false`,
+        // so pass `props` through as-is (matching `setStorageNodeProps` below).
+        node_params: buildStorageNodeParams(props),
       } as any) as Sendable;
     },
     // `DdcNodes.StorageNodes` is keyed by a BARE SS58 string, not the
@@ -29,7 +31,10 @@ export function createNodesPallet(api: CereApi): NodesPallet {
     },
     async listStorageNodes() {
       const entries = await api.query.DdcNodes.StorageNodes.getEntries();
-      return entries.map((e) => toStorageNode(e.value)).filter((n): n is StorageNode => n != null);
+      // No `.filter(n => n != null)`: `getEntries` values are always present, and
+      // `toStorageNode` returns a non-null `StorageNode` (it throws on a malformed
+      // value rather than returning null), so such a filter is dead code.
+      return entries.map((e) => toStorageNode(e.value));
     },
     setStorageNodeProps(key, props) {
       return api.tx.DdcNodes.set_node_params({
