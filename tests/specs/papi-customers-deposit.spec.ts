@@ -2,9 +2,12 @@ import { connect } from '@cere-ddc-sdk/blockchain/papi';
 
 const describeChain = process.env.CERE_CHAIN_TESTS ? describe : describe.skip;
 
-// SS58 of the all-zero AccountId32 (Substrate default prefix) — the "no contract"
-// sentinel carried by a cluster with no deposit contract.
-const ZERO_SS58 = '5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqbYm2iZBonyC';
+// SS58 of the all-zero AccountId32 under CERE's prefix (54) — the "no contract"
+// sentinel carried by a cluster with no deposit contract. It MUST be the
+// prefix-54 form: `customer_deposit_contract` decodes under Cere's prefix, so the
+// Substrate-default prefix-42 form (`5C4h…`) never matches and the exclusion below
+// silently becomes a no-op. Same value as `papi-customers-write.spec.ts`.
+const ZERO_SS58 = '6PWcxaEmkiEFSAr3ukWHPfMwuCisxu17Bnv6DujG1B7LCm3w';
 
 describeChain('papi customers — balance read (live, devnet)', () => {
   it('getStackingInfo reads a StakingInfo (or undefined) for a contract-bearing cluster', async () => {
