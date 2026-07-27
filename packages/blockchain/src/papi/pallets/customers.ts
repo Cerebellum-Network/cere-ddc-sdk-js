@@ -51,8 +51,16 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
   let accountKeyedLedger: boolean | undefined;
   const isAccountKeyedLedger = async (): Promise<boolean> => {
     if (accountKeyedLedger === undefined) {
+      // Prefer a metadata-existence check over probing + matching an error
+      // string: on a migrated runtime the entry is absent from the metadata, so
+      // `api.query.DdcCustomers.Ledger` is `undefined` and calling `.getValue`
+      // on it throws a `TypeError` ("Cannot read properties of undefined") that
+      // no "not found" match would catch — which would surface as a hard failure
+      // instead of the intended negative signal.
+      const ledgerEntry = (api.query.DdcCustomers as any)?.Ledger;
+      if (ledgerEntry?.getValue == null) return (accountKeyedLedger = false);
       try {
-        await api.query.DdcCustomers.Ledger.getValue(accountPlaceholder as any);
+        await ledgerEntry.getValue(accountPlaceholder as any);
         accountKeyedLedger = true; // legacy runtime: account-global `Ledger` present
       } catch (e: any) {
         // A missing storage entry (migrated runtime) is the negative signal; any
