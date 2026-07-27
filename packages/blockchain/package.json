@@ -42,7 +42,8 @@
     "clean": "rimraf dist package",
     "docs": "typedoc",
     "generate": "papi generate",
-    "prepare": "papi generate && node scripts/ensure-publishable-descriptors.mjs"
+    "prepare": "papi generate && node scripts/ensure-publishable-descriptors.mjs",
+    "build:abi": "node scripts/gen-abi.mjs"
   },
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
