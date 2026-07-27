@@ -82,6 +82,13 @@ export class DdcClient {
       throw new Error('DdcClient config is missing required "storageUrl"');
     }
 
+    // Guarded here for the same reason as the two above: without it,
+    // `resolveClient(undefined)` yields no client and the first chain call
+    // (createBucket/deposit/getBalance) fails with an opaque error instead.
+    if (!config?.blockchain) {
+      throw new Error('DdcClient config is missing required "blockchain"');
+    }
+
     const logger = createLogger('DdcClient', config);
     const { client, ownsClient } = resolveClient(config.blockchain);
 

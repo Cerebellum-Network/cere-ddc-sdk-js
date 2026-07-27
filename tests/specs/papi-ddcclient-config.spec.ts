@@ -1,4 +1,5 @@
 import { DdcClient } from '@cere-ddc-sdk/ddc-client';
+import { FileStorage } from '@cere-ddc-sdk/file-storage';
 
 // A well-known test mnemonic (same one used across the other offline signer specs) —
 // no network access is involved: `DdcClient` validates `clusterId`/`storageUrl` before
@@ -24,5 +25,20 @@ describe('DdcClient config validation (unit, offline)', () => {
           clusterId: '0x0000000000000000000000000000000000000000000000000000000000000000',
         } as any),
     ).toThrow(/storageUrl/);
+  });
+
+  it('throws when blockchain is missing', () => {
+    expect(
+      () =>
+        new DdcClient(seed, {
+          clusterId: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          storageUrl: 'https://storage.example',
+        } as any),
+    ).toThrow(/blockchain/);
+  });
+
+  it('FileStorage throws when storageUrl is missing', () => {
+    // FileStorage's constructor takes a single config object (the signer lives inside it).
+    expect(() => new FileStorage({} as any)).toThrow(/storageUrl/);
   });
 });

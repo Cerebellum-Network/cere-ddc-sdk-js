@@ -57,6 +57,12 @@ export class FileStorage {
   private logger: Logger;
 
   constructor({ signer, storageUrl, cdnUrl, retries, ...config }: FileStorageConstructorConfig) {
+    // Match `DdcClient`'s upfront validation: an undefined `storageUrl` otherwise
+    // flows into the resolver and only surfaces later as an opaque transport error.
+    if (!storageUrl) {
+      throw new Error('FileStorage config is missing required "storageUrl"');
+    }
+
     this.logger = createLogger('FileStorage', config);
     this.ddcNode = createResolverNode({ signer, storageUrl, cdnUrl, retries, logger: this.logger });
 

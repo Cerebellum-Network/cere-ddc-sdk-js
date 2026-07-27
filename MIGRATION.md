@@ -29,6 +29,19 @@ handle this transparently). There is only one import path —
 `@cere-ddc-sdk/blockchain` — the `@cere-ddc-sdk/blockchain/papi` subpath some
 2.x-era code used no longer exists.
 
+`@cere-ddc-sdk/ddc`, `@cere-ddc-sdk/ddc-client` and `@cere-ddc-sdk/file-storage`
+are ESM-only too: they no longer publish a `require`/CommonJS entry (they do
+still ship a `browser` build for bundlers). `require('@cere-ddc-sdk/…')` from
+CommonJS is not supported in 3.0 — use `import`, or a dynamic
+`await import('@cere-ddc-sdk/ddc-client')`.
+
+### Node version
+
+Node **≥ 22.11** (the repo's `.nvmrc` floor). The storage transport speaks
+grpc-web over WebSockets and relies on a global `WebSocket`, which Node provides
+from 22. On older Node the storage read/write paths will fail even though the
+chain calls work.
+
 ## Client: connect instead of `new Blockchain`
 
 | 2.x (legacy) | 3.0 (papi) |
