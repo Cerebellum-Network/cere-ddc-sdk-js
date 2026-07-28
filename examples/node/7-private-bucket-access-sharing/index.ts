@@ -1,4 +1,5 @@
-import { DdcClient, File, TESTNET, AuthToken, UriSigner, AuthTokenOperation } from '@cere-ddc-sdk/ddc-client';
+import { DdcClient, File, AuthToken, UriSigner, AuthTokenOperation } from '@cere-ddc-sdk/ddc-client';
+import type { ClusterId } from '@cere-ddc-sdk/blockchain';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as fs from 'fs';
@@ -14,13 +15,18 @@ const alice = 'system visit notice before step medal top theme oblige river inne
 const aliceSigner = new UriSigner(alice);
 
 // The DDC cluster where the bucket will be created (mainnet cluster id is '0x0059f5ada35eee46802d80750d5ca4a490640511')
-const clusterId = '0x825c4b2352850de9986d9d28568db6f0c023a1e3';
+const clusterId: ClusterId = '0x825c4b2352850de9986d9d28568db6f0c023a1e3';
 
 // Create a DDC client instance
-const client = await DdcClient.create(bob, TESTNET);
+const client = await DdcClient.create(bob, {
+  blockchain: 'testnet',
+  clusterId,
+  storageUrl: 'https://storage.testnet.dragon-1.xyz',
+  cdnUrl: 'https://cdn.testnet.dragon-1.xyz',
+});
 
 // Create a private bucket
-const bucketId = await client.createBucket(clusterId, { isPublic: false });
+const bucketId = await client.createBucket({ isPublic: false });
 console.log('Private bucket created', bucketId);
 
 // Detect the current directory
@@ -35,7 +41,7 @@ const uploadedFileUri = await client.store(bucketId, fileToUpload);
 console.log('File stored into bucket', bucketId, 'with CID', uploadedFileUri.cid);
 console.log(
   "The file can't be accessed by this URL because bucket is private and access token required",
-  `https://cdn.testnet.cere.network/${bucketId}/${uploadedFileUri.cid}`,
+  `https://cdn.testnet.dragon-1.xyz/${bucketId}/${uploadedFileUri.cid}`,
 );
 
 // Create an access token that is signed by a Bob and can be shared so that anyone having this token can access a bucket (or specific file)
@@ -47,7 +53,7 @@ const bobToken = new AuthToken({
 await bobToken.sign(bobSigner);
 console.log(
   "The file can be accessed by this URL (Bob's token passed in query parameters)",
-  `https://cdn.testnet.cere.network/${bucketId}/${uploadedFileUri.cid}?token=${bobToken.toString()}`,
+  `https://cdn.testnet.dragon-1.xyz/${bucketId}/${uploadedFileUri.cid}?token=${bobToken.toString()}`,
 );
 
 /**
@@ -69,7 +75,7 @@ const aliceToken = new AuthToken({
 await aliceToken.sign(aliceSigner);
 console.log(
   "The file can be accessed by this URL (Alice's token passed in query parameters)",
-  `https://cdn.testnet.cere.network/${bucketId}/${uploadedFileUri.cid}?token=${aliceToken.toString()}`,
+  `https://cdn.testnet.dragon-1.xyz/${bucketId}/${uploadedFileUri.cid}?token=${aliceToken.toString()}`,
 );
 
 await client.disconnect();

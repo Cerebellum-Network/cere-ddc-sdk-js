@@ -72,6 +72,8 @@ The configuration file example
 }
 ```
 
+`clusterId` is required for any command that talks to DDC (single-cluster config). `storageUrl`/`cdnUrl` can also be set in the config file (or via the `--storageUrl`/`--cdnUrl` flags) to point at a specific cluster's endpoints; when omitted, they default to the `network`'s public storage/CDN endpoints.
+
 # Examples
 
 - [CLI examples](../../examples/cli/)
