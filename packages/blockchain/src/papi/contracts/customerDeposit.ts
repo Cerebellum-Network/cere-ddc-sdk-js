@@ -24,15 +24,35 @@ type Weight = { ref_time: bigint; proof_size: bigint };
 // ~277M ref_time / ~53KB proof_size, far below this.
 const GENEROUS: Weight = { ref_time: 10_000_000_000n, proof_size: 1_000_000n };
 
+// Last-resort `storage_deposit_limit`, as a multiple of the chain's existential
+// deposit, used only when every sizing dry run failed (so the real charge is
+// unknown). It must be non-zero — see `sizeCall` for why `None` is never sent —
+// but it must also stay small, because the limit counts against the caller's
+// spendable balance: the runtime rejects `value + limit` above what the account
+// can afford with `StorageDepositNotEnoughFunds`, even when the *actual* charge
+// would have been affordable. Measured live: a new customer ledger record costs
+// 4.2 CERE (2 storage items + ~65 bytes at the chain's DepositPerItem/PerByte),
+// and the existential deposit is 1 CERE on devnet/testnet — so 10x ED clears a
+// first deposit with >2x headroom without needlessly inflating the balance the
+// caller must hold.
+const FALLBACK_SDL_IN_ED = 10n;
+
+/** Gas + storage-deposit ceiling for one contract call, sized by dry run. */
+export type CallSizing = {
+  gasLimit: Weight;
+  /** Explicit `storage_deposit_limit`. Never `undefined` — see `sizeCall`. */
+  storageDepositLimit: bigint;
+};
+
 export interface CustomerDepositContract {
   /** Contract address for a cluster (from gov params), or undefined when none/zero. Cached. */
   resolve(clusterId: ClusterId): Promise<string | undefined>;
   /** A customer's balance from the contract, or undefined when the account has no deposit. Throws on a failed dry run. */
   readBalance(contractAddr: string, owner: AccountId): Promise<StakingInfo | undefined>;
-  /** Dry-run a message to size its gas (2x margin, capped at the chain ceiling); falls back to the generous ceiling on failure. */
-  estimateGas(contractAddr: string, message: string, caller: AccountId, value: bigint, args: any): Promise<Weight>;
+  /** Dry-run a message to size both its gas and its storage-deposit ceiling. Never throws. */
+  sizeCall(contractAddr: string, message: string, caller: AccountId, value: bigint, args: any): Promise<CallSizing>;
   /** Build a signed-ready `Contracts.call` extrinsic for a contract message. */
-  buildContractCall(contractAddr: string, message: string, value: bigint, args: any, gasLimit: Weight): Sendable;
+  buildContractCall(contractAddr: string, message: string, value: bigint, args: any, sizing: CallSizing): Sendable;
 }
 
 export function createCustomerDepositContract(api: CereApi): CustomerDepositContract {
@@ -56,7 +76,7 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
         .catch((err) => {
           // Don't memoize a rejection — a transient fetch failure would
           // otherwise permanently break `cap()` (and thus every `cap()`
-          // caller, including `estimateGas`) for the lifetime of this
+          // caller, including `sizeCall`) for the lifetime of this
           // contract instance. Clear the memo so the next call retries.
           maxBlock = undefined;
           throw err;
@@ -82,6 +102,42 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
     };
   };
 
+  // Existential deposit, used as the unit for storage-deposit headroom. Cached
+  // like `getMaxBlock` (constants are a papi METHOD returning a Promise), and
+  // likewise never memoizing a rejection.
+  let existentialDeposit: Promise<bigint> | undefined;
+  const getExistentialDeposit = () => {
+    if (!existentialDeposit) {
+      existentialDeposit = api.constants.Balances.ExistentialDeposit()
+        .then((ed: any) => BigInt(ed))
+        .catch((err) => {
+          existentialDeposit = undefined;
+          throw err;
+        });
+    }
+    return existentialDeposit;
+  };
+
+  // What the caller could put toward a storage deposit for this call: free
+  // balance less the value being transferred and the existential deposit it must
+  // retain. Used as the probe limit on runtimes that reject `None` (see
+  // `sizeCall`) — by construction the probe is affordable, which is what lets the
+  // dry run get far enough to report the real charge. Returns 0n when the caller
+  // has no headroom, or on any read failure (the caller then falls through to the
+  // constant fallback rather than propagating).
+  const affordableHeadroom = async (caller: AccountId, value: bigint): Promise<bigint> => {
+    try {
+      const [account, ed] = await Promise.all([
+        api.query.System.Account.getValue(caller as any) as Promise<any>,
+        getExistentialDeposit(),
+      ]);
+      const headroom = BigInt(account.data.free) - value - ed;
+      return headroom > 0n ? headroom : 0n;
+    } catch {
+      return 0n;
+    }
+  };
+
   return {
     async resolve(clusterId) {
       const cached = cache.get(clusterId);
@@ -93,34 +149,78 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
       return contract ?? undefined;
     },
 
-    async estimateGas(contractAddr, message, caller, value, args) {
+    async sizeCall(contractAddr, message, caller, value, args) {
       const msg = builder.buildMessage(message);
       const input = msg.call.enc(args ?? {});
-      const dry: any = await api.apis.ContractsApi.call(caller, contractAddr, value, GENEROUS, undefined, input);
-      // `dry.result` is a papi Result (`{ success, value }`) at the DISPATCH
-      // level. A failed dry run (OutOfGas, revert, unaffordable value for the
-      // placeholder caller, …) leaves `gas_required` untrustworthy, so fall back
-      // to the generous ceiling rather than under-provisioning the real call.
-      if (!dry?.result?.success) return cap(GENEROUS);
-      // Symmetric with `readBalance`'s two-level decode: dispatch success alone
-      // doesn't mean the ink message itself succeeded. Decode the ink
-      // `MessageResult` and treat a LangError/contract-level failure the same as
-      // a dispatch failure — sizing off `gas_required` from a
-      // semantically-failed run is unsafe. Guarded defensively (unlike
-      // `readBalance`, `estimateGas` must never throw — it always returns a
-      // usable Weight): a payable message dry-run against the placeholder
-      // caller can legitimately fail at this level (e.g. it can't afford
-      // `value`), and that's exactly when the generous ceiling should be used.
-      try {
-        const decoded: any = msg.value.dec(dry.result.value.data);
-        if (!decoded?.success) return cap(GENEROUS);
-      } catch {
-        return cap(GENEROUS);
+
+      // One dry run under a given storage-deposit limit. Returns the run's
+      // `gas_required` and the storage it would actually charge, or undefined if
+      // the run failed at either level (dispatch or ink message) — in which case
+      // both numbers are untrustworthy and must not be sized against.
+      const attempt = async (sdl: bigint | undefined) => {
+        const dry: any = await api.apis.ContractsApi.call(caller, contractAddr, value, GENEROUS, sdl, input);
+        // `dry.result` is a papi Result (`{ success, value }`) at the DISPATCH
+        // level: OutOfGas, revert, an unaffordable `value`, or a rejected
+        // storage-deposit limit all land here.
+        if (!dry?.result?.success) return undefined;
+        // Symmetric with `readBalance`'s two-level decode: dispatch success alone
+        // doesn't mean the ink message itself succeeded, and sizing off a
+        // semantically-failed run is unsafe. Guarded defensively because
+        // `sizeCall` must never throw — it always returns a usable sizing.
+        try {
+          const decoded: any = msg.value.dec(dry.result.value.data);
+          if (!decoded?.success) return undefined;
+        } catch {
+          return undefined;
+        }
+        // `storage_deposit` is a `Charge | Refund` enum. Only a Charge costs the
+        // caller anything; a Refund needs no headroom, so treat it as zero.
+        const sd = dry.storage_deposit;
+        const charge = sd?.type === 'Charge' ? BigInt(sd.value) : 0n;
+        return { gasRequired: dry.gas_required, charge };
+      };
+
+      // Sizing is a two-step probe because the two Cere runtimes disagree on what
+      // an unset `storage_deposit_limit` means (see #308):
+      //
+      //  - testnet reads `None` as UNLIMITED, so the first attempt succeeds and
+      //    reports the true charge (measured live: 4.2 CERE for a new customer
+      //    ledger record, 0 for a top-up that grows no storage);
+      //  - devnet reads `None` as ZERO, so any storage-growing call is rejected
+      //    outright with `StorageDepositLimitExhausted` and reports nothing
+      //    usable. Retrying under an explicit, affordable limit gets the same run
+      //    far enough to report the charge.
+      //
+      // Starting with `None` keeps the common case to a single dry run and avoids
+      // spending the caller's headroom as a probe when the runtime doesn't need it.
+      let sized = await attempt(undefined);
+      if (!sized) {
+        const headroom = await affordableHeadroom(caller, value);
+        if (headroom > 0n) sized = await attempt(headroom);
       }
-      const gr = dry.gas_required;
-      // 2x safety margin — the dry run is priced against possibly-stale state and
-      // a placeholder caller, so a verbatim `gas_required` can undershoot.
-      return cap({ ref_time: BigInt(gr.ref_time) * 2n, proof_size: BigInt(gr.proof_size) * 2n });
+
+      const ed = await getExistentialDeposit().catch(() => 0n);
+
+      if (!sized) {
+        // Nothing to size against: the caller may be unfunded, the contract may
+        // be reverting, or the node may be unhealthy. Provision generously on gas
+        // and fall back to a fixed storage ceiling — crucially still an explicit
+        // one, because `None` is what makes first deposits fail outright on a
+        // runtime that reads it as zero.
+        return { gasLimit: await cap(GENEROUS), storageDepositLimit: FALLBACK_SDL_IN_ED * ed };
+      }
+
+      const gr = sized.gasRequired;
+      return {
+        // 2x safety margin — the dry run is priced against possibly-stale state,
+        // so a verbatim `gas_required` can undershoot.
+        gasLimit: await cap({ ref_time: BigInt(gr.ref_time) * 2n, proof_size: BigInt(gr.proof_size) * 2n }),
+        // The measured charge plus one existential deposit of slack for state
+        // drift between this dry run and the real call. Deliberately tight rather
+        // than generous: the limit is checked against the caller's spendable
+        // balance, so padding it would reject deposits the account can afford.
+        storageDepositLimit: sized.charge + ed,
+      };
     },
 
     async readBalance(contractAddr, owner) {
@@ -153,13 +253,17 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
       return { ...toStakingInfo(ledger), owner };
     },
 
-    buildContractCall(contractAddr, message, value, args, gasLimit) {
+    buildContractCall(contractAddr, message, value, args, sizing) {
       const data = builder.buildMessage(message).call.enc(args ?? {});
       return api.tx.Contracts.call({
         dest: { type: 'Id', value: contractAddr } as any,
         value,
-        gas_limit: gasLimit,
-        storage_deposit_limit: undefined,
+        gas_limit: sizing.gasLimit,
+        // Always an explicit limit, never `None`: devnet's contracts pallet reads
+        // `None` as a ZERO ceiling, which rejects every storage-growing call —
+        // i.e. every first-time deposit — with `StorageDepositLimitExhausted`
+        // (#308). `sizeCall` derives the value from a dry run.
+        storage_deposit_limit: sizing.storageDepositLimit,
         data,
       } as any) as Sendable;
     },

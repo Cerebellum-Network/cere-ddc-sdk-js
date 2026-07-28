@@ -215,10 +215,10 @@ export class DdcClient {
 
     if (currentDeposit === undefined) {
       this.logger.info('Depositing balance %s to %s for cluster %s', amount, this.signer.address, this.clusterId);
-      tx = await this.client.customers.deposit(this.clusterId, amount);
+      tx = await this.client.customers.deposit(this.clusterId, amount, { from: this.signer.address });
     } else {
       this.logger.info('Depositing extra balance %s to %s for cluster %s', amount, this.signer.address, this.clusterId);
-      tx = await this.client.customers.depositExtra(this.clusterId, amount);
+      tx = await this.client.customers.depositExtra(this.clusterId, amount, { from: this.signer.address });
     }
 
     return this.client.tx.send(tx, { signer: this.signer });
@@ -245,7 +245,9 @@ export class DdcClient {
    * */
   async depositBalanceFor(targetAddress: AccountId, amount: bigint) {
     this.logger.info('Depositing balance %s for %s in cluster %s', amount, targetAddress, this.clusterId);
-    const tx = await this.client.customers.depositFor(targetAddress, this.clusterId, amount);
+    const tx = await this.client.customers.depositFor(targetAddress, this.clusterId, amount, {
+      from: this.signer.address,
+    });
     return this.client.tx.send(tx, { signer: this.signer });
   }
 
@@ -292,7 +294,7 @@ export class DdcClient {
    * */
   async unlockDeposit(amount: bigint) {
     this.logger.info('Unlocking deposit %s for cluster %s', amount, this.clusterId);
-    const tx = await this.client.customers.unlockDeposit(this.clusterId, amount);
+    const tx = await this.client.customers.unlockDeposit(this.clusterId, amount, { from: this.signer.address });
     return this.client.tx.send(tx, { signer: this.signer });
   }
 
@@ -311,7 +313,7 @@ export class DdcClient {
    * */
   async withdrawUnlockedDeposit() {
     this.logger.info('Withdrawing unlocked deposit for cluster %s', this.clusterId);
-    const tx = await this.client.customers.withdrawUnlockedDeposit(this.clusterId);
+    const tx = await this.client.customers.withdrawUnlockedDeposit(this.clusterId, { from: this.signer.address });
     return this.client.tx.send(tx, { signer: this.signer });
   }
 

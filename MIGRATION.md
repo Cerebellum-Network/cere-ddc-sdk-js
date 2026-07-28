@@ -164,6 +164,20 @@ const publicKey2 = decodeAddress(address);
   cluster has a live deposit contract), falling back to the pallet ledger
   otherwise. You don't need to know or branch on which backing a given
   cluster/network uses.
+- **Deposit builders accept an optional `{ from }`.** On the contract path,
+  `deposit`/`depositExtra`/`depositFor`/`unlockDeposit`/
+  `withdrawUnlockedDeposit` size the call with a dry run. Passing the account
+  that will sign lets that dry run be priced against the real, funded caller,
+  which yields precise gas and a correctly sized `storage_deposit_limit`:
+
+  ```ts
+  const tx = await client.customers.deposit(clusterId, value, { from: signer.address });
+  await client.tx.send(tx, { signer });
+  ```
+
+  `DdcClient` passes its own signer automatically, so this only matters if you
+  drive `client.customers` directly. Omitting it still works — sizing falls
+  back to conservative ceilings.
 
 ## Before / after: connect + read balance
 
