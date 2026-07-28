@@ -37,6 +37,15 @@ const GENEROUS: Weight = { ref_time: 10_000_000_000n, proof_size: 1_000_000n };
 // caller must hold.
 const FALLBACK_SDL_IN_ED = 10n;
 
+// The existential deposit on every Cere network (mainnet/testnet/devnet): 1
+// CERE at 10 decimals. Used only as a defensive default when the runtime
+// constant can't be read — see `getExistentialDeposit`. Hardcoded because ED is
+// itself a constant, so a read failure means the node/metadata is unhealthy, not
+// that the limit is zero; defaulting to 0n would collapse the storage-deposit
+// limit and reintroduce the very `StorageDepositLimitExhausted` this module
+// prevents. Mirrors `getChainDecimals`' fallback to `10` for the same reason.
+const CERE_EXISTENTIAL_DEPOSIT = 10n ** 10n;
+
 /** Gas + storage-deposit ceiling for one contract call, sized by dry run. */
 export type CallSizing = {
   gasLimit: Weight;
@@ -104,15 +113,20 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
 
   // Existential deposit, used as the unit for storage-deposit headroom. Cached
   // like `getMaxBlock` (constants are a papi METHOD returning a Promise), and
-  // likewise never memoizing a rejection.
+  // likewise never memoizing a rejection — a transient fetch failure clears the
+  // memo so the next call retries. On a *persistent* failure it resolves to the
+  // Cere ED default rather than rejecting: ED is a chain constant, so a read
+  // failure means the node/metadata is unhealthy, not that ED is zero, and a
+  // zero ED would collapse the storage-deposit limit to zero (reintroducing
+  // `StorageDepositLimitExhausted` on a `None`-means-zero runtime — see #308).
   let existentialDeposit: Promise<bigint> | undefined;
   const getExistentialDeposit = () => {
     if (!existentialDeposit) {
       existentialDeposit = api.constants.Balances.ExistentialDeposit()
         .then((ed: any) => BigInt(ed))
-        .catch((err) => {
+        .catch(() => {
           existentialDeposit = undefined;
-          throw err;
+          return CERE_EXISTENTIAL_DEPOSIT;
         });
     }
     return existentialDeposit;
@@ -193,33 +207,40 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
       //
       // Starting with `None` keeps the common case to a single dry run and avoids
       // spending the caller's headroom as a probe when the runtime doesn't need it.
+      const headroom = await affordableHeadroom(caller, value);
       let sized = await attempt(undefined);
-      if (!sized) {
-        const headroom = await affordableHeadroom(caller, value);
-        if (headroom > 0n) sized = await attempt(headroom);
-      }
+      if (!sized && headroom > 0n) sized = await attempt(headroom);
 
-      const ed = await getExistentialDeposit().catch(() => 0n);
+      const ed = await getExistentialDeposit();
 
       if (!sized) {
         // Nothing to size against: the caller may be unfunded, the contract may
         // be reverting, or the node may be unhealthy. Provision generously on gas
         // and fall back to a fixed storage ceiling — crucially still an explicit
         // one, because `None` is what makes first deposits fail outright on a
-        // runtime that reads it as zero.
+        // runtime that reads it as zero. `ed` never resolves to 0n (see
+        // `getExistentialDeposit`), so this ceiling is never effectively zero.
         return { gasLimit: await cap(GENEROUS), storageDepositLimit: FALLBACK_SDL_IN_ED * ed };
       }
 
       const gr = sized.gasRequired;
+      // The measured charge plus one existential deposit of slack for state drift
+      // between this dry run and the real call — then capped at the headroom the
+      // probe already proved affordable. Without the cap, the `+ed` slack can land
+      // in a ~1-ED window where the probe succeeded but the real submit is
+      // rejected with `StorageDepositNotEnoughFunds`: the runtime charges
+      // `value + limit` against spendable balance (`free - ed`), so a limit of
+      // `charge + ed` needs `value + charge + 2·ed ≤ free`, one ED tighter than
+      // the probe's `value + charge ≤ free - ed`. A successful probe guarantees
+      // `charge ≤ headroom`, so capping at `headroom` still leaves `limit ≥ charge`
+      // (no `StorageDepositLimitExhausted`) while keeping the submit affordable.
+      const slack = sized.charge + ed;
+      const limit = slack < headroom ? slack : headroom;
       return {
         // 2x safety margin — the dry run is priced against possibly-stale state,
         // so a verbatim `gas_required` can undershoot.
         gasLimit: await cap({ ref_time: BigInt(gr.ref_time) * 2n, proof_size: BigInt(gr.proof_size) * 2n }),
-        // The measured charge plus one existential deposit of slack for state
-        // drift between this dry run and the real call. Deliberately tight rather
-        // than generous: the limit is checked against the caller's spendable
-        // balance, so padding it would reject deposits the account can afford.
-        storageDepositLimit: sized.charge + ed,
+        storageDepositLimit: limit,
       };
     },
 

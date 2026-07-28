@@ -176,4 +176,56 @@ describe('deposit contract call sizing (offline)', () => {
     // A Refund costs the caller nothing, so only the drift slack is reserved.
     expect(sizing.storageDepositLimit).toBe(ED);
   });
+
+  it('caps the drift slack at the proven-affordable headroom (tight-balance window)', async () => {
+    // Balance chosen so the deposit is affordable at the true charge but NOT once
+    // the +ED drift slack is added: free - 2*ED < value + charge <= free - ED.
+    // Here free=6.5 CERE, so spendable=5.5; value+charge=5.2 fits, but
+    // value+charge+ED=6.2 does not. Without the cap the SDK would return 5.2 and
+    // the real submit would be rejected with StorageDepositNotEnoughFunds.
+    const free = (65n * CERE) / 10n; // 6.5 CERE
+    const { api } = makeApi('unlimited', free);
+    const contract = createCustomerDepositContract(api);
+
+    const sizing = await contract.sizeCall(CONTRACT, MESSAGE, CALLER, 1n * CERE, {});
+    const headroom = free - 1n * CERE - ED; // 4.5 CERE
+
+    // Capped at headroom (4.5), which is below the uncapped charge+ED (5.2)…
+    expect(sizing.storageDepositLimit).toBe(headroom);
+    // …yet still covers the real charge, so it can't trip LimitExhausted…
+    expect(sizing.storageDepositLimit).toBeGreaterThanOrEqual(CHARGE);
+    // …and value + limit now fits within spendable, so the submit is affordable.
+    expect(1n * CERE + sizing.storageDepositLimit).toBeLessThanOrEqual(free - ED);
+  });
+
+  it('never collapses the limit to zero when the existential-deposit read fails', async () => {
+    // Every path must keep a non-zero limit even if the ED constant can't be read
+    // — a zero limit is exactly the StorageDepositLimitExhausted defect on a
+    // None-means-zero runtime. Here ED read fails, so it defaults to 1 CERE.
+    const { api } = makeApi('zero', 0n);
+    api.constants.Balances.ExistentialDeposit = async () => {
+      throw new Error('node unavailable');
+    };
+    const contract = createCustomerDepositContract(api);
+
+    // Fallback path (caller unfunded, both probes fail): limit = 10 * default ED.
+    const fallback = await contract.sizeCall(CONTRACT, MESSAGE, CALLER, 1n * CERE, {});
+    expect(fallback.storageDepositLimit).toBe(10n * CERE);
+    expect(fallback.storageDepositLimit).toBeGreaterThan(0n);
+  });
+
+  it('keeps drift slack on the success path even when the ED read fails', async () => {
+    // Success path with a failed ED read: the limit is charge + default ED, not
+    // charge + 0 — the slack survives, so a state drift between dry run and
+    // submit doesn't immediately trip LimitExhausted.
+    const { api } = makeApi('unlimited', 1000n * CERE);
+    api.constants.Balances.ExistentialDeposit = async () => {
+      throw new Error('node unavailable');
+    };
+    const contract = createCustomerDepositContract(api);
+
+    const sizing = await contract.sizeCall(CONTRACT, MESSAGE, CALLER, 1n * CERE, {});
+
+    expect(sizing.storageDepositLimit).toBe(CHARGE + CERE); // charge + 1 CERE default ED
+  });
 });
