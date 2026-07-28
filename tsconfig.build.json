@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "paths": {
+      "#descriptors": ["packages/blockchain/.papi/descriptors/dist/index.d.ts"],
+      "#ws-provider": ["packages/blockchain/src/papi/ws-provider.ts"]
+    },
     "outDir": "dist",
     "target": "esnext",
     "module": "esnext",
