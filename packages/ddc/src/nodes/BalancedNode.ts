@@ -1,10 +1,10 @@
 import retry, { Options as RetryOptions } from 'async-retry';
 import { RpcError } from '@protobuf-ts/runtime-rpc';
-import { BucketId } from '@cere-ddc-sdk/blockchain/papi';
+import { BucketId, Signer } from '@cere-ddc-sdk/blockchain';
 
 import { GrpcStatus } from '../grpc/status';
 import { RETRYABLE_GRPC_ERROR_CODES, RETRY_MAX_ATTEPTS } from '../constants';
-import { Router, RouterOperation } from '../routing';
+import { EndpointResolver, RouterOperation } from '../routing';
 import { Piece, MultipartPiece } from '../Piece';
 import { DagNode } from '../DagNode';
 import { CnsRecord } from '../CnsRecord';
@@ -35,8 +35,29 @@ export type OpperationRetryOptions = Omit<RetryOptions, 'retries'> & {
 };
 
 export type BalancedNodeConfig = LoggerOptions & {
-  router: Router;
+  resolver: EndpointResolver;
   retries?: number | OpperationRetryOptions;
+};
+
+export type ResolverNodeConfig = {
+  signer: Signer;
+  storageUrl: string;
+  cdnUrl?: string;
+  retries?: number | OpperationRetryOptions;
+  logger: Logger;
+};
+
+/**
+ * Builds a `BalancedNode` backed by a single-cluster `EndpointResolver` for the given
+ * `storageUrl`/`cdnUrl`.
+ *
+ * `DdcClient` and `FileStorage` wire the resolver up identically, so this is shared
+ * between the two rather than duplicated.
+ */
+export const createResolverNode = ({ signer, storageUrl, cdnUrl, retries, logger }: ResolverNodeConfig) => {
+  const resolver = new EndpointResolver({ signer, storageUrl, cdnUrl, logger });
+
+  return new BalancedNode({ resolver, retries, logger });
 };
 
 const withCorrelationId = <T extends CorrelationOptions>(options: T): T => ({
@@ -53,15 +74,15 @@ const withCorrelationId = <T extends CorrelationOptions>(options: T): T => ({
  * @example
  *
  * ```typescript
- * const router = new Router(...);
- * const balancedNode = new BalancedNode({ router });
+ * const resolver = new EndpointResolver(...);
+ * const balancedNode = new BalancedNode({ resolver });
  * ```
  */
 export class BalancedNode implements NodeInterface {
   readonly nodeId = 'BalancedNode';
   readonly displayName = 'BalancedNode';
 
-  private router: Router;
+  private resolver: EndpointResolver;
   private logger: Logger;
 
   private retryOptions: RetryOptions = {
@@ -70,8 +91,8 @@ export class BalancedNode implements NodeInterface {
     retries: RETRY_MAX_ATTEPTS,
   };
 
-  constructor({ router, ...config }: BalancedNodeConfig) {
-    this.router = router;
+  constructor({ resolver, ...config }: BalancedNodeConfig) {
+    this.resolver = resolver;
     this.logger = createLogger('BalancedNode', config);
 
     if (typeof config.retries === 'number') {
@@ -109,47 +130,9 @@ export class BalancedNode implements NodeInterface {
     { correlationId }: CorrelationOptions,
     body: (node: NodeInterface, bail: (e: Error) => void, attempt: number) => Promise<T>,
   ) {
-    let lastOperationError: RpcError | undefined;
-    let lastRouterError: Error | undefined;
-
-    const exclude: NodeInterface[] = [];
-
     return retry(
       async (bail, attempt) => {
-        let node: NodeInterface | undefined;
-
-        try {
-          node = await this.router.getNode(
-            operation,
-            bucketId,
-            { logErrors: false },
-            exclude.map((node) => node.nodeId),
-          );
-
-          exclude.unshift(node);
-        } catch (error) {
-          /**
-           * In case we fail to get a node, we retry with previous nodes that failed until the max attempts.
-           */
-          node = exclude.pop() || node;
-
-          if (node) {
-            this.logger.info(
-              `Reusing previous node for operation "%s" in bucket %s: %s`,
-              operation,
-              bucketId,
-              node.displayName,
-            );
-          }
-
-          if (error instanceof Error) {
-            lastRouterError = error;
-          }
-        }
-
-        if (!node) {
-          throw lastOperationError ?? lastRouterError ?? new Error('No nodes available to handle the operation');
-        }
+        const node = await this.resolver.getNode(operation, bucketId, { logErrors: false });
 
         try {
           return await body(node, bail, attempt);
@@ -161,8 +144,6 @@ export class BalancedNode implements NodeInterface {
             nodeError.correlationId = correlationId;
 
             if (RETRYABLE_GRPC_ERROR_CODES.map((status) => GrpcStatus[status]).includes(nodeError.code)) {
-              lastOperationError = nodeError;
-
               throw nodeError;
             }
           }

@@ -1,5 +1,5 @@
 import base58 from 'bs58';
-import { AccountId, Signer, decodeAddress, encodeAddress } from '@cere-ddc-sdk/blockchain/papi';
+import { AccountId, Signer, decodeAddress, encodeAddress } from '@cere-ddc-sdk/blockchain';
 
 import { AUTH_TOKEN_EXPIRATION_TIME } from '../constants';
 import { createSignature, mapSignature, Signature } from '../signature';

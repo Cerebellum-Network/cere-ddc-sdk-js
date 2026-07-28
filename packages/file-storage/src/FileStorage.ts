@@ -1,54 +1,40 @@
-import {
-  connect,
-  UriSigner,
-  type Signer,
-  type CereClient,
-  type CereNetwork,
-  type BucketId,
-} from '@cere-ddc-sdk/blockchain/papi';
+import { UriSigner, type Signer, type BucketId } from '@cere-ddc-sdk/blockchain';
 import {
   PieceReadOptions,
   Piece,
   MultipartPiece,
-  Router,
   PieceStoreOptions,
-  RouterConfig,
-  RouterNode,
-  ConfigPreset,
-  DEFAULT_PRESET,
   Logger,
   createLogger,
   LoggerOptions,
   bindErrorLogger,
   NodeInterface,
-  BalancedNode,
+  createResolverNode,
   withChunkSize,
   streamConsumers,
-  BalancedNodeConfig,
+  OpperationRetryOptions,
 } from '@cere-ddc-sdk/ddc';
 
 import { File, FileResponse } from './File';
 import { DEFAULT_BUFFER_SIZE, MAX_BUFFER_SIZE, MIN_BUFFER_SIZE } from './constants';
 
-const NETWORKS = ['mainnet', 'testnet', 'devnet'] as const;
+type Config = LoggerOptions & {
+  /**
+   * The endpoint used for all write operations (and reads, when `cdnUrl` isn't set).
+   */
+  storageUrl: string;
 
-type Config = LoggerOptions & Pick<BalancedNodeConfig, 'retries'>;
+  /**
+   * The endpoint used for read operations. Falls back to `storageUrl` when omitted.
+   */
+  cdnUrl?: string;
 
-/**
- * A network name (`'mainnet' | 'testnet' | 'devnet'`), a WS URL, or a
- * pre-connected/injected `CereClient`. Mirrors `DdcClient`'s `ChainConfig`.
- */
-type ChainConfig = CereNetwork | string | CereClient;
+  retries?: number | OpperationRetryOptions;
+};
 
-export type FileStorageConfig = Config &
-  Omit<ConfigPreset, 'blockchain'> & {
-    blockchain: ChainConfig;
-  };
+export type FileStorageConfig = Config;
 
-type FileStorageConstructorConfig = Config & { signer: Signer } & (
-    | { nodes: RouterNode[] }
-    | { blockchain: ChainConfig }
-  );
+type FileStorageConstructorConfig = Config & { signer: Signer };
 
 export type FileReadOptions = PieceReadOptions;
 export type FileStoreOptions = PieceStoreOptions & {
@@ -69,55 +55,20 @@ type LargeFileStoreOptions = FileStoreOptions & {
 export class FileStorage {
   private ddcNode: NodeInterface;
   private logger: Logger;
-  private client?: CereClient;
-  private ownsClient = false;
 
-  constructor(config: FileStorageConstructorConfig);
-  constructor(router: Router, config: Config);
-  constructor(configOrRouter: FileStorageConstructorConfig | Router, config?: Config) {
-    let finalConfig: Config | undefined;
-
-    if (configOrRouter instanceof Router) {
-      finalConfig = config;
-
-      this.logger = createLogger('FileStorage', config);
-      this.ddcNode = new BalancedNode({ ...config, router: configOrRouter, logger: this.logger });
-
-      this.logger.debug(config, 'FileStorage created');
-    } else {
-      finalConfig = configOrRouter;
-
-      this.logger = createLogger('FileStorage', configOrRouter);
-
-      let routerConfig: RouterConfig;
-
-      if ('nodes' in configOrRouter) {
-        routerConfig = { signer: configOrRouter.signer, nodes: configOrRouter.nodes, logger: this.logger };
-      } else {
-        const bc = configOrRouter.blockchain;
-        let client: CereClient;
-
-        if (typeof bc === 'string') {
-          client = connect(NETWORKS.includes(bc as CereNetwork) ? { network: bc as CereNetwork } : bc);
-          this.ownsClient = true;
-        } else {
-          client = bc;
-        }
-
-        this.client = client;
-        routerConfig = { signer: configOrRouter.signer, client, logger: this.logger };
-      }
-
-      this.ddcNode = new BalancedNode({
-        logger: this.logger,
-        retries: configOrRouter.retries,
-        router: new Router(routerConfig),
-      });
-
-      this.logger.debug(configOrRouter, 'FileStorage created');
+  constructor({ signer, storageUrl, cdnUrl, retries, ...config }: FileStorageConstructorConfig) {
+    // Match `DdcClient`'s upfront validation: an undefined `storageUrl` otherwise
+    // flows into the resolver and only surfaces later as an opaque transport error.
+    if (!storageUrl) {
+      throw new Error('FileStorage config is missing required "storageUrl"');
     }
 
-    if (finalConfig?.logErrors === false) {
+    this.logger = createLogger('FileStorage', config);
+    this.ddcNode = createResolverNode({ signer, storageUrl, cdnUrl, retries, logger: this.logger });
+
+    this.logger.debug(config, 'FileStorage created');
+
+    if (config.logErrors === false) {
       bindErrorLogger(this, this.logger, ['store', 'read']);
     }
   }
@@ -126,29 +77,30 @@ export class FileStorage {
    * Creates a new instance of the `FileStorage` class asynchronously.
    *
    * @param uriOrSigner - A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri).
-   * @param config - Configuration options for the `FileStorage`. Defaults to TESTNET.
+   * @param config - Configuration options for the `FileStorage`. `storageUrl` is required.
    *
    * @returns A promise that resolves to a new `FileStorage` instance.
    *
    * * @example
    *
    * ```typescript
-   * import { FileStorage, TESTNET } from '@cere-ddc-sdk/file-storage';
+   * import { FileStorage } from '@cere-ddc-sdk/file-storage';
    *
-   * const fileStorage = await FileStorage.create('//Alice', TESTNET);
+   * const fileStorage = await FileStorage.create('//Alice', { storageUrl: 'https://storage.example' });
    * ```
    */
-  static async create(uriOrSigner: Signer | string, config: FileStorageConfig = DEFAULT_PRESET) {
+  static async create(uriOrSigner: Signer | string, config: FileStorageConfig) {
     const signer = typeof uriOrSigner === 'string' ? new UriSigner(uriOrSigner) : uriOrSigner;
 
     return new FileStorage({ ...config, signer });
   }
 
-  async disconnect() {
-    if (this.ownsClient) {
-      this.client?.disconnect();
-    }
-  }
+  /**
+   * No-op kept for API compatibility. `FileStorage` no longer owns a blockchain
+   * connection (the `EndpointResolver` only needs the signer), so there's nothing to
+   * disconnect.
+   */
+  async disconnect() {}
 
   private async storeLarge(bucketId: BucketId, file: File, { partSize, ...options }: LargeFileStoreOptions) {
     const parts: string[] = [];

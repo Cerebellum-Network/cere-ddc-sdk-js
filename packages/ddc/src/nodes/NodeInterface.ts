@@ -1,4 +1,4 @@
-import { BucketId } from '@cere-ddc-sdk/blockchain/papi';
+import { BucketId } from '@cere-ddc-sdk/blockchain';
 
 import { ReadFileRange } from '../FileApi';
 import { Record as CnsApiRecord } from '../CnsApi';

@@ -26,7 +26,7 @@ export {
   type Signer,
   type SignerType,
   type UriSignerOptions,
-} from '@cere-ddc-sdk/blockchain/papi';
+} from '@cere-ddc-sdk/blockchain';
 
 /**
  * Utilities
@@ -45,8 +45,3 @@ export {
  * Constants
  */
 export { KB, MB, MAX_PIECE_SIZE, MIN_PIECE_SIZE } from './constants';
-
-/**
- * Configuration
- */
-export * from './presets';

@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { UriSigner, createRandomSigner, isSigner, toPolkadotSigner, connect } from '@cere-ddc-sdk/blockchain/papi';
+import { UriSigner, createRandomSigner, isSigner, toPolkadotSigner, connect } from '@cere-ddc-sdk/blockchain';
 import { sr25519, ed25519 } from '@polkadot-labs/hdkd-helpers';
 
 describe('papi signers (unit)', () => {

@@ -1,4 +1,4 @@
-import type { Signer } from '@cere-ddc-sdk/blockchain/papi';
+import type { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { Signature, Signature_Algorithm as SigAlg } from '../grpc/common/signature';
 import { AuthToken, maybeSdkSigner } from '../auth';

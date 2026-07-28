@@ -1,11 +1,4 @@
-import {
-  encodeAddress,
-  decodeAddress,
-  UriSigner,
-  StorageNodeMode,
-  connect,
-  isSigner,
-} from '@cere-ddc-sdk/blockchain/papi';
+import { encodeAddress, decodeAddress, UriSigner, StorageNodeMode, connect, isSigner } from '@cere-ddc-sdk/blockchain';
 
 describe('papi barrel (unit)', () => {
   it('exposes the consumer surface (values defined)', () => {

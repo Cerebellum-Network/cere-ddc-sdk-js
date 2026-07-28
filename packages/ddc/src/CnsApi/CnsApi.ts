@@ -1,5 +1,5 @@
 import { RpcError } from '@protobuf-ts/runtime-rpc';
-import type { Signer } from '@cere-ddc-sdk/blockchain/papi';
+import type { Signer } from '@cere-ddc-sdk/blockchain';
 
 import { RpcTransport } from '../transports';
 import { createRpcMeta as createAuthRpcMeta, AuthMetaParams } from '../auth';
@@ -108,7 +108,7 @@ export class CnsApi {
 
     meta.request = await createActivityRequest(
       { bucketId, size: ProtoRecord.toBinary(record).byteLength, requestType: ActivityRequestType.STORE },
-      { logger: this.logger, signer },
+      { token, logger: this.logger, signer },
     );
 
     await this.api.put({ bucketId, record: { ...record, signature } }, { meta });

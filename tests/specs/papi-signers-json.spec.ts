@@ -1,4 +1,4 @@
-import { JsonSigner, UriSigner } from '@cere-ddc-sdk/blockchain/papi';
+import { JsonSigner, UriSigner } from '@cere-ddc-sdk/blockchain';
 import { sr25519, ed25519 } from '@polkadot-labs/hdkd-helpers';
 
 // A keystore JSON exported (via `Keyring#toJson`) for the well-known dev mnemonic

@@ -1,4 +1,4 @@
-import { HexString } from '@polkadot/util/types';
+export type HexString = `0x${string}`;
 
 export type ClusterId = HexString;
 export type ClusterParams = {
