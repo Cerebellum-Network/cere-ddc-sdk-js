@@ -5,7 +5,12 @@ import type { CereApi } from '../api-types.js';
 import type { Sendable } from '../tx.js';
 import type { AccountId, ClusterId, StakingInfo } from '../../types.js';
 import { toStakingInfo } from '../pallets/mapping.js';
-import abi from '../../customer_deposit.json';
+// Imported from a generated .ts module rather than the .json directly: a JSON
+// import emits a bare `import ... from '....json'`, which Node's ESM loader
+// rejects without `with { type: 'json' }` (tsc does not add the attribute) —
+// that made every deposit/balance call throw ERR_IMPORT_ATTRIBUTE_MISSING in a
+// plain Node consumer. Regenerate with `npm run build:abi` in this package.
+import abi from '../../customer_deposit.js';
 
 type Weight = { ref_time: bigint; proof_size: bigint };
 

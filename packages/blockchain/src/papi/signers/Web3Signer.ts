@@ -1,5 +1,7 @@
 import { getInjectedExtensions, connectInjectedExtension, type InjectedPolkadotAccount } from 'polkadot-api/pjs-signer';
+import type { PolkadotSigner } from 'polkadot-api/signer';
 import type { Signer, SignIntent, SignerType } from './types.js';
+import type { NativePolkadotSigner } from './bridge.js';
 
 /**
  * Wraps a papi-injected browser-extension account (PolkadotJs, Talisman, ...)
@@ -13,7 +15,7 @@ import type { Signer, SignIntent, SignerType } from './types.js';
  * browser and Node — `fromExtension()` guards against `window` being
  * undefined and throws a clear error instead of a bare `ReferenceError`.
  */
-export class Web3Signer implements Signer {
+export class Web3Signer implements Signer, NativePolkadotSigner {
   constructor(private readonly account: InjectedPolkadotAccount) {}
 
   get address(): string {
@@ -30,9 +32,22 @@ export class Web3Signer implements Signer {
   async isReady(): Promise<boolean> {
     return true;
   }
+  // Data signing (auth tokens / payloads). Uses the extension's raw
+  // `signBytes` — NOT for extrinsics: extrinsics are signed natively via
+  // `getPolkadotSigner()` below (see the BadProof note there).
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async sign(bytes: Uint8Array, _intent?: SignIntent): Promise<Uint8Array> {
     return this.account.polkadotSigner.signBytes(bytes);
+  }
+
+  /**
+   * The extension account's native papi signer, used for extrinsic signing.
+   * The extension signs extrinsics via its signed-payload flow; reconstructing
+   * an extrinsic signature from `sign()`/`signBytes` (data signing, which the
+   * extension wraps in `<Bytes>…</Bytes>`) would fail on-chain with BadProof.
+   */
+  getPolkadotSigner(): PolkadotSigner {
+    return this.account.polkadotSigner;
   }
 
   /**

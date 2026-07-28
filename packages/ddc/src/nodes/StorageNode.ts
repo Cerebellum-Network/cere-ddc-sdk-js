@@ -9,7 +9,7 @@ import { GRPC_REQUEST_INACTIVITY_TIMEOUT } from '../constants';
 import { MultipartPiece, Piece, PieceResponse } from '../Piece';
 import { DagNode, DagNodeResponse, mapDagNodeToAPI } from '../DagNode';
 import { CnsRecord, CnsRecordResponse, mapCnsRecordToAPI } from '../CnsRecord';
-import { DefaultTransport, RpcTransportOptions } from '../transports';
+import { DefaultTransport, RpcTransportOptions, transportForUrl } from '../transports';
 import { bindErrorLogger, createLogger, Logger, LoggerOptions } from '../logger';
 import { AuthToken, createSdkToken, getSdkSigner } from '../auth';
 
@@ -32,6 +32,15 @@ export type StorageNodeConfig = RpcTransportOptions &
     enableAcks?: boolean;
     authenticate?: boolean;
     authToken?: AuthToken | string;
+
+    /**
+     * A single endpoint URL to select and build the RPC transport from, by scheme
+     * (`grpc://` → native gRPC, `http(s)://`/`ws(s)://` → grpc-web over WebSocket).
+     *
+     * When set, this takes precedence over the `grpcUrl`/`httpUrl` + env-based
+     * (`DefaultTransport`) transport selection used by `Router`-selected nodes.
+     */
+    url?: string;
   };
 
 /**
@@ -65,10 +74,17 @@ export class StorageNode implements NodeInterface {
     readonly config: StorageNodeConfig,
   ) {
     const authToken = AuthToken.maybeToken(config.authToken);
-    const transport = new DefaultTransport({
-      ...config,
-      timeout: config.timeout ?? GRPC_REQUEST_INACTIVITY_TIMEOUT,
-    });
+    const timeout = config.timeout ?? GRPC_REQUEST_INACTIVITY_TIMEOUT;
+
+    /**
+     * When a single endpoint `url` is configured (single-cluster SDK config via
+     * `EndpointResolver`), build the transport from its scheme. Otherwise fall
+     * back to the legacy env-based `DefaultTransport` swap driven by `grpcUrl`/
+     * `httpUrl` (used by `Router`-selected nodes).
+     */
+    const transport = config.url
+      ? transportForUrl(config.url, { timeout, interceptors: config.interceptors })
+      : new DefaultTransport({ ...config, timeout });
 
     this.nodeId = config.nodeId || uuid();
     this.mode = config.mode;
@@ -76,9 +92,10 @@ export class StorageNode implements NodeInterface {
     this.rootTokenPromise = authToken && Promise.resolve(authToken);
 
     /**
-     * Use the HTTP URL as the display name.
+     * Use the resolved endpoint URL (when known) as the display name, falling
+     * back to the legacy HTTP URL for `Router`-selected nodes.
      */
-    this.displayName = config.httpUrl;
+    this.displayName = config.url ?? config.httpUrl;
 
     const options = {
       signer,

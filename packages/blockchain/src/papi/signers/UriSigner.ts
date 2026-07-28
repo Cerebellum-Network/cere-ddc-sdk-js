@@ -2,13 +2,16 @@ import { sr25519CreateDerive, ed25519CreateDerive } from '@polkadot-labs/hdkd';
 import { entropyToMiniSecret, mnemonicToEntropy } from '@polkadot-labs/hdkd-helpers';
 import { KeyringSigner, type KeyPair } from './KeyringSigner.js';
 
+/** Options for {@link UriSigner}. */
+export type UriSignerOptions = { type?: 'sr25519' | 'ed25519' };
+
 /**
  * A `Signer` from a mnemonic/seed with an optional `//hard/soft` derivation
  * path (keyring URI convention). An empty phrase is rejected (no silent dev
  * phrase). sr25519 by default; pass `{ type: 'ed25519' }` for ed25519.
  */
 export class UriSigner extends KeyringSigner {
-  constructor(uri: string, opts: { type?: 'sr25519' | 'ed25519' } = {}) {
+  constructor(uri: string, opts: UriSignerOptions = {}) {
     const [phrase, ...paths] = uri.split('//');
     const trimmed = phrase.trim();
     if (!trimmed) throw new Error('UriSigner: empty mnemonic/URI');
