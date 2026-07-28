@@ -2,12 +2,18 @@ import path from 'path';
 import fs from 'fs/promises';
 import { Stats, createReadStream } from 'fs';
 import { fileURLToPath } from 'url';
-import { DdcClient, File, Link, DagNode, TESTNET } from '@cere-ddc-sdk/ddc-client';
+import { DdcClient, File, Link, DagNode } from '@cere-ddc-sdk/ddc-client';
+import type { ClusterId } from '@cere-ddc-sdk/blockchain';
 
 /**
  * The wallet should have enough CERE to pay for the transaction fees
  */
 const user = 'hybrid label reunion only dawn maze asset draft cousin height flock nation';
+
+/**
+ * The DDC cluster where the bucket lives
+ */
+const clusterId: ClusterId = '0x825c4b2352850de9986d9d28568db6f0c023a1e3';
 
 /**
  * The DDC bucket where the file will be stored
@@ -32,7 +38,12 @@ const websiteCnsName = 'website-example';
 /**
  * Create a DDC client instance and connect it to DDC TESTNET
  */
-const client = await DdcClient.create(user, TESTNET);
+const client = await DdcClient.create(user, {
+  blockchain: 'testnet',
+  clusterId,
+  storageUrl: 'https://storage.testnet.dragon-1.xyz',
+  cdnUrl: 'https://cdn.testnet.dragon-1.xyz',
+});
 
 /**
  * Uploads a file into DDC and returns a DAG link to it
@@ -80,7 +91,7 @@ const websiteNodeUri = await client.store(bucketId, websiteNode, {
 console.log('Website uploaded into bucket', bucketId, 'with CID', websiteNodeUri.cid);
 console.log(
   'The website can be accessed by this URL',
-  `https://storage.testnet.cere.network/${bucketId}/${websiteCnsName}`,
+  `https://cdn.testnet.dragon-1.xyz/${bucketId}/${websiteCnsName}`,
 );
 
 /**

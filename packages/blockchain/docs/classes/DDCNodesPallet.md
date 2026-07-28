@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/blockchain**](../README.md)
+
+***
+
 [@cere-ddc-sdk/blockchain](../README.md) / DDCNodesPallet
 
 # Class: DDCNodesPallet
 
 This class provides methods to interact with the DDC Nodes pallet on the blockchain.
 
-**`Example`**
+## Example
 
 ```typescript
 const storageNodePublicKey = '0x...';
@@ -15,18 +19,25 @@ console.log(storageNode);
 
 ## Methods
 
-### createStorageNode
+### createStorageNode()
 
-▸ **createStorageNode**(`storageNodePublicKey`, `storageNodeProps`): `Sendable`
+> **createStorageNode**(`storageNodePublicKey`, `storageNodeProps`): `Sendable`
 
 Creates a new storage node.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `storageNodePublicKey` | `string` | The public key of the storage node. |
-| `storageNodeProps` | `StorageNodeProps` | The properties of the storage node. |
+##### storageNodePublicKey
+
+`string`
+
+The public key of the storage node.
+
+##### storageNodeProps
+
+`StorageNodeProps`
+
+The properties of the storage node.
 
 #### Returns
 
@@ -34,7 +45,7 @@ Creates a new storage node.
 
 An extrinsic to create the storage node.
 
-**`Example`**
+#### Example
 
 ```typescript
 const storageNodePublicKey = '0x...';
@@ -44,19 +55,21 @@ const tx = blockchain.ddcNodes.createStorageNode(storageNodePublicKey, storageNo
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### deleteStorageNode
+### deleteStorageNode()
 
-▸ **deleteStorageNode**(`storageNodePublicKey`): `Sendable`
+> **deleteStorageNode**(`storageNodePublicKey`): `Sendable`
 
 Deletes a storage node.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `storageNodePublicKey` | `string` | The public key of the storage node. |
+##### storageNodePublicKey
+
+`string`
+
+The public key of the storage node.
 
 #### Returns
 
@@ -64,7 +77,7 @@ Deletes a storage node.
 
 An extrinsic to delete the storage node.
 
-**`Example`**
+#### Example
 
 ```typescript
 const storageNodePublicKey = '0x...';
@@ -73,27 +86,29 @@ const tx = blockchain.ddcNodes.deleteStorageNode(storageNodePublicKey);
 await blockchain.send(tx, { account });
 ```
 
-___
+***
 
-### findStorageNodeByPublicKey
+### findStorageNodeByPublicKey()
 
-▸ **findStorageNodeByPublicKey**(`storageNodePublicKey`): `Promise`\<`undefined` \| `StorageNode`\>
+> **findStorageNodeByPublicKey**(`storageNodePublicKey`): `Promise`\<`StorageNode` \| `undefined`\>
 
 Finds a storage node by public key.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `storageNodePublicKey` | `string` | The public key of the storage node. |
+##### storageNodePublicKey
+
+`string`
+
+The public key of the storage node.
 
 #### Returns
 
-`Promise`\<`undefined` \| `StorageNode`\>
+`Promise`\<`StorageNode` \| `undefined`\>
 
 A promise that resolves to the storage node.
 
-**`Example`**
+#### Example
 
 ```typescript
 const storageNodePublicKey = '0x...';
@@ -102,11 +117,11 @@ const storageNode = await blockchain.ddcNodes.findStorageNodeByPublicKey(storage
 console.log(storageNode);
 ```
 
-___
+***
 
-### listStorageNodes
+### listStorageNodes()
 
-▸ **listStorageNodes**(): `Promise`\<`StorageNode`[]\>
+> **listStorageNodes**(): `Promise`\<`StorageNode`[]\>
 
 Returns a list of storage nodes.
 
@@ -116,7 +131,7 @@ Returns a list of storage nodes.
 
 A promise that resolves to a list of storage nodes.
 
-**`Example`**
+#### Example
 
 ```typescript
 const storageNodes = await blockchain.ddcNodes.listStorageNodes();
@@ -124,20 +139,27 @@ const storageNodes = await blockchain.ddcNodes.listStorageNodes();
 console.log(storageNodes);
 ```
 
-___
+***
 
-### setStorageNodeProps
+### setStorageNodeProps()
 
-▸ **setStorageNodeProps**(`storageNodePublicKey`, `storageNodeProps`): `Sendable`
+> **setStorageNodeProps**(`storageNodePublicKey`, `storageNodeProps`): `Sendable`
 
 Sets the properties of a storage node.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `storageNodePublicKey` | `string` | The public key of the storage node. |
-| `storageNodeProps` | `StorageNodeProps` | The properties of the storage node. |
+##### storageNodePublicKey
+
+`string`
+
+The public key of the storage node.
+
+##### storageNodeProps
+
+`StorageNodeProps`
+
+The properties of the storage node.
 
 #### Returns
 
@@ -145,7 +167,7 @@ Sets the properties of a storage node.
 
 An extrinsic to set the storage node properties.
 
-**`Example`**
+#### Example
 
 ```typescript
 const storageNodePublicKey = '0x...';

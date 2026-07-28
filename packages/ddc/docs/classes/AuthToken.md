@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/ddc**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc](../README.md) / AuthToken
 
 # Class: AuthToken
 
 The `AuthToken` class represents an authentication token.
 
-**`Example`**
+## Example
 
 ```typescript
 const authToken = new AuthToken({
@@ -25,93 +29,121 @@ console.log(authTokenFromSharebleToken);
 
 ### bucketId
 
-• `get` **bucketId**(): `undefined` \| `bigint`
+#### Get Signature
+
+> **get** **bucketId**(): `bigint` \| `undefined`
 
 The bucket identifier that the token grants access to.
 
-#### Returns
+##### Returns
 
-`undefined` \| `bigint`
+`bigint` \| `undefined`
 
-___
+***
 
 ### canDelegate
 
-• `get` **canDelegate**(): `boolean`
+#### Get Signature
+
+> **get** **canDelegate**(): `boolean`
 
 Whether the token can delegate access.
 
-#### Returns
+##### Returns
 
 `boolean`
 
-___
+***
 
 ### expiresAt
 
-• `get` **expiresAt**(): `number`
+#### Get Signature
+
+> **get** **expiresAt**(): `number`
 
 The expiration time of the token.
 
-#### Returns
+##### Returns
 
 `number`
 
-___
+***
+
+### isSigned
+
+#### Get Signature
+
+> **get** **isSigned**(): `boolean`
+
+Whether the token is properly signed.
+
+##### Returns
+
+`boolean`
+
+***
 
 ### operations
 
-• `get` **operations**(): `Operation`[]
+#### Get Signature
+
+> **get** **operations**(): `Operation`[]
 
 The operations that the token grants access to.
 
-#### Returns
+##### Returns
 
 `Operation`[]
 
-___
+***
 
 ### pieceCid
 
-• `get` **pieceCid**(): `undefined` \| `string`
+#### Get Signature
+
+> **get** **pieceCid**(): `string` \| `undefined`
 
 The piece CID that the token grants access to.
 
-#### Returns
+##### Returns
 
-`undefined` \| `string`
+`string` \| `undefined`
 
-___
+***
 
 ### signature
 
-• `get` **signature**(): `undefined` \| `Signature`
+#### Get Signature
+
+> **get** **signature**(): `Signature` \| `undefined`
 
 The signature of the token
 
-#### Returns
+##### Returns
 
-`undefined` \| `Signature`
+`Signature` \| `undefined`
 
 ## Methods
 
-### sign
+### sign()
 
-▸ **sign**(`signer`): `Promise`\<[`AuthToken`](AuthToken.md)\>
+> **sign**(`signer`): `Promise`\<`AuthToken`\>
 
 Signs the authentication token using the provided signer.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `signer` | [`Signer`](Signer.md) | The instance of Signer to use for signing the token. |
+##### signer
+
+[`Signer`](../interfaces/Signer.md)
+
+The instance of Signer to use for signing the token.
 
 #### Returns
 
-`Promise`\<[`AuthToken`](AuthToken.md)\>
+`Promise`\<`AuthToken`\>
 
-**`Example`**
+#### Example
 
 ```typescript
 const signer: Signer = ...;
@@ -120,11 +152,11 @@ const authToken = new AuthToken(...);
 await authToken.sign(signer);
 ```
 
-___
+***
 
-### toString
+### toString()
 
-▸ **toString**(): `string`
+> **toString**(): `string`
 
 Converts the authentication token to a string.
 
@@ -134,31 +166,33 @@ Converts the authentication token to a string.
 
 The authentication token as a base58-encoded string.
 
-___
+***
 
-### from
+### from()
 
-▸ **from**(`token`): [`AuthToken`](AuthToken.md)
+> `static` **from**(`token`): `AuthToken`
 
 Creates an `AuthToken` from a string or another `AuthToken`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `token` | `string` \| [`AuthToken`](AuthToken.md) | The token as a string or an `AuthToken`. |
+##### token
+
+`string` \| `AuthToken`
+
+The token as a string or an `AuthToken`.
 
 #### Returns
 
-[`AuthToken`](AuthToken.md)
+`AuthToken`
 
 An instance of the `AuthToken` class.
 
-**`Throws`**
+#### Throws
 
 Will throw an error if the token is invalid.
 
-**`Example`**
+#### Example
 
 ```typescript
 const token: string = '...';
@@ -167,27 +201,29 @@ const authToken = AuthToken.from(token);
 console.log(authToken);
 ```
 
-___
+***
 
-### fullAccess
+### fullAccess()
 
-▸ **fullAccess**(`params?`): [`AuthToken`](AuthToken.md)
+> `static` **fullAccess**(`params?`): `AuthToken`
 
 Creates an `AuthToken` with full access (GET, PUT, DELETE operations).
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `params` | `Omit`\<`AuthTokenParams`, ``"operations"``\> | The parameters of the token access. |
+##### params?
+
+`Omit`\<`AuthTokenParams`, `"operations"`\> = `{}`
+
+The parameters of the token access.
 
 #### Returns
 
-[`AuthToken`](AuthToken.md)
+`AuthToken`
 
 An instance of the `AuthToken` class with full access.
 
-**`Example`**
+#### Example
 
 ```typescript
 const authToken = AuthToken.fullAccess({
@@ -195,28 +231,30 @@ const authToken = AuthToken.fullAccess({
 });
 ```
 
-___
+***
 
-### maybeToken
+### maybeToken()
 
-▸ **maybeToken**(`token?`): `undefined` \| [`AuthToken`](AuthToken.md)
+> `static` **maybeToken**(`token?`): `AuthToken` \| `undefined`
 
 This static method is used to convert a token into an AuthToken object.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `token?` | `string` \| [`AuthToken`](AuthToken.md) | The input token, which can be either a string or an AuthToken object. |
+##### token?
+
+`string` \| `AuthToken`
+
+The input token, which can be either a string or an AuthToken object.
 
 #### Returns
 
-`undefined` \| [`AuthToken`](AuthToken.md)
+`AuthToken` \| `undefined`
 
 - If the input token is a string, returns an AuthToken object created from the string.
            If the input token is already an AuthToken object, returns the input token as is.
 
-**`Example`**
+#### Example
 
 ```typescript
 const token: string = '...';

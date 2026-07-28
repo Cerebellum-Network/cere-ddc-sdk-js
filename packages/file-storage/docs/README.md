@@ -1,6 +1,12 @@
-@cere-ddc-sdk/file-storage
+**@cere-ddc-sdk/file-storage**
+
+***
 
 # @cere-ddc-sdk/file-storage
+
+## Variables
+
+- [createCorrelationId](variables/createCorrelationId.md)
 
 ## Files
 
@@ -10,5 +16,7 @@
 
 ## Signers
 
-- [Signer](classes/Signer.md)
+- [JsonSigner](classes/JsonSigner.md)
+- [KeyringSigner](classes/KeyringSigner.md)
 - [UriSigner](classes/UriSigner.md)
+- [Signer](interfaces/Signer.md)

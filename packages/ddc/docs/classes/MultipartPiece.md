@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/ddc**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc](../README.md) / MultipartPiece
 
 # Class: MultipartPiece
 
 The `MultipartPiece` class represents a piece cobined from multiple parts (raw pieces).
 
-**`Example`**
+## Example
 
 ```typescript
 const parts = ['CID1', 'CID2'];
@@ -18,21 +22,23 @@ console.log(MultipartPiece.isMultipartPiece(multipartPiece)); // true
 
 ## Methods
 
-### isMultipartPiece
+### isMultipartPiece()
 
-▸ **isMultipartPiece**(`object`): object is MultipartPiece
+> `static` **isMultipartPiece**(`object`): `object is MultipartPiece`
 
 Checks if an object is an instance of `MultipartPiece`.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `object` | `unknown` | The object to check. |
+##### object
+
+`unknown`
+
+The object to check.
 
 #### Returns
 
-object is MultipartPiece
+`object is MultipartPiece`
 
 `true` if the object is an instance of `MultipartPiece` or has the same properties as a `MultipartPiece`, `false` otherwise.
 
@@ -40,22 +46,22 @@ object is MultipartPiece
 
 ### meta
 
-• `Readonly` **meta**: `MultipartPieceMeta`
+> `readonly` **meta**: `MultipartPieceMeta`
 
 The metadata of the multipart piece.
 
-___
+***
 
 ### partHashes
 
-• `Readonly` **partHashes**: `Uint8Array`[]
+> `readonly` **partHashes**: `Uint8Array`\<`ArrayBufferLike`\>[]
 
 The hashes of the parts of the multipart piece.
 
-___
+***
 
 ### parts
 
-• `Readonly` **parts**: `string`[]
+> `readonly` **parts**: `string`[]
 
 The parts of the multipart piece.

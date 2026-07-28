@@ -1,0 +1,1242 @@
+// AUTO-GENERATED from customer_deposit.json — do not edit by hand.
+// Regenerate with `npm run build:abi` (see scripts/gen-abi.mjs for why the
+// ABI is a .ts module rather than a JSON import).
+export const customerDepositAbi = {
+  "source": {
+    "hash": "0xe9ed7302fc35ce26b29e0c1daef4e25beb9af04fd71e3d2e2bf703693847fab8",
+    "language": "ink! 5.1.1",
+    "compiler": "rustc 1.82.0",
+    "build_info": {
+      "build_mode": "Release",
+      "cargo_contract_version": "4.1.3",
+      "rust_toolchain": "stable-aarch64-apple-darwin",
+      "wasm_opt_settings": {
+        "keep_debug_symbols": false,
+        "optimization_passes": "Z"
+      }
+    }
+  },
+  "contract": {
+    "name": "customer-deposit",
+    "version": "5.1.0",
+    "authors": ["Use Ink <ink@use.ink>"]
+  },
+  "image": null,
+  "spec": {
+    "constructors": [
+      {
+        "args": [
+          {
+            "label": "cluster_id",
+            "type": {
+              "displayName": ["ClusterId20"],
+              "type": 18
+            }
+          },
+          {
+            "label": "unlock_delay_blocks",
+            "type": {
+              "displayName": ["u32"],
+              "type": 1
+            }
+          }
+        ],
+        "default": false,
+        "docs": [],
+        "label": "new",
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink_primitives", "ConstructorResult"],
+          "type": 19
+        },
+        "selector": "0x9bae9d5e"
+      }
+    ],
+    "docs": [],
+    "environment": {
+      "accountId": {
+        "displayName": ["AccountId"],
+        "type": 6
+      },
+      "balance": {
+        "displayName": ["Balance"],
+        "type": 2
+      },
+      "blockNumber": {
+        "displayName": ["BlockNumber"],
+        "type": 1
+      },
+      "chainExtension": {
+        "displayName": ["ChainExtension"],
+        "type": 37
+      },
+      "hash": {
+        "displayName": ["Hash"],
+        "type": 36
+      },
+      "maxEventTopics": 4,
+      "staticBufferSize": 16384,
+      "timestamp": {
+        "displayName": ["Timestamp"],
+        "type": 14
+      }
+    },
+    "events": [
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "cluster_id",
+            "type": {
+              "displayName": ["ClusterId"],
+              "type": 18
+            }
+          },
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "owner_id",
+            "type": {
+              "displayName": ["AccountId"],
+              "type": 21
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "amount",
+            "type": {
+              "displayName": ["Balance"],
+              "type": 2
+            }
+          }
+        ],
+        "docs": ["This event should be emitted for any customer who deposited funds."],
+        "label": "DdcBalanceDeposited",
+        "module_path": "ddc_primitives::contracts::customer_deposit::events",
+        "signature_topic": "0x5b6d40e103624b4c551be042e050915209a5ab49a928c3b181a06a3a1885e6f0"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "cluster_id",
+            "type": {
+              "displayName": ["ClusterId"],
+              "type": 18
+            }
+          },
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "owner_id",
+            "type": {
+              "displayName": ["AccountId"],
+              "type": 21
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "amount",
+            "type": {
+              "displayName": ["Balance"],
+              "type": 2
+            }
+          }
+        ],
+        "docs": ["This event should be emitted for any customer who initiated unlocking of deposit."],
+        "label": "DdcBalanceUnlocked",
+        "module_path": "ddc_primitives::contracts::customer_deposit::events",
+        "signature_topic": "0x23675c3332cb2187e6029af300d9b5e14814a1212cfaec983f962988aa488653"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "cluster_id",
+            "type": {
+              "displayName": ["ClusterId"],
+              "type": 18
+            }
+          },
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "owner_id",
+            "type": {
+              "displayName": ["AccountId"],
+              "type": 21
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "amount",
+            "type": {
+              "displayName": ["Balance"],
+              "type": 2
+            }
+          }
+        ],
+        "docs": ["This event should be emitted for any customer who did withdrawal of unlocked funds."],
+        "label": "DdcBalanceWithdrawn",
+        "module_path": "ddc_primitives::contracts::customer_deposit::events",
+        "signature_topic": "0x55b26822df868a289423cd7b3a691f8789e9bcb61d3e4cb994e6e8b593046dbd"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "cluster_id",
+            "type": {
+              "displayName": ["ClusterId"],
+              "type": 18
+            }
+          },
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "owner_id",
+            "type": {
+              "displayName": ["AccountId"],
+              "type": 21
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "charged",
+            "type": {
+              "displayName": ["Balance"],
+              "type": 2
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "expected",
+            "type": {
+              "displayName": ["Balance"],
+              "type": 2
+            }
+          }
+        ],
+        "docs": ["This event should be emitted for any customer who has been charged during payouts."],
+        "label": "DdcBalanceCharged",
+        "module_path": "ddc_primitives::contracts::customer_deposit::events",
+        "signature_topic": "0x9db6acf54011fb413d2878834705faf7952aa27a12db083b35fca6c64ca2b2d0"
+      }
+    ],
+    "lang_error": {
+      "displayName": ["ink", "LangError"],
+      "type": 20
+    },
+    "messages": [
+      {
+        "args": [
+          {
+            "label": "owner",
+            "type": {
+              "displayName": ["AccountId32"],
+              "type": 21
+            }
+          }
+        ],
+        "default": false,
+        "docs": [" Fetches customer balance in DDC cluster."],
+        "label": "DdcBalancesFetcher::get_balance",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 22
+        },
+        "selector": "0xa40735c6"
+      },
+      {
+        "args": [
+          {
+            "label": "from_index",
+            "type": {
+              "displayName": ["u64"],
+              "type": 14
+            }
+          },
+          {
+            "label": "limit",
+            "type": {
+              "displayName": ["u64"],
+              "type": 14
+            }
+          }
+        ],
+        "default": false,
+        "docs": [" Fetches customers balances in DDC cluster in a paginated manner."],
+        "label": "DdcBalancesFetcher::get_balances",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 27
+        },
+        "selector": "0xbc7c9644"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [" Top up deposit balance on behalf its owner."],
+        "label": "DdcBalancesDepositor::deposit",
+        "mutates": true,
+        "payable": true,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 29
+        },
+        "selector": "0x2d1d8745"
+      },
+      {
+        "args": [
+          {
+            "label": "owner",
+            "type": {
+              "displayName": ["AccountId32"],
+              "type": 21
+            }
+          }
+        ],
+        "default": false,
+        "docs": [" Top up deposit balance for specific owner on behalf faucet."],
+        "label": "DdcBalancesDepositor::deposit_for",
+        "mutates": true,
+        "payable": true,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 29
+        },
+        "selector": "0xd8c1df42"
+      },
+      {
+        "args": [
+          {
+            "label": "value",
+            "type": {
+              "displayName": ["BalanceU128"],
+              "type": 2
+            }
+          }
+        ],
+        "default": false,
+        "docs": [" Initiate unlocking of deposit balance on behalf its owner."],
+        "label": "DdcBalancesDepositor::unlock_deposit",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 29
+        },
+        "selector": "0x91be5b57"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [" Withdraw unlocked deposit balance on behalf its owner."],
+        "label": "DdcBalancesDepositor::withdraw_unlocked",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 29
+        },
+        "selector": "0x52402e18"
+      },
+      {
+        "args": [
+          {
+            "label": "payout_vault",
+            "type": {
+              "displayName": ["AccountId32"],
+              "type": 21
+            }
+          },
+          {
+            "label": "batch",
+            "type": {
+              "displayName": ["Vec"],
+              "type": 33
+            }
+          }
+        ],
+        "default": false,
+        "docs": [" Charges customers for DDC service usage while DAC-based payouts are in progress."],
+        "label": "DdcPayoutsPayer::charge",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 35
+        },
+        "selector": "0x18c2a328"
+      }
+    ]
+  },
+  "storage": {
+    "root": {
+      "layout": {
+        "struct": {
+          "fields": [
+            {
+              "layout": {
+                "array": {
+                  "layout": {
+                    "leaf": {
+                      "key": "0x00000000",
+                      "ty": 0
+                    }
+                  },
+                  "len": 20,
+                  "offset": "0x00000000"
+                }
+              },
+              "name": "cluster_id"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 1
+                }
+              },
+              "name": "unlock_delay_blocks"
+            },
+            {
+              "layout": {
+                "root": {
+                  "layout": {
+                    "struct": {
+                      "fields": [
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x02c047f0",
+                              "ty": 2
+                            }
+                          },
+                          "name": "total"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x02c047f0",
+                              "ty": 2
+                            }
+                          },
+                          "name": "active"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x02c047f0",
+                              "ty": 3
+                            }
+                          },
+                          "name": "unlocking"
+                        }
+                      ],
+                      "name": "CustomerLedger"
+                    }
+                  },
+                  "root_key": "0x02c047f0",
+                  "ty": 5
+                }
+              },
+              "name": "balances"
+            },
+            {
+              "layout": {
+                "root": {
+                  "layout": {
+                    "leaf": {
+                      "key": "0x421d3cb3",
+                      "ty": 6
+                    }
+                  },
+                  "root_key": "0x421d3cb3",
+                  "ty": 13
+                }
+              },
+              "name": "accounts"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 14
+                }
+              },
+              "name": "count"
+            }
+          ],
+          "name": "CustomerDepositContract"
+        }
+      },
+      "root_key": "0x00000000",
+      "ty": 17
+    }
+  },
+  "types": [
+    {
+      "id": 0,
+      "type": {
+        "def": {
+          "primitive": "u8"
+        }
+      }
+    },
+    {
+      "id": 1,
+      "type": {
+        "def": {
+          "primitive": "u32"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": {
+        "def": {
+          "primitive": "u128"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": {
+        "def": {
+          "sequence": {
+            "type": 4
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "value",
+                "type": 2,
+                "typeName": "Balance"
+              },
+              {
+                "name": "block",
+                "type": 1,
+                "typeName": "BlockNumber"
+              }
+            ]
+          }
+        },
+        "path": ["customer_deposit", "customer_deposit", "LinearUnlockChunk"]
+      }
+    },
+    {
+      "id": 5,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "K",
+            "type": 6
+          },
+          {
+            "name": "V",
+            "type": 8
+          },
+          {
+            "name": "KeyType",
+            "type": 9
+          }
+        ],
+        "path": ["ink_storage", "lazy", "mapping", "Mapping"]
+      }
+    },
+    {
+      "id": 6,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "type": 7,
+                "typeName": "[u8; 32]"
+              }
+            ]
+          }
+        },
+        "path": ["ink_primitives", "types", "AccountId"]
+      }
+    },
+    {
+      "id": 7,
+      "type": {
+        "def": {
+          "array": {
+            "len": 32,
+            "type": 0
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "total",
+                "type": 2,
+                "typeName": "Balance"
+              },
+              {
+                "name": "active",
+                "type": 2,
+                "typeName": "Balance"
+              },
+              {
+                "name": "unlocking",
+                "type": 3,
+                "typeName": "Vec<LinearUnlockChunk>"
+              }
+            ]
+          }
+        },
+        "path": ["customer_deposit", "customer_deposit", "CustomerLedger"]
+      }
+    },
+    {
+      "id": 9,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "L",
+            "type": 10
+          },
+          {
+            "name": "R",
+            "type": 11
+          }
+        ],
+        "path": ["ink_storage_traits", "impls", "ResolverKey"]
+      }
+    },
+    {
+      "id": 10,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "path": ["ink_storage_traits", "impls", "AutoKey"]
+      }
+    },
+    {
+      "id": 11,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "ParentKey",
+            "type": 12
+          }
+        ],
+        "path": ["ink_storage_traits", "impls", "ManualKey"]
+      }
+    },
+    {
+      "id": 12,
+      "type": {
+        "def": {
+          "tuple": []
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "K",
+            "type": 14
+          },
+          {
+            "name": "V",
+            "type": 6
+          },
+          {
+            "name": "KeyType",
+            "type": 15
+          }
+        ],
+        "path": ["ink_storage", "lazy", "mapping", "Mapping"]
+      }
+    },
+    {
+      "id": 14,
+      "type": {
+        "def": {
+          "primitive": "u64"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "L",
+            "type": 10
+          },
+          {
+            "name": "R",
+            "type": 16
+          }
+        ],
+        "path": ["ink_storage_traits", "impls", "ResolverKey"]
+      }
+    },
+    {
+      "id": 16,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "ParentKey",
+            "type": 12
+          }
+        ],
+        "path": ["ink_storage_traits", "impls", "ManualKey"]
+      }
+    },
+    {
+      "id": 17,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "cluster_id",
+                "type": 18,
+                "typeName": "<ClusterId20 as::ink::storage::traits::AutoStorableHint<::ink::\nstorage::traits::ManualKey<3513687822u32, ()>,>>::Type"
+              },
+              {
+                "name": "unlock_delay_blocks",
+                "type": 1,
+                "typeName": "<u32 as::ink::storage::traits::AutoStorableHint<::ink::storage\n::traits::ManualKey<2857032902u32, ()>,>>::Type"
+              },
+              {
+                "name": "balances",
+                "type": 5,
+                "typeName": "<Mapping<AccountId, CustomerLedger> as::ink::storage::traits::\nAutoStorableHint<::ink::storage::traits::ManualKey<4031234050u32,\n()>,>>::Type"
+              },
+              {
+                "name": "accounts",
+                "type": 13,
+                "typeName": "<Mapping<u64, AccountId> as::ink::storage::traits::\nAutoStorableHint<::ink::storage::traits::ManualKey<3007061314u32,\n()>,>>::Type"
+              },
+              {
+                "name": "count",
+                "type": 14,
+                "typeName": "<u64 as::ink::storage::traits::AutoStorableHint<::ink::storage\n::traits::ManualKey<3361983834u32, ()>,>>::Type"
+              }
+            ]
+          }
+        },
+        "path": ["customer_deposit", "customer_deposit", "CustomerDepositContract"]
+      }
+    },
+    {
+      "id": 18,
+      "type": {
+        "def": {
+          "array": {
+            "len": 20,
+            "type": 0
+          }
+        }
+      }
+    },
+    {
+      "id": 19,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 12
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 20
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 12
+          },
+          {
+            "name": "E",
+            "type": 20
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 20,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 1,
+                "name": "CouldNotReadInput"
+              }
+            ]
+          }
+        },
+        "path": ["ink_primitives", "LangError"]
+      }
+    },
+    {
+      "id": 21,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "type": 7,
+                "typeName": "[u8; 32]"
+              }
+            ]
+          }
+        },
+        "path": ["sp_core", "crypto", "AccountId32"]
+      }
+    },
+    {
+      "id": 22,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 23
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 20
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 23
+          },
+          {
+            "name": "E",
+            "type": 20
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 23,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "None"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 24
+                  }
+                ],
+                "index": 1,
+                "name": "Some"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 24
+          }
+        ],
+        "path": ["Option"]
+      }
+    },
+    {
+      "id": 24,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "owner",
+                "type": 21,
+                "typeName": "AccountId"
+              },
+              {
+                "name": "total",
+                "type": 2,
+                "typeName": "Balance"
+              },
+              {
+                "name": "active",
+                "type": 2,
+                "typeName": "Balance"
+              },
+              {
+                "name": "unlocking",
+                "type": 25,
+                "typeName": "Vec<UnlockChunk>"
+              }
+            ]
+          }
+        },
+        "path": ["ddc_primitives", "contracts", "customer_deposit", "types", "Ledger"]
+      }
+    },
+    {
+      "id": 25,
+      "type": {
+        "def": {
+          "sequence": {
+            "type": 26
+          }
+        }
+      }
+    },
+    {
+      "id": 26,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "value",
+                "type": 2,
+                "typeName": "Balance"
+              },
+              {
+                "name": "block",
+                "type": 1,
+                "typeName": "BlockNumber"
+              }
+            ]
+          }
+        },
+        "path": ["ddc_primitives", "contracts", "customer_deposit", "types", "UnlockChunk"]
+      }
+    },
+    {
+      "id": 27,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 28
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 20
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 28
+          },
+          {
+            "name": "E",
+            "type": 20
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 28,
+      "type": {
+        "def": {
+          "sequence": {
+            "type": 24
+          }
+        }
+      }
+    },
+    {
+      "id": 29,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 30
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 20
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 30
+          },
+          {
+            "name": "E",
+            "type": 20
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 30,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 12
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 31
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 12
+          },
+          {
+            "name": "E",
+            "type": 31
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 31,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 32,
+                    "typeName": "u16"
+                  }
+                ],
+                "index": 0,
+                "name": "Code"
+              }
+            ]
+          }
+        },
+        "path": ["ddc_primitives", "contracts", "customer_deposit", "errors", "Error"]
+      }
+    },
+    {
+      "id": 32,
+      "type": {
+        "def": {
+          "primitive": "u16"
+        }
+      }
+    },
+    {
+      "id": 33,
+      "type": {
+        "def": {
+          "sequence": {
+            "type": 34
+          }
+        }
+      }
+    },
+    {
+      "id": 34,
+      "type": {
+        "def": {
+          "tuple": [21, 2]
+        }
+      }
+    },
+    {
+      "id": 35,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 33
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 20
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 33
+          },
+          {
+            "name": "E",
+            "type": 20
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 36,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "type": 7,
+                "typeName": "[u8; 32]"
+              }
+            ]
+          }
+        },
+        "path": ["ink_primitives", "types", "Hash"]
+      }
+    },
+    {
+      "id": 37,
+      "type": {
+        "def": {
+          "variant": {}
+        },
+        "path": ["customer_deposit", "DdcPayoutsExtension"]
+      }
+    }
+  ],
+  "version": 5
+} as const;
+export default customerDepositAbi;

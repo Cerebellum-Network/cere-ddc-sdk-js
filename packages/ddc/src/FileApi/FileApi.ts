@@ -285,8 +285,16 @@ export class FileApi {
             bytesStoredOrDelivered += body.data.byteLength;
 
             if (enableAcks) {
-              call.requests
-                .send({
+              /**
+               * Await the acknowledgment send so the read applies backpressure: the node
+               * caps how many delivered-but-unacknowledged bytes it will tolerate
+               * (`UNACKNOWLEDGED_DELIVERY_QUOTA_*`), and a fire-and-forget send lets fast
+               * delivery outrun the acks — the node then aborts with "achieved max limit of
+               * unacknowledged delivery". Awaiting bounds the outstanding unacked bytes to a
+               * single chunk. A failed ack is logged but does not abort the read.
+               */
+              try {
+                await call.requests.send({
                   body: {
                     oneofKind: 'ack',
                     ack: await createAck(
@@ -294,21 +302,19 @@ export class FileApi {
                       { token, signer, logger: this.logger },
                     ),
                   },
-                })
-                .then(() => {
-                  this.logger.info(
-                    'Acknowledgment sent with request ID: %s (%d bytes)',
-                    requestId,
-                    bytesStoredOrDelivered,
-                  );
-                })
-                .catch(() => {
-                  this.logger.warn(
-                    'Failed to send acknowledgment with request ID: %s (%d bytes)',
-                    requestId,
-                    bytesStoredOrDelivered,
-                  );
                 });
+                this.logger.info(
+                  'Acknowledgment sent with request ID: %s (%d bytes)',
+                  requestId,
+                  bytesStoredOrDelivered,
+                );
+              } catch {
+                this.logger.warn(
+                  'Failed to send acknowledgment with request ID: %s (%d bytes)',
+                  requestId,
+                  bytesStoredOrDelivered,
+                );
+              }
             }
 
             await validator.update(body.data);

@@ -1,4 +1,6 @@
-@cere-ddc-sdk/blockchain
+**@cere-ddc-sdk/blockchain**
+
+***
 
 # @cere-ddc-sdk/blockchain
 
@@ -14,6 +16,16 @@
 - [DDCNodesPallet](classes/DDCNodesPallet.md)
 - [DDCStakingPallet](classes/DDCStakingPallet.md)
 
+## Classes
+
+- [CustomerDepositContracts](classes/CustomerDepositContracts.md)
+
+## Functions
+
+- [createRandomSigner](functions/createRandomSigner.md)
+- [decodeAddress](functions/decodeAddress.md)
+- [encodeAddress](functions/encodeAddress.md)
+
 ## Signers
 
 - [CereWalletSigner](classes/CereWalletSigner.md)
@@ -25,20 +37,9 @@
 
 ## Type Aliases
 
-### ClusterGovernmentParams
+- [~~ClusterGovernmentParams~~](type-aliases/ClusterGovernmentParams.md)
+- [~~ClusterProps~~](type-aliases/ClusterProps.md)
 
-Ƭ **ClusterGovernmentParams**: `ClusterProtocolParams`
+## Variables
 
-**`Deprecated`**
-
-Use ClusterProtocolParams instead.
-
-___
-
-### ClusterProps
-
-Ƭ **ClusterProps**: `ClusterParams`
-
-**`Deprecated`**
-
-Use ClusterParams instead.
+- [CERE\_SS58\_PREFIX](variables/CERE_SS58_PREFIX.md)

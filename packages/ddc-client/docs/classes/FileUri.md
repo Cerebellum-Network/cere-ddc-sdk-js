@@ -1,3 +1,7 @@
+[**@cere-ddc-sdk/ddc-client**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc-client](../README.md) / FileUri
 
 # Class: FileUri
@@ -6,72 +10,72 @@ Represents a URI for a file in DDC.
 
 A FileUri extends the DdcUri class with the entity type set to 'file'.
 
-## Hierarchy
+## Extends
 
-- [`DdcUri`](DdcUri.md)\<``"file"``\>
-
-  ↳ **`FileUri`**
+- [`DdcUri`](DdcUri.md)\<`"file"`\>
 
 ## Properties
 
 ### bucketId
 
-• `Readonly` **bucketId**: `bigint`
+> `readonly` **bucketId**: `bigint`
 
 The bucket identifier.
 
 #### Inherited from
 
-[DdcUri](DdcUri.md).[bucketId](DdcUri.md#bucketid)
+[`DdcUri`](DdcUri.md).[`bucketId`](DdcUri.md#bucketid)
 
-___
+***
 
 ### cid
 
-• `Readonly` **cid**: `string` = `''`
+> `readonly` **cid**: `string` = `''`
 
 The Content Identifier (CID) of the entity.
 
 #### Inherited from
 
-[DdcUri](DdcUri.md).[cid](DdcUri.md#cid)
+[`DdcUri`](DdcUri.md).[`cid`](DdcUri.md#cid)
 
-___
+***
 
 ### entity
 
-• `Readonly` **entity**: ``"file"``
+> `readonly` **entity**: `"file"`
 
 The type of the entity.
 
 #### Inherited from
 
-[DdcUri](DdcUri.md).[entity](DdcUri.md#entity)
+[`DdcUri`](DdcUri.md).[`entity`](DdcUri.md#entity)
 
-___
+***
 
-### name
+### name?
 
-• `Optional` `Readonly` **name**: `string`
+> `readonly` `optional` **name?**: `string`
 
 The name of the entity.
 
 #### Inherited from
 
-[DdcUri](DdcUri.md).[name](DdcUri.md#name)
+[`DdcUri`](DdcUri.md).[`name`](DdcUri.md#name)
 
 ## Accessors
 
 ### cidOrName
 
-• `get` **cidOrName**(): `string`
+#### Get Signature
+
+> **get** **cidOrName**(): `string`
 
 The CID or name of the entity.
 
-#### Returns
+##### Returns
 
 `string`
 
 #### Inherited from
 
-DdcUri.cidOrName
+[`DdcUri`](DdcUri.md).[`cidOrName`](DdcUri.md#cidorname)

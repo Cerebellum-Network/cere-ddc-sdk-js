@@ -51,9 +51,8 @@ export const createToken = async (options: TokenOptions) => {
   });
 
   if (options.signer) {
-    const signer = await createSigner(options.signer, options.signerType);
+    const signer = await createSigner(options.signer, options.signerType, options.signerPassphrase);
 
-    await signer.unlock(options.signerPassphrase);
     await token.sign(signer);
   }
 

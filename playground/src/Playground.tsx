@@ -3,21 +3,20 @@ import { useDropzone } from 'react-dropzone';
 import { LoadingButton } from '@mui/lab';
 import { EmbedWallet } from '@cere/embed-wallet';
 import FileIcon from '@mui/icons-material/InsertDriveFileOutlined';
-import { Blockchain, Cluster, BucketId, ClusterId, Web3Signer, CereWalletSigner } from '@cere-ddc-sdk/blockchain';
-
 import {
-  File,
-  Signer,
-  UriSigner,
-  MB,
-  DEVNET,
-  TESTNET,
-  MAINNET,
-  DdcClient,
-  DagNode,
-  Link,
-  DagNodeUri,
-} from '@cere-ddc-sdk/ddc-client';
+  connect,
+  decodeAddress,
+  CERE_WS,
+  type CereClient,
+  type CereNetwork,
+  type BucketId,
+  type ClusterId,
+  type SignerType,
+  Web3Signer,
+  CereWalletSigner,
+} from '@cere-ddc-sdk/blockchain';
+
+import { File, Signer, UriSigner, MB, DdcClient, DagNode, Link, DagNodeUri } from '@cere-ddc-sdk/ddc-client';
 
 import {
   Container,
@@ -39,10 +38,6 @@ import {
   styled,
   Link as MuiLink,
   ListItemIcon,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
   Alert,
   Checkbox,
   FormControlLabel,
@@ -50,6 +45,54 @@ import {
 
 import { CERE, USER_SEED } from './constants';
 import { createDataStream } from './helpers';
+
+const hexToU8a = (hex: string) => {
+  const clean = hex.startsWith('0x') ? hex.slice(2) : hex;
+  const bytes = new Uint8Array(clean.length / 2);
+
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(clean.substr(i * 2, 2), 16);
+  }
+
+  return bytes;
+};
+
+const u8aToHex = (bytes: Uint8Array) => `0x${Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+
+const SIGNER_TYPES: readonly SignerType[] = ['ed25519', 'sr25519', 'ecdsa', 'ethereum'];
+
+/** Narrows an `EmbedWallet` account's key type to a papi `SignerType`, when recognized. */
+const isSignerType = (type?: string): type is SignerType => SIGNER_TYPES.includes(type as SignerType);
+
+/**
+ * Adapts a connected `EmbedWallet` account into a chain-free papi `CereWalletSigner`.
+ * `EmbedWallet`'s `Signer.signMessage` only signs/returns strings (encoding
+ * unspecified), so bytes are hex-encoded going in and hex-decoded coming back —
+ * a pragmatic bridge for this demo, not a guaranteed-stable wire format.
+ */
+const toCereWalletSigner = async (wallet: EmbedWallet) => {
+  await wallet.connect();
+
+  const [account] = await wallet.getAccounts();
+
+  if (!account) {
+    throw new Error('Cere Wallet has no connected accounts');
+  }
+
+  const walletSigner = wallet.getSigner({ address: account.address });
+  const publicKey = decodeAddress(account.address);
+  // Derive the signer's key type from the connected account; fall back to
+  // `sr25519` (CereWalletSigner's own default) when the account exposes no
+  // key type recognized by papi's `SignerType`.
+  const type = isSignerType(account.type) ? account.type : 'sr25519';
+
+  return new CereWalletSigner(
+    account.address,
+    publicKey,
+    async (bytes) => hexToU8a(await walletSigner.signMessage(u8aToHex(bytes))),
+    type,
+  );
+};
 
 const Dropzone = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -62,14 +105,16 @@ const Dropzone = styled(Box)(({ theme }) => ({
   cursor: 'pointer',
 }));
 
-const bcPresets = {
-  devnet: { ...DEVNET, baseUrl: 'https://storage.devnet.cere.network' },
-  testnet: { ...TESTNET, baseUrl: 'https://storage.testnet.cere.network' },
-  mainnet: { ...MAINNET, baseUrl: 'https://storage.dragon.cere.network' },
-  custom: {
-    blockchain: __BC_ENDPOINT__ || '',
-    baseUrl: 'http://localhost:8091',
-  },
+/**
+ * Public storage/CDN endpoints per network. The SDK itself has no baked-in
+ * presets (single-cluster config), but the playground keeps this small map as
+ * an app-level convenience so picking "Testnet" etc. still fills in sensible
+ * defaults; `custom` lets the user type all three (+ the RPC URL) by hand.
+ */
+const NETWORK_ENDPOINTS: Record<CereNetwork, { storageUrl: string; cdnUrl: string }> = {
+  devnet: { storageUrl: 'https://storage.devnet.dragon-1.xyz', cdnUrl: 'https://cdn.devnet.dragon-1.xyz' },
+  testnet: { storageUrl: 'https://storage.testnet.dragon-1.xyz', cdnUrl: 'https://cdn.testnet.dragon-1.xyz' },
+  mainnet: { storageUrl: 'https://storage.dragon-1.xyz', cdnUrl: 'https://cdn.dragon-1.xyz' },
 };
 
 export const Playground = () => {
@@ -90,22 +135,24 @@ export const Playground = () => {
   const [step, setStep] = useState(0);
   const [errorStep, setErrorStep] = useState<number>();
   const [selectedBc, setSelectedBc] = useState<'devnet' | 'testnet' | 'mainnet' | 'custom'>('devnet');
-  const [bcCustomUrl, setBcCustomUrl] = useState(bcPresets.custom.blockchain);
-  const [clusterId, setClusterId] = useState<string>();
-  const [clusters, setClusters] = useState<Cluster[]>([]);
+  const [bcCustomUrl, setBcCustomUrl] = useState(__BC_ENDPOINT__ || '');
+  const [clusterId, setClusterId] = useState('');
+  const [customStorageUrl, setCustomStorageUrl] = useState('http://localhost:8091');
+  const [customCdnUrl, setCustomCdnUrl] = useState('');
+  const [storageUrl, setStorageUrl] = useState<string>();
+  const [cdnUrl, setCdnUrl] = useState<string>();
   const [bucketId, setBucketId] = useState<BucketId | undefined>();
   const [isNewBucket, setIsNewBucket] = useState(false);
   const [balance, setBalance] = useState<string>();
   const [deposit, setDeposit] = useState<string>();
   const [extraDeposit, setExtraDeposit] = useState<number>(0);
   const [client, setClient] = useState<DdcClient>();
-  const [blockchain, setBlockchain] = useState<Blockchain>();
+  const [blockchain, setBlockchain] = useState<CereClient>();
 
   const isCompleted = !!realFileCid && !!randomFileCid;
-  const currentClusterId = clusterId || clusters[0]?.clusterId;
 
-  const getFileUrlByName = (name: string) => [bcPresets[selectedBc].baseUrl, bucketId, cnsName, name].join('/');
-  const getFileUrlByCid = (cid: string) => [bcPresets[selectedBc].baseUrl, bucketId, cid].join('/');
+  const getFileUrlByName = (name: string) => [cdnUrl || storageUrl, bucketId, cnsName, name].join('/');
+  const getFileUrlByCid = (cid: string) => [cdnUrl || storageUrl, bucketId, cid].join('/');
 
   const cereWallet = useMemo(() => new EmbedWallet({ env: 'dev', appId: 'ddc-playground' }), []);
   const handleSkip = useCallback(() => {
@@ -118,23 +165,23 @@ export const Playground = () => {
 
     let signer: Signer | undefined;
 
-    if (signerType === 'cere-wallet') {
-      if (cereWallet.status === 'not-ready') {
-        await cereWallet.init();
+    try {
+      if (signerType === 'cere-wallet') {
+        if (cereWallet.status === 'not-ready') {
+          await cereWallet.init();
+        }
+
+        signer = await toCereWalletSigner(cereWallet);
       }
 
-      signer = new CereWalletSigner(cereWallet);
-    }
+      if (signerType === 'extension') {
+        [signer] = await Web3Signer.fromExtension('polkadot-js');
+      }
 
-    if (signerType === 'extension') {
-      signer = new Web3Signer();
-    }
+      if (signerType === 'seed') {
+        signer = new UriSigner(seed);
+      }
 
-    if (signerType === 'seed') {
-      signer = new UriSigner(seed);
-    }
-
-    try {
       await signer?.isReady();
       setStep(1);
     } catch (error) {
@@ -158,7 +205,8 @@ export const Playground = () => {
 
     try {
       setInProgress(true);
-      const newBucketId = await client!.createBucket(currentClusterId as ClusterId, {
+      // Bucket creation targets the client's configured `clusterId` (single-cluster SDK).
+      const newBucketId = await client!.createBucket({
         isPublic: true,
       });
 
@@ -169,7 +217,7 @@ export const Playground = () => {
     }
 
     setInProgress(false);
-  }, [bucketId, client, currentClusterId, isNewBucket, step]);
+  }, [bucketId, client, isNewBucket, step]);
 
   const handleRandomFileUpload = useCallback(async () => {
     setInProgress(true);
@@ -190,7 +238,7 @@ export const Playground = () => {
       setRandomFileCid(uri.cid);
       setStep(step + 1);
     } catch (error) {
-      setErrorStep(5);
+      setErrorStep(4);
     }
 
     setInProgress(false);
@@ -229,67 +277,59 @@ export const Playground = () => {
       setRealFileCid(uri.cid);
       setStep(step + 1);
     } catch (error) {
-      setErrorStep(6);
+      setErrorStep(5);
     }
 
     setInProgress(false);
   }, [client, bucketId, dropzone.acceptedFiles, step]);
 
   const handleInitClient = useCallback(async () => {
-    const preset = bcPresets[selectedBc];
+    if (!clusterId) return;
 
-    if (selectedBc === 'custom') {
-      preset.blockchain = bcCustomUrl;
-    }
+    const endpoints =
+      selectedBc === 'custom'
+        ? { storageUrl: customStorageUrl, cdnUrl: customCdnUrl || undefined }
+        : NETWORK_ENDPOINTS[selectedBc];
 
     try {
       setInProgress(true);
-      const blockchain = await Blockchain.connect({ wsEndpoint: preset.blockchain });
-      const client = await DdcClient.create(signer!, { ...preset, blockchain, logLevel: 'debug' });
-      const [clusters, balance] = await Promise.all([blockchain.ddcClusters.listClusters(), client.getBalance()]);
+      const blockchain = selectedBc === 'custom' ? connect(bcCustomUrl) : connect({ network: selectedBc });
+      const client = await DdcClient.create(signer!, {
+        blockchain,
+        logLevel: 'debug',
+        clusterId: clusterId as ClusterId,
+        storageUrl: endpoints.storageUrl,
+        cdnUrl: endpoints.cdnUrl,
+      });
+      const [depositAmount, balanceAmount] = await Promise.all([client.getDeposit(), client.getBalance()]);
 
       setBlockchain(blockchain);
       setClient(client);
-      setClusters(clusters);
-      setBalance(blockchain.formatBalance(balance, false));
+      setStorageUrl(endpoints.storageUrl);
+      setCdnUrl(endpoints.cdnUrl);
+      setBalance(await blockchain.chain.formatBalance(balanceAmount, false));
+      setDeposit(await blockchain.chain.formatBalance(depositAmount, false));
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
     }
 
     setInProgress(false);
-  }, [selectedBc, step, bcCustomUrl, signer]);
-
-  const handleClusterSelect = useCallback(async () => {
-    if (!currentClusterId) return;
-
-    try {
-      setInProgress(true);
-      const deposit = await client!.getDeposit(currentClusterId as ClusterId);
-      setDeposit(blockchain!.formatBalance(deposit, false));
-      setStep(step + 1);
-    } catch (error) {
-      setErrorStep(step);
-    }
-
-    setInProgress(false);
-  }, [client, blockchain, currentClusterId, step]);
+  }, [selectedBc, step, bcCustomUrl, customStorageUrl, customCdnUrl, clusterId, signer]);
 
   const handleDeposit = useCallback(async () => {
-    if (!currentClusterId) return;
-
     try {
       setInProgress(true);
-      await client!.depositBalance(currentClusterId as ClusterId, BigInt(extraDeposit) * CERE);
-      const updatedDeposit = await client!.getDeposit(currentClusterId as ClusterId);
-      setDeposit(blockchain!.formatBalance(updatedDeposit, false));
+      await client!.depositBalance(BigInt(extraDeposit) * CERE);
+      const updatedDeposit = await client!.getDeposit();
+      setDeposit(await blockchain!.chain.formatBalance(updatedDeposit, false));
       setStep(step + 1);
     } catch (error) {
       setErrorStep(step);
     }
 
     setInProgress(false);
-  }, [client, blockchain, currentClusterId, extraDeposit, step]);
+  }, [client, blockchain, extraDeposit, step]);
 
   return (
     <Container maxWidth="md" sx={{ paddingY: 2 }}>
@@ -368,6 +408,7 @@ export const Playground = () => {
                 <Typography color="GrayText" variant="caption" textTransform="capitalize">
                   {' - '}
                   {selectedBc}
+                  {clusterId ? ` (${clusterId})` : ''}
                 </Typography>
               )}
             </StepLabel>
@@ -391,79 +432,66 @@ export const Playground = () => {
                     fullWidth
                     size="small"
                     type="url"
+                    label="RPC URL"
                     placeholder="wss://..."
-                    value={selectedBc === 'custom' ? bcCustomUrl : bcPresets[selectedBc].blockchain}
+                    value={selectedBc === 'custom' ? bcCustomUrl : CERE_WS[selectedBc]}
                     onChange={(event) => setBcCustomUrl(event.target.value)}
+                    InputProps={{
+                      readOnly: selectedBc !== 'custom',
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Cluster ID"
+                    placeholder="0x..."
+                    value={clusterId}
+                    onChange={(event) => setClusterId(event.target.value)}
+                  />
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="url"
+                    label="Storage URL"
+                    value={selectedBc === 'custom' ? customStorageUrl : NETWORK_ENDPOINTS[selectedBc].storageUrl}
+                    onChange={(event) => setCustomStorageUrl(event.target.value)}
+                    InputProps={{
+                      readOnly: selectedBc !== 'custom',
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="url"
+                    label="CDN URL (optional)"
+                    value={selectedBc === 'custom' ? customCdnUrl : NETWORK_ENDPOINTS[selectedBc].cdnUrl}
+                    onChange={(event) => setCustomCdnUrl(event.target.value)}
                     InputProps={{
                       readOnly: selectedBc !== 'custom',
                     }}
                   />
                 </Stack>
 
-                <LoadingButton loading={inProgress} variant="contained" onClick={handleInitClient}>
+                <LoadingButton
+                  loading={inProgress}
+                  disabled={!clusterId}
+                  variant="contained"
+                  onClick={handleInitClient}
+                >
                   Continue
                 </LoadingButton>
               </Stack>
             </StepContent>
           </Step>
 
-          <Step completed={!!currentClusterId && step > 2}>
-            <StepLabel error={errorStep === 2}>
-              Select cluster
-              {currentClusterId && step > 2 && (
-                <Typography color="GrayText" variant="caption">
-                  {' - '}
-                  {currentClusterId}
-                </Typography>
-              )}
-            </StepLabel>
-            <StepContent>
-              {clusters.length === 0 && (
-                <Alert severity="warning" sx={{ marginBottom: 1 }}>
-                  No clusters found on the selected blockchain.
-                </Alert>
-              )}
-
-              <Stack width={450} paddingTop={1} spacing={2} alignItems="start">
-                {!!clusters.length && (
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Cluster</InputLabel>
-                    <Select
-                      label="Cluster"
-                      value={currentClusterId}
-                      onChange={(event) => setClusterId(event.target.value)}
-                    >
-                      {clusters.map(({ clusterId }) => (
-                        <MenuItem key={clusterId} value={clusterId}>
-                          {clusterId}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                )}
-
-                <Stack direction="row" spacing={1}>
-                  <LoadingButton
-                    loading={inProgress}
-                    disabled={!currentClusterId}
-                    variant="contained"
-                    onClick={handleClusterSelect}
-                  >
-                    Continue
-                  </LoadingButton>
-                </Stack>
-              </Stack>
-            </StepContent>
-          </Step>
-
-          <Step completed={!!deposit && Number(deposit) > 0 && step > 3}>
-            <StepLabel error={errorStep === 3}>Make deposit</StepLabel>
+          <Step completed={!!deposit && Number(deposit) > 0 && step > 2}>
+            <StepLabel error={errorStep === 2}>Make deposit</StepLabel>
             <StepContent>
               <Stack spacing={2} alignItems="start">
                 <Stack spacing={0}>
                   <Typography variant="body2">Balance: {balance}</Typography>
                   <Typography variant="body2">Deposit: {deposit || '0'}</Typography>
-                  <Typography variant="body2">Cluster: {currentClusterId}</Typography>
+                  <Typography variant="body2">Cluster: {clusterId}</Typography>
                 </Stack>
 
                 {Number(deposit) > 0 ? (
@@ -505,10 +533,10 @@ export const Playground = () => {
             </StepContent>
           </Step>
 
-          <Step completed={!!bucketId && step > 4}>
-            <StepLabel error={errorStep === 4}>
+          <Step completed={!!bucketId && step > 3}>
+            <StepLabel error={errorStep === 3}>
               Select bucket
-              {!!bucketId && step > 4 && (
+              {!!bucketId && step > 3 && (
                 <Typography color="GrayText" variant="caption">
                   {' - '}
                   {bucketId.toString()}
@@ -517,7 +545,7 @@ export const Playground = () => {
             </StepLabel>
             <StepContent>
               <Stack width={450} paddingTop={1} spacing={2} alignItems="start">
-                <Typography variant="body2">Cluster: {currentClusterId}</Typography>
+                <Typography variant="body2">Cluster: {clusterId}</Typography>
 
                 <Stack spacing={1} direction="row" alignSelf="stretch">
                   <TextField
@@ -553,7 +581,7 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!randomFileCid}>
-            <StepLabel error={errorStep === 5}>
+            <StepLabel error={errorStep === 4}>
               Random file
               {randomFileCid && (
                 <Typography color="GrayText" variant="caption">
@@ -593,7 +621,7 @@ export const Playground = () => {
           </Step>
 
           <Step completed={!!realFileCid}>
-            <StepLabel error={errorStep === 6}>
+            <StepLabel error={errorStep === 5}>
               Real file
               {realFileCid && (
                 <Typography color="GrayText" variant="caption">

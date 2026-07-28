@@ -1,4 +1,6 @@
-@cere-ddc-sdk/ddc
+**@cere-ddc-sdk/ddc**
+
+***
 
 # @cere-ddc-sdk/ddc
 
@@ -33,6 +35,10 @@
 - [Piece](classes/Piece.md)
 - [PieceResponse](classes/PieceResponse.md)
 
+## Functions
+
+- [createCorrelationId](functions/createCorrelationId.md)
+
 ## RPC Transport
 
 - [GrpcTransport](classes/GrpcTransport.md)
@@ -42,5 +48,14 @@
 
 - [JsonSigner](classes/JsonSigner.md)
 - [KeyringSigner](classes/KeyringSigner.md)
-- [Signer](classes/Signer.md)
 - [UriSigner](classes/UriSigner.md)
+- [Signer](interfaces/Signer.md)
+
+## Type Aliases
+
+- [OpperationRetryOptions](type-aliases/OpperationRetryOptions.md)
+
+## Variables
+
+- [KB](variables/KB.md)
+- [MB](variables/MB.md)
