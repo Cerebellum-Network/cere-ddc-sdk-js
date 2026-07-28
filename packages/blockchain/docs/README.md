@@ -4,42 +4,42 @@
 
 # @cere-ddc-sdk/blockchain
 
-## Blockchain
-
-- [Blockchain](classes/Blockchain.md)
-
-## Pallets
-
-- [DDCClustersGovPallet](classes/DDCClustersGovPallet.md)
-- [DDCClustersPallet](classes/DDCClustersPallet.md)
-- [DDCCustomersPallet](classes/DDCCustomersPallet.md)
-- [DDCNodesPallet](classes/DDCNodesPallet.md)
-- [DDCStakingPallet](classes/DDCStakingPallet.md)
-
 ## Classes
 
-- [CustomerDepositContracts](classes/CustomerDepositContracts.md)
-
-## Functions
-
-- [createRandomSigner](functions/createRandomSigner.md)
-- [decodeAddress](functions/decodeAddress.md)
-- [encodeAddress](functions/encodeAddress.md)
-
-## Signers
-
 - [CereWalletSigner](classes/CereWalletSigner.md)
+- [ChainIncompatibleError](classes/ChainIncompatibleError.md)
 - [JsonSigner](classes/JsonSigner.md)
 - [KeyringSigner](classes/KeyringSigner.md)
-- [Signer](classes/Signer.md)
 - [UriSigner](classes/UriSigner.md)
 - [Web3Signer](classes/Web3Signer.md)
 
+## Functions
+
+- [connect](functions/connect.md)
+- [createClustersGovPallet](functions/createClustersGovPallet.md)
+- [createRandomSigner](functions/createRandomSigner.md)
+- [createStakingPallet](functions/createStakingPallet.md)
+- [decodeAddress](functions/decodeAddress.md)
+- [encodeAddress](functions/encodeAddress.md)
+- [inferNetwork](functions/inferNetwork.md)
+- [isSigner](functions/isSigner.md)
+- [resolveClient](functions/resolveClient.md)
+- [toPolkadotSigner](functions/toPolkadotSigner.md)
+
+## Interfaces
+
+- [KeyPair](interfaces/KeyPair.md)
+- [KeystoreJson](interfaces/KeystoreJson.md)
+- [Signer](interfaces/Signer.md)
+
 ## Type Aliases
 
-- [~~ClusterGovernmentParams~~](type-aliases/ClusterGovernmentParams.md)
-- [~~ClusterProps~~](type-aliases/ClusterProps.md)
+- [ChainConfig](type-aliases/ChainConfig.md)
+- [Sendable](type-aliases/Sendable.md)
+- [SignerType](type-aliases/SignerType.md)
+- [SignIntent](type-aliases/SignIntent.md)
+- [UriSignerOptions](type-aliases/UriSignerOptions.md)
 
 ## Variables
 
-- [CERE\_SS58\_PREFIX](variables/CERE_SS58_PREFIX.md)
+- [CERE\_SS58](variables/CERE_SS58.md)

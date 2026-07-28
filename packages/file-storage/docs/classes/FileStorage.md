@@ -12,6 +12,20 @@ It provides methods to read and store files in the DDC.
 
 ## Methods
 
+### disconnect()
+
+> **disconnect**(): `Promise`\<`void`\>
+
+No-op kept for API compatibility. `FileStorage` no longer owns a blockchain
+connection (the `EndpointResolver` only needs the signer), so there's nothing to
+disconnect.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
 ### read()
 
 > **read**(`bucketId`, `cidOrName`, `options?`): `Promise`\<[`FileResponse`](FileResponse.md)\>
@@ -104,7 +118,7 @@ console.log(fileCid);
 
 ### create()
 
-> `static` **create**(`uriOrSigner`, `config?`): `Promise`\<`FileStorage`\>
+> `static` **create**(`uriOrSigner`, `config`): `Promise`\<`FileStorage`\>
 
 Creates a new instance of the `FileStorage` class asynchronously.
 
@@ -116,11 +130,11 @@ Creates a new instance of the `FileStorage` class asynchronously.
 
 A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri).
 
-##### config?
+##### config
 
-`FileStorageConfig` = `DEFAULT_PRESET`
+`Config`
 
-Configuration options for the `FileStorage`. Defaults to TESTNET.
+Configuration options for the `FileStorage`. `storageUrl` is required.
 
 #### Returns
 
@@ -133,7 +147,7 @@ A promise that resolves to a new `FileStorage` instance.
 #### Example
 
 ```typescript
-import { FileStorage, TESTNET } from '@cere-ddc-sdk/file-storage';
+import { FileStorage } from '@cere-ddc-sdk/file-storage';
 
-const fileStorage = await FileStorage.create('//Alice', TESTNET);
+const fileStorage = await FileStorage.create('//Alice', { storageUrl: 'https://storage.example' });
 ```

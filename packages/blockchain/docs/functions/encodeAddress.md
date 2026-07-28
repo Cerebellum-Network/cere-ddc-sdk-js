@@ -6,15 +6,20 @@
 
 # Function: encodeAddress()
 
-> **encodeAddress**(`address`): `string`
+> **encodeAddress**(`publicKeyOrAddress`, `ss58Format?`): `string`
 
-Utilities
+Encode a public key (or re-encode an address) to a Cere ss58 address.
+papi-native replacement for `@polkadot/util-crypto`'s `encodeAddress`.
 
 ## Parameters
 
-### address
+### publicKeyOrAddress
 
-`Uint8Array`
+`string` \| `Uint8Array`\<`ArrayBufferLike`\>
+
+### ss58Format?
+
+`number` = `CERE_SS58`
 
 ## Returns
 

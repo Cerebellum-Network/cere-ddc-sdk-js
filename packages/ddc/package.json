@@ -21,6 +21,9 @@
   },
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.11"
+  },
   "scripts": {
     "build": "npm-run-all --parallel build:node build:web",
     "compile": "rimraf ./src/grpc/* && protoc --ts_opt long_type_number --ts_opt generate_dependencies --ts_opt eslint_disable --ts_out ./src/grpc --proto_path protos ./protos/*.proto",

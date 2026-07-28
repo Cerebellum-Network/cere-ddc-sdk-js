@@ -7,15 +7,15 @@
     "directory": "packages/cli",
     "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "main": "dist/index.js",
   "bin": {
     "cere-ddc": "dist/cli.js"
   },
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.11"
+  },
   "scripts": {
     "build": "microbundle -i src/index.ts -i src/cli.ts --tsconfig tsconfig.build.json --format cjs --target node",
     "package": "clean-publish",

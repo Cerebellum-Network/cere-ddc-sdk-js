@@ -36,6 +36,9 @@
     "directory": "packages/blockchain",
     "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
   },
+  "engines": {
+    "node": ">=22.11"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.papi.json",
     "package": "clean-publish",

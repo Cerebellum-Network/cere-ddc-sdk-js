@@ -6,8 +6,16 @@
 
 ## Classes
 
+- [CereWalletSigner](classes/CereWalletSigner.md)
 - [DdcClient](classes/DdcClient.md)
 - [DdcUri](classes/DdcUri.md)
+- [JsonSigner](classes/JsonSigner.md)
+- [KeyringSigner](classes/KeyringSigner.md)
+- [UriSigner](classes/UriSigner.md)
+
+## Interfaces
+
+- [Signer](interfaces/Signer.md)
 
 ## Variables
 
@@ -30,11 +38,3 @@
 - [File](classes/File.md)
 - [FileResponse](classes/FileResponse.md)
 - [FileUri](classes/FileUri.md)
-
-## Signers
-
-- [CereWalletSigner](classes/CereWalletSigner.md)
-- [JsonSigner](classes/JsonSigner.md)
-- [KeyringSigner](classes/KeyringSigner.md)
-- [UriSigner](classes/UriSigner.md)
-- [Signer](interfaces/Signer.md)

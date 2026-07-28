@@ -14,6 +14,13 @@
 
 - [AuthToken](classes/AuthToken.md)
 
+## Classes
+
+- [CereWalletSigner](classes/CereWalletSigner.md)
+- [JsonSigner](classes/JsonSigner.md)
+- [KeyringSigner](classes/KeyringSigner.md)
+- [UriSigner](classes/UriSigner.md)
+
 ## Content Name System (CNS)
 
 - [CnsApi](classes/CnsApi.md)
@@ -28,6 +35,10 @@
 - [Link](classes/Link.md)
 - [Tag](classes/Tag.md)
 
+## Enumerations
+
+- [RouterOperation](enumerations/RouterOperation.md)
+
 ## Files
 
 - [FileApi](classes/FileApi.md)
@@ -38,22 +49,22 @@
 ## Functions
 
 - [createCorrelationId](functions/createCorrelationId.md)
+- [createResolverNode](functions/createResolverNode.md)
+
+## Interfaces
+
+- [Signer](interfaces/Signer.md)
 
 ## RPC Transport
 
 - [GrpcTransport](classes/GrpcTransport.md)
 - [WebsocketTransport](classes/WebsocketTransport.md)
 
-## Signers
-
-- [JsonSigner](classes/JsonSigner.md)
-- [KeyringSigner](classes/KeyringSigner.md)
-- [UriSigner](classes/UriSigner.md)
-- [Signer](interfaces/Signer.md)
-
 ## Type Aliases
 
 - [OpperationRetryOptions](type-aliases/OpperationRetryOptions.md)
+- [SignerType](type-aliases/SignerType.md)
+- [UriSignerOptions](type-aliases/UriSignerOptions.md)
 
 ## Variables
 

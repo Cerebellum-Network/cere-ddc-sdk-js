@@ -6,235 +6,56 @@
 
 # Class: Web3Signer
 
-Signer that uses browser extensions (eg. PolkadotJs) to sign messages.
+Wraps a papi-injected browser-extension account (PolkadotJs, Talisman, ...)
+as a chain-free `Signer`. The extension itself does the signing — `sign()`
+delegates to the account's papi signer `signBytes`.
 
-## Example
+Extension discovery/connection (`getInjectedExtensions`/`connectInjectedExtension`)
+reads `window.injectedWeb3`, so it only works in a browser with the
+extension installed. The `./papi` build (`tsc -p tsconfig.papi.json`) does
+not do `.node` module substitution, so this file is what ships for both
+browser and Node — `fromExtension()` guards against `window` being
+undefined and throws a clear error instead of a bare `ReferenceError`.
 
-```typescript
-const web3Signer = new Web3Signer({ autoConnect: true });
-const signature = await web3Signer.sign('data');
+## Implements
 
-console.log(signature);
-```
-
-## Extends
-
-- [`Signer`](Signer.md)
-
-## Extended by
-
-- [`CereWalletSigner`](CereWalletSigner.md)
-
-## Accessors
-
-### address
-
-#### Get Signature
-
-> **get** **address**(): `string`
-
-The address of the signer.
-
-##### Returns
-
-`string`
-
-The address of the signer.
-
-#### Overrides
-
-[`Signer`](Signer.md).[`address`](Signer.md#address)
-
-***
-
-### isLocked
-
-#### Get Signature
-
-> **get** **isLocked**(): `boolean`
-
-A boolean indicating whether the signer is locked.
-
-##### Returns
-
-`boolean`
-
-A boolean indicating whether the signer is locked.
-
-#### Overrides
-
-[`Signer`](Signer.md).[`isLocked`](Signer.md#islocked)
-
-***
-
-### publicKey
-
-#### Get Signature
-
-> **get** **publicKey**(): `Uint8Array`\<`ArrayBufferLike`\>
-
-The public key of the signer.
-
-##### Returns
-
-`Uint8Array`\<`ArrayBufferLike`\>
-
-The public key of the signer.
-
-#### Overrides
-
-[`Signer`](Signer.md).[`publicKey`](Signer.md#publickey)
-
-***
-
-### type
-
-#### Get Signature
-
-> **get** **type**(): `KeypairType`
-
-The type of the signer ('ed25519' or 'sr25519').
-
-##### Returns
-
-`KeypairType`
-
-The type of the signer ('ed25519' or 'sr25519').
-
-#### Overrides
-
-[`Signer`](Signer.md).[`type`](Signer.md#type)
+- [`Signer`](../interfaces/Signer.md)
+- `NativePolkadotSigner`
 
 ## Methods
 
-### connect()
+### getPolkadotSigner()
 
-> **connect**(): `Promise`\<`Web3Signer`\>
+> **getPolkadotSigner**(): `PolkadotSigner`
 
-Connects to the underlying Web3 signer.
-
-#### Returns
-
-`Promise`\<`Web3Signer`\>
-
-A promise that resolves to the signer.
-
-#### Throws
-
-An error if the signer cannot be detected.
-
-#### Example
-
-```typescript
-await web3Signer.connect();
-```
-
-***
-
-### getSigner()
-
-> **getSigner**(): `Promise`\<`Signer`\>
+The extension account's native papi signer, used for extrinsic signing.
+The extension signs extrinsics via its signed-payload flow; reconstructing
+an extrinsic signature from `sign()`/`signBytes` (data signing, which the
+extension wraps in `<Bytes>…</Bytes>`) would fail on-chain with BadProof.
 
 #### Returns
 
-`Promise`\<`Signer`\>
+`PolkadotSigner`
 
-#### Inherit Doc
+#### Implementation of
 
-#### Overrides
-
-`Signer.getSigner`
+`NativePolkadotSigner.getPolkadotSigner`
 
 ***
 
-### isReady()
+### fromExtension()
 
-> **isReady**(): `Promise`\<`boolean`\>
+> `static` **fromExtension**(`name`): `Promise`\<`Web3Signer`[]\>
 
-Checks if the signer is ready.
-
-#### Returns
-
-`Promise`\<`boolean`\>
-
-A promise that resolves to a boolean indicating whether the signer is ready.
-
-#### Overrides
-
-[`Signer`](Signer.md).[`isReady`](Signer.md#isready)
-
-***
-
-### sign()
-
-> **sign**(`message`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
-
-Signs data with the signer.
+Connects to a named browser extension (e.g. `'polkadot-js'`) and returns
+one `Web3Signer` per account it exposes.
 
 #### Parameters
 
-##### message
-
-`string` \| `Uint8Array`\<`ArrayBufferLike`\>
-
-The data to sign.
-
-#### Returns
-
-`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
-
-A promise that resolves to the signature.
-
-#### Overrides
-
-[`Signer`](Signer.md).[`sign`](Signer.md#sign)
-
-***
-
-### unlock()
-
-> **unlock**(`passphrase?`): `Promise`\<`void`\>
-
-Unlocks the signer with a passphrase.
-
-#### Parameters
-
-##### passphrase?
+##### name
 
 `string`
 
-The passphrase to unlock the signer.
-
 #### Returns
 
-`Promise`\<`void`\>
-
-#### Inherited from
-
-[`Signer`](Signer.md).[`unlock`](Signer.md#unlock)
-
-***
-
-### isSigner()
-
-> `static` **isSigner**(`signer`): `signer is Signer`
-
-Checks if an object is a signer.
-
-#### Parameters
-
-##### signer
-
-`unknown`
-
-The object to check.
-
-#### Returns
-
-`signer is Signer`
-
-A boolean indicating whether the object is a signer.
-
-#### Inherited from
-
-[`Signer`](Signer.md).[`isSigner`](Signer.md#issigner)
+`Promise`\<`Web3Signer`[]\>

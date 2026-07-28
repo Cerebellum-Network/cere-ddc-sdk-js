@@ -18,25 +18,42 @@ yarn add @cere-ddc-sdk/ddc-client
 
 # Usage
 
-A quick guide of how to upload a file to DDC TESTNET using the `DdcClient` API.
+A quick guide of how to upload a file to DDC Testnet using the `DdcClient` API.
+
+> `@cere-ddc-sdk/ddc-client` 3.0 is ESM-only and requires Node **≥ 22.11**.
+> Upgrading from 2.x? See [MIGRATION.md](../../MIGRATION.md) — the network
+> presets (`TESTNET`/`DEVNET`/`MAINNET`) are gone, replaced by explicit
+> `blockchain` / `clusterId` / `storageUrl` config.
 
 1. Create a `DdcClient` instance
 
     ```ts
     import * as fs from 'fs';
-    import { DdcClient, File, TESTNET } from '@cere-ddc-sdk/ddc-client';
+    import { DdcClient, File, FileUri } from '@cere-ddc-sdk/ddc-client';
 
     const seed = 'hybrid label reunion only dawn maze asset draft cousin height flock nation';
-    const ddcClient = await DdcClient.create(seed, TESTNET);
+    const clusterId = '0x...';
+    const ddcClient = await DdcClient.create(seed, {
+      blockchain: 'testnet',
+      clusterId,
+      storageUrl: 'https://storage.testnet.cere.network',
+    });
     ```
-    
+
+    `blockchain` accepts a network name (`'mainnet' | 'testnet' | 'devnet'`), a
+    websocket RPC URL, or an already-connected `CereClient`. Add `cdnUrl` to
+    read through a separate endpoint; reads fall back to `storageUrl` without it.
+
     > The account used to create the instance should have positive balance and DDC deposit
 
 2. Create a new public bucket
 
     ```ts
-    const bucketId = await client.createBucket(clusterId, { isPublic: true });
+    const bucketId = await ddcClient.createBucket({ isPublic: true });
     ```
+
+    The bucket is created in the cluster from `config.clusterId` — `createBucket`
+    no longer takes a cluster argument.
 
 3. Upload a file to DDC
 
@@ -46,9 +63,9 @@ A quick guide of how to upload a file to DDC TESTNET using the `DdcClient` API.
     const fileStream = fs.createReadStream(filePath);
     const file = new File(fileStream, { size: fileStats.size });
 
-    const { cid: fileCid } = await ddcClient.store(bucketId, file);
+    const fileUri = await ddcClient.store(bucketId, file);
 
-    console.log('The uploaded file CID', fileCid)
+    console.log('The uploaded file CID', fileUri.cid)
     ```
 
 4. That is it. You can open the file from your browser:
@@ -60,13 +77,13 @@ A quick guide of how to upload a file to DDC TESTNET using the `DdcClient` API.
     ```
     or download it using the SDK
     ```ts
-    const uri = new FileUri(bucketId, fileCid);
-
-    const fileResponse = await ddcClient.read(uri);
+    const fileResponse = await ddcClient.read(fileUri);
     const content = await fileResponse.arrayBuffer();
 
     console.log(content);
     ```
+
+    Reconstruct the URI later with `new FileUri(bucketId, cid)`.
 
 # Documentation
 

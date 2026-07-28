@@ -18,19 +18,29 @@ yarn add @cere-ddc-sdk/file-storage
 
 # Usage
 
-A quick guide of how to upload a file to DDC TESTNET using the `FileStorage` API.
+A quick guide of how to upload a file to DDC Testnet using the `FileStorage` API.
+
+> `@cere-ddc-sdk/file-storage` 3.0 is ESM-only and requires Node **≥ 22.11**.
+> Upgrading from 2.x? See [MIGRATION.md](../../MIGRATION.md) — the network
+> presets (`TESTNET`/`DEVNET`/`MAINNET`) are gone, replaced by an explicit
+> `storageUrl`.
 
 1. Create a `FileStorage` instance
 
     ```ts
     import * as fs from 'fs';
-    import { FileStorage, File, TESTNET } from '@cere-ddc-sdk/file-storage';
+    import { FileStorage, File } from '@cere-ddc-sdk/file-storage';
 
     const bucketId = 1n;
     const seed = 'hybrid label reunion only dawn maze asset draft cousin height flock nation';
-    const fileStorage = await FileStorage.create(seed, TESTNET);
+    const fileStorage = await FileStorage.create(seed, {
+      storageUrl: 'https://storage.testnet.cere.network',
+    });
     ```
-    
+
+    `storageUrl` handles writes and, unless you also pass `cdnUrl`, reads.
+    `FileStorage` no longer opens a blockchain connection of its own.
+
     > The account used to create the instance should have a positive balance, DDC deposit, and the bucket should be created in advance
 
 2. Upload a file to DDC
