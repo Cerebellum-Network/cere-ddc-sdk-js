@@ -108,7 +108,7 @@ export class CnsApi {
 
     meta.request = await createActivityRequest(
       { bucketId, size: ProtoRecord.toBinary(record).byteLength, requestType: ActivityRequestType.STORE },
-      { logger: this.logger, signer },
+      { token, logger: this.logger, signer },
     );
 
     await this.api.put({ bucketId, record: { ...record, signature } }, { meta });

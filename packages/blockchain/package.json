@@ -1,19 +1,12 @@
 {
   "name": "@cere-ddc-sdk/blockchain",
-  "version": "2.16.1",
+  "version": "3.0.0",
   "description": "Cere Blockchain client",
   "type": "module",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/types/index.d.ts",
+  "main": "./dist/papi/index.js",
+  "types": "./dist/types/papi/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
-      "require": "./dist/index.cjs",
-      "browser": "./dist/browser.js",
-      "default": "./dist/index.js"
-    },
-    "./papi": {
       "types": "./dist/types/papi/index.d.ts",
       "default": "./dist/papi/index.js"
     },
@@ -44,37 +37,23 @@
     "url": "git+https://github.com/Cerebellum-Network/cere-ddc-sdk-js.git"
   },
   "scripts": {
-    "build": "npm-run-all --parallel build:node build:web build:papi",
-    "build:node": "microbundle --tsconfig tsconfig.node.json --format esm,cjs --target node",
-    "build:web": "microbundle --tsconfig tsconfig.web.json --format modern --output dist/browser.js",
-    "build:papi": "tsc -p tsconfig.papi.json",
+    "build": "tsc -p tsconfig.papi.json",
     "package": "clean-publish",
     "clean": "rimraf dist package",
     "docs": "typedoc",
     "generate": "papi generate",
-    "prepare": "papi generate && node scripts/ensure-publishable-descriptors.mjs"
+    "prepare": "papi generate && node scripts/ensure-publishable-descriptors.mjs",
+    "build:abi": "node scripts/gen-abi.mjs"
   },
   "author": "Cere Network <contact@cere.io (https://www.cere.io/)",
   "license": "Apache-2.0",
   "dependencies": {
-    "@cere/embed-wallet-inject": "^0.20.1",
     "@polkadot-api/ink-contracts": "^0.6.3",
     "@polkadot-api/substrate-bindings": "^0.20.3",
     "@polkadot-api/ws-provider": "^0.9.0",
     "@polkadot-labs/hdkd": "^0.0.29",
     "@polkadot-labs/hdkd-helpers": "^0.0.31",
-    "@polkadot/api": "^16.4.9",
-    "@polkadot/api-base": "^16.4.9",
-    "@polkadot/api-contract": "^16.4.9",
-    "@polkadot/extension-dapp": "^0.62.2",
-    "@polkadot/extension-inject": "^0.62.2",
     "@polkadot/keyring": "^13.3.1",
-    "@polkadot/rpc-core": "^16.4.9",
-    "@polkadot/rpc-provider": "^16.4.9",
-    "@polkadot/types": "^16.4.9",
-    "@polkadot/types-codec": "^16.4.9",
-    "@polkadot/types-create": "^16.4.9",
-    "@polkadot/util": "^13.5.7",
     "@polkadot/util-crypto": "^13.5.7",
     "polkadot-api": "^2.1.8",
     "ws": "^8.21.0"

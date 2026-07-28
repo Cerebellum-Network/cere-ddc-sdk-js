@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { Binary } from 'polkadot-api';
-import { connect, MnemonicSigner } from '@cere-ddc-sdk/blockchain/papi';
+import { connect, UriSigner } from '@cere-ddc-sdk/blockchain';
 
 const describeChain = process.env.CERE_CHAIN_TESTS ? describe : describe.skip;
 
@@ -22,7 +22,7 @@ describeChain('papi tx (live, devnet)', () => {
     if (!seed) return;
     const client = connect({ network: 'devnet' });
     try {
-      const signer = new MnemonicSigner(seed);
+      const signer = new UriSigner(seed);
       const tx = client.api.tx.System.remark({ remark: Binary.fromText('papi-2b-tx') });
       const res = await client.tx.send(tx as any, { signer });
       expect(res.txHash).toMatch(/^0x/);
@@ -37,7 +37,7 @@ describeChain('papi tx (live, devnet)', () => {
     if (!seed) return;
     const client = connect({ network: 'devnet' });
     try {
-      const signer = new MnemonicSigner(seed);
+      const signer = new UriSigner(seed);
       const t1 = client.api.tx.System.remark({ remark: Binary.fromText('b1') });
       const t2 = client.api.tx.System.remark({ remark: Binary.fromText('b2') });
       const res = await client.tx.batchSend([t1 as any, t2 as any], { signer });
