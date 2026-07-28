@@ -25,6 +25,8 @@ The playground is a simple demo application that you can use during development 
 - [Source code](playground)
 - [Online demo](https://cerebellum-network.github.io/cere-ddc-sdk-js/)
 
+Migrating from 2.x? See [MIGRATION.md](./MIGRATION.md) for the `@cere-ddc-sdk/blockchain` 2.x -> 3.0 upgrade guide.
+
 ## Quick start
 
 1. Prepare Node.JS version

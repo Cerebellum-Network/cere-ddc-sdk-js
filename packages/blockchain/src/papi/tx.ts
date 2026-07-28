@@ -2,14 +2,15 @@ import type { Transaction } from 'polkadot-api';
 import type { PolkadotSigner } from 'polkadot-api/signer';
 
 import type { CereApi } from './api-types.js';
-import type { CereSigner } from './signers/types.js';
+import { isSigner, type Signer } from './signers/types.js';
+import { toPolkadotSigner } from './signers/bridge.js';
 
 /** A papi transaction builder (returned by pallet write methods). */
 export type Sendable = Transaction<any, any>;
 
 export interface SendOptions {
-  /** A 2a signer wrapper, or a raw papi `PolkadotSigner`. */
-  signer: CereSigner | PolkadotSigner;
+  /** A chain-free `Signer`, or a raw papi `PolkadotSigner`. */
+  signer: Signer | PolkadotSigner;
   nonce?: number;
 }
 
@@ -36,8 +37,8 @@ export interface TxApi {
   sudoAs(who: string, tx: Sendable): Sendable;
 }
 
-function resolveSigner(signer: CereSigner | PolkadotSigner): PolkadotSigner {
-  return 'getPolkadotSigner' in signer ? signer.getPolkadotSigner() : signer;
+function resolveSigner(signer: Signer | PolkadotSigner): PolkadotSigner {
+  return isSigner(signer) ? toPolkadotSigner(signer) : signer;
 }
 
 function shapeEvents(events: ReadonlyArray<{ type: string; value: { type: string; value: any } }>): Event[] {

@@ -4,7 +4,7 @@ export type GrpcTransportOptions = Pick<RpcTransportOptions, 'grpcUrl'>;
 
 // @ts-ignore
 export class GrpcTransport implements RpcTransport {
-  constructor() {
+  constructor(_options: GrpcTransportOptions) {
     throw new Error('GrpcTransport in not supported in browser environment');
   }
 }
