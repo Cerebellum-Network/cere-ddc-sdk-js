@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { connect, MnemonicSigner } from '@cere-ddc-sdk/blockchain/papi';
+import { connect, UriSigner, toPolkadotSigner } from '@cere-ddc-sdk/blockchain';
 
 // Self-contained gate: this suite runs under the native-ESM jest config
 // (jest.papi.config.ts) and must not pull in the legacy `@cere-ddc-sdk/blockchain`
@@ -32,7 +32,7 @@ describeChain('papi core (live, devnet)', () => {
     }
   }, 60_000);
 
-  it('signs and submits System.remark on devnet via MnemonicSigner', async () => {
+  it('signs and submits System.remark on devnet via UriSigner', async () => {
     let seed = process.env.CERE_FUNDED_SEED;
     if (!seed) {
       try {
@@ -43,9 +43,9 @@ describeChain('papi core (live, devnet)', () => {
     }
     if (!seed) return; // skip without a funded seed
     const client = connect({ network: 'devnet' });
-    const signer = new MnemonicSigner(seed);
+    const signer = new UriSigner(seed);
     const res = await client.api.tx.System.remark({ remark: new Uint8Array([1, 2, 3]) }).signAndSubmit(
-      signer.getPolkadotSigner(),
+      toPolkadotSigner(signer),
     );
     expect(res.ok).toBe(true);
     client.disconnect();

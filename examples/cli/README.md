@@ -145,16 +145,11 @@ This example shows how to use DDC CLI
     }
     ```
 
-4. It is also possible to specify a list of DDC nodes to operate with
+4. It is also possible to override the storage (write) and CDN (read) endpoints — e.g. a specific load balancer or a single node — instead of the network defaults
     ```json
     {
-      "nodes": [
-        {
-          "mode": "Full",
-          "grpcUrl": "grpc://128.140.103.37:9090",
-          "httpUrl": "https://storage-1.testnet.cere.network"
-        }
-      ]
+      "storageUrl": "https://storage.testnet.dragon-1.xyz",
+      "cdnUrl": "https://cdn.testnet.dragon-1.xyz"
     }
     ```  
 

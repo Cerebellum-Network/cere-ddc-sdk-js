@@ -1,2 +1,2 @@
-export { Router, type RouterConfig } from './Router';
-export { type RouterNode, RouterOperation } from './RoutingStrategy';
+export { EndpointResolver, type EndpointResolverConfig } from './EndpointResolver';
+export { RouterOperation } from './RoutingStrategy';
