@@ -48,17 +48,11 @@ Use `getBucketList` instead
 
 ### createBucket()
 
-> **createBucket**(`clusterId`, `params?`): `Promise`\<`bigint`\>
+> **createBucket**(`params?`): `Promise`\<`bigint`\>
 
-Creates a new bucket on a specified cluster.
+Creates a new bucket on the configured cluster.
 
 #### Parameters
-
-##### clusterId
-
-`` `0x${string}` ``
-
-The ID of the cluster where the bucket will be created.
 
 ##### params?
 
@@ -76,8 +70,7 @@ A promise that resolves to the ID of the newly created bucket.
 #### Example
 
 ```typescript
-const clusterId: ClusterId = '0x...';
-const bucketId: BucketId = await ddcClient.createBucket(clusterId, {
+const bucketId: BucketId = await ddcClient.createBucket({
   isPublic: true,
 });
 ```
@@ -86,17 +79,11 @@ const bucketId: BucketId = await ddcClient.createBucket(clusterId, {
 
 ### depositBalance()
 
-> **depositBalance**(`clusterId`, `amount`, `options?`): `Promise`\<`SendResult`\>
+> **depositBalance**(`amount`, `options?`): `Promise`\<`SendResult`\>
 
-Deposits a specified amount of tokens to the account for a specific cluster. The account must have enough tokens to cover the deposit.
+Deposits a specified amount of tokens to the account for the configured cluster. The account must have enough tokens to cover the deposit.
 
 #### Parameters
-
-##### clusterId
-
-`` `0x${string}` ``
-
-The ID of the cluster to deposit tokens for.
 
 ##### amount
 
@@ -119,9 +106,8 @@ A promise that resolves to the transaction hash of the deposit.
 #### Example
 
 ```typescript
-const clusterId: ClusterId = '0x...';
 const amount = 100n;
-const txHash = await ddcClient.depositBalance(clusterId, amount);
+const txHash = await ddcClient.depositBalance(amount);
 
 console.log(txHash);
 ```
@@ -130,9 +116,9 @@ console.log(txHash);
 
 ### depositBalanceFor()
 
-> **depositBalanceFor**(`targetAddress`, `clusterId`, `amount`): `Promise`\<`SendResult`\>
+> **depositBalanceFor**(`targetAddress`, `amount`): `Promise`\<`SendResult`\>
 
-Deposits a specified amount of tokens to the target address for a specific cluster.
+Deposits a specified amount of tokens to the target address for the configured cluster.
 This allows depositing funds on behalf of another address.
 
 #### Parameters
@@ -142,12 +128,6 @@ This allows depositing funds on behalf of another address.
 `string`
 
 The target address to deposit funds for.
-
-##### clusterId
-
-`` `0x${string}` ``
-
-The ID of the cluster to deposit tokens for.
 
 ##### amount
 
@@ -165,9 +145,8 @@ A promise that resolves to the transaction hash of the deposit.
 
 ```typescript
 const targetAddress = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
-const clusterId: ClusterId = '0x...';
 const amount = 100n;
-const txHash = await ddcClient.depositBalanceFor(targetAddress, clusterId, amount);
+const txHash = await ddcClient.depositBalanceFor(targetAddress, amount);
 
 console.log(txHash);
 ```
@@ -251,17 +230,11 @@ console.log(buckets);
 
 ### getDeposit()
 
-> **getDeposit**(`clusterId`, `accountId?`): `Promise`\<`bigint`\>
+> **getDeposit**(`accountId?`): `Promise`\<`bigint`\>
 
-Retrieves the current active deposit of the account for a specific cluster.
+Retrieves the current active deposit of the account for the configured cluster.
 
 #### Parameters
-
-##### clusterId
-
-`` `0x${string}` ``
-
-The ID of the cluster to get deposit for.
 
 ##### accountId?
 
@@ -278,8 +251,7 @@ A promise that resolves to the current active deposit of the account.
 #### Example
 
 ```typescript
-const clusterId: ClusterId = '0x...';
-const deposit = await ddcClient.getDeposit(clusterId);
+const deposit = await ddcClient.getDeposit();
 
 console.log(deposit);
 ```
@@ -572,17 +544,11 @@ console.log(fileUri);
 
 ### unlockDeposit()
 
-> **unlockDeposit**(`clusterId`, `amount`): `Promise`\<`SendResult`\>
+> **unlockDeposit**(`amount`): `Promise`\<`SendResult`\>
 
-Unlocks deposit funds from the account for the specified cluster.
+Unlocks deposit funds from the account for the configured cluster.
 
 #### Parameters
-
-##### clusterId
-
-`` `0x${string}` ``
-
-The ID of the cluster.
 
 ##### amount
 
@@ -599,9 +565,8 @@ A promise that resolves to the transaction hash.
 #### Example
 
 ```typescript
-const clusterId: ClusterId = '0x...';
 const amount = 100n;
-const txHash = await ddcClient.unlockDeposit(clusterId, amount);
+const txHash = await ddcClient.unlockDeposit(amount);
 
 console.log(txHash);
 ```
@@ -610,17 +575,9 @@ console.log(txHash);
 
 ### withdrawUnlockedDeposit()
 
-> **withdrawUnlockedDeposit**(`clusterId`): `Promise`\<`SendResult`\>
+> **withdrawUnlockedDeposit**(): `Promise`\<`SendResult`\>
 
-Withdraws unlocked funds from the account for the specified cluster.
-
-#### Parameters
-
-##### clusterId
-
-`` `0x${string}` ``
-
-The ID of the cluster.
+Withdraws unlocked funds from the account for the configured cluster.
 
 #### Returns
 
@@ -631,8 +588,7 @@ A promise that resolves to the transaction hash.
 #### Example
 
 ```typescript
-const clusterId: ClusterId = '0x...';
-const txHash = await ddcClient.withdrawUnlockedDeposit(clusterId);
+const txHash = await ddcClient.withdrawUnlockedDeposit();
 
 console.log(txHash);
 ```
@@ -641,7 +597,7 @@ console.log(txHash);
 
 ### create()
 
-> `static` **create**(`uriOrSigner`, `config?`): `Promise`\<`DdcClient`\>
+> `static` **create**(`uriOrSigner`, `config`): `Promise`\<`DdcClient`\>
 
 Creates a new instance of the DdcClient.
 
@@ -653,11 +609,11 @@ Creates a new instance of the DdcClient.
 
 A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri).
 
-##### config?
+##### config
 
-`DdcClientConfig` = `DEFAULT_PRESET`
+`DdcClientConfig`
 
-Configuration options for the DdcClient. Defaults to TESTNET.
+Configuration options for the DdcClient. `clusterId` and `storageUrl` are required.
 
 #### Returns
 
@@ -668,12 +624,10 @@ A promise that resolves to a new instance of the DdcClient.
 #### Example
 
 ```typescript
-const ddcClient = await DdcClient.create('//Alice', DEVNET);
-```
-
-```typescript
 const ddcClient = await DdcClient.create('//Alice', {
   blockchain: 'wss://devnet.cere.network',
+  clusterId: '0x...',
+  storageUrl: 'https://storage.example',
   retries: 3,
 });
 ```

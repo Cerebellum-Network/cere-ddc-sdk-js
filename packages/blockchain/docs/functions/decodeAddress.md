@@ -6,9 +6,9 @@
 
 # Function: decodeAddress()
 
-> **decodeAddress**(`address`, `ignoreChecksum?`): `Uint8Array`\<`ArrayBufferLike`\>
+> **decodeAddress**(`address`): `Uint8Array`
 
-Utilities
+Decode an ss58 address to its raw public key. papi-native `decodeAddress`.
 
 ## Parameters
 
@@ -16,10 +16,6 @@ Utilities
 
 `string`
 
-### ignoreChecksum?
-
-`boolean`
-
 ## Returns
 
-`Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`

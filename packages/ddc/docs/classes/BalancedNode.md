@@ -13,8 +13,8 @@ A balanced node is a node that distributes operations across multiple underlying
 ## Example
 
 ```typescript
-const router = new Router(...);
-const balancedNode = new BalancedNode({ router });
+const resolver = new EndpointResolver(...);
+const balancedNode = new BalancedNode({ resolver });
 ```
 
 ## Implements

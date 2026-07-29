@@ -100,13 +100,13 @@ The piece content as an `ArrayBuffer`.
 
 ### json()
 
-> **json**(): `Promise`\<`unknown`\>
+> **json**(): `Promise`\<`any`\>
 
 Converts the body stream of the piece to a JSON object.
 
 #### Returns
 
-`Promise`\<`unknown`\>
+`Promise`\<`any`\>
 
 The piece content as a JSON object.
 

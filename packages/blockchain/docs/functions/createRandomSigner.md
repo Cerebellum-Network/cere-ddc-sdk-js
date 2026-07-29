@@ -6,15 +6,17 @@
 
 # Function: createRandomSigner()
 
-> **createRandomSigner**(`options?`): [`UriSigner`](../classes/UriSigner.md)
+> **createRandomSigner**(`opts?`): [`UriSigner`](../classes/UriSigner.md)
 
-Utilities
+A `UriSigner` from a freshly generated mnemonic (used by ddc's sdkToken).
 
 ## Parameters
 
-### options?
+### opts?
 
-`UriSignerOptions` = `{}`
+#### type?
+
+`"ed25519"` \| `"sr25519"`
 
 ## Returns
 

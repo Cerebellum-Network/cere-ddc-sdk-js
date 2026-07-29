@@ -1,7 +1,7 @@
 {
   "extends": ["@cere-ddc-sdk/typedoc-config"],
   "out": "./docs",
-  "tsconfig": "./tsconfig.web.json",
-  "entryPoints": ["./src"],
-  "groupOrder": ["Blockchain", "Pallets"]
+  "tsconfig": "./tsconfig.papi.json",
+  "entryPoints": ["./src/papi/index.ts"],
+  "groupOrder": ["Client", "Pallets", "Signers"]
 }
