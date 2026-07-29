@@ -4,11 +4,24 @@ import type { AccountId, Bucket, BucketId, BucketParams, ClusterId, StakingInfo 
 import { toBucket, toStakingInfo } from './mapping.js';
 import { createCustomerDepositContract, type CustomerDepositContract } from '../contracts/customerDeposit.js';
 
-// Placeholder caller for gas-sizing dry runs on payable/non-payable deposit
-// messages where the real signer is not yet known at build time (the dry run
-// only needs a valid AccountId, not funds — the estimateGas generous-ceiling
-// fallback covers the case where the placeholder can't afford `value`).
+// Fallback caller for sizing dry runs when the real signer isn't supplied (see
+// `DepositOptions.from`). It is unfunded, so a payable message dry-run against it
+// fails and sizing falls back to its generous/constant ceilings — correct but
+// imprecise. Also used as a throwaway key for the `Ledger` metadata probe, which
+// only needs a well-formed AccountId.
 const accountPlaceholder = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+
+/** Options common to the deposit/withdraw builders. */
+export type DepositOptions = {
+  /**
+   * The account that will sign the resulting extrinsic. Supplying it lets the
+   * contract-path dry run be priced against the real, funded caller, which
+   * yields precise gas and a correctly sized `storage_deposit_limit`. Without
+   * it, sizing falls back to conservative ceilings — which still works, but
+   * over-provisions gas and can misjudge the storage limit.
+   */
+  from?: AccountId;
+};
 
 export interface CustomersPallet {
   /** Balance for an account in a cluster: the contract balance if the cluster has a deposit contract, else the pallet ledger. */
@@ -23,15 +36,20 @@ export interface CustomersPallet {
   extractCreatedBucketIds(events: Event[]): bigint[];
   extractRemovedBucketIds(events: Event[]): bigint[];
   /** Lock up `value` from the signer's own balance as a new/topped-up deposit for a cluster. Contract-first (falls back to the pallet). */
-  deposit(clusterId: ClusterId, value: bigint): Promise<Sendable>;
+  deposit(clusterId: ClusterId, value: bigint, options?: DepositOptions): Promise<Sendable>;
   /** Add `maxAdditional` on top of an existing deposit. Contract-first (falls back to the pallet). */
-  depositExtra(clusterId: ClusterId, maxAdditional: bigint): Promise<Sendable>;
+  depositExtra(clusterId: ClusterId, maxAdditional: bigint, options?: DepositOptions): Promise<Sendable>;
   /** Lock up `amount` from the signer's balance on behalf of `targetAddress`. Contract-first (falls back to the pallet). */
-  depositFor(targetAddress: AccountId, clusterId: ClusterId, amount: bigint): Promise<Sendable>;
+  depositFor(
+    targetAddress: AccountId,
+    clusterId: ClusterId,
+    amount: bigint,
+    options?: DepositOptions,
+  ): Promise<Sendable>;
   /** Schedule `value` of the signer's deposit to unlock. Contract-first (falls back to the pallet). */
-  unlockDeposit(clusterId: ClusterId, value: bigint): Promise<Sendable>;
+  unlockDeposit(clusterId: ClusterId, value: bigint, options?: DepositOptions): Promise<Sendable>;
   /** Withdraw funds already unlocked (past the unlock period) for the signer. Contract-first (falls back to the pallet). */
-  withdrawUnlockedDeposit(clusterId: ClusterId): Promise<Sendable>;
+  withdrawUnlockedDeposit(clusterId: ClusterId, options?: DepositOptions): Promise<Sendable>;
 }
 
 export function createCustomersPallet(api: CereApi): CustomersPallet {
@@ -81,12 +99,13 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
     message: string,
     value: bigint,
     args: any,
+    options: DepositOptions | undefined,
     palletCall: () => Sendable | Promise<Sendable>,
   ): Promise<Sendable> => {
     const addr = await contract.resolve(clusterId);
     if (!addr) return palletCall();
-    const gas = await contract.estimateGas(addr, message, accountPlaceholder, value, args);
-    return contract.buildContractCall(addr, message, value, args, gas);
+    const sizing = await contract.sizeCall(addr, message, options?.from ?? accountPlaceholder, value, args);
+    return contract.buildContractCall(addr, message, value, args, sizing);
   };
 
   return {
@@ -185,17 +204,17 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
     // the mainnet runtime: `deposit({value})`, `deposit_extra({max_additional})`,
     // `unlock_deposit({value})`, `withdraw_unlocked_deposit()` (no args); the
     // legacy runtime has no `deposit_for`.
-    deposit(clusterId, value) {
-      return contractOrPallet(clusterId, 'DdcBalancesDepositor::deposit', value, {}, async () =>
+    deposit(clusterId, value, options) {
+      return contractOrPallet(clusterId, 'DdcBalancesDepositor::deposit', value, {}, options, async () =>
         (await isAccountKeyedLedger())
           ? (api.tx.DdcCustomers.deposit({ value } as any) as Sendable)
           : (api.tx.DdcCustomers.deposit({ cluster_id: clusterId, value } as any) as Sendable),
       );
     },
-    depositExtra(clusterId, maxAdditional) {
+    depositExtra(clusterId, maxAdditional, options) {
       // The contract has no separate "top up" message — `deposit` (payable)
       // covers both the initial and additional lock-up.
-      return contractOrPallet(clusterId, 'DdcBalancesDepositor::deposit', maxAdditional, {}, async () =>
+      return contractOrPallet(clusterId, 'DdcBalancesDepositor::deposit', maxAdditional, {}, options, async () =>
         (await isAccountKeyedLedger())
           ? (api.tx.DdcCustomers.deposit_extra({ max_additional: maxAdditional } as any) as Sendable)
           : (api.tx.DdcCustomers.deposit_extra({
@@ -204,12 +223,13 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
             } as any) as Sendable),
       );
     },
-    depositFor(targetAddress, clusterId, amount) {
+    depositFor(targetAddress, clusterId, amount, options) {
       return contractOrPallet(
         clusterId,
         'DdcBalancesDepositor::deposit_for',
         amount,
         { owner: targetAddress },
+        options,
         async () => {
           // `deposit_for` exists only on the migrated runtime; the legacy
           // account-global mainnet pallet has no equivalent.
@@ -224,15 +244,15 @@ export function createCustomersPallet(api: CereApi): CustomersPallet {
         },
       );
     },
-    unlockDeposit(clusterId, value) {
-      return contractOrPallet(clusterId, 'DdcBalancesDepositor::unlock_deposit', 0n, { value }, async () =>
+    unlockDeposit(clusterId, value, options) {
+      return contractOrPallet(clusterId, 'DdcBalancesDepositor::unlock_deposit', 0n, { value }, options, async () =>
         (await isAccountKeyedLedger())
           ? (api.tx.DdcCustomers.unlock_deposit({ value } as any) as Sendable)
           : (api.tx.DdcCustomers.unlock_deposit({ cluster_id: clusterId, value } as any) as Sendable),
       );
     },
-    withdrawUnlockedDeposit(clusterId) {
-      return contractOrPallet(clusterId, 'DdcBalancesDepositor::withdraw_unlocked', 0n, {}, async () =>
+    withdrawUnlockedDeposit(clusterId, options) {
+      return contractOrPallet(clusterId, 'DdcBalancesDepositor::withdraw_unlocked', 0n, {}, options, async () =>
         (await isAccountKeyedLedger())
           ? (api.tx.DdcCustomers.withdraw_unlocked_deposit() as Sendable) // legacy: no cluster id
           : ((api.tx.DdcCustomers as any).withdraw_unlocked_deposit({ cluster_id: clusterId }) as Sendable),
