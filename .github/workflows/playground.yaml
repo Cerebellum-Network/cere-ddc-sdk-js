@@ -34,7 +34,7 @@ jobs:
           node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
 
       - name: Setup GitHub Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v5
 
       # Must match publish.yaml/tests.yaml. Without --legacy-peer-deps npm records
       # some transitive packages as `peer` rather than `dev` and rewrites the
@@ -52,4 +52,4 @@ jobs:
 
       - name: Deploy
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
