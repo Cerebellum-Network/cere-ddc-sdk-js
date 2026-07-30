@@ -39,6 +39,19 @@ jobs:
       - name: Install packages
         run: npm ci
 
+      # Catch a stale lockfile on the PR that introduces it, rather than at the
+      # publish step where it surfaces as `lerna ERR! EUNCOMMIT` (run 30500853727).
+      # Adding/changing `engines`, deps, or a workspace's version all require the
+      # lockfile to be regenerated and committed alongside.
+      - name: Verify package-lock.json is up to date
+        run: |
+          if ! git diff --exit-code --quiet package-lock.json; then
+            echo "::error::package-lock.json is out of date — 'npm ci' rewrote it."
+            echo "Run 'npm ci' locally in a clean checkout and commit the result."
+            git diff --stat package-lock.json
+            exit 1
+          fi
+
       - name: Check code style
         run: npm run lint
 
