@@ -3,6 +3,56 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.14.1...v3.0.0) (2026-07-30)
+
+3.0 replaces the `@polkadot/api` chain layer with
+[`polkadot-api`](https://github.com/polkadot-api/polkadot-api) (papi). The full
+upgrade guide, with before/after examples for every renamed API, is in
+[MIGRATION.md](./MIGRATION.md).
+
+### ⚠ BREAKING CHANGES
+
+* **blockchain:** the `Blockchain` class, its `ddcX` pallet wrappers, and the
+  `@cere-ddc-sdk/blockchain/papi` subpath are gone. There is one entry point:
+  `connect({ network })` → `CereClient`, with pallets at `client.clusters`,
+  `client.nodes`, `client.customers`, `client.staking`, `client.clustersGov`, and
+  extrinsic submission at `client.tx.send(tx, { signer })`.
+* **packaging:** `blockchain`, `ddc`, `ddc-client` and `file-storage` are
+  **ESM-only** — they no longer publish a CommonJS entry, so `require()` is not
+  supported. Use `import`, a dynamic `await import(...)`, or a bundler.
+* **node:** **Node >= 22.11** is now required (declared via `engines`). The
+  storage transport speaks grpc-web over WebSockets and needs a global
+  `WebSocket`, which Node provides from 22.
+* **config:** the network presets (`TESTNET` / `DEVNET` / `MAINNET`) are removed.
+  `DdcClient` now takes explicit `blockchain`, `clusterId` and `storageUrl` (plus
+  optional `cdnUrl`); `FileStorage` takes `storageUrl`. `createBucket()` no longer
+  takes a cluster argument — it uses the configured `clusterId`.
+* **signers:** the abstract `Signer` base class and `getSigner()` factory are
+  replaced by a chain-free `Signer` interface. `MnemonicSigner` is absorbed into
+  `UriSigner`, and `ExtensionSigner` into `Web3Signer` — neither old name exists.
+* **staking:** CDN-node staking (`ddcStaking.serve` and the other CDN-node calls)
+  is removed. It was dropped from the runtime itself, not just the SDK, so there
+  is no equivalent. `client.staking` covers storage-node and cluster staking.
+* **customers:** `getStackingInfo(...).owner` now reflects the account you
+  queried rather than the deposit contract's raw (mis-encoded) `owner` field.
+
+### Features
+
+* **ddc:** Phase 1 protocol compatibility (contract deposits, pallet/type drift fixes) ([#300](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/300)) ([421373e](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/421373e9050fe2e23358ef5e9da27c0bf8b4bb53))
+
+
+### Bug Fixes
+
+* **blockchain:** send an explicit storage_deposit_limit on ink! deposit calls ([#311](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/311)) ([9264ae2](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/9264ae274cdb4055492f41ba517a58ea5a54744b))
+* **ci:** refresh package-lock.json and guard against staleness ([#312](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/312)) ([3b855a5](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/3b855a52933f8d31006ff9d9bf85d9df3725ac8d))
+
+
+### Miscellaneous Chores
+
+* **release:** pre-3.0.0 cleanup — stale docs, dead scripts, engines floor ([#310](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/310)) ([41d9551](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/41d955151ea917b6f54206ce68b367533689d717))
+
+
+
 ## [2.15.3](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.14.1...v2.15.3) (2025-10-21)
 
 ### Bug Fixes
