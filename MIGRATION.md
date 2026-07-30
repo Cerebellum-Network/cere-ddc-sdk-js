@@ -31,9 +31,14 @@ handle this transparently). There is only one import path —
 
 `@cere-ddc-sdk/ddc`, `@cere-ddc-sdk/ddc-client` and `@cere-ddc-sdk/file-storage`
 are ESM-only too: they no longer publish a `require`/CommonJS entry (they do
-still ship a `browser` build for bundlers). `require('@cere-ddc-sdk/…')` from
-CommonJS is not supported in 3.0 — use `import`, or a dynamic
+still ship a `browser` build for bundlers). Use `import`, or a dynamic
 `await import('@cere-ddc-sdk/ddc-client')`.
+
+Because 3.0 requires Node ≥ 22.11, and Node 22 can load an ES module from
+`require()`, a plain `require('@cere-ddc-sdk/…')` may happen to work from
+CommonJS. That is Node's interop doing the work, not a supported entry point:
+these packages ship no CommonJS build, so don't rely on it — bundlers,
+older/other runtimes, and future Node changes are all free to reject it.
 
 ### Node version
 
@@ -120,8 +125,15 @@ papi:
 ```ts
 import { UriSigner } from '@cere-ddc-sdk/blockchain';
 
-const signer = new UriSigner('//Alice');
+const signer = new UriSigner('bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice');
 ```
+
+> **`UriSigner` requires a mnemonic.** A bare derivation path like `'//Alice'`
+> throws `UriSigner: empty mnemonic/URI` — 3.0 deliberately refuses to fall back
+> to a built-in development phrase, so a missing seed fails loudly instead of
+> silently signing with a well-known key. To reproduce the familiar dev accounts,
+> prefix the standard development mnemonic as above (that example derives the
+> canonical Alice key, `0xd43593c7…`).
 
 ## Address utilities
 
@@ -186,7 +198,7 @@ const publicKey2 = decodeAddress(address);
 ```ts
 import { Blockchain, UriSigner } from '@cere-ddc-sdk/blockchain';
 
-const account = new UriSigner('//Alice');
+const account = new UriSigner('bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice');
 const blockchain = await Blockchain.connect({ wsEndpoint: 'wss://rpc.testnet.cere.network/ws' });
 
 const balance = await blockchain.getAccountFreeBalance(account.address);
@@ -197,7 +209,7 @@ const balance = await blockchain.getAccountFreeBalance(account.address);
 ```ts
 import { connect, UriSigner } from '@cere-ddc-sdk/blockchain';
 
-const signer = new UriSigner('//Alice');
+const signer = new UriSigner('bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice');
 const client = connect({ network: 'testnet' });
 
 const balance = await client.chain.getAccountFreeBalance(signer.address);
@@ -212,7 +224,7 @@ client.disconnect();
 ```ts
 import { Blockchain, UriSigner } from '@cere-ddc-sdk/blockchain';
 
-const account = new UriSigner('//Alice');
+const account = new UriSigner('bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice');
 const blockchain = await Blockchain.connect({ wsEndpoint: 'wss://rpc.testnet.cere.network/ws' });
 
 const clusterId = '0x...';
@@ -227,7 +239,7 @@ await blockchain.send(tx, { account });
 ```ts
 import { connect, UriSigner } from '@cere-ddc-sdk/blockchain';
 
-const signer = new UriSigner('//Alice');
+const signer = new UriSigner('bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice');
 const client = connect({ network: 'testnet' });
 
 const clusterId = '0x...';

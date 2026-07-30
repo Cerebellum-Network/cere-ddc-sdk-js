@@ -142,7 +142,7 @@ export class DdcClient {
    * @example
    *
    * ```typescript
-   * const ddcClient = await DdcClient.create('//Alice', {
+   * const ddcClient = await DdcClient.create('bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice', {
    *   blockchain: 'wss://devnet.cere.network',
    *   clusterId: '0x...',
    *   storageUrl: 'https://storage.example',

@@ -29,7 +29,7 @@ Here is an example how to create a bucket
     ```ts
     import { connect, UriSigner } from '@cere-ddc-sdk/blockchain';
 
-    const signer = new UriSigner('//Alice');
+    const signer = new UriSigner('bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice');
     const client = connect({ network: 'testnet' });
     ```
 

@@ -36,8 +36,11 @@ jobs:
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v3
 
+      # Must match publish.yaml/tests.yaml. Without --legacy-peer-deps npm records
+      # some transitive packages as `peer` rather than `dev` and rewrites the
+      # lockfile, so the three workflows would disagree about its contents.
       - name: Install packages
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build packages
         run: npm run build
