@@ -18,8 +18,10 @@ upgrade guide, with before/after examples for every renamed API, is in
   `client.nodes`, `client.customers`, `client.staking`, `client.clustersGov`, and
   extrinsic submission at `client.tx.send(tx, { signer })`.
 * **packaging:** `blockchain`, `ddc`, `ddc-client` and `file-storage` are
-  **ESM-only** — they no longer publish a CommonJS entry, so `require()` is not
-  supported. Use `import`, a dynamic `await import(...)`, or a bundler.
+  **ESM-only** — they no longer publish a CommonJS entry. Use `import`, a dynamic
+  `await import(...)`, or a bundler. (Node 22 can load ESM from `require()`, so a
+  `require()` call may happen to work — that is Node interop, not a supported
+  entry point.)
 * **node:** **Node >= 22.11** is now required (declared via `engines`). The
   storage transport speaks grpc-web over WebSockets and needs a global
   `WebSocket`, which Node provides from 22.

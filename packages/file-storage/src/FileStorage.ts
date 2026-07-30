@@ -86,7 +86,7 @@ export class FileStorage {
    * ```typescript
    * import { FileStorage } from '@cere-ddc-sdk/file-storage';
    *
-   * const fileStorage = await FileStorage.create('//Alice', { storageUrl: 'https://storage.example' });
+   * const fileStorage = await FileStorage.create('bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice', { storageUrl: 'https://storage.example' });
    * ```
    */
   static async create(uriOrSigner: Signer | string, config: FileStorageConfig) {

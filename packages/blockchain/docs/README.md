@@ -34,7 +34,9 @@
 
 ## Type Aliases
 
+- [CallSizing](type-aliases/CallSizing.md)
 - [ChainConfig](type-aliases/ChainConfig.md)
+- [DepositOptions](type-aliases/DepositOptions.md)
 - [Sendable](type-aliases/Sendable.md)
 - [SignerType](type-aliases/SignerType.md)
 - [SignIntent](type-aliases/SignIntent.md)
