@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/blockchain",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Cere Blockchain client",
   "type": "module",
   "main": "./dist/papi/index.js",

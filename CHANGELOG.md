@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v3.0.0...v3.0.1) (2026-07-30)
+
+
+### Documentation
+
+* fix UriSigner examples that throw, and overstated CommonJS restriction ([#314](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/314)) ([5cf7a6b](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/5cf7a6bff90b3e8ff0fbf3d483a6b95c2a9e1ca6))
+
+
+
 ## [3.0.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v2.14.1...v3.0.0) (2026-07-30)
 
 3.0 replaces the `@polkadot/api` chain layer with
