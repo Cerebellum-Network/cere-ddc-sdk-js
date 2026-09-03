@@ -1,252 +1,106 @@
-"""
-Cerebellum DDC Client - Python SDK
+"""Unit tests for DdcClient."""
 
-Provides async interface for interacting with the Cerebellum Network's
-Decentralized Data Cloud (DDC) infrastructure.
-"""
-
-import os
-from typing import Any, Dict, Optional
+import pytest
+from unittest.mock import AsyncMock, patch, MagicMock
 import httpx
-from pydantic import BaseModel, ValidationError
+from ddc_client import DdcClient, CereSDKError, BucketConfig
 
 
-class CereSDKError(Exception):
-    """Base exception for Cerebellum SDK errors."""
-    pass
-
-
-class BucketConfig(BaseModel):
-    """Schema for bucket configuration."""
-    name: str
-    encryption: Optional[bool] = False
-
-
-class StorageObject(BaseModel):
-    """Schema for storage objects."""
-    bucket_id: str
-    key: str
-    data: bytes
-
-
-class DdcClient:
-    """
-    Async client for Cerebellum Network's Decentralized Data Cloud.
-    
-    Provides methods to create buckets, store data, and retrieve data
-    with automatic error handling and schema validation using pydantic.
-    
-    Attributes:
-        api_base_url: Base URL for DDC API (default from env var or https://api.ddc.cerebellum.network)
-        timeout: Request timeout in seconds (default: 30)
-    
-    Example:
-        async with DdcClient() as client:
-            bucket = await client.createBucket('my-bucket')
-            await client.store(bucket['id'], 'my-key', b'data')
-            data = await client.read(bucket['id'], 'my-key')
-    """
-    
-    def __init__(
-        self,
-        api_base_url: Optional[str] = None,
-        timeout: int = 30,
-        api_key: Optional[str] = None
-    ):
-        """
-        Initialize DDC Client.
-        
-        Args:
-            api_base_url: Base URL for DDC API. Defaults to env var DDC_API_URL
-                         or https://api.ddc.cerebellum.network
-            timeout: Request timeout in seconds (default: 30)
-            api_key: API key for authentication. Defaults to env var DDC_API_KEY
-        """
-        self.api_base_url = api_base_url or os.getenv(
-            'DDC_API_URL',
-            'https://api.ddc.cerebellum.network'
-        )
-        self.api_key = api_key or os.getenv('DDC_API_KEY')
-        self.timeout = timeout
-        self._client = None
-    
-    @property
-    def client(self) -> httpx.AsyncClient:
-        """Lazy-load the async HTTP client."""
-        if self._client is None:
-            headers = {}
-            if self.api_key:
-                headers['Authorization'] = f'Bearer {self.api_key}'
+@pytest.mark.asyncio
+async def test_create_bucket_success():
+    """Test successful bucket creation."""
+    async with DdcClient(api_base_url='http://localhost:8080') as client:
+        with patch.object(client, 'client') as mock_client:
+            mock_response = AsyncMock()
+            mock_response.json.return_value = {
+                'id': 'bucket-123',
+                'name': 'test-bucket',
+                'created_at': '2026-07-03T12:00:00Z'
+            }
+            mock_client.post.return_value = mock_response
             
-            self._client = httpx.AsyncClient(
-                base_url=self.api_base_url,
-                timeout=self.timeout,
-                headers=headers
-            )
-        return self._client
-    
-    async def __aenter__(self):
-        """Context manager entry."""
-        return self
-    
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit - ensures proper cleanup."""
-        await self.close()
-        return False
-    
-    async def createBucket(self, name: str, encryption: bool = False) -> Dict[str, Any]:
-        """
-        Create a new bucket in the DDC.
-        
-        Args:
-            name: Bucket name
-            encryption: Whether to enable encryption (default: False)
-        
-        Returns:
-            Dictionary containing bucket metadata including 'id', 'name', 'created_at'
-        
-        Raises:
-            CereSDKError: If bucket creation fails or validation fails
-        
-        Example:
-            bucket = await client.createBucket('my-bucket', encryption=True)
-            print(bucket['id'])
-        """
-        try:
-            # Validate input
-            config = BucketConfig(name=name, encryption=encryption)
+            result = await client.createBucket('test-bucket')
             
-            # Make API request
-            response = await self.client.post(
-                '/buckets',
-                json={
-                    'name': config.name,
-                    'encryption': config.encryption
-                }
-            )
-            response.raise_for_status()
-            
-            return response.json()
-        
-        except ValidationError as e:
-            raise CereSDKError(f"Invalid bucket configuration: {e}")
-        except httpx.HTTPStatusError as e:
-            raise CereSDKError(
-                f"Failed to create bucket: HTTP {e.response.status_code} - {e.response.text}"
-            )
-        except httpx.RequestError as e:
-            raise CereSDKError(f"Network error during bucket creation: {e}")
+            assert result['id'] == 'bucket-123'
+            assert result['name'] == 'test-bucket'
+            mock_client.post.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_create_bucket_invalid_name():
+    """Test bucket creation with invalid parameters."""
+    client = DdcClient()
     
-    async def store(
-        self,
-        bucket_id: str,
-        key: str,
-        data: bytes,
-        metadata: Optional[Dict[str, str]] = None
-    ) -> Dict[str, Any]:
-        """
-        Store data in a bucket.
-        
-        Args:
-            bucket_id: ID of the target bucket
-            key: Object key/identifier
-            data: Binary data to store
-            metadata: Optional metadata dictionary
-        
-        Returns:
-            Dictionary containing storage metadata including 'key', 'size', 'hash'
-        
-        Raises:
-            CereSDKError: If storage fails or validation fails
-        
-        Example:
-            result = await client.store(bucket_id, 'file.txt', b'content')
-            print(result['hash'])
-        """
-        try:
-            # Validate input
-            if not isinstance(data, bytes):
-                raise ValueError("Data must be bytes")
+    with pytest.raises(CereSDKError, match="Invalid bucket configuration"):
+        await client.createBucket(123)  # Invalid type
+
+
+@pytest.mark.asyncio
+async def test_store_data_success():
+    """Test successful data storage."""
+    async with DdcClient(api_base_url='http://localhost:8080') as client:
+        with patch.object(client, 'client') as mock_client:
+            mock_response = AsyncMock()
+            mock_response.json.return_value = {
+                'key': 'test-key',
+                'size': 100,
+                'hash': 'sha256:abc123'
+            }
+            mock_client.put.return_value = mock_response
             
-            obj = StorageObject(bucket_id=bucket_id, key=key, data=data)
+            result = await client.store('bucket-123', 'test-key', b'test data')
             
-            # Make API request
-            response = await self.client.put(
-                f'/buckets/{obj.bucket_id}/objects/{obj.key}',
-                content=obj.data,
-                headers={'Content-Type': 'application/octet-stream'},
-                params={'metadata': metadata} if metadata else {}
-            )
-            response.raise_for_status()
+            assert result['key'] == 'test-key'
+            mock_client.put.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_read_data_success():
+    """Test successful data retrieval."""
+    async with DdcClient(api_base_url='http://localhost:8080') as client:
+        with patch.object(client, 'client') as mock_client:
+            mock_response = AsyncMock()
+            mock_response.content = b'test data'
+            mock_client.get.return_value = mock_response
             
-            return response.json()
-        
-        except ValidationError as e:
-            raise CereSDKError(f"Invalid storage object: {e}")
-        except httpx.HTTPStatusError as e:
-            raise CereSDKError(
-                f"Failed to store data: HTTP {e.response.status_code} - {e.response.text}"
-            )
-        except httpx.RequestError as e:
-            raise CereSDKError(f"Network error during storage: {e}")
-    
-    async def read(self, bucket_id: str, key: str) -> bytes:
-        """
-        Retrieve data from a bucket.
-        
-        Args:
-            bucket_id: ID of the source bucket
-            key: Object key/identifier
-        
-        Returns:
-            Binary data from the object
-        
-        Raises:
-            CereSDKError: If retrieval fails
-        
-        Example:
-            data = await client.read(bucket_id, 'file.txt')
-            print(data.decode('utf-8'))
-        """
-        try:
-            response = await self.client.get(
-                f'/buckets/{bucket_id}/objects/{key}'
-            )
-            response.raise_for_status()
+            result = await client.read('bucket-123', 'test-key')
             
-            return response.content
-        
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 404:
-                raise CereSDKError(
-                    f"Object not found: bucket={bucket_id}, key={key}"
-                )
-            raise CereSDKError(
-                f"Failed to read data: HTTP {e.response.status_code} - {e.response.text}"
+            assert result == b'test data'
+            mock_client.get.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_read_data_not_found():
+    """Test read when object doesn't exist."""
+    async with DdcClient(api_base_url='http://localhost:8080') as client:
+        with patch.object(client, 'client') as mock_client:
+            mock_response = AsyncMock()
+            mock_response.status_code = 404
+            mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+                "Not found", request=None, response=mock_response
             )
-        except httpx.RequestError as e:
-            raise CereSDKError(f"Network error during read: {e}")
-    
-    async def close(self) -> None:
-        """
-        Close the HTTP client connection.
-        
-        Should be called when done with the client, or use as async context manager.
-        
-        Example:
-            client = DdcClient()
-            try:
-                # use client
-            finally:
-                await client.close()
-        """
-        if self._client is not None:
-            await self._client.aclose()
-            self._client = None
-    
-    async def __del__(self):
-        """Ensure cleanup on garbage collection."""
-        try:
-            await self.close()
-        except Exception:
-            pass
+            mock_client.get.return_value = mock_response
+            
+            with pytest.raises(CereSDKError, match="Object not found"):
+                await client.read('bucket-123', 'nonexistent')
+
+
+@pytest.mark.asyncio
+async def test_context_manager():
+    """Test async context manager usage."""
+    async with DdcClient(api_base_url='http://localhost:8080') as client:
+        assert client is not None
+        assert client._client is None  # Not initialized until first use
+
+
+@pytest.mark.asyncio
+async def test_env_var_configuration():
+    """Test configuration from environment variables."""
+    with patch.dict('os.environ', {
+        'DDC_API_URL': 'https://custom.api.com',
+        'DDC_API_KEY': 'test-key-123'
+    }):
+        client = DdcClient()
+        assert client.api_base_url == 'https://custom.api.com'
+        assert client.api_key == 'test-key-123'
+        await client.close()
