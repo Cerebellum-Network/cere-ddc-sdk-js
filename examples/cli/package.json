@@ -4,5 +4,8 @@
   "private": true,
   "dependencies": {
     "@cere-ddc-sdk/cli": "3.0.1"
+  },
+  "scripts": {
+    "test": "jest"
   }
 }
