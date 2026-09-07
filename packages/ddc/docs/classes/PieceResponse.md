@@ -1,3 +1,7 @@
+[**@cere-ddc-sdk/ddc**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc](../README.md) / PieceResponse
 
 # Class: PieceResponse
@@ -8,43 +12,49 @@ The `PieceResponse` class represents a response for a piece content.
 
 ### cid
 
-• `get` **cid**(): `string`
+#### Get Signature
+
+> **get** **cid**(): `string`
 
 The content identifier (CID) of the piece.
 
-#### Returns
+##### Returns
 
 `string`
 
-___
+***
 
 ### hash
 
-• `get` **hash**(): `Uint8Array`
+#### Get Signature
+
+> **get** **hash**(): `Uint8Array`\<`ArrayBuffer`\>
 
 The hash of the piece response content.
 
-#### Returns
+##### Returns
 
-`Uint8Array`
+`Uint8Array`\<`ArrayBuffer`\>
 
-___
+***
 
 ### range
 
-• `get` **range**(): `undefined` \| `GetFileRequest_Request_Range`
+#### Get Signature
+
+> **get** **range**(): `GetFileRequest_Request_Range` \| `undefined`
 
 The range of the piece response.
 
-#### Returns
+##### Returns
 
-`undefined` \| `GetFileRequest_Request_Range`
+`GetFileRequest_Request_Range` \| `undefined`
 
 ## Methods
 
-### arrayBuffer
+### arrayBuffer()
 
-▸ **arrayBuffer**(): `Promise`\<`ArrayBuffer`\>
+> **arrayBuffer**(): `Promise`\<`ArrayBuffer`\>
 
 Converts the body stream of the piece to an `ArrayBuffer`.
 
@@ -54,11 +64,11 @@ Converts the body stream of the piece to an `ArrayBuffer`.
 
 The piece content as an `ArrayBuffer`.
 
-___
+***
 
-### json
+### json()
 
-▸ **json**(): `Promise`\<`unknown`\>
+> **json**(): `Promise`\<`unknown`\>
 
 Converts the body stream of the piece to a JSON object.
 
@@ -68,11 +78,11 @@ Converts the body stream of the piece to a JSON object.
 
 The piece content as a JSON object.
 
-___
+***
 
-### text
+### text()
 
-▸ **text**(): `Promise`\<`string`\>
+> **text**(): `Promise`\<`string`\>
 
 Converts the body stream of the piece to a string.
 
@@ -86,6 +96,6 @@ The piece content as a string.
 
 ### body
 
-• `Readonly` **body**: `ContentStream`
+> `readonly` **body**: `ContentStream`
 
 The content of the piece response as a stream.

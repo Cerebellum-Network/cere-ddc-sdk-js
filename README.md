@@ -8,8 +8,6 @@ The DDC SDK is a development kit used by developers to create applications that 
 
 The SDK provides several modules. The DDC Client module acts as an entry point and offers a concise API for straightforward use cases, like creating a bucket or uploading/downloading a file. Additional modules present more advanced APIs that provide enough flexibility for other SDKs to be built on top of the DDC SDK.
 
-The SDK provides several modules. The DDC Client module acts as an entry point and offers a concise API for straightforward use cases, like creating a bucket or uploading/downloading a file. Additional modules present more advanced APIs that provide enough flexibility for other SDKs to be built on top of the DDC SDK.
-
 ## Packages
 
 - [@cere-ddc-sdk/ddc-client](packages/ddc-client/README.md) - The main DDC SDK interface with all methods for working with DDC
@@ -24,6 +22,8 @@ The playground is a simple demo application that you can use during development 
 
 - [Source code](playground)
 - [Online demo](https://cerebellum-network.github.io/cere-ddc-sdk-js/)
+
+Migrating from 2.x? See [MIGRATION.md](./MIGRATION.md) for the `@cere-ddc-sdk/blockchain` 2.x -> 3.0 upgrade guide.
 
 ## Quick start
 
@@ -68,18 +68,27 @@ Run tests
 npm test
 ```
 
-On the first run it will take some time to prepare the local testing environment
+The suite runs fully offline by default — no Docker and no local DDC infrastructure
+are needed.
 
-### Local environment
+### Tests against a live network
 
-It is possibly to run DDC infrastructure on local machine:
+Specs that talk to a real chain are skipped unless you opt in:
+
 ```bash
-npm run test:env
+CERE_CHAIN_TESTS=1 npm test
 ```
 
-This command will use [Docker](https://www.docker.com/) to start Cere Blockchain node and several DDC nodes (CDN and storage). The environment is started each time before tests execution and stopped after it.
+These connect to the public Devnet RPC endpoint and only read state. The
+write-path specs (deposit, bucket creation, store/read round-trip) additionally
+need a funded account:
 
-> There is can only be one instance of local environment running at the same time.
+```bash
+CERE_CHAIN_TESTS=1 CERE_FUNDED_SEED='<mnemonic or //Uri>' npm test
+```
+
+> These submit real, signed extrinsics and spend real tokens on whichever network
+> they target. Do not point them at Mainnet.
 
 ## Documentation
 

@@ -49,6 +49,19 @@ jobs:
       - name: Install packages
         run: npm ci --legacy-peer-deps
 
+      # `npm ci` rewrites package-lock.json when it disagrees with the workspace
+      # package.json files. That leaves the tree dirty, and `lerna publish` then
+      # aborts with an opaque `EUNCOMMIT ... M package-lock.json` at the very last
+      # step (run 30500853727). Fail here instead, with a message that says what to do.
+      - name: Verify package-lock.json is up to date
+        run: |
+          if ! git diff --exit-code --quiet package-lock.json; then
+            echo "::error::package-lock.json is out of date — 'npm ci' rewrote it."
+            echo "Run 'npm ci --legacy-peer-deps' locally in a clean checkout and commit the result."
+            git diff --stat package-lock.json
+            exit 1
+          fi
+
       - name: Build packages
         run: npm run build
 

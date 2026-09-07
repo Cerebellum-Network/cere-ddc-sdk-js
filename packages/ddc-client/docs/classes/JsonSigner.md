@@ -1,45 +1,16 @@
+[**@cere-ddc-sdk/ddc-client**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc-client](../README.md) / JsonSigner
 
 # Class: JsonSigner
 
-Signer that uses a JSON object to create a keypair.
+A `Signer` unlocked from an encrypted polkadot keystore JSON + passphrase.
+Uses `@polkadot/util-crypto`/`@polkadot/keyring` for the keystore decrypt
+only (no `@polkadot/api`). Decryption is eager: a wrong passphrase throws
+from the constructor.
 
-**`Example`**
-
-```typescript
-const accountDataJson = {}; // Exported from Cere Wallet or other wallets
-const jsonSigner = new JsonSigner(accountDataJson, { passphrase: '1234' });
-const signature = await jsonSigner.sign('data');
-
-console.log(signature);
-```
-
-## Hierarchy
+## Extends
 
 - [`KeyringSigner`](KeyringSigner.md)
-
-  ↳ **`JsonSigner`**
-
-## Methods
-
-### isSigner
-
-▸ **isSigner**(`signer`): signer is Signer
-
-Checks if an object is a signer.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `signer` | `unknown` | The object to check. |
-
-#### Returns
-
-signer is Signer
-
-A boolean indicating whether the object is a signer.
-
-#### Inherited from
-
-[KeyringSigner](KeyringSigner.md).[isSigner](KeyringSigner.md#issigner)

@@ -1,0 +1,24 @@
+{
+  "version": 0,
+  "descriptorPath": ".papi/descriptors",
+  "entries": {
+    "cereDevnet": {
+      "wsUrl": "wss://rpc.devnet.cere.network/ws",
+      "metadata": ".papi/metadata/cereDevnet.scale",
+      "genesis": "0x4e07f83548832c8b65ac13ec0fe76335fa69550cdeffd64b74877b49576bfa70",
+      "codeHash": "0x66fe114b4827055509ddb641d445608ed2013fa286cecb12cb94072391a45297"
+    },
+    "cereTestnet": {
+      "wsUrl": "wss://rpc.testnet.cere.network/ws",
+      "metadata": ".papi/metadata/cereTestnet.scale",
+      "genesis": "0x42b9b44b4950b6c1edae543a7696caf8d0a160e9bc0424ab4ab217f7a8ba30dc",
+      "codeHash": "0x92906e2f98b7d50149677742653f2101d84d9d29a9aa8e4b7a16c01a9ef19506"
+    },
+    "cereMainnet": {
+      "wsUrl": "wss://rpc.mainnet.cere.network/ws",
+      "metadata": ".papi/metadata/cereMainnet.scale",
+      "genesis": "0x81443836a9a24caaa23f1241897d1235717535711d1d3fe24eae4fdc942c092c",
+      "codeHash": "0xdde2cf0f33069648fc3ea65616bb394da50b75c10436cb135039f7f5f700de6a"
+    }
+  }
+}

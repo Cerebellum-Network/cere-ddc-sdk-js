@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/ddc**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc](../README.md) / Link
 
 # Class: Link
 
 The `Link` class represents a link in a DAG.
 
-**`Example`**
+## Example
 
 ```typescript
 const cid = '...';
@@ -19,22 +23,22 @@ console.log(link);
 
 ### cid
 
-• **cid**: `string`
+> **cid**: `string`
 
 The content identifier of the link.
 
-___
+***
 
 ### name
 
-• **name**: `string` = `''`
+> **name**: `string` = `''`
 
 The name of the link.
 
-___
+***
 
 ### size
 
-• **size**: `number`
+> **size**: `number`
 
 The content size on which the link points to.

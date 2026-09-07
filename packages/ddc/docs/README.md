@@ -1,4 +1,6 @@
-@cere-ddc-sdk/ddc
+**@cere-ddc-sdk/ddc**
+
+***
 
 # @cere-ddc-sdk/ddc
 
@@ -11,6 +13,13 @@
 ## Authentication
 
 - [AuthToken](classes/AuthToken.md)
+
+## Classes
+
+- [CereWalletSigner](classes/CereWalletSigner.md)
+- [JsonSigner](classes/JsonSigner.md)
+- [KeyringSigner](classes/KeyringSigner.md)
+- [UriSigner](classes/UriSigner.md)
 
 ## Content Name System (CNS)
 
@@ -26,6 +35,10 @@
 - [Link](classes/Link.md)
 - [Tag](classes/Tag.md)
 
+## Enumerations
+
+- [RouterOperation](enumerations/RouterOperation.md)
+
 ## Files
 
 - [FileApi](classes/FileApi.md)
@@ -33,14 +46,27 @@
 - [Piece](classes/Piece.md)
 - [PieceResponse](classes/PieceResponse.md)
 
+## Functions
+
+- [createCorrelationId](functions/createCorrelationId.md)
+- [createResolverNode](functions/createResolverNode.md)
+
+## Interfaces
+
+- [Signer](interfaces/Signer.md)
+
 ## RPC Transport
 
 - [GrpcTransport](classes/GrpcTransport.md)
 - [WebsocketTransport](classes/WebsocketTransport.md)
 
-## Signers
+## Type Aliases
 
-- [JsonSigner](classes/JsonSigner.md)
-- [KeyringSigner](classes/KeyringSigner.md)
-- [Signer](classes/Signer.md)
-- [UriSigner](classes/UriSigner.md)
+- [OpperationRetryOptions](type-aliases/OpperationRetryOptions.md)
+- [SignerType](type-aliases/SignerType.md)
+- [UriSignerOptions](type-aliases/UriSignerOptions.md)
+
+## Variables
+
+- [KB](variables/KB.md)
+- [MB](variables/MB.md)

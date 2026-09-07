@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/ddc**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc](../README.md) / CnsApi
 
 # Class: CnsApi
 
 The `CnsApi` class provides methods to interact with the DDC CNS API.
 
-**`Example`**
+## Example
 
 ```typescript
 import { CnsApi, GrpcTransport } from '@cere-ddc-sdk/ddc';
@@ -15,25 +19,27 @@ const cnsApi = new CnsApi(transport);
 
 ## Methods
 
-### getRecord
+### getRecord()
 
-▸ **getRecord**(`request`): `Promise`\<`undefined` \| `Record`\>
+> **getRecord**(`request`): `Promise`\<`Record` \| `undefined`\>
 
 Retrieves a CNS record from DDC.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `request` | `GetRequest` | An object that includes the token, bucket ID, and record name to retrieve. |
+##### request
+
+`GetRequest`
+
+An object that includes the token, bucket ID, and record name to retrieve.
 
 #### Returns
 
-`Promise`\<`undefined` \| `Record`\>
+`Promise`\<`Record` \| `undefined`\>
 
 The retrieved record with its signature.
 
-**`Example`**
+#### Example
 
 ```typescript
 const request: GetRequest = {
@@ -47,19 +53,21 @@ const record = await cnsApi.getRecord(getRequest);
 console.log(record);
 ```
 
-___
+***
 
-### putRecord
+### putRecord()
 
-▸ **putRecord**(`request`): `Promise`\<`Record`\>
+> **putRecord**(`request`): `Promise`\<`Record`\>
 
 Stores a CNS record to DDC.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `request` | `PutRequest` | An object that includes the token, bucket ID, and record to store. |
+##### request
+
+`PutRequest`
+
+An object that includes the token, bucket ID, and record to store.
 
 #### Returns
 
@@ -67,7 +75,7 @@ Stores a CNS record to DDC.
 
 The stored record with its signature.
 
-**`Example`**
+#### Example
 
 ```typescript
 const request: PutRequest = {

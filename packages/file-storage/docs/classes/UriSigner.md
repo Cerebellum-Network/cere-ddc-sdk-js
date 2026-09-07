@@ -1,44 +1,15 @@
+[**@cere-ddc-sdk/file-storage**](../README.md)
+
+***
+
 [@cere-ddc-sdk/file-storage](../README.md) / UriSigner
 
 # Class: UriSigner
 
-Signer that uses a Substrate URI to create a keypair.
+A `Signer` from a mnemonic/seed with an optional `//hard/soft` derivation
+path (keyring URI convention). An empty phrase is rejected (no silent dev
+phrase). sr25519 by default; pass `{ type: 'ed25519' }` for ed25519.
 
-**`Example`**
+## Extends
 
-```typescript
-const uriSigner = new UriSigner('//Alice', );
-const signature = await uriSigner.sign('data');
-
-console.log(signature);
-```
-
-## Hierarchy
-
-- `KeyringSigner`
-
-  ↳ **`UriSigner`**
-
-## Methods
-
-### isSigner
-
-▸ **isSigner**(`signer`): signer is Signer
-
-Checks if an object is a signer.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `signer` | `unknown` | The object to check. |
-
-#### Returns
-
-signer is Signer
-
-A boolean indicating whether the object is a signer.
-
-#### Inherited from
-
-KeyringSigner.isSigner
+- [`KeyringSigner`](KeyringSigner.md)

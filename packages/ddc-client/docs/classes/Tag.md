@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/ddc-client**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc-client](../README.md) / Tag
 
 # Class: Tag
 
 The `Tag` class represents a DAG Node tag.
 
-**`Example`**
+## Example
 
 ```typescript
 const key = 'exampleKey';
@@ -18,14 +22,14 @@ console.log(tag);
 
 ### key
 
-• **key**: `string`
+> **key**: `string`
 
 The key of the tag.
 
-___
+***
 
 ### value
 
-• **value**: `string`
+> **value**: `string`
 
 The value of the tag.
