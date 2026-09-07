@@ -1,3 +1,4 @@
+on
 {
   "name": "@cere-ddc-sdk/blockchain",
   "version": "3.0.1",
@@ -58,19 +59,6 @@
     "@polkadot-labs/hdkd-helpers": "^0.0.31",
     "@polkadot/keyring": "^13.3.1",
     "@polkadot/util-crypto": "^13.5.7",
-    "polkadot-api": "^2.1.8",
-    "ws": "^8.21.0"
-  },
-  "peerDependencies": {
-    "@cere/embed-wallet": "*"
-  },
-  "peerDependenciesMeta": {
-    "@cere/embed-wallet": {
-      "optional": true
-    }
-  },
-  "devDependencies": {
-    "@polkadot-api/polkadot-sdk-compat": "^2.4.1",
-    "@types/ws": "^8.18.1"
+
   }
 }
