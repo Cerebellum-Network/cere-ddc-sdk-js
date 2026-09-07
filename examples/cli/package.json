@@ -1,8 +1,13 @@
+```json
 {
   "name": "@cere-ddc-sdk/cli-examples",
   "version": "3.0.1",
   "private": true,
   "dependencies": {
     "@cere-ddc-sdk/cli": "3.0.1"
+  },
+  "scripts": {
+    "test": "jest"
   }
 }
+```
