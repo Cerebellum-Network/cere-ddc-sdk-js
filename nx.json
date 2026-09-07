@@ -15,9 +15,6 @@
     },
     "test": {
       "dependsOn": ["^build"]
-    },
-    "test:env": {
-      "dependsOn": ["^build"]
     }
   }
 }

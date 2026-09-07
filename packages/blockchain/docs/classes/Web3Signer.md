@@ -1,198 +1,61 @@
+[**@cere-ddc-sdk/blockchain**](../README.md)
+
+***
+
 [@cere-ddc-sdk/blockchain](../README.md) / Web3Signer
 
 # Class: Web3Signer
 
-Signer that uses browser extensions (eg. PolkadotJs) to sign messages.
+Wraps a papi-injected browser-extension account (PolkadotJs, Talisman, ...)
+as a chain-free `Signer`. The extension itself does the signing — `sign()`
+delegates to the account's papi signer `signBytes`.
 
-**`Example`**
+Extension discovery/connection (`getInjectedExtensions`/`connectInjectedExtension`)
+reads `window.injectedWeb3`, so it only works in a browser with the
+extension installed. The `./papi` build (`tsc -p tsconfig.papi.json`) does
+not do `.node` module substitution, so this file is what ships for both
+browser and Node — `fromExtension()` guards against `window` being
+undefined and throws a clear error instead of a bare `ReferenceError`.
 
-```typescript
-const web3Signer = new Web3Signer({ autoConnect: true });
-const signature = await web3Signer.sign('data');
+## Implements
 
-console.log(signature);
-```
-
-## Hierarchy
-
-- [`Signer`](Signer.md)
-
-  ↳ **`Web3Signer`**
-
-  ↳↳ [`CereWalletSigner`](CereWalletSigner.md)
-
-## Accessors
-
-### address
-
-• `get` **address**(): `string`
-
-The address of the signer.
-
-#### Returns
-
-`string`
-
-#### Overrides
-
-Signer.address
-
-___
-
-### publicKey
-
-• `get` **publicKey**(): `Uint8Array`
-
-The public key of the signer.
-
-#### Returns
-
-`Uint8Array`
-
-#### Overrides
-
-Signer.publicKey
-
-___
-
-### type
-
-• `get` **type**(): `KeypairType`
-
-The type of the signer ('ed25519' or 'sr25519').
-
-#### Returns
-
-`KeypairType`
-
-#### Overrides
-
-Signer.type
+- [`Signer`](../interfaces/Signer.md)
+- `NativePolkadotSigner`
 
 ## Methods
 
-### connect
+### getPolkadotSigner()
 
-▸ **connect**(): `Promise`\<[`Web3Signer`](Web3Signer.md)\>
+> **getPolkadotSigner**(): `PolkadotSigner`
 
-Connects to the underlying Web3 signer.
-
-#### Returns
-
-`Promise`\<[`Web3Signer`](Web3Signer.md)\>
-
-A promise that resolves to the signer.
-
-**`Throws`**
-
-An error if the signer cannot be detected.
-
-**`Example`**
-
-```typescript
-await web3Signer.connect();
-```
-
-___
-
-### getSigner
-
-▸ **getSigner**(): `Promise`\<`Signer`\>
+The extension account's native papi signer, used for extrinsic signing.
+The extension signs extrinsics via its signed-payload flow; reconstructing
+an extrinsic signature from `sign()`/`signBytes` (data signing, which the
+extension wraps in `<Bytes>…</Bytes>`) would fail on-chain with BadProof.
 
 #### Returns
 
-`Promise`\<`Signer`\>
+`PolkadotSigner`
 
-**`Inherit Doc`**
+#### Implementation of
 
-#### Overrides
+`NativePolkadotSigner.getPolkadotSigner`
 
-Signer.getSigner
+***
 
-___
+### fromExtension()
 
-### isReady
+> `static` **fromExtension**(`name`): `Promise`\<`Web3Signer`[]\>
 
-▸ **isReady**(): `Promise`\<`boolean`\>
-
-Checks if the signer is ready.
-
-#### Returns
-
-`Promise`\<`boolean`\>
-
-A promise that resolves to a boolean indicating whether the signer is ready.
-
-#### Overrides
-
-[Signer](Signer.md).[isReady](Signer.md#isready)
-
-___
-
-### sign
-
-▸ **sign**(`message`): `Promise`\<`Uint8Array`\>
-
-Signs data with the signer.
+Connects to a named browser extension (e.g. `'polkadot-js'`) and returns
+one `Web3Signer` per account it exposes.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `message` | `string` \| `Uint8Array` | The data to sign. |
+##### name
+
+`string`
 
 #### Returns
 
-`Promise`\<`Uint8Array`\>
-
-A promise that resolves to the signature.
-
-#### Overrides
-
-[Signer](Signer.md).[sign](Signer.md#sign)
-
-___
-
-### unlock
-
-▸ **unlock**(`passphrase?`): `Promise`\<`void`\>
-
-Unlocks the signer with a passphrase.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `passphrase?` | `string` | The passphrase to unlock the signer. |
-
-#### Returns
-
-`Promise`\<`void`\>
-
-#### Inherited from
-
-[Signer](Signer.md).[unlock](Signer.md#unlock)
-
-___
-
-### isSigner
-
-▸ **isSigner**(`signer`): signer is Signer
-
-Checks if an object is a signer.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `signer` | `unknown` | The object to check. |
-
-#### Returns
-
-signer is Signer
-
-A boolean indicating whether the object is a signer.
-
-#### Inherited from
-
-[Signer](Signer.md).[isSigner](Signer.md#issigner)
+`Promise`\<`Web3Signer`[]\>

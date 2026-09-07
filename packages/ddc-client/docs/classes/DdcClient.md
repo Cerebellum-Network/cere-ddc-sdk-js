@@ -1,3 +1,7 @@
+[**@cere-ddc-sdk/ddc-client**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc-client](../README.md) / DdcClient
 
 # Class: DdcClient
@@ -8,52 +12,54 @@ It provides methods to manage buckets, grant access, and store and read files an
 
 ## Methods
 
-### bucketGet
+### ~~bucketGet()~~
 
-▸ **bucketGet**(`bucketId`): `Promise`\<`undefined` \| `Bucket`\>
+> **bucketGet**(`bucketId`): `Promise`\<`Bucket` \| `undefined`\>
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `bucketId` | `bigint` |
+##### bucketId
+
+`bigint`
 
 #### Returns
 
-`Promise`\<`undefined` \| `Bucket`\>
+`Promise`\<`Bucket` \| `undefined`\>
 
-**`Deprecated`**
+#### Deprecated
 
 Use `getBucket` instead
 
-___
+***
 
-### bucketList
+### ~~bucketList()~~
 
-▸ **bucketList**(): `Promise`\<`Bucket`[]\>
+> **bucketList**(): `Promise`\<`Bucket`[]\>
 
 #### Returns
 
 `Promise`\<`Bucket`[]\>
 
-**`Deprecated`**
+#### Deprecated
 
 Use `getBucketList` instead
 
-___
+***
 
-### createBucket
+### createBucket()
 
-▸ **createBucket**(`clusterId`, `params?`): `Promise`\<`bigint`\>
+> **createBucket**(`params?`): `Promise`\<`bigint`\>
 
-Creates a new bucket on a specified cluster.
+Creates a new bucket on the configured cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster where the bucket will be created. |
-| `params` | `Partial`\<`BucketParams`\> | Optional parameters for the new bucket. Defaults to an empty object. Currently, the only parameter is `isPublic`, which defaults to `false`. |
+##### params?
+
+`Partial`\<`BucketParams`\> = `{}`
+
+Optional parameters for the new bucket. Defaults to an empty object.
+                Currently, the only parameter is `isPublic`, which defaults to `false`.
 
 #### Returns
 
@@ -61,30 +67,35 @@ Creates a new bucket on a specified cluster.
 
 A promise that resolves to the ID of the newly created bucket.
 
-**`Example`**
+#### Example
 
 ```typescript
-const clusterId: ClusterId = '0x...';
-const bucketId: BucketId = await ddcClient.createBucket(clusterId, {
+const bucketId: BucketId = await ddcClient.createBucket({
   isPublic: true,
 });
 ```
 
-___
+***
 
-### depositBalance
+### depositBalance()
 
-▸ **depositBalance**(`clusterId`, `amount`, `options?`): `Promise`\<`SendResult`\>
+> **depositBalance**(`amount`, `options?`): `Promise`\<`SendResult`\>
 
-Deposits a specified amount of tokens to the account for a specific cluster. The account must have enough tokens to cover the deposit.
+Deposits a specified amount of tokens to the account for the configured cluster. The account must have enough tokens to cover the deposit.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster to deposit tokens for. |
-| `amount` | `bigint` | The amount of tokens to deposit. |
-| `options` | `DepositBalanceOptions` | Additional options for the deposit. |
+##### amount
+
+`bigint`
+
+The amount of tokens to deposit.
+
+##### options?
+
+`DepositBalanceOptions` = `{}`
+
+Additional options for the deposit.
 
 #### Returns
 
@@ -92,32 +103,37 @@ Deposits a specified amount of tokens to the account for a specific cluster. The
 
 A promise that resolves to the transaction hash of the deposit.
 
-**`Example`**
+#### Example
 
 ```typescript
-const clusterId: ClusterId = '0x...';
 const amount = 100n;
-const txHash = await ddcClient.depositBalance(clusterId, amount);
+const txHash = await ddcClient.depositBalance(amount);
 
 console.log(txHash);
 ```
 
-___
+***
 
-### depositBalanceFor
+### depositBalanceFor()
 
-▸ **depositBalanceFor**(`targetAddress`, `clusterId`, `amount`): `Promise`\<`SendResult`\>
+> **depositBalanceFor**(`targetAddress`, `amount`): `Promise`\<`SendResult`\>
 
-Deposits a specified amount of tokens to the target address for a specific cluster.
+Deposits a specified amount of tokens to the target address for the configured cluster.
 This allows depositing funds on behalf of another address.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `targetAddress` | `string` | The target address to deposit funds for. |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster to deposit tokens for. |
-| `amount` | `bigint` | The amount of tokens to deposit. |
+##### targetAddress
+
+`string`
+
+The target address to deposit funds for.
+
+##### amount
+
+`bigint`
+
+The amount of tokens to deposit.
 
 #### Returns
 
@@ -125,22 +141,21 @@ This allows depositing funds on behalf of another address.
 
 A promise that resolves to the transaction hash of the deposit.
 
-**`Example`**
+#### Example
 
 ```typescript
 const targetAddress = '5D5PhZQNJzcJXVBxwJxZcsutjKPqUPydrvpu6HeiBfMae2Qu';
-const clusterId: ClusterId = '0x...';
 const amount = 100n;
-const txHash = await ddcClient.depositBalanceFor(targetAddress, clusterId, amount);
+const txHash = await ddcClient.depositBalanceFor(targetAddress, amount);
 
 console.log(txHash);
 ```
 
-___
+***
 
-### getBalance
+### getBalance()
 
-▸ **getBalance**(): `Promise`\<`bigint`\>
+> **getBalance**(): `Promise`\<`bigint`\>
 
 Retrieves the current free balance of the account.
 
@@ -150,7 +165,7 @@ Retrieves the current free balance of the account.
 
 A promise that resolves to the current balance of the account.
 
-**`Example`**
+#### Example
 
 ```typescript
 const balance = await ddcClient.getBalance();
@@ -158,27 +173,29 @@ const balance = await ddcClient.getBalance();
 console.log(balance);
 ```
 
-___
+***
 
-### getBucket
+### getBucket()
 
-▸ **getBucket**(`bucketId`): `Promise`\<`undefined` \| `Bucket`\>
+> **getBucket**(`bucketId`): `Promise`\<`Bucket` \| `undefined`\>
 
 Retrieves information about a specific bucket by its ID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket to retrieve. |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket to retrieve.
 
 #### Returns
 
-`Promise`\<`undefined` \| `Bucket`\>
+`Promise`\<`Bucket` \| `undefined`\>
 
 A promise that resolves to the bucket information.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketId: BucketId = 1n;
@@ -187,11 +204,11 @@ const bucket = await ddcClient.getBucket(bucketId);
 console.log(bucket);
 ```
 
-___
+***
 
-### getBucketList
+### getBucketList()
 
-▸ **getBucketList**(): `Promise`\<`Bucket`[]\>
+> **getBucketList**(): `Promise`\<`Bucket`[]\>
 
 Retrieves a list of all available buckets.
 
@@ -201,7 +218,7 @@ Retrieves a list of all available buckets.
 
 A promise that resolves to an array of buckets.
 
-**`Example`**
+#### Example
 
 ```typescript
 const buckets = await ddcClient.getBucketList();
@@ -209,20 +226,21 @@ const buckets = await ddcClient.getBucketList();
 console.log(buckets);
 ```
 
-___
+***
 
-### getDeposit
+### getDeposit()
 
-▸ **getDeposit**(`clusterId`, `accountId?`): `Promise`\<`bigint`\>
+> **getDeposit**(`accountId?`): `Promise`\<`bigint`\>
 
-Retrieves the current active deposit of the account for a specific cluster.
+Retrieves the current active deposit of the account for the configured cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster to get deposit for. |
-| `accountId?` | `string` | Optional account ID. If not provided, uses the signer's address. |
+##### accountId?
+
+`string`
+
+Optional account ID. If not provided, uses the signer's address.
 
 #### Returns
 
@@ -230,29 +248,35 @@ Retrieves the current active deposit of the account for a specific cluster.
 
 A promise that resolves to the current active deposit of the account.
 
-**`Example`**
+#### Example
 
 ```typescript
-const clusterId: ClusterId = '0x...';
-const deposit = await ddcClient.getDeposit(clusterId);
+const deposit = await ddcClient.getDeposit();
 
 console.log(deposit);
 ```
 
-___
+***
 
-### grantAccess
+### grantAccess()
 
-▸ **grantAccess**(`subject`, `params`): `Promise`\<[`AuthToken`](AuthToken.md)\>
+> **grantAccess**(`subject`, `params`): `Promise`\<[`AuthToken`](AuthToken.md)\>
 
 Grants access to a bucket to a specific account.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `subject` | `string` | The account ID to grant access to. |
-| `params` | `Omit`\<`AuthTokenParams`, ``"subject"``\> | The parameters for the access being granted. |
+##### subject
+
+`string`
+
+The account ID to grant access to.
+
+##### params
+
+`Omit`\<`AuthTokenParams`, `"subject"`\>
+
+The parameters for the access being granted.
 
 #### Returns
 
@@ -260,7 +284,7 @@ Grants access to a bucket to a specific account.
 
 A new AuthToken that the subject account can use to access the bucket.
 
-**`Example`**
+#### Example
 
 ```typescript
 const subject: AccountId = '0x...';
@@ -272,28 +296,37 @@ const authToken = await ddcClient.grantAccess(subject, {
 console.log(authToken.toString());
 ```
 
-___
+***
 
-### read
+### read()
 
-▸ **read**(`uri`, `options?`): `Promise`\<[`FileResponse`](FileResponse.md)\>
+#### Call Signature
+
+> **read**(`uri`, `options?`): `Promise`\<[`FileResponse`](FileResponse.md)\>
 
 Reads a file or DAG node from a specific URI.
 
-#### Parameters
+##### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `uri` | [`FileUri`](FileUri.md) | The URI of the file or DAG node to read. |
-| `options?` | `PieceReadOptions` | Optional parameters for reading the entity. |
+###### uri
 
-#### Returns
+[`FileUri`](FileUri.md)
+
+The URI of the file or DAG node to read.
+
+###### options?
+
+`PieceReadOptions`
+
+Optional parameters for reading the entity.
+
+##### Returns
 
 `Promise`\<[`FileResponse`](FileResponse.md)\>
 
 A promise that resolves to the file or DAG node response.
 
-**`Example`**
+##### Example
 
 ```typescript
 const fileUri = new FileUri(bucketId, cid);
@@ -303,19 +336,57 @@ const textContent = await fileResponse.text();
 console.log(textContent);
 ```
 
-___
+#### Call Signature
 
-### removeBuckets
+> **read**(`uri`, `options?`): `Promise`\<[`DagNodeResponse`](DagNodeResponse.md)\>
 
-▸ **removeBuckets**(`...bucketIds`): `Promise`\<`bigint`[]\>
+Reads a file or DAG node from a specific URI.
+
+##### Parameters
+
+###### uri
+
+[`DagNodeUri`](DagNodeUri.md)
+
+The URI of the file or DAG node to read.
+
+###### options?
+
+`DagNodeGetOptions`
+
+Optional parameters for reading the entity.
+
+##### Returns
+
+`Promise`\<[`DagNodeResponse`](DagNodeResponse.md)\>
+
+A promise that resolves to the file or DAG node response.
+
+##### Example
+
+```typescript
+const fileUri = new FileUri(bucketId, cid);
+const fileResponse = await ddcClient.read(fileUri);
+const textContent = await fileResponse.text();
+
+console.log(textContent);
+```
+
+***
+
+### removeBuckets()
+
+> **removeBuckets**(...`bucketIds`): `Promise`\<`bigint`[]\>
 
 Mark existing buckets with specified bucket ids as removed.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `...bucketIds` | `bigint`[] | The IDs of the buckets to remove. |
+##### bucketIds
+
+...`bigint`[]
+
+The IDs of the buckets to remove.
 
 #### Returns
 
@@ -323,27 +394,37 @@ Mark existing buckets with specified bucket ids as removed.
 
 A promise that resolves to the IDs of the removed buckets.
 
-**`Example`**
+#### Example
 
 ```typescript
 const removedBucketIds = await ddcClient.removeBucket(1, 2, 3);
 ```
 
-___
+***
 
-### resolveName
+### resolveName()
 
-▸ **resolveName**(`bucketId`, `cnsName`, `options?`): `Promise`\<`Cid`\>
+> **resolveName**(`bucketId`, `cnsName`, `options?`): `Promise`\<`Cid`\>
 
 Resolves a CNS name to a specific CID.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket to resolve the CNS name in. |
-| `cnsName` | `string` | The CNS name to resolve. |
-| `options?` | `CnsRecordGetOptions` | - |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket to resolve the CNS name in.
+
+##### cnsName
+
+`string`
+
+The CNS name to resolve.
+
+##### options?
+
+`CnsRecordGetOptions`
 
 #### Returns
 
@@ -351,7 +432,7 @@ Resolves a CNS name to a specific CID.
 
 A promise that resolves to the CID of the CNS name.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketId: BucketId = 1n;
@@ -361,57 +442,119 @@ const cid = await ddcClient.resolveName(bucketId, cnsName);
 console.log(cid);
 ```
 
-___
+***
 
-### store
+### store()
 
-▸ **store**(`bucketId`, `entity`, `options?`): `Promise`\<[`FileUri`](FileUri.md)\>
+#### Call Signature
+
+> **store**(`bucketId`, `entity`, `options?`): `Promise`\<[`FileUri`](FileUri.md)\>
 
 Stores a file or DAG node in a specific bucket.
 
-#### Parameters
+##### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket to store the entity in. |
-| `entity` | [`File`](File.md) | The file or DAG node to store. |
-| `options?` | `FileStoreOptions` | Optional parameters for storing the entity. |
+###### bucketId
 
-#### Returns
+`bigint`
+
+The ID of the bucket to store the entity in.
+
+###### entity
+
+[`File`](File.md)
+
+The file or DAG node to store.
+
+###### options?
+
+`FileStoreOptions`
+
+Optional parameters for storing the entity.
+
+##### Returns
 
 `Promise`\<[`FileUri`](FileUri.md)\>
 
 A promise that resolves to a URI for the stored entity.
 
-**`Throws`**
+##### Throws
 
 Will throw an error if the `entity` argument is neither a File nor a DagNode.
 
-**`Example`**
+##### Example
 
 ```typescript
 const bucketId: BucketId = 1n;
-const fileContent = '...';
+const fileContent = ...;
 const file: File = new File(fileContent, { size: 1000 });
 const fileUri = await ddcClient.store(bucketId, file);
 
 console.log(fileUri);
 ```
 
-___
+#### Call Signature
 
-### unlockDeposit
+> **store**(`bucketId`, `entity`, `options?`): `Promise`\<[`DagNodeUri`](DagNodeUri.md)\>
 
-▸ **unlockDeposit**(`clusterId`, `amount`): `Promise`\<`SendResult`\>
+Stores a file or DAG node in a specific bucket.
 
-Unlocks deposit funds from the account for the specified cluster.
+##### Parameters
+
+###### bucketId
+
+`bigint`
+
+The ID of the bucket to store the entity in.
+
+###### entity
+
+[`DagNode`](DagNode.md)
+
+The file or DAG node to store.
+
+###### options?
+
+`DagNodeStoreOptions`
+
+Optional parameters for storing the entity.
+
+##### Returns
+
+`Promise`\<[`DagNodeUri`](DagNodeUri.md)\>
+
+A promise that resolves to a URI for the stored entity.
+
+##### Throws
+
+Will throw an error if the `entity` argument is neither a File nor a DagNode.
+
+##### Example
+
+```typescript
+const bucketId: BucketId = 1n;
+const fileContent = ...;
+const file: File = new File(fileContent, { size: 1000 });
+const fileUri = await ddcClient.store(bucketId, file);
+
+console.log(fileUri);
+```
+
+***
+
+### unlockDeposit()
+
+> **unlockDeposit**(`amount`): `Promise`\<`SendResult`\>
+
+Unlocks deposit funds from the account for the configured cluster.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
-| `amount` | `bigint` | The amount to unlock. |
+##### amount
+
+`bigint`
+
+The amount to unlock.
 
 #### Returns
 
@@ -419,29 +562,22 @@ Unlocks deposit funds from the account for the specified cluster.
 
 A promise that resolves to the transaction hash.
 
-**`Example`**
+#### Example
 
 ```typescript
-const clusterId: ClusterId = '0x...';
 const amount = 100n;
-const txHash = await ddcClient.unlockDeposit(clusterId, amount);
+const txHash = await ddcClient.unlockDeposit(amount);
 
 console.log(txHash);
 ```
 
-___
+***
 
-### withdrawUnlockedDeposit
+### withdrawUnlockedDeposit()
 
-▸ **withdrawUnlockedDeposit**(`clusterId`): `Promise`\<`SendResult`\>
+> **withdrawUnlockedDeposit**(): `Promise`\<`SendResult`\>
 
-Withdraws unlocked funds from the account for the specified cluster.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `clusterId` | \`0x$\{string}\` | The ID of the cluster. |
+Withdraws unlocked funds from the account for the configured cluster.
 
 #### Returns
 
@@ -449,45 +585,49 @@ Withdraws unlocked funds from the account for the specified cluster.
 
 A promise that resolves to the transaction hash.
 
-**`Example`**
+#### Example
 
 ```typescript
-const clusterId: ClusterId = '0x...';
-const txHash = await ddcClient.withdrawUnlockedDeposit(clusterId);
+const txHash = await ddcClient.withdrawUnlockedDeposit();
 
 console.log(txHash);
 ```
 
-___
+***
 
-### create
+### create()
 
-▸ **create**(`uriOrSigner`, `config?`): `Promise`\<[`DdcClient`](DdcClient.md)\>
+> `static` **create**(`uriOrSigner`, `config`): `Promise`\<`DdcClient`\>
 
 Creates a new instance of the DdcClient.
 
 #### Parameters
 
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `uriOrSigner` | `string` \| [`Signer`](Signer.md) | `undefined` | A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri). |
-| `config` | `DdcClientConfig` | `DEFAULT_PRESET` | Configuration options for the DdcClient. Defaults to TESTNET. |
+##### uriOrSigner
+
+`string` \| [`Signer`](../interfaces/Signer.md)
+
+A Signer instance or a [substrate URI](https://polkadot.js.org/docs/keyring/start/suri).
+
+##### config
+
+`DdcClientConfig`
+
+Configuration options for the DdcClient. `clusterId` and `storageUrl` are required.
 
 #### Returns
 
-`Promise`\<[`DdcClient`](DdcClient.md)\>
+`Promise`\<`DdcClient`\>
 
 A promise that resolves to a new instance of the DdcClient.
 
-**`Example`**
+#### Example
 
 ```typescript
-const ddcClient = await DdcClient.create('//Alice', DEVNET);
-```
-
-```typescript
-const ddcClient = await DdcClient.create('//Alice', {
+const ddcClient = await DdcClient.create('bottom drive obey lake curtain smoke basket hold race lonely fit walk//Alice', {
   blockchain: 'wss://devnet.cere.network',
+  clusterId: '0x...',
+  storageUrl: 'https://storage.example',
   retries: 3,
 });
 ```

@@ -4,7 +4,6 @@ import fs from 'fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { mnemonicGenerate } from '@polkadot/util-crypto';
-import type { ClusterId } from '@cere-ddc-sdk/blockchain';
 
 import { upload } from './upload';
 import { createBucket } from './createBucket';
@@ -29,6 +28,22 @@ yargs(hideBin(process.argv))
     alias: ['rpc'],
     type: 'string',
     describe: 'Blockchain RPC URL. Owerrides the network default RPC URL',
+  })
+
+  .option('clusterId', {
+    alias: 'c',
+    type: 'string',
+    describe: 'DDC cluster ID to operate against (single-cluster config; required for any command that talks to DDC)',
+  })
+
+  .option('storageUrl', {
+    type: 'string',
+    describe: 'DDC storage node URL (write + fallback read endpoint). Defaults to the --network storage endpoint',
+  })
+
+  .option('cdnUrl', {
+    type: 'string',
+    describe: 'DDC CDN URL (read endpoint). Defaults to the --network CDN endpoint; falls back to storageUrl',
   })
 
   .option('signer', {
@@ -169,21 +184,13 @@ yargs(hideBin(process.argv))
           demandOption: true,
           describe: 'Amount of CERE tokens to deposit',
         })
-        .option('clusterId', {
-          alias: 'c',
-          type: 'string',
-          demandOption: true,
-          describe: 'Cluster ID to deposit tokens for',
-        })
         .option('allowExtra', {
           type: 'boolean',
           default: true,
           describe: 'Whether to allow extra amount to be deposited',
         }),
     async (argv) => {
-      const total = await withClient(argv, (client) =>
-        deposit(client, argv.amount, { ...argv, clusterId: argv.clusterId as ClusterId }),
-      );
+      const total = await withClient(argv, (client) => deposit(client, argv.amount, argv));
 
       console.group('Deposit completed');
       console.log('Network:', argv.network);
@@ -197,19 +204,12 @@ yargs(hideBin(process.argv))
     'create-bucket',
     'Creates a new bucket in DDC cluster',
     (yargs) =>
-      yargs
-        .option('clusterId', {
-          alias: 'c',
-          type: 'string',
-          demandOption: true,
-          describe: 'Cluster ID where the bucket will be created',
-        })
-        .option('bucketAccess', {
-          alias: 'access',
-          choices: ['public', 'private'],
-          default: 'private',
-          describe: 'Whether the bucket is public',
-        }),
+      yargs.option('bucketAccess', {
+        alias: 'access',
+        choices: ['public', 'private'],
+        default: 'private',
+        describe: 'Whether the bucket is public',
+      }),
     async ({ bucketAccess, ...argv }) => {
       const bucketId = await withClient(argv, (client) =>
         createBucket(client, { ...argv, isPublic: bucketAccess === 'public' }),

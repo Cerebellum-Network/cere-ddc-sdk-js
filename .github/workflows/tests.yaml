@@ -23,7 +23,7 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'true'
 
@@ -32,22 +32,29 @@ jobs:
         run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
 
-      - name: Configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: arn:aws:iam::${{ vars.SHARED_AWS_ACCOUNT_ID }}:role/github
-          role-session-name: ${{ github.event.repository.name }}
-          aws-region: us-west-2
-
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
-
+      # Must match publish.yaml's install flags. Without --legacy-peer-deps npm
+      # records some transitive packages as `peer` rather than `dev`, so the two
+      # workflows would each rewrite the lockfile the other committed and no single
+      # lockfile could satisfy both.
       - name: Install packages
-        run: npm ci
+        run: npm ci --legacy-peer-deps
+
+      # Catch a stale lockfile on the PR that introduces it, rather than at the
+      # publish step where it surfaces as `lerna ERR! EUNCOMMIT` (run 30500853727).
+      # Adding/changing `engines`, deps, or a workspace's version all require the
+      # lockfile to be regenerated and committed alongside.
+      - name: Verify package-lock.json is up to date
+        run: |
+          if ! git diff --exit-code --quiet package-lock.json; then
+            echo "::error::package-lock.json is out of date — 'npm ci' rewrote it."
+            echo "Run 'npm ci --legacy-peer-deps' locally in a clean checkout and commit the result."
+            git diff --stat package-lock.json
+            exit 1
+          fi
 
       - name: Check code style
         run: npm run lint
@@ -58,5 +65,8 @@ jobs:
       - name: Check types
         run: npm run check-types:ci
 
-      - name: Run integration tests
+      # Blocking again as of 3.0: the docker-based storage E2E that used to fail here is
+      # gone, and the remaining suite runs offline. Specs that need a live chain are
+      # skipped unless `CERE_CHAIN_TESTS=1` is set, so this step is deterministic in CI.
+      - name: Run tests
         run: npm run test:ci

@@ -1,10 +1,14 @@
+[**@cere-ddc-sdk/ddc**](../README.md)
+
+***
+
 [@cere-ddc-sdk/ddc](../README.md) / StorageNode
 
 # Class: StorageNode
 
 The `StorageNode` class provides methods for communicating with a DDC storage node.
 
-**`Example`**
+## Example
 
 ```typescript
 const signer = new UriSigner('hybrid label reunion ...');
@@ -20,27 +24,39 @@ const storageNode = new StorageNode(signer, {
 
 ## Methods
 
-### getCnsRecord
+### getCnsRecord()
 
-▸ **getCnsRecord**(`bucketId`, `name`, `options?`): `Promise`\<`undefined` \| [`CnsRecordResponse`](CnsRecordResponse.md)\>
+> **getCnsRecord**(`bucketId`, `name`, `options?`): `Promise`\<[`CnsRecordResponse`](CnsRecordResponse.md) \| `undefined`\>
 
 Retrieves a Content Name System (CNS) record from a specific bucket.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket to retrieve the CNS record from. |
-| `name` | `string` | The name of the CNS record to retrieve. |
-| `options?` | `CnsRecordGetOptions` | Optional parameters for retrieving the CNS record. |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket to retrieve the CNS record from.
+
+##### name
+
+`string`
+
+The name of the CNS record to retrieve.
+
+##### options?
+
+`CnsRecordGetOptions`
+
+Optional parameters for retrieving the CNS record.
 
 #### Returns
 
-`Promise`\<`undefined` \| [`CnsRecordResponse`](CnsRecordResponse.md)\>
+`Promise`\<[`CnsRecordResponse`](CnsRecordResponse.md) \| `undefined`\>
 
 A promise that resolves to CnsRecordResponse штыефтсу.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketId = 1n;
@@ -52,31 +68,43 @@ console.log(cnsRecord);
 
 #### Implementation of
 
-[NodeInterface](../interfaces/NodeInterface.md).[getCnsRecord](../interfaces/NodeInterface.md#getcnsrecord)
+[`NodeInterface`](../interfaces/NodeInterface.md).[`getCnsRecord`](../interfaces/NodeInterface.md#getcnsrecord)
 
-___
+***
 
-### getDagNode
+### getDagNode()
 
-▸ **getDagNode**(`bucketId`, `cidOrName`, `options?`): `Promise`\<`undefined` \| [`DagNodeResponse`](DagNodeResponse.md)\>
+> **getDagNode**(`bucketId`, `cidOrName`, `options?`): `Promise`\<[`DagNodeResponse`](DagNodeResponse.md) \| `undefined`\>
 
 Retrieves a DAG node from a specific bucket.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket to retrieve the DAG node from. |
-| `cidOrName` | `string` | The CID or CNS name of the DAG node to retrieve. |
-| `options?` | `DagNodeGetOptions` | Optional parameters for retrieving the DAG node. |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket to retrieve the DAG node from.
+
+##### cidOrName
+
+`string`
+
+The CID or CNS name of the DAG node to retrieve.
+
+##### options?
+
+`DagNodeGetOptions`
+
+Optional parameters for retrieving the DAG node.
 
 #### Returns
 
-`Promise`\<`undefined` \| [`DagNodeResponse`](DagNodeResponse.md)\>
+`Promise`\<[`DagNodeResponse`](DagNodeResponse.md) \| `undefined`\>
 
 A promise that resolves to a DagNodeResponse instance.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketId: bigint = 1n;
@@ -88,23 +116,35 @@ console.log(dagNode);
 
 #### Implementation of
 
-[NodeInterface](../interfaces/NodeInterface.md).[getDagNode](../interfaces/NodeInterface.md#getdagnode)
+[`NodeInterface`](../interfaces/NodeInterface.md).[`getDagNode`](../interfaces/NodeInterface.md#getdagnode)
 
-___
+***
 
-### readPiece
+### readPiece()
 
-▸ **readPiece**(`bucketId`, `cidOrName`, `options?`): `Promise`\<[`PieceResponse`](PieceResponse.md)\>
+> **readPiece**(`bucketId`, `cidOrName`, `options?`): `Promise`\<[`PieceResponse`](PieceResponse.md)\>
 
 Reads a piece of data from a specific bucket.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket to read the piece from. |
-| `cidOrName` | `string` | The CID or CNS name of the piece to read. |
-| `options?` | `PieceReadOptions` | Optional parameters for reading the piece. |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket to read the piece from.
+
+##### cidOrName
+
+`string`
+
+The CID or CNS name of the piece to read.
+
+##### options?
+
+`PieceReadOptions`
+
+Optional parameters for reading the piece.
 
 #### Returns
 
@@ -112,7 +152,7 @@ Reads a piece of data from a specific bucket.
 
 A promise that resolves to a PieceResponse instance.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketId: BucketId = 1n;
@@ -124,23 +164,31 @@ console.log(piece);
 
 #### Implementation of
 
-[NodeInterface](../interfaces/NodeInterface.md).[readPiece](../interfaces/NodeInterface.md#readpiece)
+[`NodeInterface`](../interfaces/NodeInterface.md).[`readPiece`](../interfaces/NodeInterface.md#readpiece)
 
-___
+***
 
-### resolveName
+### resolveName()
 
-▸ **resolveName**(`bucketId`, `cidOrName`, `options?`): `Promise`\<`Cid`\>
+> **resolveName**(`bucketId`, `cidOrName`, `options?`): `Promise`\<`Cid`\>
 
 Resolves a name to a CID in the Content Name System (CNS).
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | - |
-| `cidOrName` | `string` | - |
-| `options?` | `CnsRecordGetOptions` | Optional parameters for resolving the name. |
+##### bucketId
+
+`bigint`
+
+##### cidOrName
+
+`string`
+
+##### options?
+
+`CnsRecordGetOptions`
+
+Optional parameters for resolving the name.
 
 #### Returns
 
@@ -148,7 +196,7 @@ Resolves a name to a CID in the Content Name System (CNS).
 
 A promise that resolves to the CID corresponding to the CNS name.
 
-**`Example`**
+#### Example
 
 ```typescript
 const name: string = 'record-name';
@@ -159,23 +207,35 @@ console.log(cid);
 
 #### Implementation of
 
-[NodeInterface](../interfaces/NodeInterface.md).[resolveName](../interfaces/NodeInterface.md#resolvename)
+[`NodeInterface`](../interfaces/NodeInterface.md).[`resolveName`](../interfaces/NodeInterface.md#resolvename)
 
-___
+***
 
-### storeCnsRecord
+### storeCnsRecord()
 
-▸ **storeCnsRecord**(`bucketId`, `record`, `options?`): `Promise`\<`Record`\>
+> **storeCnsRecord**(`bucketId`, `record`, `options?`): `Promise`\<`Record`\>
 
 Stores a Content Name System (CNS) record in a specific bucket.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket to store the CNS record in. |
-| `record` | [`CnsRecord`](CnsRecord.md) | The CNS record to store. |
-| `options?` | `OperationAuthOptions` | Optional parameters for storing the CNS record. |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket to store the CNS record in.
+
+##### record
+
+[`CnsRecord`](CnsRecord.md)
+
+The CNS record to store.
+
+##### options?
+
+`CnsRecordStoreOptions`
+
+Optional parameters for storing the CNS record.
 
 #### Returns
 
@@ -183,7 +243,7 @@ Stores a Content Name System (CNS) record in a specific bucket.
 
 A promise that resolves to the CID of the stored CNS record.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketId: bigint = 1n;
@@ -195,23 +255,35 @@ console.log(recordCid);
 
 #### Implementation of
 
-[NodeInterface](../interfaces/NodeInterface.md).[storeCnsRecord](../interfaces/NodeInterface.md#storecnsrecord)
+[`NodeInterface`](../interfaces/NodeInterface.md).[`storeCnsRecord`](../interfaces/NodeInterface.md#storecnsrecord)
 
-___
+***
 
-### storeDagNode
+### storeDagNode()
 
-▸ **storeDagNode**(`bucketId`, `node`, `options?`): `Promise`\<`string`\>
+> **storeDagNode**(`bucketId`, `node`, `options?`): `Promise`\<`string`\>
 
 Stores a DAG node in a specific bucket.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket to store the DAG node in. |
-| `node` | [`DagNode`](DagNode.md) | The DAGNode instance to store. |
-| `options?` | `DagNodeStoreOptions` | Optional parameters for storing the DAG node. |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket to store the DAG node in.
+
+##### node
+
+[`DagNode`](DagNode.md)
+
+The DAGNode instance to store.
+
+##### options?
+
+`DagNodeStoreOptions`
+
+Optional parameters for storing the DAG node.
 
 #### Returns
 
@@ -219,7 +291,7 @@ Stores a DAG node in a specific bucket.
 
 A promise that resolves to the CID of the stored DAG node.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketId: BucketId = 1n;
@@ -234,23 +306,35 @@ console.log(nodeCid);
 
 #### Implementation of
 
-[NodeInterface](../interfaces/NodeInterface.md).[storeDagNode](../interfaces/NodeInterface.md#storedagnode)
+[`NodeInterface`](../interfaces/NodeInterface.md).[`storeDagNode`](../interfaces/NodeInterface.md#storedagnode)
 
-___
+***
 
-### storePiece
+### storePiece()
 
-▸ **storePiece**(`bucketId`, `piece`, `options?`): `Promise`\<`string`\>
+> **storePiece**(`bucketId`, `piece`, `options?`): `Promise`\<`string`\>
 
 Stores a piece (raw or multipart) of data in a specific bucket.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bucketId` | `bigint` | The ID of the bucket to store the piece in. |
-| `piece` | [`Piece`](Piece.md) \| [`MultipartPiece`](MultipartPiece.md) | The instance of Piece or MultipartPiece. |
-| `options?` | `PieceStoreOptions` | Optional parameters for storing the piece. |
+##### bucketId
+
+`bigint`
+
+The ID of the bucket to store the piece in.
+
+##### piece
+
+[`Piece`](Piece.md) \| [`MultipartPiece`](MultipartPiece.md)
+
+The instance of Piece or MultipartPiece.
+
+##### options?
+
+`PieceStoreOptions`
+
+Optional parameters for storing the piece.
 
 #### Returns
 
@@ -258,7 +342,7 @@ Stores a piece (raw or multipart) of data in a specific bucket.
 
 A promise that resolves to the CID of the stored piece.
 
-**`Example`**
+#### Example
 
 ```typescript
 const bucketId: BucketId = 1n;
@@ -282,4 +366,28 @@ console.log(pieceCid);
 
 #### Implementation of
 
-[NodeInterface](../interfaces/NodeInterface.md).[storePiece](../interfaces/NodeInterface.md#storepiece)
+[`NodeInterface`](../interfaces/NodeInterface.md).[`storePiece`](../interfaces/NodeInterface.md#storepiece)
+
+## Properties
+
+### displayName
+
+> `readonly` **displayName**: `string`
+
+The display name of the node.
+
+#### Implementation of
+
+[`NodeInterface`](../interfaces/NodeInterface.md).[`displayName`](../interfaces/NodeInterface.md#displayname)
+
+***
+
+### nodeId
+
+> `readonly` **nodeId**: `string`
+
+The identifier of the node.
+
+#### Implementation of
+
+[`NodeInterface`](../interfaces/NodeInterface.md).[`nodeId`](../interfaces/NodeInterface.md#nodeid)

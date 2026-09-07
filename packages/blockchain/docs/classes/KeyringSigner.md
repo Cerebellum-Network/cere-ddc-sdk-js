@@ -1,49 +1,19 @@
+[**@cere-ddc-sdk/blockchain**](../README.md)
+
+***
+
 [@cere-ddc-sdk/blockchain](../README.md) / KeyringSigner
 
 # Class: KeyringSigner
 
-Signer that uses a keyring pair to sign data.
+A `Signer` backed by an in-memory sr25519/ed25519 keypair. Base for
+`UriSigner`/`JsonSigner`; can also be constructed directly from a keypair.
 
-**`Example`**
+## Extended by
 
-```typescript
-const pair = new Keyring().addFromUri('//Alice');
-const keyringSigner = new KeyringSigner(pair);
-const signature = await keyringSigner.sign('data');
+- [`UriSigner`](UriSigner.md)
+- [`JsonSigner`](JsonSigner.md)
 
-console.log(signature);
-```
+## Implements
 
-## Hierarchy
-
-- [`Signer`](Signer.md)
-
-  ↳ **`KeyringSigner`**
-
-  ↳↳ [`UriSigner`](UriSigner.md)
-
-  ↳↳ [`JsonSigner`](JsonSigner.md)
-
-## Methods
-
-### isSigner
-
-▸ **isSigner**(`signer`): signer is Signer
-
-Checks if an object is a signer.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `signer` | `unknown` | The object to check. |
-
-#### Returns
-
-signer is Signer
-
-A boolean indicating whether the object is a signer.
-
-#### Inherited from
-
-[Signer](Signer.md).[isSigner](Signer.md#issigner)
+- [`Signer`](../interfaces/Signer.md)

@@ -1,44 +1,47 @@
-@cere-ddc-sdk/blockchain
+**@cere-ddc-sdk/blockchain**
+
+***
 
 # @cere-ddc-sdk/blockchain
 
-## Blockchain
-
-- [Blockchain](classes/Blockchain.md)
-
-## Pallets
-
-- [DDCClustersGovPallet](classes/DDCClustersGovPallet.md)
-- [DDCClustersPallet](classes/DDCClustersPallet.md)
-- [DDCCustomersPallet](classes/DDCCustomersPallet.md)
-- [DDCNodesPallet](classes/DDCNodesPallet.md)
-- [DDCStakingPallet](classes/DDCStakingPallet.md)
-
-## Signers
+## Classes
 
 - [CereWalletSigner](classes/CereWalletSigner.md)
+- [ChainIncompatibleError](classes/ChainIncompatibleError.md)
 - [JsonSigner](classes/JsonSigner.md)
 - [KeyringSigner](classes/KeyringSigner.md)
-- [Signer](classes/Signer.md)
 - [UriSigner](classes/UriSigner.md)
 - [Web3Signer](classes/Web3Signer.md)
 
+## Functions
+
+- [connect](functions/connect.md)
+- [createClustersGovPallet](functions/createClustersGovPallet.md)
+- [createRandomSigner](functions/createRandomSigner.md)
+- [createStakingPallet](functions/createStakingPallet.md)
+- [decodeAddress](functions/decodeAddress.md)
+- [encodeAddress](functions/encodeAddress.md)
+- [inferNetwork](functions/inferNetwork.md)
+- [isSigner](functions/isSigner.md)
+- [resolveClient](functions/resolveClient.md)
+- [toPolkadotSigner](functions/toPolkadotSigner.md)
+
+## Interfaces
+
+- [KeyPair](interfaces/KeyPair.md)
+- [KeystoreJson](interfaces/KeystoreJson.md)
+- [Signer](interfaces/Signer.md)
+
 ## Type Aliases
 
-### ClusterGovernmentParams
+- [CallSizing](type-aliases/CallSizing.md)
+- [ChainConfig](type-aliases/ChainConfig.md)
+- [DepositOptions](type-aliases/DepositOptions.md)
+- [Sendable](type-aliases/Sendable.md)
+- [SignerType](type-aliases/SignerType.md)
+- [SignIntent](type-aliases/SignIntent.md)
+- [UriSignerOptions](type-aliases/UriSignerOptions.md)
 
-Ƭ **ClusterGovernmentParams**: `ClusterProtocolParams`
+## Variables
 
-**`Deprecated`**
-
-Use ClusterProtocolParams instead.
-
-___
-
-### ClusterProps
-
-Ƭ **ClusterProps**: `ClusterParams`
-
-**`Deprecated`**
-
-Use ClusterParams instead.
+- [CERE\_SS58](variables/CERE_SS58.md)
