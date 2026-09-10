@@ -136,10 +136,15 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
   // balance less the value being transferred and the existential deposit it must
   // retain. Used as the probe limit on runtimes that reject `None` (see
   // `sizeCall`) — by construction the probe is affordable, which is what lets the
-  // dry run get far enough to report the real charge. Returns 0n when the caller
-  // has no headroom, or on any read failure (the caller then falls through to the
-  // constant fallback rather than propagating).
-  const affordableHeadroom = async (caller: AccountId, value: bigint): Promise<bigint> => {
+  // dry run get far enough to report the real charge.
+  //
+  // Returns 0n when the caller genuinely has no headroom, but `undefined` when
+  // the balance could not be READ. The two must not be conflated: `sizeCall`
+  // caps its limit at the headroom, and a read failure reported as 0n would cap
+  // the limit to zero — reintroducing the `StorageDepositLimitExhausted` this
+  // module exists to prevent, on a call whose dry run actually succeeded. An
+  // unknown headroom means "don't cap", not "cap at nothing".
+  const affordableHeadroom = async (caller: AccountId, value: bigint): Promise<bigint | undefined> => {
     try {
       const [account, ed] = await Promise.all([
         api.query.System.Account.getValue(caller as any) as Promise<any>,
@@ -148,7 +153,7 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
       const headroom = BigInt(account.data.free) - value - ed;
       return headroom > 0n ? headroom : 0n;
     } catch {
-      return 0n;
+      return undefined;
     }
   };
 
@@ -209,7 +214,7 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
       // spending the caller's headroom as a probe when the runtime doesn't need it.
       const headroom = await affordableHeadroom(caller, value);
       let sized = await attempt(undefined);
-      if (!sized && headroom > 0n) sized = await attempt(headroom);
+      if (!sized && headroom !== undefined && headroom > 0n) sized = await attempt(headroom);
 
       const ed = await getExistentialDeposit();
 
@@ -234,8 +239,22 @@ export function createCustomerDepositContract(api: CereApi): CustomerDepositCont
       // the probe's `value + charge ≤ free - ed`. A successful probe guarantees
       // `charge ≤ headroom`, so capping at `headroom` still leaves `limit ≥ charge`
       // (no `StorageDepositLimitExhausted`) while keeping the submit affordable.
+      //
+      // Two guards on that cap, because `headroom` is our own arithmetic over a
+      // separately-read `free` balance while `charge` is what the runtime itself
+      // just reported:
+      //  - it applies only when the balance was actually READ (`undefined` means
+      //    unknown — capping at a swallowed 0n would send `storage_deposit_limit: 0`
+      //    on a dry run that succeeded, which is the #308 defect verbatim);
+      //  - it never drops the limit below the measured `charge`. On the `None`
+      //    path the run is not constrained by our headroom at all, so a stale or
+      //    understated `free` can otherwise cap below the real charge and
+      //    guarantee the `StorageDepositLimitExhausted` the cap was meant to avoid.
+      //    (The headroom-probe path implies `charge <= headroom` already, so this
+      //    floor is a no-op there.)
       const slack = sized.charge + ed;
-      const limit = slack < headroom ? slack : headroom;
+      const capped = headroom !== undefined && headroom < slack ? headroom : slack;
+      const limit = capped > sized.charge ? capped : sized.charge;
       return {
         // 2x safety margin — the dry run is priced against possibly-stale state,
         // so a verbatim `gas_required` can undershoot.

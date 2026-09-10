@@ -228,4 +228,47 @@ describe('deposit contract call sizing (offline)', () => {
 
     expect(sizing.storageDepositLimit).toBe(CHARGE + CERE); // charge + 1 CERE default ED
   });
+
+  it('does not cap the limit to zero when the balance read fails but the dry run succeeds', async () => {
+    // The headroom cap must not fire on an UNREAD balance. Here the runtime
+    // accepts None, so the first dry run succeeds and reports a real 4.2 CERE
+    // charge — only the `System.Account` read fails. Treating that failure as
+    // "headroom = 0" would cap the limit to 0, i.e. send
+    // `storage_deposit_limit: 0` on a call the chain just said is fine — the
+    // exact StorageDepositLimitExhausted defect (#308) this module prevents.
+    const { api } = makeApi('unlimited', 1000n * CERE);
+    api.query.System.Account.getValue = async () => {
+      throw new Error('node unavailable');
+    };
+    const contract = createCustomerDepositContract(api);
+
+    const sizing = await contract.sizeCall(CONTRACT, MESSAGE, CALLER, 1n * CERE, {});
+    const tx: any = contract.buildContractCall(CONTRACT, MESSAGE, 1n * CERE, {}, sizing);
+
+    // Unknown headroom means "don't cap", so the full derived slack is sent.
+    expect(sizing.storageDepositLimit).toBe(CHARGE + ED);
+    expect(tx.__tx.storage_deposit_limit).toBe(CHARGE + ED);
+  });
+
+  it('never caps the limit below the charge the runtime actually reported', async () => {
+    // On the None path the dry run isn't constrained by our own headroom
+    // arithmetic, so a stale or understated `free` can make headroom smaller
+    // than the real charge. Capping there would guarantee
+    // StorageDepositLimitExhausted — the measured charge is the floor.
+    const free = 4n * CERE; // headroom = 4 - 1 (value) - 1 (ED) = 2 CERE < 4.2 charge
+    const { api } = makeApi('unlimited', free);
+    // Runtime reports a 4.2 CERE charge regardless of our balance arithmetic.
+    api.apis.ContractsApi.call = async () => ({
+      gas_required: { ref_time: 1_000_000n, proof_size: 50_000n },
+      storage_deposit: { type: 'Charge', value: CHARGE },
+      result: { success: true, value: { flags: 0, data: new Uint8Array([0, 0]) } },
+    });
+    const contract = createCustomerDepositContract(api);
+
+    const sizing = await contract.sizeCall(CONTRACT, MESSAGE, CALLER, 1n * CERE, {});
+
+    // Capped down from charge + ED, but floored at the charge itself.
+    expect(sizing.storageDepositLimit).toBe(CHARGE);
+    expect(sizing.storageDepositLimit).toBeGreaterThanOrEqual(CHARGE);
+  });
 });
