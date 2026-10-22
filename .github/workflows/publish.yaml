@@ -34,18 +34,6 @@ jobs:
         with:
           node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
 
-      - name: Configure AWS credentials
-        if: ${{ !inputs.skipTests }}
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: arn:aws:iam::${{ vars.SHARED_AWS_ACCOUNT_ID }}:role/github
-          role-session-name: ${{ github.event.repository.name }}
-          aws-region: us-west-2
-
-      - name: Login to Amazon ECR
-        if: ${{ !inputs.skipTests }}
-        uses: aws-actions/amazon-ecr-login@v1
-
       - name: Install packages
         run: npm ci --legacy-peer-deps
 
