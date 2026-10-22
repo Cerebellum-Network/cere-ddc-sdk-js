@@ -127,7 +127,7 @@ export interface ActivityAcknowledgment {
      */
     timestamp: number;
     /**
-     * @generated from protobuf field: common.Signature signature = 4;
+     * @generated from protobuf field: common.Signature signature = 7;
      */
     signature?: Signature;
 }
@@ -337,7 +337,7 @@ class ActivityAcknowledgment$Type extends MessageType<ActivityAcknowledgment> {
             { no: 1, name: "requestId", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 2, name: "bytesStoredOrDelivered", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
             { no: 3, name: "timestamp", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
-            { no: 4, name: "signature", kind: "message", T: () => Signature }
+            { no: 7, name: "signature", kind: "message", T: () => Signature }
         ]);
     }
     create(value?: PartialMessage<ActivityAcknowledgment>): ActivityAcknowledgment {
@@ -363,7 +363,7 @@ class ActivityAcknowledgment$Type extends MessageType<ActivityAcknowledgment> {
                 case /* uint64 timestamp */ 3:
                     message.timestamp = reader.uint64().toNumber();
                     break;
-                case /* common.Signature signature */ 4:
+                case /* common.Signature signature */ 7:
                     message.signature = Signature.internalBinaryRead(reader, reader.uint32(), options, message.signature);
                     break;
                 default:
@@ -387,9 +387,9 @@ class ActivityAcknowledgment$Type extends MessageType<ActivityAcknowledgment> {
         /* uint64 timestamp = 3; */
         if (message.timestamp !== 0)
             writer.tag(3, WireType.Varint).uint64(message.timestamp);
-        /* common.Signature signature = 4; */
+        /* common.Signature signature = 7; */
         if (message.signature)
-            Signature.internalBinaryWrite(message.signature, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+            Signature.internalBinaryWrite(message.signature, writer.tag(7, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
