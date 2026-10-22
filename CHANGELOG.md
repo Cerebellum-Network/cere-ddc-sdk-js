@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.2](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v3.0.1...v3.0.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **ddc:** write ActivityAcknowledgment.signature as field 7, matching the node ([#320](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/320)) ([100a257](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/100a25742ecebb8e7a5a9426f7e2ecd45d3eb70c))
+
+
+
 ## [3.0.1](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v3.0.0...v3.0.1) (2026-07-30)
 
 

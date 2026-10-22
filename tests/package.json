@@ -1,6 +1,6 @@
 {
   "name": "@cere-ddc-sdk/tests",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Cere DDC SDK tests",
   "private": true,
   "scripts": {
@@ -8,9 +8,9 @@
   },
   "dependencies": {
     "@cere-ddc-sdk/blockchain": "3.0.1",
-    "@cere-ddc-sdk/ddc": "3.0.1",
-    "@cere-ddc-sdk/ddc-client": "3.0.1",
-    "@cere-ddc-sdk/file-storage": "3.0.1",
+    "@cere-ddc-sdk/ddc": "3.0.2",
+    "@cere-ddc-sdk/ddc-client": "3.0.2",
+    "@cere-ddc-sdk/file-storage": "3.0.2",
     "@polkadot-labs/hdkd-helpers": "^0.0.31",
     "@types/jest": "^29.5.11",
     "jest": "^29.7.0",
