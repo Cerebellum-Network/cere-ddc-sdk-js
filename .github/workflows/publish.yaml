@@ -13,9 +13,6 @@ permissions:
   id-token: write
   contents: read
 
-env:
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN_READ }}
-
 jobs:
   publish:
     name: Publish packages to NPM
@@ -64,6 +61,4 @@ jobs:
         run: npm run package
 
       - name: Publish packages
-        env:
-          NPM_TOKEN: ${{secrets.NPM_TOKEN_PUBLISH}}
         run: npm run release:publish -- --yes
