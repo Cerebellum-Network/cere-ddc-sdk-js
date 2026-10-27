@@ -7,10 +7,10 @@ option go_package = "cere.network/ddc-storage-node/api/activity_report";
 import "common/signature.proto";
 
 message ActivityRecord {
-	ActivityFulfillment upstream = 1;
-	repeated ActivityFulfillment downstream = 2;
-	uint64 timestamp = 3;
-	common.Signature signature = 10;
+	ActivityFulfillment upstream = 2;
+	repeated ActivityFulfillment downstream = 3;
+	uint64 timestamp = 4;
+	common.Signature signature = 5;
 }
 
 message ActivityRequest {

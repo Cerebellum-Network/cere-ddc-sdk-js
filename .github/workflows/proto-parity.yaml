@@ -1,0 +1,54 @@
+name: 'Proto parity'
+
+# Fails when a field the SDK declares disagrees with ddc-proto on number, wire
+# type or cardinality. Fields the SDK leaves out are fine. Runs daily as well,
+# because a ddc-proto change does not trigger this repository's CI.
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+
+env:
+  PROTOC_VERSION: '29.3'
+
+jobs:
+  parity:
+    name: SDK protos match ddc-proto
+    # ddc-proto is private and fork PRs get no secrets; the push and daily runs cover them.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require the ddc-proto read token
+        env:
+          DDC_PROTO_READ_TOKEN: ${{ secrets.DDC_PROTO_READ_TOKEN }}
+        run: |
+          if [ -z "$DDC_PROTO_READ_TOKEN" ]; then
+            echo "::error::secrets.DDC_PROTO_READ_TOKEN is not set; it needs read access to Cerebellum-Network/ddc-proto."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          repository: Cerebellum-Network/ddc-proto
+          token: ${{ secrets.DDC_PROTO_READ_TOKEN }}
+          path: ddc-proto
+
+      - name: Install protoc
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/protoc.zip" \
+            "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip"
+          unzip -q "$RUNNER_TEMP/protoc.zip" -d "$RUNNER_TEMP/protoc"
+          echo "$RUNNER_TEMP/protoc/bin" >> "$GITHUB_PATH"
+          echo "PROTOC_INCLUDE=$RUNNER_TEMP/protoc/include" >> "$GITHUB_ENV"
+
+      - name: Compare field numbers and wire types
+        run: node scripts/proto-parity.mjs packages/ddc/protos ddc-proto

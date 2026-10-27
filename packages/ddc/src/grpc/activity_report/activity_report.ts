@@ -17,19 +17,19 @@ import { Signature } from "../common/signature";
  */
 export interface ActivityRecord {
     /**
-     * @generated from protobuf field: activity_report.ActivityFulfillment upstream = 1;
+     * @generated from protobuf field: activity_report.ActivityFulfillment upstream = 2;
      */
     upstream?: ActivityFulfillment;
     /**
-     * @generated from protobuf field: repeated activity_report.ActivityFulfillment downstream = 2;
+     * @generated from protobuf field: repeated activity_report.ActivityFulfillment downstream = 3;
      */
     downstream: ActivityFulfillment[];
     /**
-     * @generated from protobuf field: uint64 timestamp = 3;
+     * @generated from protobuf field: uint64 timestamp = 4;
      */
     timestamp: number;
     /**
-     * @generated from protobuf field: common.Signature signature = 10;
+     * @generated from protobuf field: common.Signature signature = 5;
      */
     signature?: Signature;
 }
@@ -148,10 +148,10 @@ export interface ActivityFulfillment {
 class ActivityRecord$Type extends MessageType<ActivityRecord> {
     constructor() {
         super("activity_report.ActivityRecord", [
-            { no: 1, name: "upstream", kind: "message", T: () => ActivityFulfillment },
-            { no: 2, name: "downstream", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => ActivityFulfillment },
-            { no: 3, name: "timestamp", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
-            { no: 10, name: "signature", kind: "message", T: () => Signature }
+            { no: 2, name: "upstream", kind: "message", T: () => ActivityFulfillment },
+            { no: 3, name: "downstream", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => ActivityFulfillment },
+            { no: 4, name: "timestamp", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 2 /*LongType.NUMBER*/ },
+            { no: 5, name: "signature", kind: "message", T: () => Signature }
         ]);
     }
     create(value?: PartialMessage<ActivityRecord>): ActivityRecord {
@@ -167,16 +167,16 @@ class ActivityRecord$Type extends MessageType<ActivityRecord> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* activity_report.ActivityFulfillment upstream */ 1:
+                case /* activity_report.ActivityFulfillment upstream */ 2:
                     message.upstream = ActivityFulfillment.internalBinaryRead(reader, reader.uint32(), options, message.upstream);
                     break;
-                case /* repeated activity_report.ActivityFulfillment downstream */ 2:
+                case /* repeated activity_report.ActivityFulfillment downstream */ 3:
                     message.downstream.push(ActivityFulfillment.internalBinaryRead(reader, reader.uint32(), options));
                     break;
-                case /* uint64 timestamp */ 3:
+                case /* uint64 timestamp */ 4:
                     message.timestamp = reader.uint64().toNumber();
                     break;
-                case /* common.Signature signature */ 10:
+                case /* common.Signature signature */ 5:
                     message.signature = Signature.internalBinaryRead(reader, reader.uint32(), options, message.signature);
                     break;
                 default:
@@ -191,18 +191,18 @@ class ActivityRecord$Type extends MessageType<ActivityRecord> {
         return message;
     }
     internalBinaryWrite(message: ActivityRecord, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* activity_report.ActivityFulfillment upstream = 1; */
+        /* activity_report.ActivityFulfillment upstream = 2; */
         if (message.upstream)
-            ActivityFulfillment.internalBinaryWrite(message.upstream, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* repeated activity_report.ActivityFulfillment downstream = 2; */
+            ActivityFulfillment.internalBinaryWrite(message.upstream, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* repeated activity_report.ActivityFulfillment downstream = 3; */
         for (let i = 0; i < message.downstream.length; i++)
-            ActivityFulfillment.internalBinaryWrite(message.downstream[i], writer.tag(2, WireType.LengthDelimited).fork(), options).join();
-        /* uint64 timestamp = 3; */
+            ActivityFulfillment.internalBinaryWrite(message.downstream[i], writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        /* uint64 timestamp = 4; */
         if (message.timestamp !== 0)
-            writer.tag(3, WireType.Varint).uint64(message.timestamp);
-        /* common.Signature signature = 10; */
+            writer.tag(4, WireType.Varint).uint64(message.timestamp);
+        /* common.Signature signature = 5; */
         if (message.signature)
-            Signature.internalBinaryWrite(message.signature, writer.tag(10, WireType.LengthDelimited).fork(), options).join();
+            Signature.internalBinaryWrite(message.signature, writer.tag(5, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
