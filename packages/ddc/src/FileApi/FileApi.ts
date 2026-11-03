@@ -335,8 +335,25 @@ export class FileApi {
     }
 
     /**
+     * Wait for the first response message before handing the stream out. A node that cannot serve the piece,
+     * for example because a peer holding it is restarting, can fail after it has already sent the response
+     * headers. Waiting here makes that failure reject this call, where the caller can still retry it, instead
+     * of surfacing later from the returned stream. Failures after the first chunk still surface from the stream.
+     */
+    const dataStream = toDataStream.call(this);
+    const first = await dataStream.next();
+
+    async function* withFirstChunk() {
+      if (!first.done) {
+        yield first.value;
+      }
+
+      yield* dataStream;
+    }
+
+    /**
      * Create content stream from Iterator using original chunk size to avoid unnecessary buffering.
      */
-    return createContentStream(toDataStream.call(this), null);
+    return createContentStream(withFirstChunk(), null);
   }
 }

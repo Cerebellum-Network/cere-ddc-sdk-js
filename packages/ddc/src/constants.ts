@@ -41,29 +41,90 @@ export const AUTH_TOKEN_EXPIRATION_TIME = 30 * 24 * 60 * 60 * 1000;
 export const GRPC_REQUEST_INACTIVITY_TIMEOUT = 30 * 1000;
 
 /**
- * gRPC error codes that should trigger a retry of the operation.
+ * gRPC error codes that always indicate a transient, node-side failure, so the operation is retried.
  */
 export const RETRYABLE_GRPC_ERROR_CODES = [
   GrpcStatus.UNAVAILABLE,
   GrpcStatus.DEADLINE_EXCEEDED,
   GrpcStatus.RESOURCE_EXHAUSTED,
-  GrpcStatus.ABORTED,
-  GrpcStatus.INTERNAL,
-  GrpcStatus.UNKNOWN,
-
-  /**
-   * GRPC library uses this error code when a request is cancelled using abort signals, and it does not respect `AbortSignal.reason`.
-   * Currently there is no way to cancel a request using the SDK API. So the only possible source of this errors is internal timeout logic.
-   *
-   * TODO: If we let developers to cancel requests, we should handle this error code or figure out a way to avoid re-trying.
-   */
-  GrpcStatus.CANCELLED,
 ];
 
 /**
- * Maximum number of attempts to retry an operation.
+ * gRPC error codes that are too generic to retry on their own. An error with one of these codes is retried
+ * only when its message matches one of `TRANSIENT_ERROR_MESSAGE_PATTERNS`.
  */
-export const RETRY_MAX_ATTEPTS = 5;
+export const MESSAGE_GATED_GRPC_ERROR_CODES = [GrpcStatus.UNKNOWN, GrpcStatus.INTERNAL];
+
+/**
+ * Error messages that identify a transient failure behind a generic `UNKNOWN` or `INTERNAL` status.
+ */
+export const TRANSIENT_ERROR_MESSAGE_PATTERNS: readonly RegExp[] = [
+  /**
+   * The coordinating storage node could not reach its replication quorum, for example
+   * "failed to put raw piece: got less than 12 results (8), total: 13".
+   */
+  /got less than \d+ results/i,
+
+  /**
+   * The node failed to reach a peer, for example "connection error: desc = transport: Error while dialing: dial tcp ...: i/o timeout".
+   */
+  /dial tcp/i,
+  /connection (error|refused|reset|closed)/i,
+  /i\/o timeout/i,
+  /broken pipe/i,
+  /transport is closing/i,
+  /error reading from server/i,
+
+  /**
+   * A peer call inside the node failed with a transient status and the node passed it through as text.
+   */
+  /code = (Unavailable|DeadlineExceeded|ResourceExhausted)\b/,
+
+  /**
+   * The grpc-web transport lost the connection before the node completed its response, which is what a
+   * node restart looks like from the client.
+   */
+  /response closed without (headers|grpc-status)/i,
+
+  /**
+   * The native gRPC transport had its HTTP/2 stream reset underneath it.
+   */
+  /RST_STREAM/,
+];
+
+/**
+ * Error messages that identify the SDK's own request inactivity timeout behind a `CANCELLED` status.
+ *
+ * Callers have no way to cancel a request through the SDK, so a client-side cancellation can only come from
+ * that timeout, which is a stalled node rather than a caller decision.
+ */
+export const SDK_TIMEOUT_ERROR_MESSAGE_PATTERNS: readonly RegExp[] = [
+  /**
+   * Raised by the SDK timeout interceptor and passed through by the grpc-web transport.
+   */
+  /^Request timed out$/,
+
+  /**
+   * Raised by the native gRPC transport, which ignores the abort reason.
+   */
+  /^Cancelled on client$/,
+];
+
+/**
+ * Default number of retries after the first attempt, so an operation is attempted at most three times.
+ */
+export const RETRY_MAX_RETRIES = 2;
+
+/**
+ * Default delay before the first retry, in milliseconds. Each later delay doubles, and every delay is
+ * multiplied by a random factor between 1 and 2 to spread retries from many clients.
+ */
+export const RETRY_MIN_TIMEOUT = 500;
+
+/**
+ * Default upper bound for a single delay between retries, in milliseconds.
+ */
+export const RETRY_MAX_TIMEOUT = 2000;
 
 /**
  * Minimum number of nodes to ping before any DDC operation.
