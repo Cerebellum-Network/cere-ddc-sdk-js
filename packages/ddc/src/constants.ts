@@ -111,9 +111,11 @@ export const SDK_TIMEOUT_ERROR_MESSAGE_PATTERNS: readonly RegExp[] = [
 ];
 
 /**
- * Default number of retries after the first attempt, so an operation is attempted at most three times.
+ * Default number of retries after the first attempt, so an operation is attempted at most five times.
+ * Together with the default delays this keeps retrying for about 7.5-11 seconds, long enough to ride out a
+ * storage node restart.
  */
-export const RETRY_MAX_RETRIES = 2;
+export const RETRY_MAX_RETRIES = 4;
 
 /**
  * Default delay before the first retry, in milliseconds. Each later delay doubles, and every delay is
@@ -124,7 +126,7 @@ export const RETRY_MIN_TIMEOUT = 500;
 /**
  * Default upper bound for a single delay between retries, in milliseconds.
  */
-export const RETRY_MAX_TIMEOUT = 2000;
+export const RETRY_MAX_TIMEOUT = 4000;
 
 /**
  * Minimum number of nodes to ping before any DDC operation.

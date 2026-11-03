@@ -266,7 +266,7 @@ describe('BalancedNode transient failure handling (unit, offline)', () => {
     expect(attempts).toBe(5);
   });
 
-  it('attempts an operation three times by default', async () => {
+  it('attempts an operation five times by default', async () => {
     let attempts = 0;
 
     const node = createMockStorageNode(async () => {
@@ -278,7 +278,7 @@ describe('BalancedNode transient failure handling (unit, offline)', () => {
     const balancedNode = new BalancedNode({ resolver, retries: fastRetries(), logLevel: 'silent' });
 
     await expect(balancedNode.storePiece(bucketId, new Piece(new Uint8Array([1])))).rejects.toThrow(QUORUM_ERROR);
-    expect(attempts).toBe(3);
+    expect(attempts).toBe(5);
   });
 
   it('does not retry when retries are set to zero', async () => {
@@ -296,24 +296,44 @@ describe('BalancedNode transient failure handling (unit, offline)', () => {
     expect(attempts).toBe(1);
   });
 
-  it('waits at least half a second before the first retry by default', async () => {
-    const attemptTimes: number[] = [];
+  it('backs off from half a second up to four seconds by default', async () => {
+    const delays: number[] = [];
+    const originalSetTimeout = globalThis.setTimeout;
 
-    const node = createMockStorageNode(async () => {
-      attemptTimes.push(Date.now());
-
-      if (attemptTimes.length === 1) {
-        throw new NodeError('upstream connect error', 'UNAVAILABLE');
+    /**
+     * Record the backoff delays the retry loop asks for, but fire them immediately so the test stays fast.
+     */
+    globalThis.setTimeout = ((callback: () => void, delay?: number) => {
+      if (delay) {
+        delays.push(delay);
       }
 
-      return 'QmStoredCid';
-    });
+      return originalSetTimeout(callback, 0);
+    }) as typeof setTimeout;
 
-    const { resolver } = createMockResolver(node);
-    const balancedNode = new BalancedNode({ resolver, logLevel: 'silent' });
+    try {
+      const node = createMockStorageNode(async () => {
+        throw new NodeError('upstream connect error', 'UNAVAILABLE');
+      });
 
-    await expect(balancedNode.storePiece(bucketId, new Piece(new Uint8Array([1])))).resolves.toBe('QmStoredCid');
-    expect(attemptTimes[1] - attemptTimes[0]).toBeGreaterThanOrEqual(490);
+      const { resolver } = createMockResolver(node);
+      const balancedNode = new BalancedNode({ resolver, logLevel: 'silent' });
+
+      await expect(balancedNode.storePiece(bucketId, new Piece(new Uint8Array([1])))).rejects.toMatchObject({
+        code: 'UNAVAILABLE',
+      });
+    } finally {
+      globalThis.setTimeout = originalSetTimeout;
+    }
+
+    expect(delays).toHaveLength(4);
+    expect(delays[0]).toBeGreaterThanOrEqual(500);
+    expect(delays[0]).toBeLessThanOrEqual(1000);
+    expect(delays[1]).toBeGreaterThanOrEqual(1000);
+    expect(delays[1]).toBeLessThanOrEqual(2000);
+    expect(delays[2]).toBeGreaterThanOrEqual(2000);
+    expect(delays[2]).toBeLessThanOrEqual(4000);
+    expect(delays[3]).toBe(4000);
   });
 
   it('retries a stream-backed piece when the failed attempt never read the content', async () => {

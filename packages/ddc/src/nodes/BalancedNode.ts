@@ -34,8 +34,8 @@ import {
  * const timeout = Math.min(random * minTimeout * Math.pow(factor, attempt), maxTimeout);
  * ```
  *
- * By default an operation is retried twice (three attempts in total), waiting 500-1000 ms before the
- * first retry and 1000-2000 ms before the second.
+ * By default an operation is retried four times (five attempts in total), waiting 500-1000 ms, 1000-2000 ms,
+ * 2000-4000 ms and 4000 ms before the successive retries, about 7.5-11 seconds in total.
  */
 export type OpperationRetryOptions = Omit<RetryOptions, 'retries'> & {
   /**
