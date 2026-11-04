@@ -122,7 +122,8 @@ export class BalancedNode implements NodeInterface {
       const { attempts = RETRY_MAX_RETRIES, ...retryOptions } = config.retries;
 
       /**
-       * Keep a custom `minTimeout` above the default cap from silently shortening every delay.
+       * Raise the default maximum delay to a custom `minTimeout` that exceeds it. The retry library rejects a
+       * minimum larger than the maximum, so otherwise every operation would fail before its first attempt.
        */
       const maxTimeout = retryOptions.maxTimeout ?? Math.max(RETRY_MAX_TIMEOUT, retryOptions.minTimeout ?? 0);
 
