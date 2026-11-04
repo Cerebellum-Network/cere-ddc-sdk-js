@@ -52,6 +52,14 @@ export type DdcClientConfig = LoggerOptions & {
    */
   cdnUrl?: string;
 
+  /**
+   * How node operations (uploads, reads, DAG node and CNS record calls) are retried when they fail for a
+   * transient, node-side reason, such as a storage node restarting or a coordinator missing its replication
+   * quorum. Pass a number to set how many times to retry after the first attempt (`0` disables retries), or
+   * an object for full control over the backoff. By default an operation is attempted up to five times with
+   * a jittered backoff growing from about 0.5 to 4 seconds, about 7.5-11 seconds in total. Errors such as
+   * access denied or invalid arguments are never retried.
+   */
   retries?: number | OpperationRetryOptions;
 };
 

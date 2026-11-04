@@ -2,15 +2,15 @@ import retry, { Options as RetryOptions } from 'async-retry';
 import { RpcError } from '@protobuf-ts/runtime-rpc';
 import { BucketId, Signer } from '@cere-ddc-sdk/blockchain';
 
-import { GrpcStatus } from '../grpc/status';
-import { RETRYABLE_GRPC_ERROR_CODES, RETRY_MAX_ATTEPTS } from '../constants';
+import { RETRY_MAX_RETRIES, RETRY_MAX_TIMEOUT, RETRY_MIN_TIMEOUT } from '../constants';
 import { EndpointResolver, RouterOperation } from '../routing';
 import { Piece, MultipartPiece } from '../Piece';
 import { DagNode } from '../DagNode';
 import { CnsRecord } from '../CnsRecord';
 import { Logger, LoggerOptions, bindErrorLogger, createLogger } from '../logger';
 import { createCorrelationId } from '../activity';
-import { NodeError } from './NodeError';
+import { observeFirstRead } from '../streams';
+import { NodeError, isRetryableNodeError } from './NodeError';
 import {
   DagNodeGetOptions,
   DagNodeStoreOptions,
@@ -22,20 +22,34 @@ import {
 } from './NodeInterface';
 
 /**
- * The timeouts bettween retries are exponential, starting at `minTimeout` and increasing each time until `maxTimeout`.
+ * Controls how failed node operations are retried. Only transient, node-side failures are retried
+ * (see `isRetryableNodeError`); every other error is returned to the caller right away.
  *
- * The formuka for the timeout between retries is:
+ * The timeouts between retries are exponential, starting at `minTimeout` and increasing each time until `maxTimeout`.
+ * With `randomize` (on by default) each timeout is multiplied by a random factor between 1 and 2.
+ *
+ * The formula for the timeout between retries is:
  *
  * ```typescript
  * const timeout = Math.min(random * minTimeout * Math.pow(factor, attempt), maxTimeout);
  * ```
+ *
+ * By default an operation is retried four times (five attempts in total), waiting 500-1000 ms, 1000-2000 ms,
+ * 2000-4000 ms and 4000 ms before the successive retries, about 7.5-11 seconds in total.
  */
 export type OpperationRetryOptions = Omit<RetryOptions, 'retries'> & {
+  /**
+   * The number of retries after the first attempt. Set it to `0` to disable retries.
+   */
   attempts?: number;
 };
 
 export type BalancedNodeConfig = LoggerOptions & {
   resolver: EndpointResolver;
+
+  /**
+   * The number of retries after the first attempt, or the full retry options.
+   */
   retries?: number | OpperationRetryOptions;
 };
 
@@ -59,6 +73,11 @@ export const createResolverNode = ({ signer, storageUrl, cdnUrl, retries, logger
 
   return new BalancedNode({ resolver, retries, logger });
 };
+
+/**
+ * Tells whether a piece's content is held in memory, so every attempt can send it again from the start.
+ */
+const hasReplayableContent = (piece: Piece): boolean => Piece.isStaticPiece(piece);
 
 const withCorrelationId = <T extends CorrelationOptions>(options: T): T => ({
   ...options,
@@ -86,9 +105,11 @@ export class BalancedNode implements NodeInterface {
   private logger: Logger;
 
   private retryOptions: RetryOptions = {
-    minTimeout: 50, // Starting timeout from which to increase exponentially
-    factor: 2, // Exponential backoff
-    retries: RETRY_MAX_ATTEPTS,
+    minTimeout: RETRY_MIN_TIMEOUT,
+    maxTimeout: RETRY_MAX_TIMEOUT,
+    factor: 2,
+    randomize: true,
+    retries: RETRY_MAX_RETRIES,
   };
 
   constructor({ resolver, ...config }: BalancedNodeConfig) {
@@ -98,9 +119,15 @@ export class BalancedNode implements NodeInterface {
     if (typeof config.retries === 'number') {
       this.retryOptions.retries = config.retries;
     } else if (config.retries) {
-      const { attempts = RETRY_MAX_ATTEPTS, ...retryOptions } = config.retries;
+      const { attempts = RETRY_MAX_RETRIES, ...retryOptions } = config.retries;
 
-      this.retryOptions = { ...this.retryOptions, ...retryOptions, retries: attempts };
+      /**
+       * Raise the default maximum delay to a custom `minTimeout` that exceeds it. The retry library rejects a
+       * minimum larger than the maximum, so otherwise every operation would fail before its first attempt.
+       */
+      const maxTimeout = retryOptions.maxTimeout ?? Math.max(RETRY_MAX_TIMEOUT, retryOptions.minTimeout ?? 0);
+
+      this.retryOptions = { ...this.retryOptions, ...retryOptions, maxTimeout, retries: attempts };
     }
 
     if (config.logErrors !== false) {
@@ -117,38 +144,52 @@ export class BalancedNode implements NodeInterface {
   }
 
   /**
-   * Executes a function with automatic retry on failure.
+   * Executes a node operation, repeating it when it fails for a transient, node-side reason.
    *
-   * @param fn - The function to execute.
-   * @param options - Optional parameters for retrying the function.
+   * Each attempt asks the resolver for a node again, so behind a load-balanced endpoint a retry may reach a
+   * different node. Errors that `isRetryableNodeError` does not accept are returned without a retry.
    *
-   * @returns A promise that resolves to the result of the function.
+   * @param bucketId - The bucket the operation targets.
+   * @param operation - The operation, used to resolve the node.
+   * @param options - Correlation options attached to the returned error.
+   * @param body - The operation itself, called once per attempt with the node to run it on.
+   * @param canRetry - Consulted after a retryable failure. Returning `false` returns that failure instead.
+   *
+   * @returns A promise that resolves to the result of the operation.
    */
   private async withRetry<T>(
     bucketId: BucketId,
     operation: RouterOperation,
     { correlationId }: CorrelationOptions,
-    body: (node: NodeInterface, bail: (e: Error) => void, attempt: number) => Promise<T>,
-  ) {
-    return retry(
-      async (bail, attempt) => {
-        const node = await this.resolver.getNode(operation, bucketId, { logErrors: false });
+    body: (node: NodeInterface) => Promise<T>,
+    canRetry: () => boolean = () => true,
+  ): Promise<T> {
+    return retry<T>(
+      async (bail) => {
+        let node: NodeInterface | undefined;
 
         try {
-          return await body(node, bail, attempt);
+          node = await this.resolver.getNode(operation, bucketId, { logErrors: false });
+
+          return await body(node);
         } catch (error) {
           const nodeError = error instanceof RpcError ? NodeError.fromRpcError(error) : undefined;
 
           if (nodeError) {
-            nodeError.nodeId = node.nodeId;
+            nodeError.nodeId = node?.nodeId;
             nodeError.correlationId = correlationId;
+          }
 
-            if (RETRYABLE_GRPC_ERROR_CODES.map((status) => GrpcStatus[status]).includes(nodeError.code)) {
-              throw nodeError;
-            }
+          if (nodeError && isRetryableNodeError(nodeError) && canRetry()) {
+            throw nodeError;
           }
 
           bail(nodeError || (error as Error));
+
+          /**
+           * `bail` has already rejected the operation, so this value is never observed.
+           */
+          return undefined as T;
         }
       },
       {
@@ -159,18 +200,40 @@ export class BalancedNode implements NodeInterface {
           this.logger.warn({ err, attempt }, 'Retrying operation');
         },
       },
-    ) as T;
+    );
   }
 
+  /**
+   * Stores a piece, retrying transient failures.
+   *
+   * A retry always sends the whole piece again. Pieces created from a `Uint8Array` are re-read from memory on
+   * every attempt. Pieces created from a stream or an async iterable can only be read once, so they are retried
+   * only when the failed attempt had not started reading the content yet; once content has been sent, the
+   * failure is returned to the caller. Buffer the content into a `Uint8Array` to make every failure retryable.
+   */
   async storePiece(bucketId: BucketId, piece: Piece | MultipartPiece, storeOptions: PieceStoreOptions = {}) {
     const options = withCorrelationId(storeOptions);
 
-    return this.withRetry(bucketId, RouterOperation.STORE_PIECE, options, (node, bail, attempt) =>
-      /**
-       * Clone the piece if it is a piece and this is not the first attempt.
-       * This is done to avoid reusing the same stream multiple times.
-       */
-      node.storePiece(bucketId, Piece.isPiece(piece) && attempt > 0 ? Piece.from(piece) : piece, options),
+    if (Piece.isPiece(piece) && !hasReplayableContent(piece)) {
+      let contentRead = false;
+      const singleUsePiece = new Piece(
+        observeFirstRead(piece.body, () => {
+          contentRead = true;
+        }),
+        { ...piece.meta, multipartOffset: piece.offset, size: piece.size },
+      );
+
+      return this.withRetry(
+        bucketId,
+        RouterOperation.STORE_PIECE,
+        options,
+        (node) => node.storePiece(bucketId, singleUsePiece, options),
+        () => !contentRead,
+      );
+    }
+
+    return this.withRetry(bucketId, RouterOperation.STORE_PIECE, options, (node) =>
+      node.storePiece(bucketId, Piece.isPiece(piece) ? Piece.from(piece) : piece, options),
     );
   }
 

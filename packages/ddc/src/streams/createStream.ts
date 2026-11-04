@@ -86,6 +86,42 @@ export const isContentStream = (input: unknown): input is ContentStream => {
   return !!input && typeof input === 'object' && ContentStreamSymbol in input;
 };
 
+/**
+ * Wraps a content stream so that `onFirstRead` is called the first time a consumer asks it for data.
+ *
+ * The wrapper buffers nothing ahead of its consumer, so as long as `onFirstRead` has not been called the
+ * source stream has not been read and can still be handed to another consumer.
+ */
+export const observeFirstRead = (input: ContentStream, onFirstRead: () => void): ContentStream => {
+  let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+
+  const stream = new ReadableStream<Uint8Array>(
+    {
+      async pull(controller) {
+        if (!reader) {
+          onFirstRead();
+          reader = input.getReader();
+        }
+
+        const { done, value } = await reader.read();
+
+        if (done) {
+          controller.close();
+        } else {
+          controller.enqueue(value);
+        }
+      },
+
+      cancel(reason) {
+        return reader ? reader.cancel(reason) : input.cancel(reason);
+      },
+    },
+    { highWaterMark: 0 },
+  );
+
+  return Object.assign(stream, { [ContentStreamSymbol]: true });
+};
+
 export const createContentStream = (
   input: Content | ContentStream,
   chunkSize: number | null = CONTENT_CHUNK_SIZE,

@@ -1,28 +1,43 @@
-import { BalancedNode, EndpointResolver, RouterOperation, NodeInterface, NodeError, Piece } from '@cere-ddc-sdk/ddc';
+import {
+  BalancedNode,
+  EndpointResolver,
+  RouterOperation,
+  NodeInterface,
+  NodeError,
+  Piece,
+  PieceResponse,
+  FileApi,
+  isRetryableNodeError,
+  streamConsumers,
+  createContentStream,
+} from '@cere-ddc-sdk/ddc';
 import { BucketId } from '@cere-ddc-sdk/blockchain';
 
 const bucketId: BucketId = 1n;
 const ENDPOINT = 'https://storage.example';
 
+const unimplemented = (): never => {
+  throw new Error('not implemented in this mock');
+};
+
 /**
- * A minimal `NodeInterface` stand-in. Only `storePiece` is exercised by these tests;
+ * A minimal `NodeInterface` stand-in. Only `storePiece` and `readPiece` are exercised by these tests;
  * the rest throw if ever called since `BalancedNode` shouldn't need them here.
  */
-function createMockStorageNode(storePiece: NodeInterface['storePiece']): NodeInterface {
-  const unimplemented = () => {
-    throw new Error('not implemented in this mock');
-  };
-
+function createMockStorageNode(
+  storePiece: NodeInterface['storePiece'],
+  readPiece: NodeInterface['readPiece'] = unimplemented,
+): NodeInterface {
   return {
     nodeId: ENDPOINT,
     displayName: ENDPOINT,
     storePiece,
-    storeDagNode: unimplemented as any,
-    readPiece: unimplemented as any,
-    getDagNode: unimplemented as any,
-    storeCnsRecord: unimplemented as any,
-    getCnsRecord: unimplemented as any,
-    resolveName: unimplemented as any,
+    readPiece,
+    storeDagNode: unimplemented,
+    getDagNode: unimplemented,
+    storeCnsRecord: unimplemented,
+    getCnsRecord: unimplemented,
+    resolveName: unimplemented,
   };
 }
 
@@ -92,4 +107,436 @@ describe('BalancedNode retry (unit, offline)', () => {
     expect(attempts).toBe(1);
     expect(calls).toHaveLength(1);
   }, 20_000);
+});
+
+/**
+ * Retry options with near-zero delays, so the tests exercise the retry decisions without waiting on backoff.
+ */
+const fastRetries = (attempts?: number) => ({ attempts, minTimeout: 1, maxTimeout: 1 });
+
+const QUORUM_ERROR = 'failed to put raw piece: got less than 12 results (8), total: 13';
+
+const readAll = async (piece: Piece) => new Uint8Array(await streamConsumers.arrayBuffer(piece.body));
+
+/**
+ * Builds a single-use, stream-backed piece of the given bytes, the way a caller streaming a file would.
+ */
+const createStreamPiece = (content: Uint8Array) =>
+  new Piece(
+    new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(content);
+        controller.close();
+      },
+    }),
+    { size: content.byteLength },
+  );
+
+/**
+ * Runs `operation` with every timer firing immediately and returns the delay the retry loop waited before each
+ * retry. `operation` receives an `onRetry` callback to pass to `BalancedNode` in its retry options.
+ *
+ * The retry loop schedules the timer for the next attempt and calls `onRetry` synchronously right after it, so
+ * the last timer scheduled before an `onRetry` call is that retry's backoff. Timers scheduled by anything else,
+ * such as async work left over from earlier tests, are never attributed to a retry.
+ */
+const recordBackoffDelays = async (operation: (onRetry: () => void) => Promise<void>) => {
+  const delays: Array<number | undefined> = [];
+  const originalSetTimeout = globalThis.setTimeout;
+  let lastDelay: number | undefined;
+
+  globalThis.setTimeout = ((callback: (...args: unknown[]) => void, delay?: number, ...args: unknown[]) => {
+    lastDelay = delay;
+
+    return originalSetTimeout(callback, 0, ...args);
+  }) as typeof setTimeout;
+
+  const onRetry = () => {
+    delays.push(lastDelay);
+    lastDelay = undefined;
+  };
+
+  try {
+    await operation(onRetry);
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+
+  return delays;
+};
+
+describe('isRetryableNodeError', () => {
+  it.each([
+    ['UNAVAILABLE', 'upstream connect error'],
+    ['DEADLINE_EXCEEDED', 'context deadline exceeded'],
+    ['RESOURCE_EXHAUSTED', 'too many requests'],
+    ['UNKNOWN', 'failed to put raw piece: got less than 12 results (8), total: 13'],
+    ['UNKNOWN', 'failed to put raw piece: got less than 12 results (0), total: 13'],
+    ['UNKNOWN', 'failed to put raw piece: got less than 12 results (7), total: 13'],
+    ['UNKNOWN', 'connection error: desc = "transport: Error while dialing: dial tcp 10.0.0.7:9091: i/o timeout"'],
+    ['INTERNAL', 'rpc error: code = Unavailable desc = error reading from server: EOF'],
+    ['UNKNOWN', 'Response closed without headers'],
+    ['INTERNAL', 'Received RST_STREAM with code 2 triggered by internal client error'],
+    ['CANCELLED', 'Request timed out'],
+    ['CANCELLED', 'Cancelled on client'],
+  ])('retries %s "%s"', (code, message) => {
+    expect(isRetryableNodeError(new NodeError(message, code))).toBe(true);
+  });
+
+  it.each([
+    ['PERMISSION_DENIED', 'access denied'],
+    ['UNAUTHENTICATED', 'invalid token'],
+    ['INVALID_ARGUMENT', 'bad request'],
+    ['NOT_FOUND', 'piece not found'],
+    ['ABORTED', 'conflict'],
+    ['FAILED_PRECONDITION', 'bucket is removed'],
+    ['UNKNOWN', 'piece hash mismatch'],
+    ['INTERNAL', 'unexpected nil value'],
+    ['CANCELLED', 'canceled by caller'],
+    ['PERMISSION_DENIED', 'got less than 12 results (8), total: 13'],
+  ])('does not retry %s "%s"', (code, message) => {
+    expect(isRetryableNodeError(new NodeError(message, code))).toBe(false);
+  });
+
+  it('does not retry errors that are not RPC errors', () => {
+    expect(isRetryableNodeError(new Error(QUORUM_ERROR))).toBe(false);
+  });
+});
+
+describe('BalancedNode transient failure handling (unit, offline)', () => {
+  it('re-sends the full piece after a quorum shortfall and returns the stored CID', async () => {
+    const content = new Uint8Array([1, 2, 3, 4, 5]);
+    const received: Uint8Array[] = [];
+
+    const node = createMockStorageNode(async (_, piece) => {
+      received.push(await readAll(piece as Piece));
+
+      if (received.length === 1) {
+        throw new NodeError(QUORUM_ERROR, 'UNKNOWN');
+      }
+
+      return 'QmStoredCid';
+    });
+
+    const { resolver } = createMockResolver(node);
+    const balancedNode = new BalancedNode({ resolver, retries: fastRetries(), logLevel: 'silent' });
+
+    await expect(balancedNode.storePiece(bucketId, new Piece(content))).resolves.toBe('QmStoredCid');
+    expect(received).toEqual([content, content]);
+  });
+
+  it('retries a read that fails while a node restarts and returns the piece', async () => {
+    let attempts = 0;
+    const response = new PieceResponse(new Uint8Array(36), createContentStream(new Uint8Array([1])));
+
+    const node = createMockStorageNode(unimplemented, async () => {
+      attempts += 1;
+
+      if (attempts === 1) {
+        throw new NodeError('Response closed without headers', 'UNKNOWN');
+      }
+
+      return response;
+    });
+
+    const { resolver, calls } = createMockResolver(node);
+    const balancedNode = new BalancedNode({ resolver, retries: fastRetries(), logLevel: 'silent' });
+
+    await expect(balancedNode.readPiece(bucketId, 'cid')).resolves.toBe(response);
+    expect(attempts).toBe(2);
+    expect(calls.every((call) => call.operation === RouterOperation.READ_PIECE)).toBe(true);
+  });
+
+  it.each([
+    ['PERMISSION_DENIED', 'access denied'],
+    ['UNAUTHENTICATED', 'invalid token'],
+    ['INVALID_ARGUMENT', 'bad request'],
+    ['UNKNOWN', 'piece hash mismatch'],
+  ])('fails a store immediately on %s without retrying', async (code, message) => {
+    let attempts = 0;
+
+    const node = createMockStorageNode(async () => {
+      attempts += 1;
+      throw new NodeError(message, code);
+    });
+
+    const { resolver } = createMockResolver(node);
+    const balancedNode = new BalancedNode({ resolver, retries: fastRetries(5), logLevel: 'silent' });
+
+    await expect(balancedNode.storePiece(bucketId, new Piece(new Uint8Array([1])))).rejects.toMatchObject({ code });
+    expect(attempts).toBe(1);
+  });
+
+  it('fails a read immediately on NOT_FOUND without retrying', async () => {
+    let attempts = 0;
+
+    const node = createMockStorageNode(unimplemented, async () => {
+      attempts += 1;
+      throw new NodeError('piece not found', 'NOT_FOUND');
+    });
+
+    const { resolver } = createMockResolver(node);
+    const balancedNode = new BalancedNode({ resolver, retries: fastRetries(5), logLevel: 'silent' });
+
+    await expect(balancedNode.readPiece(bucketId, 'cid')).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    expect(attempts).toBe(1);
+  });
+
+  it('stops after the configured number of retries and returns the last error', async () => {
+    let attempts = 0;
+
+    const node = createMockStorageNode(async () => {
+      attempts += 1;
+      throw new NodeError('upstream connect error', 'UNAVAILABLE');
+    });
+
+    const { resolver } = createMockResolver(node);
+    const balancedNode = new BalancedNode({ resolver, retries: fastRetries(4), logLevel: 'silent' });
+
+    await expect(balancedNode.storePiece(bucketId, new Piece(new Uint8Array([1])))).rejects.toMatchObject({
+      code: 'UNAVAILABLE',
+    });
+    expect(attempts).toBe(5);
+  });
+
+  it('attempts an operation five times by default', async () => {
+    let attempts = 0;
+
+    const node = createMockStorageNode(async () => {
+      attempts += 1;
+      throw new NodeError(QUORUM_ERROR, 'UNKNOWN');
+    });
+
+    const { resolver } = createMockResolver(node);
+    const balancedNode = new BalancedNode({ resolver, retries: fastRetries(), logLevel: 'silent' });
+
+    await expect(balancedNode.storePiece(bucketId, new Piece(new Uint8Array([1])))).rejects.toThrow(QUORUM_ERROR);
+    expect(attempts).toBe(5);
+  });
+
+  it('does not retry when retries are set to zero', async () => {
+    let attempts = 0;
+
+    const node = createMockStorageNode(async () => {
+      attempts += 1;
+      throw new NodeError(QUORUM_ERROR, 'UNKNOWN');
+    });
+
+    const { resolver } = createMockResolver(node);
+    const balancedNode = new BalancedNode({ resolver, retries: 0, logLevel: 'silent' });
+
+    await expect(balancedNode.storePiece(bucketId, new Piece(new Uint8Array([1])))).rejects.toThrow(QUORUM_ERROR);
+    expect(attempts).toBe(1);
+  });
+
+  it('backs off from half a second up to four seconds by default', async () => {
+    const node = createMockStorageNode(async () => {
+      /**
+       * Unrelated timers scheduled while the operation runs, both shorter than and inside the backoff range,
+       * must not be mistaken for backoff delays.
+       */
+      setTimeout(() => {}, 1);
+      setTimeout(() => {}, 750);
+
+      throw new NodeError('upstream connect error', 'UNAVAILABLE');
+    });
+
+    const { resolver } = createMockResolver(node);
+
+    const delays = await recordBackoffDelays(async (onRetry) => {
+      const balancedNode = new BalancedNode({ resolver, retries: { onRetry }, logLevel: 'silent' });
+
+      await expect(balancedNode.storePiece(bucketId, new Piece(new Uint8Array([1])))).rejects.toMatchObject({
+        code: 'UNAVAILABLE',
+      });
+    });
+
+    expect(delays).toHaveLength(4);
+    expect(delays[0]).toBeGreaterThanOrEqual(500);
+    expect(delays[0]).toBeLessThanOrEqual(1000);
+    expect(delays[1]).toBeGreaterThanOrEqual(1000);
+    expect(delays[1]).toBeLessThanOrEqual(2000);
+    expect(delays[2]).toBeGreaterThanOrEqual(2000);
+    expect(delays[2]).toBeLessThanOrEqual(4000);
+    expect(delays[3]).toBe(4000);
+  });
+
+  it('waits a custom minimum delay that exceeds the default maximum of four seconds', async () => {
+    const minTimeout = 8000;
+    let attempts = 0;
+
+    const node = createMockStorageNode(async () => {
+      attempts += 1;
+      throw new NodeError('upstream connect error', 'UNAVAILABLE');
+    });
+
+    const { resolver } = createMockResolver(node);
+
+    const delays = await recordBackoffDelays(async (onRetry) => {
+      const balancedNode = new BalancedNode({
+        resolver,
+        retries: { attempts: 2, minTimeout, onRetry },
+        logLevel: 'silent',
+      });
+
+      await expect(balancedNode.storePiece(bucketId, new Piece(new Uint8Array([1])))).rejects.toMatchObject({
+        code: 'UNAVAILABLE',
+      });
+    });
+
+    expect(attempts).toBe(3);
+    expect(delays).toHaveLength(2);
+    expect(delays[0]).toBe(minTimeout);
+    expect(delays[1]).toBe(minTimeout);
+  });
+
+  it('caps every delay at a custom maximum', async () => {
+    const node = createMockStorageNode(async () => {
+      throw new NodeError('upstream connect error', 'UNAVAILABLE');
+    });
+
+    const { resolver } = createMockResolver(node);
+
+    const delays = await recordBackoffDelays(async (onRetry) => {
+      const balancedNode = new BalancedNode({
+        resolver,
+        retries: { attempts: 3, minTimeout: 8000, maxTimeout: 10_000, onRetry },
+        logLevel: 'silent',
+      });
+
+      await expect(balancedNode.storePiece(bucketId, new Piece(new Uint8Array([1])))).rejects.toMatchObject({
+        code: 'UNAVAILABLE',
+      });
+    });
+
+    expect(delays).toHaveLength(3);
+    expect(delays[0]).toBeGreaterThanOrEqual(8000);
+    expect(delays[0]).toBeLessThanOrEqual(10_000);
+    expect(delays[1]).toBe(10_000);
+    expect(delays[2]).toBe(10_000);
+  });
+
+  it('retries a stream-backed piece when the failed attempt never read the content', async () => {
+    const content = new Uint8Array([9, 8, 7]);
+    const received: Uint8Array[] = [];
+    let attempts = 0;
+
+    const node = createMockStorageNode(async (_, piece) => {
+      attempts += 1;
+
+      if (attempts === 1) {
+        throw new NodeError('upstream connect error', 'UNAVAILABLE');
+      }
+
+      received.push(await readAll(piece as Piece));
+
+      return 'QmStoredCid';
+    });
+
+    const { resolver } = createMockResolver(node);
+    const balancedNode = new BalancedNode({ resolver, retries: fastRetries(), logLevel: 'silent' });
+
+    await expect(balancedNode.storePiece(bucketId, createStreamPiece(content))).resolves.toBe('QmStoredCid');
+    expect(attempts).toBe(2);
+    expect(received).toEqual([content]);
+  });
+
+  it('does not retry a stream-backed piece once its content has been sent', async () => {
+    let attempts = 0;
+
+    const node = createMockStorageNode(async (_, piece) => {
+      attempts += 1;
+      await readAll(piece as Piece);
+
+      throw new NodeError(QUORUM_ERROR, 'UNKNOWN');
+    });
+
+    const { resolver } = createMockResolver(node);
+    const balancedNode = new BalancedNode({ resolver, retries: fastRetries(), logLevel: 'silent' });
+
+    await expect(balancedNode.storePiece(bucketId, createStreamPiece(new Uint8Array([1, 2])))).rejects.toThrow(
+      QUORUM_ERROR,
+    );
+    expect(attempts).toBe(1);
+  });
+});
+
+describe('FileApi.getFile first chunk (unit, offline)', () => {
+  type FakeResponse = { body: { oneofKind: 'data'; data: Uint8Array } };
+
+  /**
+   * A transport whose `getFile` call answers with headers and then plays the given response messages,
+   * throwing `failure` after them when it is set.
+   */
+  const createFakeTransport = (messages: FakeResponse[], failure?: Error) => ({
+    mergeOptions: (options?: object) => options ?? {},
+    duplex: () => ({
+      requests: { send: async () => {}, complete: async () => {} },
+      headers: Promise.resolve({}),
+      responses: (async function* () {
+        yield* messages;
+
+        if (failure) {
+          throw failure;
+        }
+      })(),
+    }),
+  });
+
+  const request = { bucketId, cid: new Uint8Array(36) };
+
+  it('rejects when the node fails before sending any content', async () => {
+    const transport = createFakeTransport([], new NodeError(QUORUM_ERROR, 'UNKNOWN'));
+    const fileApi = new FileApi(transport as any, { logLevel: 'silent' });
+
+    await expect(fileApi.getFile(request)).rejects.toThrow(QUORUM_ERROR);
+  });
+
+  it('streams every chunk when the node serves the piece', async () => {
+    const chunks = [new Uint8Array([1, 2]), new Uint8Array([3])];
+    const transport = createFakeTransport(chunks.map((data) => ({ body: { oneofKind: 'data' as const, data } })));
+    const fileApi = new FileApi(transport as any, { logLevel: 'silent' });
+
+    const content = await streamConsumers.arrayBuffer(await fileApi.getFile(request));
+
+    expect(new Uint8Array(content)).toEqual(new Uint8Array([1, 2, 3]));
+  });
+
+  it('does not retry a read that fails after its first chunk was handed out, and fails the stream instead', async () => {
+    const chunks = [new Uint8Array([1, 2]), new Uint8Array([3])];
+    let attempts = 0;
+
+    /**
+     * The first attempt delivers one chunk and then fails with a retryable error; any later attempt would
+     * serve the whole piece, so a retry hidden behind the stream would turn the failure into a success.
+     */
+    const node = createMockStorageNode(unimplemented, async () => {
+      attempts += 1;
+
+      const transport =
+        attempts === 1
+          ? createFakeTransport(
+              [{ body: { oneofKind: 'data', data: chunks[0] } }],
+              new NodeError(QUORUM_ERROR, 'UNKNOWN'),
+            )
+          : createFakeTransport(chunks.map((data) => ({ body: { oneofKind: 'data' as const, data } })));
+
+      const fileApi = new FileApi(transport as any, { logLevel: 'silent' });
+
+      return new PieceResponse(new Uint8Array(36), await fileApi.getFile(request));
+    });
+
+    const { resolver } = createMockResolver(node);
+    const balancedNode = new BalancedNode({ resolver, retries: fastRetries(), logLevel: 'silent' });
+
+    const response = await balancedNode.readPiece(bucketId, 'cid');
+    const reader = response.body.getReader();
+
+    const first = await reader.read();
+
+    expect(first.done).toBe(false);
+    expect(first.value).toEqual(chunks[0]);
+    await expect(reader.read()).rejects.toThrow(QUORUM_ERROR);
+    expect(attempts).toBe(1);
+  });
 });
