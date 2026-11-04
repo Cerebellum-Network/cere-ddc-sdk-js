@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.0](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v3.0.2...v3.1.0) (2026-11-04)
+
+
+### Features
+
+* **ddc:** retry uploads and reads that fail for transient node-side reasons ([#325](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/issues/325)) ([660396a](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/commit/660396a2d2eb40587854a731180a457dd212ad5d))
+
+
+
 ## [3.0.2](https://github.com/Cerebellum-Network/cere-ddc-sdk-js/compare/v3.0.1...v3.0.2) (2026-10-22)
 
 **Note:** Version bump only for package @cere-ddc-sdk/file-storage
