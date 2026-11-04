@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.0](///compare/v3.0.2...v3.1.0) (2026-11-04)
+
+**Note:** Version bump only for package @cere-ddc-sdk/node-examples
+
+
+
+
+
 ## [3.0.2](///compare/v3.0.1...v3.0.2) (2026-10-22)
 
 **Note:** Version bump only for package @cere-ddc-sdk/node-examples
