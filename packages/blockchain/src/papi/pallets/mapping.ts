@@ -154,10 +154,8 @@ export function buildClusterParams(params: Partial<ClusterParams>) {
  * `cluster_id` decodes as a bare `0x…` hex string or `undefined` (no
  * `Option` wrapper to unwrap). `props` decodes as the bare `StorageParams`
  * struct — no enum wrapper on the READ side (unlike the write side, see
- * `buildStorageNodeParams`) — and `host`/`domain` decode to raw
- * `Uint8Array`, NOT hex: probe observed
- * `host = Uint8Array[49,55,56,...] → "178.251.228.165"`,
- * `domain = Uint8Array[...] → "storage-7.devnet.ddc-dragon.com"`. `Binary`
+ * `buildStorageNodeParams`) — and `host` decodes to a raw `Uint8Array`, NOT
+ * hex: probe observed `host = Uint8Array[49,55,56,...] → "178.251.228.165"`. `Binary`
  * is a static-function bag (task 1-4 finding, no `.asHex()`/`.asText()`
  * instance methods in papi 2.1.8), so `Binary.toText` is the papi-native
  * inverse.
@@ -170,8 +168,6 @@ export function toStorageNode(value: any): StorageNode {
     clusterId: value.cluster_id == null ? null : (hex(value.cluster_id) as StorageNode['clusterId']),
     props: {
       host: Binary.toText(p.host),
-      domain: Binary.toText(p.domain),
-      ssl: !!p.ssl,
       httpPort: Number(p.http_port),
       grpcPort: Number(p.grpc_port),
       p2pPort: Number(p.p2p_port),
@@ -189,19 +185,14 @@ export function toStorageNode(value: any): StorageNode {
  * Domain StorageNodeProps → runtime `create_node`/`set_node_params`
  * `node_params` arg. Unlike the read side, the write side DOES need the
  * `StorageParams` enum wrapper (verified against the live TX arg type:
- * `node_params: Enum<{ StorageParams: {...} }>`). `host`/`domain` encode via
- * `Binary.fromText` (inverse of `toStorageNode`'s `Binary.toText`); `domain`
- * is optional on the domain type but mandatory on the wire, so it's
- * defaulted to `''` (task 3 lesson: never let an optional domain field hit
- * the codec as `undefined`).
+ * `node_params: Enum<{ StorageParams: {...} }>`). `host` encodes via
+ * `Binary.fromText` (inverse of `toStorageNode`'s `Binary.toText`).
  */
 export function buildStorageNodeParams(props: StorageNodeProps) {
   return {
     type: 'StorageParams' as const,
     value: {
       host: Binary.fromText(props.host),
-      domain: Binary.fromText(props.domain ?? ''),
-      ssl: props.ssl ?? false,
       http_port: props.httpPort,
       grpc_port: props.grpcPort,
       p2p_port: props.p2pPort,
