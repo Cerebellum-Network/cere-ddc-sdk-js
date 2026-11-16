@@ -1,10 +1,10 @@
 import { Binary } from 'polkadot-api';
-import { connect, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
+import { connect, createNodesPallet, StorageNodeMode } from '@cere-ddc-sdk/blockchain';
 
 const describeChain = process.env.CERE_CHAIN_TESTS ? describe : describe.skip;
 
 describeChain('papi nodes (live, devnet)', () => {
-  it('listStorageNodes() decodes host/domain to utf8 and mode to enum string', async () => {
+  it('listStorageNodes() decodes host to utf8 and mode to enum string', async () => {
     const client = connect({ network: 'devnet' });
     try {
       const nodes = await client.nodes.listStorageNodes();
@@ -69,4 +69,75 @@ describeChain('papi nodes (live, devnet)', () => {
       client.disconnect();
     }
   }, 60_000);
+});
+
+describe('papi nodes (unit)', () => {
+  const nodeKey = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+  const providerId = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
+  const props = {
+    host: '178.251.228.165',
+    httpPort: 8080,
+    grpcPort: 9090,
+    p2pPort: 9070,
+    mode: StorageNodeMode.Storage,
+  };
+
+  const stubApi = (txArgs: any[], storedProps: Record<string, unknown>) =>
+    ({
+      tx: {
+        DdcNodes: {
+          create_node: (args: any) => (txArgs.push(args), {}),
+          set_node_params: (args: any) => (txArgs.push(args), {}),
+        },
+      },
+      query: {
+        DdcNodes: {
+          StorageNodes: {
+            getValue: async () => ({
+              pub_key: nodeKey,
+              provider_id: providerId,
+              cluster_id: undefined,
+              props: storedProps,
+            }),
+          },
+        },
+      },
+    }) as any;
+
+  it('a node stored with domain and ssl reads back without them', async () => {
+    const nodes = createNodesPallet(
+      stubApi([], {
+        host: Binary.fromText(props.host),
+        domain: Binary.fromText('storage-7.devnet.ddc-dragon.com'),
+        ssl: true,
+        http_port: props.httpPort,
+        grpc_port: props.grpcPort,
+        p2p_port: props.p2pPort,
+        mode: { type: props.mode },
+      }),
+    );
+
+    const node = await nodes.findStorageNodeByPublicKey(nodeKey as any);
+
+    expect(node?.props).toEqual(props);
+  });
+
+  it('create and set node params carry neither domain nor ssl', () => {
+    const txArgs: any[] = [];
+    const nodes = createNodesPallet(stubApi(txArgs, {}));
+
+    nodes.createStorageNode(nodeKey as any, props);
+    nodes.setStorageNodeProps(nodeKey as any, props);
+
+    for (const args of txArgs) {
+      expect(Object.keys(args.node_params.value).sort()).toEqual([
+        'grpc_port',
+        'host',
+        'http_port',
+        'mode',
+        'p2p_port',
+      ]);
+    }
+    expect(txArgs).toHaveLength(2);
+  });
 });

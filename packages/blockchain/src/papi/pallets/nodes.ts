@@ -16,8 +16,7 @@ export function createNodesPallet(api: CereApi): NodesPallet {
     createStorageNode(key, props) {
       return api.tx.DdcNodes.create_node({
         node_pub_key: storagePubKey(key),
-        // `buildStorageNodeParams` already defaults `domain ?? ''` / `ssl ?? false`,
-        // so pass `props` through as-is (matching `setStorageNodeProps` below).
+        // Pass `props` through as-is (matching `setStorageNodeProps` below).
         node_params: buildStorageNodeParams(props),
       } as any) as Sendable;
     },
